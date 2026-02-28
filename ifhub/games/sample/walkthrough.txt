@@ -1,0 +1,16 @@
+take brass key
+n
+open journal
+s
+s
+take rusty coin
+s
+push flat stones
+take golden ring
+n
+n
+n
+up
+unlock cabinet with brass key
+open cabinet
+take silver locket

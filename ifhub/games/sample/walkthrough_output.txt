@@ -1,0 +1,96 @@
+
+
+
+
+Sample
+An Interactive Fiction by Claude Code
+Release 1
+
+Sample
+An Interactive Fiction by Claude Code
+Release 1 / Serial number 260223 / Inform 7 v10.1.2 / D
+
+Entrance Hall
+A grand hall with marble floors and high ceilings. A crystal chandelier hangs overhead. Exits lead north to a library, east to a kitchen, and south to a garden.
+
+You can see a brass key here.
+
+>Taken.
+
+>
+Library
+Tall bookshelves line every wall, crammed with leather-bound volumes. A reading desk sits in the center of the room. A narrow staircase leads up.
+
+You can see a reading desk (on which is a dusty journal) here.
+
+>You flip through the journal. Most entries are illegible, but one page reads: "The treasure is hidden where water meets stone."
+
+[Your score has just gone up by two points.]
+
+>
+Entrance Hall
+A grand hall with marble floors and high ceilings. A crystal chandelier hangs overhead. Exits lead north to a library, east to a kitchen, and south to a garden.
+
+>
+Garden
+A walled garden overgrown with ivy and wildflowers. A stone fountain stands in the center, dry and cracked. A path continues south to a pond.
+
+You can see a rusty coin here.
+
+>You brush off the grime. Despite its age, the coin has a satisfying weight.
+
+[Your score has just gone up by two points.]
+
+>
+Pond
+A small, murky pond surrounded by reeds and flat stones. The water is still and dark. The garden lies back to the north.
+
+>You push aside one of the loose stones and discover a golden ring hidden beneath it!
+
+[Your score has just gone up by three points.]
+
+>Taken.
+
+>
+Garden
+A walled garden overgrown with ivy and wildflowers. A stone fountain stands in the center, dry and cracked. A path continues south to a pond.
+
+>
+Entrance Hall
+A grand hall with marble floors and high ceilings. A crystal chandelier hangs overhead. Exits lead north to a library, east to a kitchen, and south to a garden.
+
+>
+Library
+Tall bookshelves line every wall, crammed with leather-bound volumes. A reading desk sits in the center of the room. A narrow staircase leads up.
+
+You can see a reading desk (on which is a dusty journal) here.
+
+>
+Study
+A cozy room at the top of the narrow staircase. A wooden cabinet stands against one wall. The only exit is back down.
+
+You can see a wooden cabinet (closed) here.
+
+>You unlock the wooden cabinet.
+
+>You open the wooden cabinet, revealing a silver locket.
+
+>As you pick up the locket, it glows faintly. You feel a sense of accomplishment.
+
+
+Congratulations! You have found all the secrets of this place. You win!
+
+
+
+    *** You have won ***
+
+
+In that game you scored 10 out of a possible 10, in 16 turns, earning you the rank of Winner.
+
+
+Would you like to RESTART, RESTORE a saved game, QUIT or UNDO the last command?
+> Please give one of the answers above.
+
+Would you like to RESTART, RESTORE a saved game, QUIT or UNDO the last command?
+> 
+<end of input>

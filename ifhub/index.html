@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>IF Hub &mdash; Interactive Fiction Player</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+body {
+  min-height: 100%;
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  line-height: 1.7;
+}
+
+h1 {
+  font-size: 1.8em;
+  color: #e8d8b0;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-style: italic;
+  color: #aa9966;
+  margin-bottom: 40px;
+}
+
+h2 {
+  font-size: 1.2em;
+  color: #c4b48a;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a2418;
+}
+
+p {
+  margin-bottom: 16px;
+}
+
+a {
+  color: #e8d090;
+  text-decoration: none;
+  border-bottom: 1px solid #5a4a30;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+a:hover {
+  color: #ffe8a0;
+  border-bottom-color: #aa9966;
+}
+
+.game-card {
+  margin-bottom: 28px;
+  padding: 20px 24px;
+  background: #111;
+  border: 1px solid #1e1a14;
+  border-radius: 6px;
+}
+
+.game-card h3 {
+  color: #c4b48a;
+  font-size: 1.05em;
+  margin-bottom: 4px;
+}
+
+.game-card .game-meta {
+  font-size: 0.85em;
+  color: #887755;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.game-card p {
+  font-size: 0.95em;
+  color: #b0a080;
+  margin-bottom: 10px;
+}
+
+.game-card .game-links {
+  display: flex;
+  gap: 20px;
+  font-size: 0.95em;
+}
+
+.feature-list {
+  margin: 16px 0;
+  padding-left: 20px;
+  font-size: 0.95em;
+  color: #b0a080;
+}
+
+.feature-list li {
+  margin-bottom: 6px;
+}
+
+footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #1e1a14;
+  font-size: 0.85em;
+  color: #665a40;
+}
+
+footer a {
+  color: #887755;
+  border-bottom-color: #3a3020;
+}
+</style>
+</head>
+<body>
+
+<h1>IF Hub</h1>
+<p class="subtitle">An Interactive Fiction Player &amp; Source Browser</p>
+
+<p>
+  IF Hub is a browser-based player for
+  <a href="http://inform7.com/">Inform 7</a> games. Pick a game, play it
+  online, and read the source code side by side &mdash; all in one interface.
+  Every game runs entirely in your browser via
+  <a href="https://github.com/curiousdannii/parchment">Parchment</a>, a
+  JavaScript interpreter for the <a href="https://www.eblong.com/zarf/glulx/">Glulx</a>
+  and <a href="https://www.inform-fiction.org/zmachine/standards/z1point1/">Z-machine</a>
+  virtual machines. No downloads, no plugins.
+</p>
+
+<p>
+  The source viewer gives you syntax-highlighted Inform 7 code with a
+  navigable outline, search, and line numbers. Games with walkthroughs
+  include annotated guides. Some games feature ambient audio and sound
+  effects that play alongside the text.
+</p>
+
+<h2>Games</h2>
+
+<div id="games"></div>
+
+<script>
+fetch('games.json')
+  .then(r => r.json())
+  .then(games => {
+    const byId = {};
+    games.forEach(g => byId[g.id] = g);
+
+    const container = document.getElementById('games');
+    games.filter(g => g.card).forEach(g => {
+      const c = g.card;
+      const playLabel = 'Play fullscreen' + (g.sound ? ' (with sound)' : '');
+
+      let versions = '';
+      if (c.versions) {
+        const links = c.versions.map(vid => {
+          const v = byId[vid];
+          return `<a href="games/${vid}/">${v && v.versionLabel || vid}</a>`;
+        }).join(' ');
+        versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
+      }
+
+      container.insertAdjacentHTML('beforeend',
+        `<div class="game-card">
+          <h3>${c.title}</h3>
+          <p class="game-meta">${c.meta}</p>
+          <p>${c.description}</p>
+          <div class="game-links">
+            <a href="games/${g.id}/">${playLabel}</a>
+            <a href="app.html?game=${g.id}">Play in IF Hub</a>
+          </div>
+          ${versions}
+        </div>`
+      );
+    });
+  });
+</script>
+
+<h2>What&rsquo;s Inside</h2>
+
+<ul class="feature-list">
+  <li><strong>Play in the browser</strong> &mdash; Glulx and Z-machine games run via Parchment with no install</li>
+  <li><strong>Source viewer</strong> &mdash; syntax-highlighted Inform 7 code with outline navigation and search</li>
+  <li><strong>Walkthroughs</strong> &mdash; annotated step-by-step guides with full transcripts</li>
+  <li><strong>Audio</strong> &mdash; ambient music and sound effects for games that support it</li>
+  <li><strong>Resizable layout</strong> &mdash; drag the divider to balance game and source panes</li>
+</ul>
+
+<h2>About</h2>
+
+<p>
+  IF Hub is a static site &mdash; no server-side logic, no accounts, no tracking.
+  It serves games built with <a href="http://inform7.com/">Inform 7</a>,
+  a programming language that reads like natural English and compiles to
+  virtual machine formats that have been around since the 1980s. The same
+  technology that powered Infocom&rsquo;s games now runs in any modern browser.
+</p>
+
+<p>
+  All source code is visible. The games, the player, and this site are
+  open. If you want to see how any of it works, open the source tab while
+  you play.
+</p>
+
+<footer>
+  <p>
+    Built with <a href="http://inform7.com/">Inform 7</a>.
+    Playable via <a href="https://github.com/curiousdannii/parchment">Parchment</a>.
+  </p>
+</footer>
+
+</body>
+</html>

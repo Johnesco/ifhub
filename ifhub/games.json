@@ -1,0 +1,82 @@
+[
+  {
+    "id": "zork1-v0",
+    "title": "Zork I (v0 \u2014 Original ZIL)",
+    "sourceLabel": "ZIL Source",
+    "source": "games/zork1-v0/source-browser.html",
+    "sourceBrowser": true,
+    "binary": "games/zork1-v0/zork1.z3.js",
+    "walkthrough": "games/zork1-v0/walkthrough.html",
+    "versionLabel": "v0 \u2014 Original ZIL"
+  },
+  {
+    "id": "zork1-v1",
+    "title": "Zork I (v1)",
+    "sourceLabel": "zork1-v1.ni",
+    "source": "games/zork1-v1/story.ni",
+    "binary": "games/zork1-v1/zork1.ulx.js",
+    "walkthrough": "games/zork1-v1/walkthrough.html",
+    "versionLabel": "v1 \u2014 The Port"
+  },
+  {
+    "id": "zork1-v2",
+    "title": "Zork I (v2)",
+    "sourceLabel": "zork1-v2.ni",
+    "source": "games/zork1-v2/story.ni",
+    "binary": "games/zork1-v2/zork1.ulx.js",
+    "walkthrough": "games/zork1-v2/walkthrough.html",
+    "versionLabel": "v2 \u2014 Bug Fixes"
+  },
+  {
+    "id": "zork1-v3",
+    "title": "Zork I (v3 \u2014 Current)",
+    "sourceLabel": "zork1-v3.ni",
+    "source": "games/zork1-v3/story.ni",
+    "binary": "games/zork1-v3/zork1.ulx.js",
+    "walkthrough": "games/zork1-v3/walkthrough.html",
+    "sound": true,
+    "card": {
+      "title": "Zork I: The Great Underground Empire",
+      "meta": "Infocom (translated to Inform 7)",
+      "description": "A full translation of Infocom\u2019s classic adventure game from the original <a href=\"https://github.com/historicalsource/zork1\">ZIL source code</a> to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, audio-enhanced experience.",
+      "versions": ["zork1-v0", "zork1-v1", "zork1-v2"]
+    }
+  },
+  {
+    "id": "dracula",
+    "title": "Dracula\u2019s Castle",
+    "sourceLabel": "dracula.ni",
+    "source": "games/dracula/story.ni",
+    "binary": "games/dracula/dracula.ulx.js",
+    "card": {
+      "title": "Dracula\u2019s Castle",
+      "meta": "An Interactive Adventure",
+      "description": "Explore Dracula\u2019s Castle and uncover its dark secret before midnight strikes. A horror-themed adventure written in Inform 7."
+    }
+  },
+  {
+    "id": "feverdream",
+    "title": "Fever Dream",
+    "sourceLabel": "feverdream.ni",
+    "source": "games/feverdream/story.ni",
+    "binary": "games/feverdream/feverdream.ulx.js",
+    "card": {
+      "title": "Fever Dream",
+      "meta": "A Perceptual Horror",
+      "description": "Three items alter your perception. The world stays the same. You do not."
+    }
+  },
+  {
+    "id": "sample",
+    "title": "Sample",
+    "sourceLabel": "sample.ni",
+    "source": "games/sample/story.ni",
+    "binary": "games/sample/sample.ulx.js",
+    "walkthrough": "games/sample/walkthrough.html",
+    "card": {
+      "title": "Sample",
+      "meta": "An Interactive Fiction",
+      "description": "A practice project for learning Inform 7 &mdash; small, self-contained, and useful for testing the toolchain."
+    }
+  }
+]

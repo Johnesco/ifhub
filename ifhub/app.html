@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interactive Fiction &mdash; Source &amp; Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  --game-width: 55%;
+  grid-template-columns: var(--game-width) 5px 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+body.source-collapsed {
+  grid-template-columns: 1fr;
+}
+
+body.source-collapsed #resize-handle,
+body.source-collapsed #source-pane {
+  display: none;
+}
+
+body.game-collapsed {
+  grid-template-columns: 1fr;
+}
+
+body.game-collapsed #game-pane,
+body.game-collapsed #resize-handle {
+  display: none;
+}
+
+/* --- Source Pane --- */
+#source-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid #2a2418;
+  background: #0a0a0a;
+}
+
+.source-toolbar {
+  padding: 6px 12px;
+  background: #0e0a08;
+  border-bottom: 1px solid #2a2418;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85em;
+  color: #806050;
+  flex-shrink: 0;
+}
+
+.source-toolbar .file-path {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  color: #a08060;
+  white-space: nowrap;
+}
+
+.source-toolbar .line-count {
+  white-space: nowrap;
+}
+
+.source-toolbar .spacer {
+  flex: 1;
+}
+
+.search-box {
+  background: #110a08;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #d4c5a9;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  width: 160px;
+  min-width: 80px;
+  outline: none;
+}
+
+.search-box:focus { border-color: #5a4a30; }
+.search-box::placeholder { color: #4a3a28; }
+
+.btn-dismiss {
+  background: none;
+  border: 1px solid #3a2a18;
+  border-radius: 4px;
+  color: #806050;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 2px 8px;
+  line-height: 1;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-dismiss:hover {
+  color: #d4c5a9;
+  border-color: #6a5a40;
+}
+
+/* --- Source with nav sidebar --- */
+.source-with-nav {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: #0c0a08;
+  border-right: 1px solid #1a1810;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: #0c0a08; }
+.nav::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 3px; }
+
+.nav-item {
+  display: block;
+  padding: 4px 12px;
+  font-size: 0.82em;
+  color: #886850;
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-item:hover {
+  background: #151008;
+  color: #c0a880;
+}
+
+.nav-item.active {
+  background: #18100a;
+  color: #e0c8a0;
+  border-left-color: #e8d090;
+}
+
+.nav-part {
+  font-weight: bold;
+  color: #c0a880;
+  padding-top: 10px;
+  font-size: 0.85em;
+}
+
+.nav-chapter { padding-left: 20px; }
+.nav-section { padding-left: 32px; font-size: 0.78em; color: #705840; }
+
+/* --- Source main (code area) --- */
+.source-main {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 0;
+  min-height: 0;
+}
+
+.source-main::-webkit-scrollbar { width: 8px; }
+.source-main::-webkit-scrollbar-track { background: #0a0a0a; }
+.source-main::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 4px; }
+.source-main::-webkit-scrollbar-thumb:hover { background: #3a3020; }
+
+/* --- Code table --- */
+table.code {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+table.code td { vertical-align: top; }
+
+td.ln {
+  min-width: 40px;
+  padding: 0 12px 0 16px;
+  text-align: right;
+  color: #302818;
+  user-select: none;
+  white-space: nowrap;
+}
+
+td.lc {
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding: 0 16px 0 0;
+}
+
+tr.heading-line td { padding-top: 8px; }
+tr.heading-line td.lc { font-weight: bold; color: #e0c8a0; font-size: 14px; }
+tr.heading-line td.ln { color: #5a4030; }
+
+tr:target td, tr.highlight td { background: #1a1008; }
+tr:target td.ln, tr.highlight td.ln { color: #806050; }
+
+/* --- Inform 7 syntax colors --- */
+.syn-str  { color: #8bab6e; }
+.syn-cmt  { color: #605840; font-style: italic; }
+.syn-sub  { color: #7ea8b0; }
+.syn-kw   { color: #c08050; }
+.syn-head { color: #e0c8a0; font-weight: bold; }
+.syn-rule { color: #b89860; }
+.syn-num  { color: #b08a70; }
+.syn-tbl  { color: #9090b0; }
+
+/* --- Search highlights --- */
+.search-hit {
+  background: #4a3a10;
+  color: #ffe0a0;
+  border-radius: 2px;
+}
+
+.search-current {
+  background: #6a4a10;
+  outline: 1px solid #aa8030;
+}
+
+/* --- View tabs --- */
+.view-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.view-tab {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #605040;
+  font-family: inherit;
+  font-size: 0.85em;
+  cursor: pointer;
+  padding: 3px 12px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.view-tab:hover {
+  color: #c0a880;
+}
+
+.view-tab.active {
+  color: #e8d090;
+  border-color: #2a2418;
+  background: #0e0a08;
+}
+
+/* --- Source toolbar context (search, line count) --- */
+.source-context {
+  display: contents;
+}
+
+/* --- Walkthrough toolbar context (placeholder controls) --- */
+.walkthrough-context {
+  display: contents;
+}
+
+/* --- Walkthrough content area --- */
+#walkthrough-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#walkthrough-content iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: #0a0a0a;
+}
+
+#walkthrough-unavailable {
+  padding: 20px;
+  color: #605840;
+  font-style: italic;
+}
+
+/* --- Resize Handle --- */
+#resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background: #1a1810;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+#resize-handle:hover,
+#resize-handle.dragging {
+  background: #3a3020;
+}
+
+body.source-collapsed #resize-handle {
+  display: none;
+}
+
+body.resizing iframe {
+  pointer-events: none;
+}
+
+/* --- Game Pane --- */
+#game-pane {
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.game-toolbar {
+  grid-column: 1 / -1;
+  padding: 6px 12px;
+  background: #0e0a08;
+  border-bottom: 1px solid #2a2418;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.85em;
+}
+
+.game-toolbar .spacer { flex: 1; }
+
+/* --- Game Selector --- */
+#game-select {
+  background: #110a08;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #e8d090;
+  font-family: inherit;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+#game-select:focus { border-color: #5a4a30; }
+
+#game-select option {
+  background: #110a08;
+  color: #d4c5a9;
+}
+
+#game-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #111;
+}
+
+/* --- Sound Controls --- */
+#sound-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#mute-btn {
+  background: none;
+  border: 1px solid #3a2a18;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 3px 6px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s;
+}
+
+#mute-btn:hover { border-color: #6a5a40; }
+#mute-btn svg { width: 16px; height: 16px; fill: #aa9966; }
+#mute-btn.muted svg .sound-wave { display: none; }
+#mute-btn.muted svg .mute-x { display: inline; }
+#mute-btn:not(.muted) svg .mute-x { display: none; }
+
+#volume-slider {
+  width: 80px;
+  height: 4px;
+  accent-color: #aa9966;
+  cursor: pointer;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .sidebar { display: none; }
+}
+
+@media (max-width: 800px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr 1fr;
+  }
+
+  body.source-collapsed {
+    grid-template-rows: auto 1fr;
+  }
+
+  #resize-handle { display: none; }
+  .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== TOP TOOLBAR ===== -->
+<div class="game-toolbar">
+  <span style="color:#806050;">Load Game:</span>
+  <select id="game-select"></select>
+  <span class="spacer"></span>
+  <span id="sound-controls" style="display:none;">
+    <button id="mute-btn" title="Toggle sound">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="6,9 2,9 2,15 6,15 11,19 11,5"/>
+        <path class="sound-wave" d="M14,9.5 C14.8,10.3 15.3,11.1 15.3,12 C15.3,12.9 14.8,13.7 14,14.5"
+          stroke="#aa9966" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path class="sound-wave" d="M16,7.5 C17.5,9 18.3,10.5 18.3,12 C18.3,13.5 17.5,15 16,16.5"
+          stroke="#aa9966" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <line class="mute-x" x1="15" y1="9" x2="21" y2="15"
+          stroke="#aa9966" stroke-width="2" stroke-linecap="round"/>
+        <line class="mute-x" x1="21" y1="9" x2="15" y2="15"
+          stroke="#aa9966" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <input type="range" id="volume-slider" min="0" max="100" value="70" title="Volume">
+  </span>
+  <div class="view-tabs">
+    <button class="view-tab active" data-view="source">Source</button>
+    <button class="view-tab" data-view="walkthrough">Walkthrough</button>
+  </div>
+</div>
+
+<!-- ===== GAME PANE ===== -->
+<div id="game-pane">
+  <iframe id="game-frame" src="about:blank" title="Interactive Fiction"></iframe>
+</div>
+
+<!-- ===== RESIZE HANDLE ===== -->
+<div id="resize-handle"></div>
+
+<!-- ===== SOURCE PANE ===== -->
+<div id="source-pane">
+  <div class="source-toolbar">
+    <span class="source-context" id="source-context">
+      <span class="file-path" id="source-filepath">story.ni</span>
+      <input type="text" class="search-box" id="search-source" placeholder="Search... (Ctrl+F)">
+    </span>
+    <span class="walkthrough-context" id="walkthrough-context">
+      <span class="wt-status" id="wt-status">Not yet available</span>
+    </span>
+    <span class="spacer"></span>
+    <span class="source-context"><span class="line-count" id="line-count"></span></span>
+    <button class="btn-dismiss" id="btn-toggle-game" title="Toggle game pane">Hide Game</button>
+    <button class="btn-dismiss" id="btn-dismiss" title="Hide panel">&times;</button>
+  </div>
+  <div class="source-with-nav">
+    <div class="sidebar" id="nav-sidebar">
+      <div class="nav" id="nav"></div>
+    </div>
+    <div class="source-main" id="source-main">
+      <!-- code table rendered by JS -->
+    </div>
+  </div>
+  <iframe id="source-browser-frame" src="about:blank" title="Source Browser" style="display:none; flex:1; width:100%; border:none; background:#0a0a0a;"></iframe>
+  <div id="walkthrough-content" style="display:none;">
+    <iframe id="walkthrough-frame" src="about:blank" title="Walkthrough"></iframe>
+    <div id="walkthrough-unavailable">
+      Walkthrough not yet available for this game.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   STATE
+   ================================================================== */
+var games = [];       // populated from games.json
+var gameMap = {};     // id → game entry
+var currentGame = '';
+var currentView = 'source';
+var sourceCache = {};
+
+/* ==================================================================
+   INIT
+   ================================================================== */
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('games.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      games = data;
+      games.forEach(function(g) { gameMap[g.id] = g; });
+      buildDropdown();
+      bindUI();
+      initSoundControls();
+
+      var params = new URLSearchParams(window.location.search);
+      var initGame = params.get('game') || games[0].id;
+      if (!gameMap[initGame]) initGame = games[0].id;
+      switchGame(initGame);
+      switchView('source');
+    });
+});
+
+/* ==================================================================
+   BUILD DROPDOWN FROM games.json
+   ================================================================== */
+function buildDropdown() {
+  var sel = document.getElementById('game-select');
+  games.forEach(function(g) {
+    var opt = document.createElement('option');
+    opt.value = g.id;
+    opt.textContent = g.title;
+    sel.appendChild(opt);
+  });
+}
+
+/* ==================================================================
+   BIND UI (once)
+   ================================================================== */
+function bindUI() {
+  // Dismiss source pane (and ensure game is visible)
+  document.getElementById('btn-dismiss').addEventListener('click', function() {
+    document.body.classList.add('source-collapsed');
+    document.body.classList.remove('game-collapsed');
+  });
+
+  // Toggle game pane
+  var toggleGameBtn = document.getElementById('btn-toggle-game');
+  toggleGameBtn.addEventListener('click', function() {
+    var body = document.body;
+    body.classList.toggle('game-collapsed');
+    if (body.classList.contains('game-collapsed')) {
+      body.classList.remove('source-collapsed');
+    }
+    toggleGameBtn.textContent = body.classList.contains('game-collapsed') ? 'Show Game' : 'Hide Game';
+  });
+
+  // View tab switching (toggle pane visibility)
+  document.querySelectorAll('.view-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var view = this.dataset.view;
+      if (currentView === view && !document.body.classList.contains('source-collapsed')) {
+        document.body.classList.add('source-collapsed');
+      } else {
+        document.body.classList.remove('source-collapsed');
+        switchView(view);
+      }
+    });
+  });
+
+  // Ctrl+F shortcut
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      if (!document.body.classList.contains('source-collapsed')) {
+        e.preventDefault();
+        var input = document.getElementById('search-source');
+        input.focus();
+        input.select();
+      }
+    }
+  });
+
+  // Snapshot game width so it stays fixed as window grows
+  var gamePane = document.getElementById('game-pane');
+  document.body.style.setProperty('--game-width', gamePane.offsetWidth + 'px');
+
+  // Resize handle drag
+  var handle = document.getElementById('resize-handle');
+  handle.addEventListener('mousedown', startResize);
+  handle.addEventListener('touchstart', startResize, { passive: false });
+
+  function startResize(e) {
+    e.preventDefault();
+    handle.classList.add('dragging');
+    document.body.classList.add('resizing');
+
+    var onMove = function(e) {
+      var x = e.touches ? e.touches[0].clientX : e.clientX;
+      var w = document.body.clientWidth;
+      var gameW = Math.max(200, Math.min(x, w - 200));
+      document.body.style.setProperty('--game-width', gameW + 'px');
+    };
+
+    var onUp = function() {
+      handle.classList.remove('dragging');
+      document.body.classList.remove('resizing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
+  }
+
+  // Game selector dropdown
+  document.getElementById('game-select').addEventListener('change', function() {
+    if (this.value !== currentGame) switchGame(this.value);
+  });
+}
+
+/* ==================================================================
+   UTILITY
+   ================================================================== */
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ==================================================================
+   INFORM 7 SYNTAX HIGHLIGHTER
+   ================================================================== */
+var I7_HEADING = /^(Volume|Book|Part|Chapter|Section)\s+(.+)/;
+
+function highlightInform(line) {
+  if (I7_HEADING.test(line)) return '<span class="syn-head">' + esc(line) + '</span>';
+  if (/^Table\s+/.test(line)) return '<span class="syn-tbl">' + esc(line) + '</span>';
+
+  var out = '', state = 'normal', depth = 0, buf = '';
+
+  function flush(cls) {
+    if (!buf) return;
+    if (cls) out += '<span class="' + cls + '">' + esc(buf) + '</span>';
+    else out += esc(buf);
+    buf = '';
+  }
+
+  for (var i = 0; i < line.length; i++) {
+    var ch = line[i];
+    if (state === 'normal') {
+      if (ch === '"') { flush(); buf = ch; state = 'string'; }
+      else if (ch === '[') { flush(); buf = ch; depth = 1; state = 'comment'; }
+      else buf += ch;
+    } else if (state === 'string') {
+      buf += ch;
+      if (ch === '[') {
+        var before = buf.slice(0, -1);
+        if (before) out += '<span class="syn-str">' + esc(before) + '</span>';
+        buf = ch; state = 'sub'; depth = 1;
+      } else if (ch === '"') { flush('syn-str'); state = 'normal'; }
+    } else if (state === 'sub') {
+      buf += ch;
+      if (ch === '[') depth++;
+      else if (ch === ']') { depth--; if (!depth) { flush('syn-sub'); state = 'string'; } }
+    } else if (state === 'comment') {
+      buf += ch;
+      if (ch === '[') depth++;
+      else if (ch === ']') { depth--; if (!depth) { flush('syn-cmt'); state = 'normal'; } }
+    }
+  }
+
+  if (state === 'string') flush('syn-str');
+  else if (state === 'comment') flush('syn-cmt');
+  else if (state === 'sub') flush('syn-sub');
+  else {
+    if (buf) out += highlightI7Keywords(esc(buf));
+    buf = '';
+  }
+
+  if (state === 'normal' && !out.includes('<span')) return highlightI7Keywords(esc(line));
+  return out;
+}
+
+function highlightI7Keywords(html) {
+  html = html.replace(/\b(Understand|understand|Instead of|Instead|instead of|instead|After|after|Before|before|Check|check|Carry out|carry out|Report|report|Every turn|every turn|When play begins|When|when|Rule|rule|This is|Definition|definition|To say|To decide|To |say |now |let |repeat|if |otherwise|else|end if|end while|end repeat|unless|does the player mean|Persuasion|persuasion|A thing|A room|A person|The )\b/g, '<span class="syn-kw">$1</span>');
+  html = html.replace(/\b(\d+)\b/g, '<span class="syn-num">$1</span>');
+  return html;
+}
+
+/* ==================================================================
+   SOURCE RENDERER
+   ================================================================== */
+function renderSource(lines) {
+  var rows = [];
+  for (var i = 0; i < lines.length; i++) {
+    var num = i + 1;
+    var hm = lines[i].match(I7_HEADING);
+    var cls = hm ? ' class="heading-line"' : '';
+    rows.push('<tr id="L' + num + '"' + cls + '><td class="ln">' + num + '</td><td class="lc">' + highlightInform(lines[i]) + '</td></tr>');
+  }
+  document.getElementById('source-main').innerHTML = '<table class="code">' + rows.join('') + '</table>';
+}
+
+/* ==================================================================
+   NAVIGATION SIDEBAR
+   ================================================================== */
+function buildNav(lines) {
+  var nav = document.getElementById('nav');
+  var items = [];
+  for (var i = 0; i < lines.length; i++) {
+    var hm = lines[i].match(I7_HEADING);
+    if (!hm) continue;
+    var num = i + 1;
+    var lvl = hm[1].toLowerCase();
+    var cls = 'nav-item';
+    if (lvl === 'volume' || lvl === 'book' || lvl === 'part') cls += ' nav-part';
+    else if (lvl === 'chapter') cls += ' nav-chapter';
+    else cls += ' nav-section';
+    items.push('<a class="' + cls + '" data-line="' + num + '">' + esc(lines[i]) + '</a>');
+  }
+  nav.innerHTML = items.join('');
+
+  nav.addEventListener('click', function(e) {
+    var a = e.target.closest('.nav-item');
+    if (!a) return;
+    nav.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    a.classList.add('active');
+    var row = document.getElementById('L' + a.dataset.line);
+    if (row) row.scrollIntoView({ block: 'start' });
+  });
+}
+
+/* ==================================================================
+   SEARCH
+   ================================================================== */
+function initSearch() {
+  var input = document.getElementById('search-source');
+  var wrap = document.getElementById('source-main');
+  var hits = [], cur = -1, debounce;
+
+  function clearHits() {
+    wrap.querySelectorAll('.search-hit').forEach(function(el) { el.outerHTML = el.textContent; });
+    hits = []; cur = -1;
+  }
+
+  function doSearch(q) {
+    clearHits();
+    if (!q || q.length < 2) return;
+    var lower = q.toLowerCase();
+    wrap.querySelectorAll('td.lc').forEach(function(td) {
+      if (td.textContent.toLowerCase().includes(lower)) markMatches(td, q);
+    });
+    hits = Array.from(wrap.querySelectorAll('.search-hit'));
+    if (hits.length) {
+      cur = 0;
+      hits[0].classList.add('search-current');
+      hits[0].scrollIntoView({ block: 'center' });
+    }
+  }
+
+  function markMatches(el, q) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    var lower = q.toLowerCase();
+    nodes.forEach(function(node) {
+      var text = node.textContent, idx = text.toLowerCase().indexOf(lower);
+      if (idx === -1) return;
+      var span = document.createElement('span');
+      span.className = 'search-hit';
+      span.textContent = text.slice(idx, idx + q.length);
+      var parent = node.parentNode;
+      if (idx > 0) parent.insertBefore(document.createTextNode(text.slice(0, idx)), node);
+      parent.insertBefore(span, node);
+      var after = text.slice(idx + q.length);
+      if (after) parent.insertBefore(document.createTextNode(after), node);
+      parent.removeChild(node);
+    });
+  }
+
+  function next() {
+    if (!hits.length) return;
+    hits[cur].classList.remove('search-current');
+    cur = (cur + 1) % hits.length;
+    hits[cur].classList.add('search-current');
+    hits[cur].scrollIntoView({ block: 'center' });
+  }
+
+  function prev() {
+    if (!hits.length) return;
+    hits[cur].classList.remove('search-current');
+    cur = (cur - 1 + hits.length) % hits.length;
+    hits[cur].classList.add('search-current');
+    hits[cur].scrollIntoView({ block: 'center' });
+  }
+
+  input.addEventListener('input', function() {
+    clearTimeout(debounce);
+    var self = this;
+    debounce = setTimeout(function() { doSearch(self.value); }, 200);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); e.shiftKey ? prev() : next(); }
+    if (e.key === 'Escape') { clearHits(); this.value = ''; this.blur(); }
+  });
+}
+
+/* ==================================================================
+   DISPLAY SOURCE — render + nav + search + line count
+   ================================================================== */
+function displaySource(text) {
+  var lines = text.replace(/^\n/, '').replace(/\n$/, '').split('\n');
+  renderSource(lines);
+  buildNav(lines);
+  initSearch();
+  document.getElementById('line-count').textContent = lines.length + ' lines';
+  document.getElementById('search-source').value = '';
+}
+
+/* ==================================================================
+   LOAD SOURCE FOR GAME — fetch with cache
+   ================================================================== */
+function loadSourceForGame(gameId) {
+  var g = gameMap[gameId];
+  if (!g) return;
+
+  var sourceNav = document.querySelector('.source-with-nav');
+  var browserFrame = document.getElementById('source-browser-frame');
+
+  document.getElementById('source-filepath').textContent = g.sourceLabel || g.id + '.ni';
+
+  if (g.sourceBrowser) {
+    // ZIL source browser — load in iframe
+    sourceNav.style.display = 'none';
+    browserFrame.src = g.source;
+    browserFrame.style.display = '';
+    document.getElementById('line-count').textContent = '';
+    return;
+  }
+
+  // Normal I7 source — hide iframe, show code viewer
+  browserFrame.src = 'about:blank';
+  browserFrame.style.display = 'none';
+  sourceNav.style.display = '';
+
+  if (sourceCache[gameId]) {
+    displaySource(sourceCache[gameId]);
+    return;
+  }
+
+  document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#605840;font-style:italic;">Loading source\u2026</div>';
+  document.getElementById('line-count').textContent = '';
+  fetch(g.source)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(function(text) {
+      sourceCache[gameId] = text;
+      if (currentGame === gameId) displaySource(text);
+    })
+    .catch(function() {
+      if (currentGame === gameId) {
+        document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#806050;">Source unavailable. Run <code style="color:#a08060;">bash deploy.sh</code> then serve:<br><code style="color:#a08060;">python -m http.server 8000</code></div>';
+      }
+    });
+}
+
+/* ==================================================================
+   VIEW SWITCHING — source / walkthrough tabs
+   ================================================================== */
+function switchView(viewName) {
+  currentView = viewName;
+
+  document.querySelectorAll('.view-tab').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.view === viewName);
+  });
+
+  var sourceCtxEls = document.querySelectorAll('.source-context');
+  var wtCtx = document.getElementById('walkthrough-context');
+  var isSource = viewName === 'source';
+
+  sourceCtxEls.forEach(function(el) {
+    el.style.display = isSource ? '' : 'none';
+  });
+  wtCtx.style.display = isSource ? 'none' : '';
+
+  var g = gameMap[currentGame];
+  var isBrowser = g && g.sourceBrowser;
+  var browserFrame = document.getElementById('source-browser-frame');
+
+  document.querySelector('.source-with-nav').style.display = (isSource && !isBrowser) ? '' : 'none';
+  browserFrame.style.display = (isSource && isBrowser) ? '' : 'none';
+  document.getElementById('walkthrough-content').style.display = isSource ? 'none' : 'flex';
+}
+
+/* ==================================================================
+   LOAD WALKTHROUGH FOR GAME — stub
+   ================================================================== */
+function loadWalkthroughForGame(gameId) {
+  var g = gameMap[gameId];
+  var frame = document.getElementById('walkthrough-frame');
+  var msg = document.getElementById('walkthrough-unavailable');
+  var status = document.getElementById('wt-status');
+
+  if (g && g.walkthrough) {
+    frame.src = g.walkthrough;
+    frame.style.display = '';
+    msg.style.display = 'none';
+    status.textContent = '';
+  } else {
+    frame.src = 'about:blank';
+    frame.style.display = 'none';
+    msg.style.display = '';
+    status.textContent = 'Not available';
+  }
+}
+
+/* ==================================================================
+   SOUND CONTROLS
+   ================================================================== */
+var soundReady = false;
+
+function initSoundControls() {
+  var controls = document.getElementById('sound-controls');
+  var muteBtn = document.getElementById('mute-btn');
+  var slider = document.getElementById('volume-slider');
+
+  // Restore persisted state
+  var savedMuted = localStorage.getItem('ifhub-audio-muted');
+  var savedVolume = localStorage.getItem('ifhub-audio-volume');
+  var isMuted = savedMuted === '1';
+  var volume = savedVolume !== null ? parseInt(savedVolume, 10) : 70;
+
+  slider.value = volume;
+  muteBtn.classList.toggle('muted', isMuted);
+
+  muteBtn.addEventListener('click', function () {
+    isMuted = !isMuted;
+    localStorage.setItem('ifhub-audio-muted', isMuted ? '1' : '0');
+    muteBtn.classList.toggle('muted', isMuted);
+    sendSoundMessage('ifhub:setMute', { muted: isMuted });
+  });
+
+  slider.addEventListener('input', function () {
+    volume = parseInt(this.value, 10);
+    localStorage.setItem('ifhub-audio-volume', volume);
+    sendSoundMessage('ifhub:setVolume', { volume: volume / 100 });
+  });
+
+  // Listen for soundReady from iframe
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'ifhub:soundReady') return;
+    soundReady = true;
+    controls.style.display = '';
+    // Push current state to iframe
+    sendSoundMessage('ifhub:setMute', { muted: isMuted });
+    sendSoundMessage('ifhub:setVolume', { volume: volume / 100 });
+  });
+}
+
+function sendSoundMessage(type, data) {
+  var iframe = document.getElementById('game-frame');
+  if (!iframe || !iframe.contentWindow) return;
+  var msg = { type: type };
+  for (var k in data) msg[k] = data[k];
+  iframe.contentWindow.postMessage(msg, '*');
+}
+
+/* ==================================================================
+   SWITCH GAME
+   ================================================================== */
+function switchGame(gameId) {
+  var g = gameMap[gameId];
+  if (!g) return;
+
+  currentGame = gameId;
+
+  // Hide sound controls until iframe reports ready
+  soundReady = false;
+  document.getElementById('sound-controls').style.display = 'none';
+
+  // Update dropdown
+  document.getElementById('game-select').value = gameId;
+
+  // Build iframe URL — pass binary path and title as params
+  var iframe = document.getElementById('game-frame');
+  var iframeSrc = 'play.html?binary=' + encodeURIComponent(g.binary) + '&title=' + encodeURIComponent(g.title);
+  if (g.sound) {
+    iframeSrc += '&soundBase=games/' + encodeURIComponent(gameId);
+  }
+  iframe.src = iframeSrc;
+  iframe.title = g.title + ' \u2014 Interactive Fiction';
+
+  // Update page title
+  document.title = g.title + ' \u2014 Source & Game';
+
+  // Load source and walkthrough
+  loadSourceForGame(gameId);
+  loadWalkthroughForGame(gameId);
+}
+</script>
+
+</body>
+</html>

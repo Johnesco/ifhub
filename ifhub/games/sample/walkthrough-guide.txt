@@ -1,0 +1,75 @@
+## Getting Started -- Entrance Hall
+
+> take brass key
+
+Pick up the brass key from the hall floor. You'll need it later.
+
+## The Journal Clue -- Library
+
+> n
+
+Head north to the library.
+
+> open journal
+
+Read the dusty journal on the reading desk. It hints: "The treasure is hidden where water meets stone." (+2 points)
+
+## The Garden Coin -- Garden
+
+> s
+
+Return south to the Entrance Hall.
+
+> s
+
+Continue south into the garden.
+
+> take rusty coin
+
+Grab the old coin from the garden. (+2 points)
+
+## Where Water Meets Stone -- Pond
+
+> s
+
+Follow the path south to the pond.
+
+> push flat stones
+
+Remember the journal's clue? Push the loose stones at the water's edge to reveal a golden ring. (+3 points)
+
+> take golden ring
+
+Pick up the ring.
+
+## Return to the Library -- Backtracking
+
+> n
+
+Go north to the garden.
+
+> n
+
+Continue north to the Entrance Hall.
+
+> n
+
+North again to the library.
+
+## The Locket -- Study
+
+> up
+
+Climb the narrow staircase to the study.
+
+> unlock cabinet with brass key
+
+Use the brass key you picked up at the start.
+
+> open cabinet
+
+Open the cabinet to reveal the silver locket.
+
+> take silver locket
+
+Take the locket to complete your adventure. (+3 points, victory!)
