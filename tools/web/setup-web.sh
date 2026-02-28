@@ -5,7 +5,7 @@
 # compiled .ulx binary, and generates play.html from the template.
 #
 # Usage:
-#   bash /c/code/i7/tools/web/setup-web.sh \
+#   bash /c/code/ifhub/tools/web/setup-web.sh \
 #       --title "My Game" \
 #       --ulx /path/to/game.ulx \
 #       --out /path/to/project/web

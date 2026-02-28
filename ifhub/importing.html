@@ -449,7 +449,7 @@ rm story.i6</code></pre>
 <!-- ===== STEP BY STEP ===== -->
 <h2 id="step-by-step">Step-by-Step Import</h2>
 
-<p>Assume the game is called <strong>"mygame"</strong> and lives at <code>C:\code\i7\mygame\</code>.</p>
+<p>Assume the game is called <strong>"mygame"</strong> and lives at <code>C:\code\ifhub\mygame\</code>.</p>
 
 <ol class="steps">
   <li>
@@ -476,7 +476,7 @@ rm story.i6</code></pre>
 
   <li>
     <h3>Add entry to <code>deploy.sh</code></h3>
-    <p>Add a line to the <code>GAMES</code> array. Paths are relative to <code>$I7_ROOT</code> (the parent of the ifhub directory, i.e. <code>C:\code\i7\</code>):</p>
+    <p>Add a line to the <code>GAMES</code> array. Paths are relative to <code>$I7_ROOT</code> (the parent of the ifhub directory, i.e. <code>C:\code\ifhub\</code>):</p>
 <pre><code>GAMES=(
   <span class="comment"># ...existing entries...</span>
   <span class="string">"mygame     mygame/story.ni     mygame/web/lib/parchment/mygame.ulx.js"</span>
@@ -485,8 +485,8 @@ rm story.i6</code></pre>
 
   <li>
     <h3>Run the deploy script</h3>
-<pre><code>cd C:\code\i7\ifhub
-wsl -e bash -c "cd /mnt/c/code/i7/ifhub &amp;&amp; bash deploy.sh"</code></pre>
+<pre><code>cd C:\code\ifhub\ifhub
+wsl -e bash -c "cd /mnt/c/code/ifhub/ifhub &amp;&amp; bash deploy.sh"</code></pre>
     <p>Verify the output shows your game's files copied without warnings:</p>
 <pre><code>  mygame: story.ni copied
   mygame: mygame.ulx.js copied</code></pre>
@@ -494,7 +494,7 @@ wsl -e bash -c "cd /mnt/c/code/i7/ifhub &amp;&amp; bash deploy.sh"</code></pre>
 
   <li>
     <h3>Test in browser</h3>
-<pre><code>python -m http.server 8000 --directory C:/code/i7/ifhub</code></pre>
+<pre><code>python -m http.server 8000 --directory C:/code/ifhub/ifhub</code></pre>
     <p>Open <code>http://localhost:8000/</code> and select the new game from the dropdown. Verify:</p>
     <ul>
       <li>Game loads and is playable in the left pane</li>
@@ -623,7 +623,7 @@ More commentary.</code></pre>
 
   <li>
     <h3>Deploy and test</h3>
-<pre><code>wsl -e bash -c "cd /mnt/c/code/i7/ifhub &amp;&amp; bash deploy.sh"</code></pre>
+<pre><code>wsl -e bash -c "cd /mnt/c/code/ifhub/ifhub &amp;&amp; bash deploy.sh"</code></pre>
     <p>Verify walkthrough files are copied, then test in browser: select the game, click the Walkthrough tab, and confirm all three modes work.</p>
   </li>
 </ol>

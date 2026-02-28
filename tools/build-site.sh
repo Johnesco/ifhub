@@ -2,7 +2,7 @@
 # Assemble a deployable _site/ directory from web/ + version snapshots.
 #
 # Usage:
-#   bash /c/code/i7/tools/build-site.sh <game-name>
+#   bash /c/code/ifhub/tools/build-site.sh <game-name>
 #
 # Copies web/* into _site/, then overlays each versions/vN/ as _site/vN/.
 # If no version snapshots exist, _site/ is just a copy of web/.

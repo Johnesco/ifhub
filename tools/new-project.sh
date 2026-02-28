@@ -2,13 +2,13 @@
 # Create a new Inform 7 project with build, test, and web infrastructure.
 #
 # Usage:
-#   bash /c/code/i7/tools/new-project.sh "Game Title" game-name
+#   bash /c/code/ifhub/tools/new-project.sh "Game Title" game-name
 #
 # Example:
-#   bash /c/code/i7/tools/new-project.sh "The Haunted Manor" manor
+#   bash /c/code/ifhub/tools/new-project.sh "The Haunted Manor" manor
 #
 # Creates:
-#   C:\code\i7\projects\<game-name>\
+#   C:\code\ifhub\projects\<game-name>\
 #   ├── story.ni                    Starter source
 #   ├── CLAUDE.md                   Project guide
 #   ├── .gitignore
@@ -26,9 +26,9 @@
 #
 # After creation:
 #   1. Edit story.ni to build your game
-#   2. Compile:  bash /c/code/i7/tools/compile.sh <game-name>
+#   2. Compile:  bash /c/code/ifhub/tools/compile.sh <game-name>
 #   3. Test:     wsl -e bash tests/run-tests.sh
-#   4. Publish:  bash /c/code/i7/tools/publish.sh <game-name>
+#   4. Publish:  bash /c/code/ifhub/tools/publish.sh <game-name>
 
 set -euo pipefail
 
@@ -202,7 +202,7 @@ cat > "$PROJECT_DIR/tests/run-tests.sh" << 'WRAPPER_EOF'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-I7_HUB="/mnt/c/code/i7"
+I7_HUB="/mnt/c/code/ifhub"
 CONFIG="$SCRIPT_DIR/project.conf"
 exec bash "$I7_HUB/tools/testing/run-tests.sh" --config "$CONFIG" "$@"
 WRAPPER_EOF
@@ -211,7 +211,7 @@ cat > "$PROJECT_DIR/tests/run-walkthrough.sh" << 'WRAPPER_EOF'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-I7_HUB="/mnt/c/code/i7"
+I7_HUB="/mnt/c/code/ifhub"
 CONFIG="$SCRIPT_DIR/project.conf"
 exec bash "$I7_HUB/tools/testing/run-walkthrough.sh" --config "$CONFIG" "$@"
 WRAPPER_EOF
@@ -220,7 +220,7 @@ cat > "$PROJECT_DIR/tests/find-seeds.sh" << 'WRAPPER_EOF'
 #!/bin/bash
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-I7_HUB="/mnt/c/code/i7"
+I7_HUB="/mnt/c/code/ifhub"
 CONFIG="$SCRIPT_DIR/project.conf"
 exec bash "$I7_HUB/tools/testing/find-seeds.sh" --config "$CONFIG" "$@"
 WRAPPER_EOF
@@ -256,7 +256,7 @@ cat > "$PROJECT_DIR/CLAUDE.md" << CLAUDE_EOF
 ## Project Structure
 
 \`\`\`
-C:\\code\\i7\\projects\\$NAME\\
+C:\\code\\ifhub\\projects\\$NAME\\
 ├── CLAUDE.md              ← You are here
 ├── story.ni               ← Source of truth (Inform 7 source)
 ├── $NAME.ulx              ← Compiled Glulx binary (build output)
@@ -277,20 +277,20 @@ C:\\code\\i7\\projects\\$NAME\\
 
 ## Shared Resources
 
-- **Inform 7 hub**: \`C:\\code\\i7\\CLAUDE.md\`
-- **Syntax reference**: \`C:\\code\\i7\\reference\\syntax-guide.md\`
-- **Text formatting**: \`C:\\code\\i7\\reference\\text-formatting.md\`
-- **Testing framework**: \`C:\\code\\i7\\tools\\testing\\\`
-- **Web player setup**: \`C:\\code\\i7\\tools\\web\\\`
+- **Inform 7 hub**: \`C:\\code\\ifhub\\CLAUDE.md\`
+- **Syntax reference**: \`C:\\code\\ifhub\\reference\\syntax-guide.md\`
+- **Text formatting**: \`C:\\code\\ifhub\\reference\\text-formatting.md\`
+- **Testing framework**: \`C:\\code\\ifhub\\tools\\testing\\\`
+- **Web player setup**: \`C:\\code\\ifhub\\tools\\web\\\`
 
 ## Build & Deploy
 
 \`\`\`bash
 # Compile + set up web player
-bash /c/code/i7/tools/compile.sh $NAME
+bash /c/code/ifhub/tools/compile.sh $NAME
 
 # Publish to GitHub Pages (first time creates repo)
-bash /c/code/i7/tools/publish.sh $NAME
+bash /c/code/ifhub/tools/publish.sh $NAME
 \`\`\`
 
 ## Testing
@@ -312,7 +312,7 @@ python -m http.server 8000 --directory web
 
 - \`story.ni\` is the single source of truth
 - Do NOT create \`.inform/\` IDE bundles
-- For Inform 7 syntax and conventions, see \`C:\\code\\i7\\CLAUDE.md\`
+- For Inform 7 syntax and conventions, see \`C:\\code\\ifhub\\CLAUDE.md\`
 CLAUDE_EOF
 
 echo ""

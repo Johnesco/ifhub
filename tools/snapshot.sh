@@ -2,8 +2,8 @@
 # Freeze current working source into a version snapshot.
 #
 # Usage:
-#   bash /c/code/i7/tools/snapshot.sh <game-name> <version>
-#   bash /c/code/i7/tools/snapshot.sh <game-name> <version> --update
+#   bash /c/code/ifhub/tools/snapshot.sh <game-name> <version>
+#   bash /c/code/ifhub/tools/snapshot.sh <game-name> <version> --update
 #
 # Creates (or updates) a frozen version snapshot at versions/<version>/ in the project.
 #

@@ -2,10 +2,10 @@
 # Compile an Inform 7 project and update its web player.
 #
 # Usage:
-#   bash /c/code/i7/tools/compile.sh <game-name>
+#   bash /c/code/ifhub/tools/compile.sh <game-name>
 #
 # Example:
-#   bash /c/code/i7/tools/compile.sh RNG
+#   bash /c/code/ifhub/tools/compile.sh RNG
 #
 # Steps:
 #   1. Compiles story.ni → story.i6 (Inform 7 → Inform 6)

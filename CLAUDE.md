@@ -6,7 +6,7 @@ Any project under `C:\code\` that needs to generate, edit, or build Inform 7 sou
 ## Directory Structure
 
 ```
-C:\code\i7\
+C:\code\ifhub\
 ├── CLAUDE.md              ← You are here
 ├── reference/
 │   ├── syntax-guide.md    ← Core Inform 7 syntax and structure
@@ -144,7 +144,7 @@ Parchment is a browser-based Glulx interpreter that plays `.ulx` games in any mo
 
 Use the setup script:
 ```bash
-bash /c/code/i7/tools/web/setup-web.sh \
+bash /c/code/ifhub/tools/web/setup-web.sh \
     --title "My Game" \
     --ulx /path/to/game.ulx \
     --out /path/to/project/web
@@ -222,7 +222,7 @@ Opening `play.html` directly as a `file://` URL may also fail due to browser COR
 
 ## Projects
 
-Each Inform 7 project lives under `C:\code\i7\projects\`.
+Each Inform 7 project lives under `C:\code\ifhub\projects\`.
 
 - Each project gets its own subfolder (e.g., `projects/zork1/`, `projects/sample/`)
 - Do NOT create `.inform` bundles — compile directly using `-source` and `-o` flags
@@ -314,5 +314,5 @@ See `reference/syntax-guide.md` for full reference. Quick hits:
 
 Other project CLAUDE.md files can reference this hub:
 ```markdown
-For Inform 7 syntax and conventions, see C:\code\i7\CLAUDE.md
+For Inform 7 syntax and conventions, see C:\code\ifhub\CLAUDE.md
 ```

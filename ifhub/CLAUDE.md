@@ -27,7 +27,7 @@ ifhub/
 
 ## Deploying Game Assets
 
-Each game's source of truth lives under `C:\code\i7\projects\`. The `deploy.sh` script copies what ifhub needs into `games/`:
+Each game's source of truth lives under `C:\code\ifhub\projects\`. The `deploy.sh` script copies what ifhub needs into `games/`:
 
 - Source (`.ni`) and binary (`.ulx.js` or `.z3.js`)
 - Walkthrough files (HTML, text, guide, output)
@@ -61,8 +61,8 @@ This is a pure static site — no server-side logic. Deployed to GitHub Pages fr
 
 ## Relation to Game Repos
 
-- Each game project lives under `C:\code\i7\projects\` with its own repo and build process
+- Each game project lives under `C:\code\ifhub\projects\` with its own repo and build process
 - Game repos are never modified by this project — ifhub only reads from them
 - The hub copies source, binaries, walkthroughs, and (for sound games) audio assets
 - Game projects may have their own rich GitHub Pages sites (landing pages, maps, scenarios) — ifhub does not duplicate those; it provides its own unified player UI
-- For shared Inform 7 tooling and references, see `C:\code\i7\CLAUDE.md`
+- For shared Inform 7 tooling and references, see `C:\code\ifhub\CLAUDE.md`

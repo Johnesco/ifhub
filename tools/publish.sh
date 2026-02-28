@@ -5,12 +5,12 @@
 # Later runs: commits changes and pushes to trigger redeployment.
 #
 # Usage:
-#   bash /c/code/i7/tools/publish.sh <game-name>
-#   bash /c/code/i7/tools/publish.sh <game-name> "commit message"
+#   bash /c/code/ifhub/tools/publish.sh <game-name>
+#   bash /c/code/ifhub/tools/publish.sh <game-name> "commit message"
 #
 # Example:
-#   bash /c/code/i7/tools/publish.sh RNG
-#   bash /c/code/i7/tools/publish.sh RNG "Add kitchen puzzle"
+#   bash /c/code/ifhub/tools/publish.sh RNG
+#   bash /c/code/ifhub/tools/publish.sh RNG "Add kitchen puzzle"
 #
 # Publishes to: johnesco.github.io/<game-name>/
 

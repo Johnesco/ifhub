@@ -415,13 +415,13 @@ footer a:hover {
 <section class="hero" style="border-bottom: 1px solid #2a2418;">
   <h1>Inform 7 Hub</h1>
   <p class="subtitle">Developer Reference &amp; Build Tools</p>
-  <p class="hub-path">C:\code\i7\</p>
+  <p class="hub-path">C:\code\ifhub\</p>
 </section>
 
 <!-- ===== Hub Structure ===== -->
 <section id="structure">
   <h2>Hub Structure</h2>
-  <div class="tree"><span class="dir">C:\code\i7\</span>
+  <div class="tree"><span class="dir">C:\code\ifhub\</span>
 <span class="file">CLAUDE.md</span>              <span class="desc">Hub documentation &amp; conventions</span>
 <span class="dir">reference/</span>             <span class="desc">Inform 7 language reference (9 guides)</span>
 <span class="dir">tools/</span>                 <span class="desc">Shared build, test, and web tooling</span>
@@ -502,7 +502,7 @@ footer a:hover {
   <div class="card">
     <h3>build-site.sh <span class="badge">deploy</span></h3>
     <p class="purpose">Assemble a deployable _site/ directory from web/ + versions/.</p>
-    <pre>bash /c/code/i7/tools/build-site.sh &lt;game-name&gt;</pre>
+    <pre>bash /c/code/ifhub/tools/build-site.sh &lt;game-name&gt;</pre>
     <ul>
       <li>Copies web/* into _site/</li>
       <li>Overlays each versions/vN/ as _site/vN/ (if versions/ exists)</li>
@@ -515,7 +515,7 @@ footer a:hover {
   <div class="card">
     <h3>compile.sh <span class="badge">step 3</span></h3>
     <p class="purpose">Compile story.ni to Glulx binary and set up the web player.</p>
-    <pre>bash /c/code/i7/tools/compile.sh &lt;game-name&gt;</pre>
+    <pre>bash /c/code/ifhub/tools/compile.sh &lt;game-name&gt;</pre>
     <ul>
       <li>Compiles I7 source to I6 intermediate</li>
       <li>Compiles I6 to Glulx (.ulx)</li>
@@ -528,7 +528,7 @@ footer a:hover {
   <div class="card">
     <h3>new-project.sh <span class="badge">step 1</span></h3>
     <p class="purpose">Scaffold a complete new Inform 7 project with all infrastructure.</p>
-    <pre>bash /c/code/i7/tools/new-project.sh "Game Title" game-name</pre>
+    <pre>bash /c/code/ifhub/tools/new-project.sh "Game Title" game-name</pre>
     <ul>
       <li>Creates story.ni with starter source</li>
       <li>Sets up test wrappers, project.conf, starter regtest</li>
@@ -541,7 +541,7 @@ footer a:hover {
   <div class="card">
     <h3>publish.sh <span class="badge">step 5</span></h3>
     <p class="purpose">Deploy a project to GitHub Pages (create repo on first run).</p>
-    <pre>bash /c/code/i7/tools/publish.sh &lt;game-name&gt; ["commit message"]</pre>
+    <pre>bash /c/code/ifhub/tools/publish.sh &lt;game-name&gt; ["commit message"]</pre>
     <ul>
       <li>First run: creates GitHub repo, enables Pages, pushes</li>
       <li>Later runs: commits changes and pushes to trigger redeployment</li>
@@ -565,8 +565,8 @@ footer a:hover {
   <div class="card">
     <h3>snapshot.sh <span class="badge">deploy</span></h3>
     <p class="purpose">Freeze current working source into a version snapshot.</p>
-    <pre>bash /c/code/i7/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt;
-bash /c/code/i7/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update</pre>
+    <pre>bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt;
+bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update</pre>
     <ul>
       <li>New version: copies story.ni, encodes .ulx, copies template from previous version</li>
       <li>Update (--update): refreshes source, binary, and walkthrough data</li>
@@ -630,7 +630,7 @@ bash /c/code/i7/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update</pr
   <div class="card">
     <h3>web/setup-web.sh <span class="badge">step 3</span></h3>
     <p class="purpose">Bootstrap a Parchment web player for any project.</p>
-    <pre>bash /c/code/i7/tools/web/setup-web.sh \
+    <pre>bash /c/code/ifhub/tools/web/setup-web.sh \
     --title "My Game" \
     --ulx /path/to/game.ulx \
     --out /path/to/project/web</pre>
@@ -749,10 +749,10 @@ bash /c/code/i7/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update</pr
   <h2>Quick Commands</h2>
 
   <h3>Create a new project</h3>
-  <pre class="code-block">bash /c/code/i7/tools/new-project.sh "The Haunted Manor" manor</pre>
+  <pre class="code-block">bash /c/code/ifhub/tools/new-project.sh "The Haunted Manor" manor</pre>
 
   <h3>Compile</h3>
-  <pre class="code-block">bash /c/code/i7/tools/compile.sh sample</pre>
+  <pre class="code-block">bash /c/code/ifhub/tools/compile.sh sample</pre>
 
   <h3>Run regression tests</h3>
   <pre class="code-block">wsl -e bash tests/run-tests.sh
@@ -766,11 +766,11 @@ wsl -e bash tests/run-walkthrough.sh --seed 42</pre>
   <pre class="code-block">wsl -e bash tests/find-seeds.sh --max 500</pre>
 
   <h3>Snapshot a version</h3>
-  <pre class="code-block">bash /c/code/i7/tools/snapshot.sh zork1 v4          <span class="comment"># new version</span>
-bash /c/code/i7/tools/snapshot.sh zork1 v3 --update <span class="comment"># refresh existing</span></pre>
+  <pre class="code-block">bash /c/code/ifhub/tools/snapshot.sh zork1 v4          <span class="comment"># new version</span>
+bash /c/code/ifhub/tools/snapshot.sh zork1 v3 --update <span class="comment"># refresh existing</span></pre>
 
   <h3>Assemble site for preview</h3>
-  <pre class="code-block">bash /c/code/i7/tools/build-site.sh zork1
+  <pre class="code-block">bash /c/code/ifhub/tools/build-site.sh zork1
 python -m http.server 8000 --directory projects/zork1/_site</pre>
 
   <h3>Play locally</h3>
@@ -778,7 +778,7 @@ python -m http.server 8000 --directory projects/zork1/_site</pre>
 <span class="comment"># Open http://localhost:8000/play.html</span></pre>
 
   <h3>Publish to GitHub Pages</h3>
-  <pre class="code-block">bash /c/code/i7/tools/publish.sh sample "Add kitchen puzzle"</pre>
+  <pre class="code-block">bash /c/code/ifhub/tools/publish.sh sample "Add kitchen puzzle"</pre>
 
   <h3>Deploy to IF Hub</h3>
   <pre class="code-block"><span class="comment"># From ifhub/</span>
@@ -789,7 +789,7 @@ python -m http.server 8000
 
 <!-- ===== Footer ===== -->
 <footer>
-  <p><code>C:\code\i7\</code> &mdash; <a href="../CLAUDE.md">CLAUDE.md</a></p>
+  <p><code>C:\code\ifhub\</code> &mdash; <a href="../CLAUDE.md">CLAUDE.md</a></p>
 </footer>
 
 </main>
