@@ -143,6 +143,95 @@ projects/zork1/web/
 └── play.html                 ← Loads sound scripts after Parchment
 ```
 
+## Interpreter Compatibility
+
+Our overlay watches `.GridWindow`, `.BufferWindow`, and `.Style_user1` — CSS classes produced by the GlkOte and AsyncGlk display libraries. Both libraries produce identical class names, confirmed in source:
+
+```javascript
+// GlkOte (erkyrath/glkote, glkote.js)
+if (win.type == 'grid')    typeclass = 'GridWindow';
+if (win.type == 'buffer')  typeclass = 'BufferWindow';
+// Style mapping: 'user1' → 'Style_user1', 'user2' → 'Style_user2'
+
+// AsyncGlk (curiousdannii/asyncglk, windows.ts)
+const window_types = { buffer: 'BufferWindow', grid: 'GridWindow', graphics: 'GraphicsWindow' }
+// Style mapping: identical to GlkOte
+```
+
+Any interpreter using either display layer will work with the overlay:
+
+| Engine / Platform | Display Layer | Compatible? | Active? |
+|---|---|---|---|
+| **Parchment (current)** | AsyncGlk | Yes | Active (Jan 2025 overhaul) |
+| **Parchment (older / our local copy)** | GlkOte | Yes | Superseded but still deployed |
+| **Quixe (standalone)** | GlkOte (bundled) | Yes | Active (June 2025 update) |
+| **Bisquixe** | GlkOte (via Quixe) | Yes | Active |
+| **iplayif.com** | AsyncGlk (is Parchment) | Yes | Active |
+| **Borogove IDE preview** (non-Vorple) | Parchment | Yes | Active |
+| **All Emglken interpreters** (Bocfel, Glulxe, Git, Hugo, Scare, TADS) | AsyncGlk | Yes | Active |
+| **Vorple** | Haven (own classes) | No | Active |
+| **HugoJS (standalone)** | Haven | No | Maintained |
+| **Ink / inkjs** | Own HTML (choice-based) | No | Active |
+| **TADS native Web UI** | Own framework | No | Maintained |
+
+The incompatible interpreters all use their own display libraries with different CSS classes. Vorple games already have their own multimedia system, so the gap is not a practical concern.
+
+## Future Option: Style_user1 Sound Commands
+
+Glk defines two custom text styles (`user1`, `user2`) reserved for application use. Both GlkOte and AsyncGlk render them as `<span class="Style_user1">`. This enables **explicit sound commands from game logic** — invisible to the player, detectable by the overlay.
+
+### How It Works
+
+**In `story.ni`** (using the "Glulx Text Effects" extension by Emily Short):
+```inform7
+To issue sound command (T - text):
+    say "[first custom style][T][roman type]".
+
+Instead of opening the coffin:
+    issue sound command "SFX:coffin-creak";
+    say "The lid groans open."
+```
+
+**In CSS** (hide from player):
+```css
+.Style_user1 { display: none; }
+```
+
+**In the overlay** (detect and act):
+```javascript
+if (node.classList?.contains('Style_user1')) {
+    parseCommand(node.textContent);  // "SFX:coffin-creak"
+}
+```
+
+The CSS `display: none` hides the text before it renders — no flash. The MutationObserver catches the DOM node regardless of visibility.
+
+### What This Unlocks
+
+The current overlay can only detect room changes (status bar) and match text patterns (game output). Style_user1 signals would allow:
+
+- **Precise triggers**: Fire sounds at exact narrative moments, not via fragile regex
+- **Metadata the status bar can't express**: e.g., "Frigid River but rapids are getting louder" (currently indistinguishable from calm river)
+- **Volume/fade instructions**: `AMBIENT:volume:0.5` or `AMBIENT:fade:3s`
+- **Zone overrides**: Signal a zone change without waiting for a room transition
+
+### Compatibility
+
+Style_user1 has the **same compatibility as the overlay itself** — it's just another CSS class from the same GlkOte/AsyncGlk code path. Every interpreter in the "Yes" column above will render `.Style_user1`.
+
+In non-browser interpreters (terminal), the player would see the raw command text. Guard with a conditional if needed, or accept it as a browser-only feature.
+
+### Trade-offs
+
+| | Current overlay only | With Style_user1 signals |
+|---|---|---|
+| Sound logic lives in | JavaScript only | Split: triggers in story.ni, playback in JS |
+| Recompile to change triggers? | No | Yes (for source-side triggers) |
+| Precision | Pattern-matching (can misfire) | Exact (author-controlled) |
+| Can express things status bar can't? | No | Yes |
+
+Both approaches can coexist — keep ambient zones and text-pattern SFX as-is, add Style_user1 signals only where pattern matching falls short.
+
 ## Sources
 
 - Parchment releases — github.com/curiousdannii/parchment/releases

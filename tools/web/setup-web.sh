@@ -8,7 +8,12 @@
 #   bash /c/code/ifhub/tools/web/setup-web.sh \
 #       --title "My Game" \
 #       --ulx /path/to/game.ulx \
-#       --out /path/to/project/web
+#       --out /path/to/project/web \
+#       [--sound]
+#
+# The --sound flag copies the shared sound-engine.js into lib/.
+# You still need to create a game-specific lib/sound-config.js and
+# add the two <script> tags to play.html (or your template).
 #
 # After setup, serve locally with:
 #   python -m http.server 8000 --directory /path/to/project/web
@@ -26,18 +31,20 @@ TEMPLATE="$SCRIPT_DIR/play-template.html"
 TITLE=""
 ULX_PATH=""
 OUT_DIR=""
+SOUND=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --title)  TITLE="$2"; shift 2 ;;
         --ulx)    ULX_PATH="$2"; shift 2 ;;
         --out)    OUT_DIR="$2"; shift 2 ;;
+        --sound)  SOUND=true; shift ;;
         *)        echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
 
 if [[ -z "$TITLE" || -z "$ULX_PATH" || -z "$OUT_DIR" ]]; then
-    echo "Usage: setup-web.sh --title \"Game Title\" --ulx path/to/game.ulx --out path/to/web" >&2
+    echo "Usage: setup-web.sh --title \"Game Title\" --ulx path/to/game.ulx --out path/to/web [--sound]" >&2
     exit 1
 fi
 
@@ -73,6 +80,17 @@ echo "Generating play.html..."
 sed -e "s/__TITLE__/$TITLE/g" \
     -e "s/__STORY_FILE__/$STORY_JS/g" \
     "$TEMPLATE" > "$OUT_DIR/play.html"
+
+# Optionally copy sound engine
+if [[ "$SOUND" == true ]]; then
+    echo "Copying sound engine..."
+    cp "$SCRIPT_DIR/sound-engine.js" "$OUT_DIR/lib/"
+    echo "  → lib/sound-engine.js"
+    echo "  NOTE: Create lib/sound-config.js with your game's triggers."
+    echo "  Add to play.html before </body>:"
+    echo '    <script src="lib/sound-engine.js"></script>'
+    echo '    <script src="lib/sound-config.js"></script>'
+fi
 
 echo ""
 echo "Web player ready at: $OUT_DIR/play.html"
