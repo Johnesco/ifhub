@@ -17,7 +17,8 @@ C:\code\ifhub\
 │   ├── extensions.md      ← Extension system: including, authoring, versioning
 │   ├── descriptions-adaptive-text.md ← Descriptions, quantifiers, adaptive text, dynamic change
 │   ├── rulebooks.md       ← Action processing order, rules, going, persuasion, senses
-│   └── activities-phrases.md ← Activities, phrase definitions, control flow, decisions
+│   ├── activities-phrases.md ← Activities, phrase definitions, control flow, decisions
+│   └── sound.md           ← Browser sound options, custom overlay architecture, decision record
 ├── tools/
 │   ├── build-site.sh      ← Assemble _site/ from web/ + versions/ for deployment
 │   ├── snapshot.sh        ← Freeze current source into a version snapshot
@@ -215,6 +216,10 @@ sed 's/^var defined_game_b64 = "/processBase64Zcode('"'"'/; s/";$/'"'"')/' old.u
 The CSS and jQuery files produce visible errors if missing. The **engine files** (`quixe.js`, `glulxe.js`) are the sneaky ones — they're loaded asynchronously by `main.js`, so the page appears to load fine until the engine request returns 404.
 
 **Fix:** Always copy all 7 library files. Use `setup-web.sh` which handles this automatically.
+
+### Sound
+
+Browser-based sound uses a custom JavaScript overlay (MutationObserver + HTML5 Audio), not Glk sound channels. See `reference/sound.md` for the full decision record and architecture. The Zork1 v3 implementation in `projects/zork1/web/lib/` serves as the reference implementation.
 
 ### Note on file:// Protocol
 
