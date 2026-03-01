@@ -219,7 +219,13 @@ The CSS and jQuery files produce visible errors if missing. The **engine files**
 
 ### Sound
 
-Browser-based sound uses a custom JavaScript overlay (MutationObserver + HTML5 Audio), not Glk sound channels. See `reference/sound.md` for the full decision record and architecture. The Zork1 v3 implementation in `projects/zork1/web/lib/` serves as the reference implementation.
+Browser-based sound uses a custom JavaScript overlay (MutationObserver + HTML5 Audio), not Glk sound channels. The shared engine lives at `tools/web/sound-engine.js` and is copied into each project's `web/lib/`. Each game provides its own `sound-config.js` with trigger definitions.
+
+Two trigger modes:
+- **Style_user1** (precise): Game emits `[first custom style]` via Glulx Text Effects → GlkOte renders `<span class="Style_user1">` → engine parses `SFX:<id>` commands. Requires `Include Glulx Text Effects by Emily Short` and `.Style_user1 { display: none; }` CSS rule.
+- **Text matching** (ambient): Regex patterns matched against game output text. Good for incidental sounds.
+
+To add sound to a project: `bash tools/web/setup-web.sh --sound ...` copies `sound-engine.js`. Create a `sound-config.js` calling `SoundEngine.init({...})` with trigger definitions. See `reference/sound.md` for the full decision record and `ifhub/README.md` for the deployment pipeline.
 
 ### Note on file:// Protocol
 
