@@ -155,8 +155,11 @@ div#gameport {
       document.body.appendChild(s);
     });
   }
-  loadScript("lib/ambient-audio.js")
-    .then(function () { return loadScript("lib/sound-engine.js"); })
+  // ambient-audio.js is optional — may not exist for all games
+  loadScript("lib/ambient-audio.js").catch(function () {});
+
+  // sound-engine.js must load before sound-config.js calls SoundEngine.init()
+  loadScript("lib/sound-engine.js")
     .then(function () { return loadScript("lib/sound-config.js"); })
     .catch(function (e) { console.log("[sound] Failed to load:", e); });
 })();

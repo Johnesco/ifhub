@@ -174,9 +174,11 @@ div#gameport {
     });
   }
 
-  // Load ambient-audio.js then sound-engine.js + sound-config.js (sequential to ensure order)
-  loadScript(soundBase + '/lib/ambient-audio.js')
-    .then(function () { return loadScript(soundBase + '/lib/sound-engine.js'); })
+  // Load ambient-audio.js (optional — may not exist for all games)
+  loadScript(soundBase + '/lib/ambient-audio.js').catch(function () {});
+
+  // Load sound-engine.js then sound-config.js (engine must load before config calls init)
+  loadScript(soundBase + '/lib/sound-engine.js')
     .then(function () { return loadScript(soundBase + '/lib/sound-config.js'); })
     .then(function () {
       // Notify parent that sound is ready
