@@ -1,10 +1,10 @@
 # Sound in Inform 7 Web Games
 
-Research into browser-based sound for Inform 7 games: what exists, what works, and why we use a custom JavaScript overlay.
+Research into browser-based sound for Inform 7 games: what exists, what works, and why we use a custom JavaScript overlay. Includes the full architecture reference and editing guide for the shared sound engine.
 
 ## Context
 
-Zork1 v3 uses a custom JavaScript overlay for sound — two JS files (`ambient-audio.js`, `sound-effects.js`) that sit outside the interpreter, watch the DOM via MutationObserver, and play HTML5 Audio. This document records the evaluation of existing open-source alternatives.
+IF Hub games use a custom JavaScript overlay for sound — a shared engine (`sound-engine.js`) plus per-game config (`sound-config.js`) that sit outside the interpreter, watch the DOM via MutationObserver, and play HTML5 Audio. An optional `ambient-audio.js` handles room-based background music. This document records the evaluation of existing open-source alternatives and documents the current architecture.
 
 **Date**: February 2026
 
@@ -101,46 +101,143 @@ When Parchment eventually ships native sound support, we can evaluate migrating 
 
 ## Our Sound Architecture
 
-The custom overlay consists of two independent JavaScript modules that observe the DOM and play HTML5 Audio:
+The custom overlay consists of independent JavaScript modules that observe the DOM and play HTML5 Audio. The shared sound engine lives at `tools/web/sound-engine.js` and is copied into each project. Each game provides its own `sound-config.js` with trigger definitions.
 
-### ambient-audio.js — Room-Based Background Music
+### sound-engine.js — Shared Sound Effects Engine
+
+**Source of truth**: `tools/web/sound-engine.js` (copied to each project's `web/lib/`)
+
+Supports two trigger modes:
+
+| Mode | Trigger | Best For |
+|------|---------|----------|
+| **Style_user1** | `<span class="Style_user1">SFX:id</span>` in DOM | Precise, author-controlled triggers from `story.ni` |
+| **Text matching** | Regex patterns against `.BufferWindow` text | Ambient/incidental sounds tied to prose |
+
+Features:
+- MutationObserver on `.BufferWindow` (game text output)
+- Per-trigger cooldown to prevent spam (text triggers)
+- ifhub integration (`window.SOUND_AUDIO_BASE`, `window.ifhubSfx` API)
+- Standalone mute button with localStorage persistence (hidden in ifhub mode)
+
+### sound-config.js — Per-Game Trigger Definitions
+
+The only file that differs between games. Calls `SoundEngine.init()` with game-specific triggers:
+
+```javascript
+SoundEngine.init({
+  storageKey: 'mygame-audio-muted',
+
+  // Style_user1 triggers (precise, from story.ni via Glulx Text Effects)
+  sfx: {
+    glass: { src: 'audio/sfx/glass.mp3', volume: 0.4 }
+  },
+
+  // Text-matching triggers (regex against game output)
+  textTriggers: [
+    { id: 'bird', pattern: /chirping of a song bird/i,
+      src: 'audio/sfx/bird.mp3', volume: 0.25, cooldownMs: 10000 }
+  ]
+});
+```
+
+#### Editing Sound Triggers
+
+**To add a new text-matching trigger**, add an entry to the `textTriggers` array:
+
+```javascript
+{ id: 'unique-id',              // Used for cooldown tracking
+  pattern: /regex pattern/i,    // Matched against game output text
+  src: 'audio/sfx/file.mp3',   // Path to audio file (relative to web/)
+  volume: 0.3,                  // 0.0–1.0 (scaled by master volume)
+  cooldownMs: 5000 }            // Minimum ms between plays (prevents spam)
+```
+
+Tips for text triggers:
+- Use case-insensitive patterns (`/i` flag) — game output capitalization varies
+- Match the most specific phrase possible to avoid false positives
+- Use longer cooldowns (10000–30000ms) for triggers that could fire repeatedly
+- One sound plays per DOM node — if multiple patterns match the same text, only the first wins
+
+**To add a new Style_user1 trigger**, add an entry to the `sfx` object and emit the command from `story.ni`:
+
+```javascript
+// In sound-config.js:
+sfx: {
+  glass: { src: 'audio/sfx/glass.mp3', volume: 0.4 },
+  creak: { src: 'audio/sfx/creak.mp3', volume: 0.3 }
+}
+```
+
+```inform7
+[In story.ni — requires Glulx Text Effects extension:]
+Include Glulx Text Effects by Emily Short.
+
+To issue sound command (T - text):
+	say "[first custom style][T][roman type]".
+
+Instead of opening the door:
+	issue sound command "SFX:creak";
+	say "The door creaks open."
+```
+
+The `SFX:` prefix is required. The id after it must match a key in the `sfx` object. The CSS rule `.Style_user1 { display: none; }` must be present in `play.html` to hide the command text.
+
+Style_user1 triggers have no cooldown — they fire every time the game emits the command. This is intentional: since the game author controls when they fire, spam prevention is the author's responsibility.
+
+**To change volume or cooldown**, edit the values directly in `sound-config.js`. No recompilation needed (these are JavaScript-side settings). Volume values are 0.0–1.0 and are multiplied by the master volume (set by ifhub's volume slider or defaulting to 1.0).
+
+**To remove a trigger**, delete its entry from the config. For Style_user1 triggers, also remove the `issue sound command` call from `story.ni` (optional — orphaned commands are silently ignored).
+
+#### Audio File Guidelines
+
+- **Format**: MP3 (universal browser support)
+- **License**: CC0 recommended. [BigSoundBank](https://bigsoundbank.com) and [Freesound](https://freesound.org) are good sources
+- **Location**: `project/web/audio/sfx/` for sound effects, `project/web/audio/` for ambient loops
+- **Size**: Keep effects short (1–5 seconds). Ambient loops can be longer but compress well
+- **Naming**: Use descriptive lowercase names matching the trigger id (e.g., `glass.mp3` for trigger id `glass`)
+
+### ambient-audio.js — Room-Based Background Music (Optional)
+
+Per-game module (not shared). Only Zork1 v3 uses this currently.
 
 - **Trigger**: MutationObserver on `.GridWindow` (GlkOte status bar) detects room name changes
 - **Behavior**: Maps room names to audio zones, crossfades between zones on room transitions
 - **Features**: 1-second fade transitions, autoplay-block recovery, localStorage-persisted mute, ifhub API mode
 
-### sound-effects.js — Text-Triggered One-Shot Sounds
-
-- **Trigger**: MutationObserver on `.BufferWindow` (game text output) matches regex patterns
-- **Behavior**: Plays one-shot audio when game text matches configured triggers
-- **Features**: Per-trigger cooldown to prevent spam, shares mute state with ambient-audio
-
 ### Why MutationObserver?
 
 The overlay approach observes Parchment's DOM output rather than hooking into the interpreter. This gives us:
 - **Interpreter independence**: Works with Quixe, Glulxe, or any future Parchment backend
-- **No source coupling**: Sound config lives in JavaScript, not `story.ni`
-- **Hot-swappable**: Audio zones can change per version without recompiling
+- **Flexible coupling**: Text triggers need no source changes; Style_user1 triggers give precise control when needed
+- **Hot-swappable**: Audio config can change without recompiling (for text triggers)
 - **Graceful degradation**: Missing audio files don't crash the game
 
 ### Adding Sound to a New Project
 
-1. Create audio assets in `project/web/audio/` (ambient) and `project/web/audio/sfx/` (effects)
-2. Copy `ambient-audio.js` and `sound-effects.js` to `project/web/lib/`
-3. Customize the zone map (room-to-audio assignments) and trigger list for the new game
-4. Add `<script>` tags after Parchment in `play.html`
-5. For ifhub deployment: set `"sound": true` in `games.json` and add the project to `SOUND_DIRS` in `deploy.sh`
+1. Copy the sound engine: `bash tools/web/setup-web.sh --sound ...` (or manually copy `tools/web/sound-engine.js` to `project/web/lib/`)
+2. Create `project/web/lib/sound-config.js` with trigger definitions (see template above)
+3. Create audio assets in `project/web/audio/sfx/`
+4. Add to `play.html`:
+   - CSS: `.Style_user1 { display: none; }` (in `<style>` block)
+   - Scripts: `<script src="lib/sound-engine.js"></script>` and `<script src="lib/sound-config.js"></script>` before `</body>`
+5. If using Style_user1 triggers: add `Include Glulx Text Effects by Emily Short` and the `issue sound command` phrase to `story.ni`
+6. For ifhub deployment: set `"sound": true` in `games.json` and add the project to `SOUND_DIRS` in `deploy.sh`
 
-### File Locations (Zork1 Reference Implementation)
+### File Locations
 
 ```
-projects/zork1/web/
-├── audio/                    ← Background tracks (9 zones, CC0 licensed)
-│   └── sfx/                  ← Sound effects (16 triggers)
+tools/web/
+└── sound-engine.js              ← Source of truth for the shared engine
+
+projects/<game>/web/
+├── audio/                       ← Ambient loops (optional)
+│   └── sfx/                     ← Sound effects
 ├── lib/
-│   ├── ambient-audio.js      ← Room-based crossfading music
-│   └── sound-effects.js      ← Text-triggered one-shot effects
-└── play.html                 ← Loads sound scripts after Parchment
+│   ├── sound-engine.js          ← Copied from tools/web/
+│   ├── sound-config.js          ← Game-specific triggers (EDIT THIS)
+│   └── ambient-audio.js         ← Room-based music (optional, per-game)
+└── play.html                    ← Loads sound scripts after Parchment
 ```
 
 ## Interpreter Compatibility
@@ -176,20 +273,24 @@ Any interpreter using either display layer will work with the overlay:
 
 The incompatible interpreters all use their own display libraries with different CSS classes. Vorple games already have their own multimedia system, so the gap is not a practical concern.
 
-## Future Option: Style_user1 Sound Commands
+## Style_user1 Sound Commands
 
 Glk defines two custom text styles (`user1`, `user2`) reserved for application use. Both GlkOte and AsyncGlk render them as `<span class="Style_user1">`. This enables **explicit sound commands from game logic** — invisible to the player, detectable by the overlay.
+
+**Status**: Implemented and deployed. Fever Dream uses Style_user1 for precise triggers. Zork1 v3 uses text-matching only. Both approaches coexist in the shared sound engine.
 
 ### How It Works
 
 **In `story.ni`** (using the "Glulx Text Effects" extension by Emily Short):
 ```inform7
+Include Glulx Text Effects by Emily Short.
+
 To issue sound command (T - text):
-    say "[first custom style][T][roman type]".
+	say "[first custom style][T][roman type]".
 
 Instead of opening the coffin:
-    issue sound command "SFX:coffin-creak";
-    say "The lid groans open."
+	issue sound command "SFX:coffin-creak";
+	say "The lid groans open."
 ```
 
 **In CSS** (hide from player):
@@ -197,40 +298,39 @@ Instead of opening the coffin:
 .Style_user1 { display: none; }
 ```
 
-**In the overlay** (detect and act):
+**In sound-config.js** (map command to audio):
 ```javascript
-if (node.classList?.contains('Style_user1')) {
-    parseCommand(node.textContent);  // "SFX:coffin-creak"
+sfx: {
+  'coffin-creak': { src: 'audio/sfx/coffin.mp3', volume: 0.3 }
 }
 ```
 
 The CSS `display: none` hides the text before it renders — no flash. The MutationObserver catches the DOM node regardless of visibility.
 
-### What This Unlocks
-
-The current overlay can only detect room changes (status bar) and match text patterns (game output). Style_user1 signals would allow:
+### What This Enables
 
 - **Precise triggers**: Fire sounds at exact narrative moments, not via fragile regex
 - **Metadata the status bar can't express**: e.g., "Frigid River but rapids are getting louder" (currently indistinguishable from calm river)
-- **Volume/fade instructions**: `AMBIENT:volume:0.5` or `AMBIENT:fade:3s`
+- **Volume/fade instructions**: Could extend the command format (e.g., `AMBIENT:volume:0.5`)
 - **Zone overrides**: Signal a zone change without waiting for a room transition
+
+### When to Use Each Mode
+
+| | Text matching | Style_user1 |
+|---|---|---|
+| Sound logic lives in | JavaScript only | Split: triggers in story.ni, playback in JS |
+| Recompile to change triggers? | No | Yes |
+| Precision | Pattern-matching (can misfire) | Exact (author-controlled) |
+| Volume/cooldown tuning | Edit sound-config.js (no recompile) | Edit sound-config.js (no recompile) |
+| Best for | Incidental sounds, ambient triggers | Key narrative moments, unique events |
+
+Use text matching as the default — it's simpler and doesn't require source changes. Use Style_user1 when a trigger needs to be precise (the same text appears in multiple contexts, or the trigger must fire at a specific point in a multi-paragraph response).
 
 ### Compatibility
 
 Style_user1 has the **same compatibility as the overlay itself** — it's just another CSS class from the same GlkOte/AsyncGlk code path. Every interpreter in the "Yes" column above will render `.Style_user1`.
 
 In non-browser interpreters (terminal), the player would see the raw command text. Guard with a conditional if needed, or accept it as a browser-only feature.
-
-### Trade-offs
-
-| | Current overlay only | With Style_user1 signals |
-|---|---|---|
-| Sound logic lives in | JavaScript only | Split: triggers in story.ni, playback in JS |
-| Recompile to change triggers? | No | Yes (for source-side triggers) |
-| Precision | Pattern-matching (can misfire) | Exact (author-controlled) |
-| Can express things status bar can't? | No | Yes |
-
-Both approaches can coexist — keep ambient zones and text-pattern SFX as-is, add Style_user1 signals only where pattern matching falls short.
 
 ## Sources
 
