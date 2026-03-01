@@ -1,0 +1,108 @@
+
+
+
+
+Fever Dream
+A Perceptual Horror by Anonymous
+Release 1 / Serial number 260301 / Inform 7 v10.1.2 / D
+
+
+You wake on a cold floor. Your head aches. You do not remember arriving.
+
+The air smells of iodine and old paper.
+
+Receiving Room
+Fluorescent tubes buzz overhead, one of them flickering at the edge of failure. A long counter divides the room -- scuffed linoleum on your side, dark wood on the other. The only door leads east, into a corridor.
+
+A yellowed form lies on the counter.
+
+A pair of wire-rimmed spectacles sits beside the form.
+
+>Taken.
+
+>You put on the spectacles.
+
+>
+Corridor
+A long hallway tiled in white, though several tiles have cracked and not been replaced. The gaps show raw concrete beneath. The Receiving Room lies west. East, a treatment room door stands ajar.
+
+Between the cracked tiles, a seam runs the width of the floor -- too straight to be structural damage. It outlines a trapdoor. A recessed handle sits flush with the tile.
+
+>
+Stairwell
+Concrete steps descend to a landing where the air turns cold and damp. Pipes run along the ceiling, sweating condensation. The trapdoor above opens back to the corridor. A passage continues south into a laboratory.
+
+Scratched into the underside of one pipe, visible only from this angle: a row of tally marks. You count thirty-seven.
+
+A pipe wrench lies on the bottom step, half-hidden by shadow.
+
+>Taken.
+
+>
+Laboratory
+A long room lined with workbenches and glass-fronted cabinets. Everything is labelled. Everything is in order. The labels are handwritten in the same careful script as the intake form upstairs. A passage leads north to the stairwell. East, a heavy door opens into cold storage.
+
+One of the glass cases, mounted on the far wall, holds something you missed before: a brass key, suspended on a wire inside the glass.
+
+
+>SFX:glassYou swing the wrench. The glass shatters cleanly. The brass key drops into your hand.
+
+>
+Cold Storage
+The temperature drops the moment you cross the threshold. Your breath fogs. Racks of specimen jars line the walls, their contents suspended in amber fluid. A heavy metal cabinet stands against the far wall, marked with a snowflake symbol.
+
+The laboratory is back to the west.
+
+The amber fluid in the jars is moving. Not flowing -- twitching, as if the things inside are not entirely preserved.
+
+A heavy metal cabinet stands against the far wall, locked tight.
+
+>The key turns smoothly. The lock disengages with a click that echoes longer than it should.
+
+>Taken.
+
+>It tastes of nothing. Then of everything. The walls ripple once and settle into new shapes. You understand, now, that this is not distortion. This is clarity.
+
+The world has not changed. Your ability to see it has.
+
+>
+Laboratory
+
+>Where the floor was solid before, a wound has opened -- a vertical shaft lined in something wet and muscular. You descend.
+
+Cistern
+The chamber is alive. The bricks are teeth in a circular jaw. The dark water below is a throat, swallowing and unswallowing in slow rhythm. The pipes overhead are arteries, pulsing with something that is not water.
+
+An iron valve grows from the north wall like a bone spur. Beside it, a sign hangs from the flesh of the wall.
+
+The passage back up is to the west.
+
+
+A hiss from the cracked pipes overhead. Something cold and chemical settles on your skin, your eyes, your tongue. You blink. The letters on the sign shift. The walls flicker like a signal losing coherence.
+
+When your vision steadies, the world has not returned to normal. It has gone further.
+
+>You grip the handle and turn it left. Metal screams against metal. Below, the dark water begins to move -- circling, spiraling, draining. The level drops and keeps dropping until only a slick of pale residue remains on the bricks.
+
+The drainage grate in the floor stands open now, revealing a narrow passage below.
+
+>You lower yourself through the grate.
+
+Source
+Y0u desc3nd thr0ugh th3 gr4te 1nto a sp@ce th4t sh0uld n0t ex1st. The w4lls ar3 n0t w4lls -- th3y ar3 m3mbranes, tr@nsluc3nt and ve1ned. L1ght c0mes fr0m 1ns1de th3m.
+
+In th3 c3nter, a l0w st0ne b@sin h0lds s0meth1ng lum1nous. 1t 1s w@rm.
+
+
+>
+
+    *** You reach in. It reaches back. ***
+
+
+
+Would you like to RESTART, RESTORE a saved game, QUIT or UNDO the last command?
+> Please give one of the answers above.
+
+Would you like to RESTART, RESTORE a saved game, QUIT or UNDO the last command?
+> 
+<end of input>

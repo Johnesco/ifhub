@@ -34,6 +34,7 @@ WALKTHROUGH_DIRS=(
   [zork1-v1]="projects/zork1/versions/v1"
   [zork1-v2]="projects/zork1/versions/v2"
   [zork1-v3]="projects/zork1/versions/v3"
+  [feverdream]="projects/feverdream/tests"
 )
 
 WALKTHROUGH_FILES=(walkthrough.html walkthrough.txt walkthrough-guide.txt walkthrough_output.txt)

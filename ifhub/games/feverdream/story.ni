@@ -23,12 +23,6 @@ The spray-active is a truth state that varies. The spray-active is false.
 
 The cistern-drained is a truth state that varies. The cistern-drained is false.
 
-A thing can be moved or unmoved. A thing is usually unmoved.
-
-After taking something:
-	now the noun is moved;
-	continue the action.
-
 Chapter 2 - Regions
 
 The Ward is a region.
@@ -160,20 +154,27 @@ Understand "wrench" and "tool" as the pipe wrench.
 
 Chapter 2 - The Laboratory
 
-The Laboratory is a room. The Laboratory is in the Basement. It is south of the Stairwell. "A long room lined with workbenches and glass-fronted cabinets. Everything is labelled. Everything is in order. The labels are handwritten in the same careful script as the intake form upstairs. A passage leads north to the stairwell. East, a heavy door opens into cold storage.[if the player is wearing the spectacles and brass key is unmoved][paragraph break]One of the glass cases, mounted on the far wall, holds something you missed before: a brass key, suspended on a wire inside the glass.[otherwise] You see the shattered remains of the glass case.[end if]"
+The Laboratory is a room. The Laboratory is in the Basement. It is south of the Stairwell. "A long room lined with workbenches and glass-fronted cabinets. Everything is labelled. Everything is in order. The labels are handwritten in the same careful script as the intake form upstairs. A passage leads north to the stairwell. East, a heavy door opens into cold storage.[glass-case-status]"
+
+To say glass-case-status:
+	if the player is wearing the spectacles:
+		if the glass case is intact:
+			say "[paragraph break]One of the glass cases, mounted on the far wall, holds something you missed before: a brass key, suspended on a wire inside the glass.";
+		otherwise:
+			say "[paragraph break]You see the shattered remains of the glass case."
 
 The workbenches are scenery in the Laboratory.
 
 The lab plaque is scenery in the Laboratory.
 
-The glass case is scenery in the Laboratory. The glass case is perception-hidden.
+The glass case is scenery in the Laboratory. The glass case is perception-hidden. The glass case can be intact or shattered. The glass case is intact.
 
 Instead of attacking the glass case:
 	if the player carries the pipe wrench:
 		issue sound command "SFX:glass";
 		say "You swing the wrench. The glass shatters cleanly. The brass key drops into your hand.";
 		now the brass key is carried by the player;
-		now the brass key is moved;
+		now the glass case is shattered;
 		now the description of the glass case is "A shattered display case. Glass fragments cling to the frame.";
 	otherwise:
 		say "You rap your knuckles against it. Thin, but you cannot break it with your bare hands. You need something heavy."

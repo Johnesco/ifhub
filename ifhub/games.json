@@ -60,6 +60,7 @@
     "sourceLabel": "feverdream.ni",
     "source": "games/feverdream/story.ni",
     "binary": "games/feverdream/feverdream.ulx.js",
+    "walkthrough": "games/feverdream/walkthrough.html",
     "sound": true,
     "card": {
       "title": "Fever Dream",

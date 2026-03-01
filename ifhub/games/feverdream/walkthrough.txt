@@ -1,0 +1,16 @@
+take spectacles
+wear spectacles
+e
+down
+take wrench
+s
+break glass case
+e
+unlock cabinet with key
+take fungus
+eat fungus
+w
+s
+turn valve left
+down
+touch basin

@@ -1,0 +1,74 @@
+## Stage 1 — The Spectacles
+
+# You wake in the Receiving Room. Pick up the spectacles
+# and put them on — they reveal things invisible to the naked eye.
+
+> take spectacles
+> wear spectacles
+
+# Go east to the Corridor. With spectacles, you notice a
+# trapdoor outlined in the floor tiles.
+
+> e
+
+# Descend through the trapdoor to the Stairwell.
+# (Impossible without spectacles — the floor looks solid.)
+
+> down
+
+# Pick up the pipe wrench from the bottom step.
+
+> take wrench
+
+# Go south to the Laboratory. With spectacles, you spot
+# a glass case on the far wall containing a brass key.
+
+> s
+
+## Stage 2 — The Fungus
+
+# Smash the glass case with the wrench to get the brass key.
+
+> break glass case
+
+# Go east to Cold Storage.
+
+> e
+
+# Unlock the metal cabinet (stamped with a snowflake) using
+# the brass key. It swings open to reveal a grey fungus
+# labelled PERCEPTUAL AGENT — STAGE 2 THERAPY.
+
+> unlock cabinet with key
+
+# Take the fungus and eat it. The world transforms — chairs
+# become crouching things, pipes become arteries. A passage
+# south from the Laboratory opens where solid floor used to be.
+
+> take fungus
+> eat fungus
+
+# Return to the Laboratory.
+
+> w
+
+# Descend south into the Cistern. Chemical spray from cracked
+# pipes distorts your perception — text becomes corrupted.
+
+> s
+
+## Stage 3 — The Source
+
+# The sign says LEFT drains, RIGHT floods. Turn the valve left
+# to drain the cistern and reveal the passage below.
+# (WARNING: turning right is instant death.)
+
+> turn valve left
+
+# Descend through the drainage grate to The Source.
+
+> down
+
+# Touch the glowing stone basin to end the game.
+
+> touch basin
