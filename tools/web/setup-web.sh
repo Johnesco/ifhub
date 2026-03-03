@@ -29,12 +29,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PARCHMENT_SRC="$SCRIPT_DIR/parchment"
-TEMPLATE="$SCRIPT_DIR/play-template.html"
-
 TITLE=""
 ULX_PATH=""
 BLORB_PATH=""
 OUT_DIR=""
+CUSTOM_TEMPLATE=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -42,9 +41,12 @@ while [[ $# -gt 0 ]]; do
         --ulx)    ULX_PATH="$2"; shift 2 ;;
         --blorb)  BLORB_PATH="$2"; shift 2 ;;
         --out)    OUT_DIR="$2"; shift 2 ;;
+        --template) CUSTOM_TEMPLATE="$2"; shift 2 ;;
         *)        echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
+
+TEMPLATE="${CUSTOM_TEMPLATE:-$SCRIPT_DIR/play-template.html}"
 
 if [[ -z "$TITLE" || -z "$OUT_DIR" ]]; then
     echo "Usage: setup-web.sh --title \"Game Title\" --ulx path/to/game.ulx --out path/to/web" >&2

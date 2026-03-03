@@ -124,16 +124,23 @@ fi
 
 # Step 4: Update web player
 echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Updating web player..."
+TEMPLATE_FLAG=""
+if [[ -f "$PROJECT_DIR/play-template.html" ]]; then
+    TEMPLATE_FLAG="--template $PROJECT_DIR/play-template.html"
+    echo "  Using project template: $PROJECT_DIR/play-template.html"
+fi
 if [[ "$SOUND" == true ]]; then
     bash "$SCRIPT_DIR/web/setup-web.sh" \
         --title "$NAME" \
         --blorb "$PROJECT_DIR/$NAME.gblorb" \
-        --out "$PROJECT_DIR/web"
+        --out "$PROJECT_DIR/web" \
+        $TEMPLATE_FLAG
 else
     bash "$SCRIPT_DIR/web/setup-web.sh" \
         --title "$NAME" \
         --ulx "$PROJECT_DIR/$NAME.ulx" \
-        --out "$PROJECT_DIR/web"
+        --out "$PROJECT_DIR/web" \
+        $TEMPLATE_FLAG
 fi
 
 ULX_SIZE=$(wc -c < "$PROJECT_DIR/$NAME.ulx" | tr -d ' ')
