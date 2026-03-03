@@ -4,7 +4,7 @@
 
 Fever Dream
 A Perceptual Horror by Anonymous
-Release 1 / Serial number 260301 / Inform 7 v10.1.2 / D
+Release 1 / Serial number 260302 / Inform 7 v10.1.2 / D
 
 
 You wake on a cold floor. Your head aches. You do not remember arriving.
@@ -45,7 +45,8 @@ A long room lined with workbenches and glass-fronted cabinets. Everything is lab
 One of the glass cases, mounted on the far wall, holds something you missed before: a brass key, suspended on a wire inside the glass.
 
 
->SFX:glassYou swing the wrench. The glass shatters cleanly. The brass key drops into your hand.
+>[Sound effect number 3 here.]
+You swing the wrench. The glass shatters cleanly. The brass key drops into your hand.
 
 >
 Cold Storage

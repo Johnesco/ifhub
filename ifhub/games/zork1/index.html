@@ -198,23 +198,18 @@ footer a {
 <p>I got into a dialogue with Claude, something like, &ldquo;hey, why is this detail in ZIL but not in the translation?&rdquo; And so began a long introduction into the ZIL code format. There are shortcuts being taken here for sure, but using AI will force you to realize you&rsquo;ve got to be in the driver&rsquo;s seat, at least for now. We began to look at all text, piece by piece, every bit, discovering together the odd format of the old engine, bound by such tight limitations, and the loose translation we began to refine.</p>
 <p>Using <a href="https://foss.heptapod.net/zilf/zilf">ZILF</a>, we compiled the ZIL to the .z5 format and ran it online. We had a working version of the original, warts and all. Claude began to suggest trying to test outcomes deterministically. I reminded Claude about the random aspects of Zork. Claude mentioned we could compile with a specific seed to mitigate randomness and produce expected results (as it compared transcripts). Transcripts. I mean &mdash; it is text after all. Every playthrough, we stored the transcripts. We&rsquo;d compare transcripts of the original and the translation side by side. That developed into a testing system that I&rsquo;m now expanding to test the games.</p>
 <p>This wasn&rsquo;t a one-shot vibe code. It was a deep dive into AI and IF.</p>
-<p>Below are snapshots of each milestone. <strong>v0</strong> is the purest version of the original Zork I commercial release. <strong>v1</strong> attempts to translate it into Inform 7 &mdash; if it&rsquo;s in the ZIL code, it&rsquo;s in v1 (any bugs naturally fixed by the move to a modern engine will remain fixed, we won&rsquo;t force bugs to remain). <strong>v2</strong> is where real improvement begins &mdash; only here do I allow myself to actually fix anything that was ever a bug in the original ZIL. <strong>v3</strong> adds ambient audio and sound effects. <strong>v4</strong> layers on atmospheric visuals &mdash; mood-reactive colors, a CRT boot-up intro, animated tree effects, and a golden egg explosion &mdash; while polishing parser responses for a more fluid experience.</p>
+<p>Below are snapshots of each milestone. <strong>v0</strong> is the purest version of the original Zork I commercial release. <strong>v1</strong> attempts to translate it into Inform 7 &mdash; if it&rsquo;s in the ZIL code, it&rsquo;s in v1 (any bugs naturally fixed by the move to a modern engine will remain fixed, we won&rsquo;t force bugs to remain). <strong>v2</strong> is where real improvement begins &mdash; only here do I allow myself to actually fix anything that was ever a bug in the original ZIL. The latest version builds on all of that &mdash; now with ambient audio and sound effects &mdash; but it&rsquo;s really v0 to v1 being given huge attention.</p>
 
 <div class="extra-pages"><a href="extras/map.html">Map</a> <a href="extras/scenarios.html">Scenarios</a> <a href="extras/testing.html">Testing</a> <a href="extras/translation-challenges.html">Translation Challenges</a> <a href="extras/fdesc.html">Room Descriptions</a></div>
 
 <h2>Version History</h2>
 
 <div class="version-entry">
-  <h3>v4 &mdash; Modern IF (Current)</h3>
-  <p>Applying modern interactive fiction best practices for fluid, fun gameplay, with an immersive atmospheric visual layer.</p>
+  <h3>v4 — Modern IF (Current)</h3>
+  <p>Applying modern interactive fiction best practices for fluid, fun gameplay.</p>
   <ul>
     <li>Richer parser responses and smoother player interactions</li>
     <li>Better default messages and more helpful feedback</li>
-    <li><strong>CSS atmospheric effects</strong>: zone-reactive mood color palettes that shift as you move between areas &mdash; forest greens, cave blues, fiery reds &mdash; with smooth synchronized color transitions</li>
-    <li><strong>CRT terminal intro</strong>: green phosphor boot-up aesthetic on startup, fading into the game&rsquo;s mood palette after first input</li>
-    <li><strong>Reversed status bar</strong>: inverted colors for a distinctive retro look</li>
-    <li><strong>Tree effects</strong>: animated canopy glow and falling leaves when Up a Tree</li>
-    <li><strong>Egg flash</strong>: golden explosion with shockwave rings and radiating sparks when taking the jewel-encrusted egg</li>
     <li><strong>Native Glk sound</strong>: audio bundled in .gblorb via Parchment&rsquo;s Emglken WASM engine &mdash; ambient zones and sound effects driven directly from story.ni</li>
     <li>Inherits all v3 audio design, v2 bug fixes, and v1 content</li>
   </ul>
@@ -224,7 +219,7 @@ footer a {
 </div>
 
 <div class="version-entry">
-  <h3>v3 &mdash; Sound</h3>
+  <h3>v3 — Sound</h3>
   <p>Intentionally diverging from the original, leaning into what Inform 7 does best.</p>
   <ul>
     <li><strong>Ambient audio</strong>: zone-based background music across 10 zones (forest, cave, house, water, rapids, loud, hades, mine, machinery, silence) with smooth crossfades between areas</li>
@@ -238,7 +233,7 @@ footer a {
 </div>
 
 <div class="version-entry">
-  <h3>v2 &mdash; Bug Fixes</h3>
+  <h3>v2 — Bug Fixes</h3>
   <p>The first version that changes the game rather than just translating it. This is also where the testing methodology was built &mdash; deterministic seed-based walkthroughs, side-by-side ZIL vs. Inform 7 transcript diffing, and automated regression testing.</p>
   <ul>
     <li>Fix: Deflating the boat lost its contents &mdash; a &ldquo;Raft of Holding&rdquo; bug (<a href="https://github.com/Johnesco/zork1/issues/2">#2</a>)</li>
@@ -257,7 +252,7 @@ footer a {
 </div>
 
 <div class="version-entry">
-  <h3>v1 &mdash; The Port</h3>
+  <h3>v1 — The Port</h3>
   <p>A complete, playable, and winnable ZIL-to-Inform 7 translation &mdash; 110 rooms, 138 objects, every puzzle faithfully reproduced. The goal was a 1:1 gameplay match with the original.</p>
   <ul>
     <li>110 rooms across five regions, all 19 treasures, 350-point scoring system with ranked titles</li>
@@ -273,7 +268,7 @@ footer a {
 </div>
 
 <div class="version-entry">
-  <h3>v0 &mdash; Original ZIL</h3>
+  <h3>v0 — Original ZIL</h3>
   <p>The unmodified Infocom ZIL source code, exactly as <a href="https://github.com/historicalsource/zork1">released by Activision</a> under the MIT License.</p>
   <ul>
     <li>10 ZIL source files (~12,000 lines) with navigable definitions</li>

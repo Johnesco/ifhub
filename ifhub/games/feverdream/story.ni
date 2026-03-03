@@ -1,6 +1,13 @@
 "Fever Dream" by Anonymous
 
 Sound of glass-sfx is the file "glass.ogg".
+Sound of valve-screech is the file "valve-screech.ogg".
+Sound of spray-hiss is the file "spray-hiss.ogg".
+Sound of fungus-consume is the file "fungus-consume.ogg".
+Sound of flood-rush is the file "flood-rush.ogg".
+Sound of basin-touch is the file "basin-touch.ogg".
+Sound of heartbeat-sfx is the file "heartbeat.ogg".
+Sound of drone-horror is the file "drone-horror.ogg".
 
 The story headline is "A Perceptual Horror".
 The story genre is "Horror".
@@ -295,6 +302,7 @@ Instead of taking the stone basin:
 	say "It is part of the floor. It has always been part of the floor."
 
 Instead of touching the stone basin:
+	play the sound of basin-touch;
 	end the story saying "You reach in. It reaches back."
 
 Section - Source Descriptions
@@ -327,6 +335,7 @@ Before going through the hidden trapdoor when the player is not wearing the spec
 Chapter 2 - Fungus Rules
 
 Instead of eating the grey fungus:
+	play the sound of fungus-consume;
 	say "It tastes of nothing. Then of everything. The walls ripple once and settle into new shapes. You understand, now, that this is not distortion. This is clarity.[paragraph break]The world has not changed. Your ability to see it has.";
 	now the fungus-consumed is true;
 	remove the grey fungus from play;
@@ -361,6 +370,7 @@ Spray Exposure is a scene.
 Spray Exposure begins when the player is in the Cistern and the spray-active is false and the fungus-consumed is true.
 
 When Spray Exposure begins:
+	play the sound of spray-hiss;
 	say "A hiss from the cracked pipes overhead. Something cold and chemical settles on your skin, your eyes, your tongue. You blink. The letters on the sign shift. The walls flicker like a signal losing coherence.[paragraph break]When your vision steadies, the world has not returned to normal. It has gone further.";
 	now the spray-active is true.
 
@@ -417,14 +427,17 @@ Instead of turning-left the iron valve:
 	if the cistern-drained is true:
 		say "The valve is already fully open. The cistern is drained.";
 	otherwise:
+		play the sound of valve-screech;
 		say "You grip the handle and turn it left. Metal screams against metal. Below, the dark water begins to move -- circling, spiraling, draining. The level drops and keeps dropping until only a slick of pale residue remains on the bricks.[paragraph break]The drainage grate in the floor stands open now, revealing a narrow passage below.";
 		now the cistern-drained is true.
 
 Instead of turning-right the iron valve:
 	if the cistern-drained is true:
+		play the sound of flood-rush;
 		say "You grip the handle and turn it right. Water rushes back in with terrible speed. You did not expect it to be warm.";
 		end the story saying "The water fills the chamber. It does not stop.";
 	otherwise:
+		play the sound of flood-rush;
 		say "You grip the handle and turn it right. A roar from the pipes above. Water surges in -- warm, fast, rising past your knees, your waist, your chest.";
 		end the story saying "The water fills the chamber. It does not stop."
 
@@ -435,6 +448,7 @@ Before going down from the Cistern when the cistern-drained is false:
 	say "Dark water fills the chamber below the grate. There is nowhere to descend." instead.
 
 Before going down from the Cistern when the cistern-drained is true:
+	play the sound of heartbeat-sfx;
 	say "You lower yourself through the grate.";
 	continue the action.
 
