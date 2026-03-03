@@ -158,28 +158,27 @@ fetch('games.json')
       const c = g.card;
       const playLabel = 'Play fullscreen' + (g.sound ? ' (with sound)' : '');
 
+      // Compute landing directory: strip -v\d+$ suffix for versioned games
+      const base = c.versions ? g.id.replace(/-v\d+$/, '') : g.id;
+
       let versions = '';
       if (c.versions) {
         const links = c.versions.map(vid => {
           const v = byId[vid];
-          return `<a href="games/${vid}/">${v && v.versionLabel || vid}</a>`;
+          return `<a href="games/${vid}/play.html">${v && v.versionLabel || vid}</a>`;
         }).join(' ');
         versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
       }
 
-      const siteLink = c.siteUrl
-        ? `<a href="${c.siteUrl}">Project site</a>`
-        : '';
-
       container.insertAdjacentHTML('beforeend',
         `<div class="game-card">
-          <h3>${c.title}</h3>
+          <h3><a href="games/${base}/">${c.title}</a></h3>
           <p class="game-meta">${c.meta}</p>
           <p>${c.description}</p>
           <div class="game-links">
-            <a href="games/${g.id}/">${playLabel}</a>
+            <a href="games/${g.id}/play.html">${playLabel}</a>
             <a href="app.html?game=${g.id}">Play in IF Hub</a>
-            ${siteLink}
+            <a href="games/${base}/">About</a>
           </div>
           ${versions}
         </div>`

@@ -2,153 +2,208 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Fever Dream</title>
-<meta name="viewport" content="width=device-width, user-scalable=no">
-<link rel="stylesheet" href="../../lib/parchment/parchment.css?v=1772510145">
-<link rel="stylesheet" href="../../lib/parchment/main.css?v=1772510145">
+<title>Fever Dream &mdash; IF Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-:root {
-  --glkote-buffer-bg: #111;
-  --glkote-buffer-fg: #d4c5a9;
-  --glkote-buffer-reverse-bg: #d4c5a9;
-  --glkote-buffer-reverse-fg: #111;
-  --glkote-buffer-size: 16px;
-  --glkote-buffer-line-height: 1.6;
-  --glkote-grid-bg: #1c1810;
-  --glkote-grid-fg: #aa9966;
-  --glkote-grid-reverse-bg: #aa9966;
-  --glkote-grid-reverse-fg: #1c1810;
-  --glkote-grid-size: 14px;
-  --glkote-input-fg: #e8d090;
-  --glkote-error-border: #882020;
-  --glkote-warning-border: #3333aa;
-  --glkote-prop-family: "Iowan Old Style", Palatino, Georgia, "Times New Roman", serif;
-  --glkote-mono-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
-  --glkote-grid-mono-family: var(--glkote-mono-family);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  --asyncglk-ui-bg: #1a1810;
-  --asyncglk-ui-border: #3a2a10;
-  --asyncglk-ui-fg: #d4c5a9;
-  --asyncglk-ui-selected: #2a2010;
-  --asyncglk-ui-textbox: #111;
-}
-
-html, body {
+html {
   height: 100%;
-  margin: 0;
-  padding: 0;
   background: #0a0a0a;
-  overflow: hidden;
-}
-
-div#gameport {
-  position: absolute;
-  inset: 0;
-  background: #111;
-}
-
-.WindowFrame {
-  background: #111;
-}
-
-.GridWindow {
-  border-bottom: 1px solid #2a2418;
-  padding: 6px 12px;
-}
-
-.BufferWindowInner {
-  padding: 20px 40px;
-}
-
-.Input {
-  font-weight: bold;
-  color: #e8d090;
-  caret-color: #e8d090;
-}
-
-.Style_user1 { display: none; }
-
-.Style_header {
-  color: #e8d8b0;
-}
-
-.Style_alert {
-  color: #cc8844;
-}
-
-.Style_note {
-  color: #aa9966;
-}
-
-.BufferWindow::-webkit-scrollbar { width: 8px; }
-.BufferWindow::-webkit-scrollbar-track { background: #1a1a1a; }
-.BufferWindow::-webkit-scrollbar-thumb { background: #3a3020; border-radius: 4px; }
-.BufferWindow::-webkit-scrollbar-thumb:hover { background: #5a4a30; }
-
-#loadingpane {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  top: 35%;
-  color: #887755;
-  font-size: 1.2em;
+  color: #d4c5a9;
   font-family: Georgia, "Times New Roman", serif;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+body {
+  min-height: 100%;
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+  line-height: 1.7;
 }
 
-#loadingpane em {
-  animation: pulse 1.5s ease-in-out infinite;
+.breadcrumb {
+  font-size: 0.85em;
+  color: #887755;
+  margin-bottom: 24px;
+}
+
+.breadcrumb a {
+  color: #887755;
+  border-bottom-color: #3a3020;
+}
+
+.breadcrumb a:hover {
+  color: #e8d090;
+}
+
+h1 {
+  font-size: 1.8em;
+  color: #e8d8b0;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-style: italic;
+  color: #aa9966;
+  margin-bottom: 40px;
+}
+
+h2 {
+  font-size: 1.2em;
+  color: #c4b48a;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a2418;
+}
+
+p {
+  margin-bottom: 16px;
+}
+
+a {
+  color: #e8d090;
+  text-decoration: none;
+  border-bottom: 1px solid #5a4a30;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+a:hover {
+  color: #ffe8a0;
+  border-bottom-color: #aa9966;
+}
+
+.play-latest {
+  display: inline-block;
+  margin-bottom: 32px;
+  padding: 10px 28px;
+  background: #2a2010;
+  border: 1px solid #5a4a30;
+  border-radius: 4px;
+  color: #e8d090;
+  font-family: inherit;
+  font-size: 1em;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.play-latest:hover {
+  background: #3a3018;
+  color: #ffe8a0;
+  border-color: #aa9966;
+}
+
+.extra-pages {
+  margin-bottom: 16px;
+  font-size: 0.92em;
+}
+
+.extra-pages a {
+  margin-right: 20px;
+}
+
+.version-entry {
+  margin-bottom: 32px;
+  padding: 20px 24px;
+  background: #111;
+  border: 1px solid #1e1a14;
+  border-radius: 6px;
+}
+
+.version-entry h3 {
+  color: #c4b48a;
+  font-size: 1.05em;
+  margin-bottom: 10px;
+}
+
+.version-entry p {
+  font-size: 0.95em;
+  color: #b0a080;
+  margin-bottom: 8px;
+}
+
+.version-entry ul {
+  margin: 8px 0 12px 20px;
+  font-size: 0.92em;
+  color: #b0a080;
+}
+
+.version-entry li {
+  margin-bottom: 4px;
+}
+
+.version-links {
+  display: flex;
+  gap: 20px;
+  font-size: 0.95em;
+  flex-wrap: wrap;
+}
+
+.links-section {
+  margin-top: 32px;
+}
+
+.links-section h3 {
+  font-size: 0.95em;
+  color: #aa9966;
+  margin-bottom: 10px;
+}
+
+.links-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 32px;
+  font-size: 0.9em;
+}
+
+.links-grid a {
+  color: #b0a080;
+  border-bottom-color: #2a2418;
+}
+
+.links-grid a:hover {
+  color: #e8d090;
+}
+
+footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #1e1a14;
+  font-size: 0.85em;
+  color: #665a40;
+}
+
+footer a {
+  color: #887755;
+  border-bottom-color: #3a3020;
 }
 </style>
-
-<script src="../../lib/parchment/jquery.min.js?v=1772510145"></script>
-<script src="../../lib/parchment/ie.js?v=1772510145" nomodule></script>
-<script>
-    // story_name is REQUIRED — parchment.js calls .substring() on it to detect
-    // the file type (.ulx.js, .gblorb.js, .z3.js). Without it you get:
-    //   TypeError: Cannot read properties of undefined (reading 'substring')
-    parchment_options = {
-        default_story: ['feverdream.gblorb.js'],
-        lib_path: '../../lib/parchment/',
-        story_name: 'feverdream.gblorb.js',
-        use_proxy: 0,
-        do_vm_autosave: 1,
-    };
-</script>
-<script src="../../lib/parchment/parchment.js?v=1772510145"></script>
-<script src="../../lib/parchment/resourcemap.js?v=1772510145"></script>
-<script>
-    window.addEventListener('pageshow', function(e) {
-        if (e.persisted) { window.location.reload(); }
-    });
-</script>
-
 </head>
 <body>
 
-<div id="gameport">
-  <div id="windowport">
-    <noscript>
-      <div style="text-align:center; padding:40px; color:#aa6644;">
-        <h2>Fever Dream</h2>
-        <p>JavaScript is required to play this game.</p>
-      </div>
-    </noscript>
-  </div>
-  <div id="loadingpane">
-    <div style="margin-bottom:20px; font-size:1.4em; color:#aa9966; letter-spacing:4px;">Fever Dream</div>
-    <img src="../../lib/parchment/waiting.gif" alt="Loading" style="opacity:0.5"><br>
-    <em>Loading...</em>
-  </div>
-  <div id="errorpane" style="display:none;">
-    <div id="errorcontent">...</div>
-  </div>
-</div>
+<nav class="breadcrumb"><a href="../../">IF Hub</a> &rsaquo; Fever Dream</nav>
+
+<h1>Fever Dream</h1>
+
+
+<a class="play-latest" href="play.html">Play (with sound)</a>
+
+<p>Three items alter your perception. The world stays the same. You do not.</p>
+
+
+
+
+
+
+
+<footer>
+
+<p>Part of <a href="../../">IF Hub</a>.</p>
+</footer>
 
 </body>
 </html>
