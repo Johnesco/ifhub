@@ -192,6 +192,8 @@ AsyncGlk generates CSS classes for each style that can be targeted from page-lev
 
 Paragraph-level: `.Style_normal_par`, `.Style_user1_par`, etc.
 
+**Important**: The `.Style_input` / `.Input` class is engine-dependent. In Emglken WASM mode, user input is rendered as regular text nodes without the `.Input` class. Code that queries `.BufferWindow .Input` to detect what the player typed will find nothing. Instead, use a MutationObserver to track added node text — the user's command appears as a regular element node immediately before the game's response.
+
 This allows effects beyond the Glk API (shadows, animations, custom fonts, gradients) by adding CSS to the play.html page:
 
 ```css

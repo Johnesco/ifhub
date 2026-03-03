@@ -316,6 +316,10 @@ See `reference/sound.md` for the full decision record, architecture details, and
 
 5. **Missing `story_name` in parchment_options** — `parchment.js` calls `.substring()` on `parchment_options.story_name` to detect the file type (`.ulx.js`, `.gblorb.js`, `.z3.js`). If `story_name` is missing or undefined, you get `TypeError: Cannot read properties of undefined (reading 'substring')`. Every play page must include `story_name` in its `parchment_options`. For dynamic pages (like `ifhub/play.html`), derive it from the binary path: `story_name: binaryPath.split('/').pop()`.
 
+### MutationObserver Gotchas
+
+6. **`.Input` spans not available in WASM mode** — Parchment's Emglken WASM engine does **not** wrap user input in `.Input` CSS class spans. Code that queries `.BufferWindow .Input` elements (e.g., `document.querySelectorAll('.BufferWindow .Input')`) will find nothing. Instead, track user input by watching added nodes in the MutationObserver — the user's command text appears as a regular element node immediately before the game's response in the DOM mutation sequence. Store each node's text in a variable (`lastNodeText`) and check it when detecting game responses.
+
 ### IF Hub Deployment (`ifhub/`)
 
 The hub at `ifhub/` is a separate static site that aggregates all games into a single landing page. It has its **own copy** of Parchment at `ifhub/lib/parchment/` — this is NOT the same as `tools/web/parchment/` and must be updated separately when Parchment is upgraded.
