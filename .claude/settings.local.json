@@ -50,7 +50,15 @@
       "WebFetch(domain:bigsoundbank.com)",
       "Bash(curl:*)",
       "Bash(wsl:*)",
-      "Bash(MSYS_NO_PATHCONV=1 wsl:*)"
+      "Bash(MSYS_NO_PATHCONV=1 wsl:*)",
+      "WebFetch(domain:ifarchive.org)",
+      "Bash(/c/code/ifhub/tools/interpreters/git-win32/git.exe:*)",
+      "Bash(gcc:*)",
+      "Bash(winget:*)",
+      "WebFetch(domain:www.ifarchive.org)",
+      "Bash(gh label:*)",
+      "Bash(gh project:*)",
+      "Bash(git:*)"
     ]
   }
 }
