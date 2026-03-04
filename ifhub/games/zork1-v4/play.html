@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <title>Zork I (v4 — Current)</title>
 <meta name="viewport" content="width=device-width, user-scalable=no">
-<link rel="stylesheet" href="../../lib/parchment/parchment.css?v=1772602830">
-<link rel="stylesheet" href="../../lib/parchment/main.css?v=1772602830">
+<link rel="stylesheet" href="../../lib/parchment/parchment.css?v=1772603436">
+<link rel="stylesheet" href="../../lib/parchment/main.css?v=1772603436">
 
 <style>
 /* ── Houdini @property — register as <color> for smooth transitions ── */
@@ -533,8 +533,8 @@ body.sword-glow-bright::after {
 }
 </style>
 
-<script src="../../lib/parchment/jquery.min.js?v=1772602830"></script>
-<script src="../../lib/parchment/ie.js?v=1772602830" nomodule></script>
+<script src="../../lib/parchment/jquery.min.js?v=1772603436"></script>
+<script src="../../lib/parchment/ie.js?v=1772603436" nomodule></script>
 <script>
     // story_name is REQUIRED — parchment.js calls .substring() on it to detect
     // the file type (.ulx.js, .gblorb.js, .z3.js). Without it you get:
@@ -547,8 +547,8 @@ body.sword-glow-bright::after {
         do_vm_autosave: 1,
     };
 </script>
-<script src="../../lib/parchment/parchment.js?v=1772602830"></script>
-<script src="../../lib/parchment/resourcemap.js?v=1772602830"></script>
+<script src="../../lib/parchment/parchment.js?v=1772603436"></script>
+<script src="../../lib/parchment/resourcemap.js?v=1772603436"></script>
 <script>
     window.addEventListener('pageshow', function(e) {
         if (e.persisted) { window.location.reload(); }
@@ -863,18 +863,24 @@ body.sword-glow-bright::after {
   }
 
   function watchForFirstInput() {
-    // Detect first user input to end CRT intro. Uses two strategies:
+    // Detect first user input to end CRT intro. Uses three strategies:
     // 1. .Input span detection (non-WASM engines like Quixe)
     // 2. Settle-then-mutate: after initial output burst quiets for 1s,
     //    the next mutation is user input (WASM/Emglken which has no .Input spans)
+    // 3. Hard timeout: end CRT after 8s regardless (failsafe for engines
+    //    that produce continuous mutations like cursor blink or autosave)
     var settled = false;
     var settleTimer = null;
+    var hardTimeout = setTimeout(function() {
+      endCRT();
+    }, 8000);
     function tryAttachInput() {
       var buf = document.querySelector('.BufferWindow');
       if (!buf) return false;
       var inputObserver = new MutationObserver(function(muts) {
         // After initial output settled, any new mutation = user input
         if (settled) {
+          clearTimeout(hardTimeout);
           endCRT();
           inputObserver.disconnect();
           return;
@@ -886,6 +892,7 @@ body.sword-glow-bright::after {
             if (node.nodeType !== 1) continue;
             var inp = node.querySelector && node.querySelector('.Input');
             if (inp) {
+              clearTimeout(hardTimeout);
               endCRT();
               inputObserver.disconnect();
               return;

@@ -911,18 +911,24 @@ body.sword-glow-bright::after {
   }
 
   function watchForFirstInput() {
-    // Detect first user input to end CRT intro. Uses two strategies:
+    // Detect first user input to end CRT intro. Uses three strategies:
     // 1. .Input span detection (non-WASM engines like Quixe)
     // 2. Settle-then-mutate: after initial output burst quiets for 1s,
     //    the next mutation is user input (WASM/Emglken which has no .Input spans)
+    // 3. Hard timeout: end CRT after 8s regardless (failsafe for engines
+    //    that produce continuous mutations like cursor blink or autosave)
     var settled = false;
     var settleTimer = null;
+    var hardTimeout = setTimeout(function() {
+      endCRT();
+    }, 8000);
     function tryAttachInput() {
       var buf = document.querySelector('.BufferWindow');
       if (!buf) return false;
       var inputObserver = new MutationObserver(function(muts) {
         // After initial output settled, any new mutation = user input
         if (settled) {
+          clearTimeout(hardTimeout);
           endCRT();
           inputObserver.disconnect();
           return;
@@ -934,6 +940,7 @@ body.sword-glow-bright::after {
             if (node.nodeType !== 1) continue;
             var inp = node.querySelector && node.querySelector('.Input');
             if (inp) {
+              clearTimeout(hardTimeout);
               endCRT();
               inputObserver.disconnect();
               return;
