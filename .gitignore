@@ -4,3 +4,10 @@ projects/dracula/
 projects/feverdream/
 projects/sample/
 projects/zork1blorb/
+
+# Python bytecode
+__pycache__/
+
+# Native interpreters (built locally via tools/interpreters/build.sh)
+tools/interpreters/*.exe
+tools/interpreters/build/

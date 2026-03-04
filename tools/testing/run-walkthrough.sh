@@ -13,8 +13,12 @@
 #   bash run-walkthrough.sh --config PATH --diff        # Compare output vs saved baseline
 #   bash run-walkthrough.sh --config PATH --quiet       # Suppress diagnostic output, just exit code
 #   bash run-walkthrough.sh --config PATH --no-save     # Don't overwrite saved output file
+#   bash run-walkthrough.sh --config PATH --copy-output DIR  # Copy output to DIR after success
 
 set -euo pipefail
+
+# Resolve PCRE grep helper (portable grep -oP replacement)
+PCRE_GREP="$(cd "$(dirname "$0")" && pwd)/pcre_grep.py"
 
 # Defaults
 CONFIG=""
@@ -24,6 +28,7 @@ NO_SEED=false
 DIFF_MODE=false
 QUIET=false
 SAVE_OUTPUT=true
+COPY_OUTPUT_DIR=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -56,9 +61,13 @@ while [[ $# -gt 0 ]]; do
             SAVE_OUTPUT=false
             shift
             ;;
+        --copy-output)
+            COPY_OUTPUT_DIR="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown option: $1" >&2
-            echo "Usage: $0 --config PATH [--alt] [--seed N] [--no-seed] [--diff] [--quiet] [--no-save]" >&2
+            echo "Usage: $0 --config PATH [--alt] [--seed N] [--no-seed] [--diff] [--quiet] [--no-save] [--copy-output DIR]" >&2
             exit 2
             ;;
     esac
@@ -178,19 +187,19 @@ count_matches() {
 }
 count_matches_i() {
     local count
-    count=$(grep -ciP "$@" 2>/dev/null) || count=0
+    count=$(grep -ciE "$@" 2>/dev/null) || count=0
     echo "$count"
 }
 
 # Extract final score
-FINAL_SCORE=$(grep -oiP "${SCORE_REGEX}" "$TMPFILE" | tail -1 2>/dev/null) || FINAL_SCORE=""
+FINAL_SCORE=$(python3 "$PCRE_GREP" -o -i -l "${SCORE_REGEX}" "$TMPFILE" 2>/dev/null) || FINAL_SCORE=""
 if [[ -z "$FINAL_SCORE" ]]; then
-    FINAL_SCORE=$(grep -oP "${SCORE_FALLBACK_REGEX}" "$TMPFILE" | tail -1 2>/dev/null) || FINAL_SCORE="?"
+    FINAL_SCORE=$(python3 "$PCRE_GREP" -o -l "${SCORE_FALLBACK_REGEX}" "$TMPFILE" 2>/dev/null) || FINAL_SCORE="?"
 fi
 [[ -z "$FINAL_SCORE" ]] && FINAL_SCORE="?"
 
 # Max score
-MAX_SCORE=$(grep -oP "${MAX_SCORE_REGEX}" "$TMPFILE" | tail -1 2>/dev/null) || MAX_SCORE="${DEFAULT_MAX_SCORE}"
+MAX_SCORE=$(python3 "$PCRE_GREP" -o -l "${MAX_SCORE_REGEX}" "$TMPFILE" 2>/dev/null) || MAX_SCORE="${DEFAULT_MAX_SCORE}"
 [[ -z "$MAX_SCORE" ]] && MAX_SCORE="${DEFAULT_MAX_SCORE}"
 
 # Death count
@@ -207,7 +216,7 @@ SCORE_DOWNS=$(count_matches "score has just gone down" "$TMPFILE")
 
 # Check for won-flag / endgame
 WON_FLAG=false
-if grep -qiP "${WON_PATTERNS}" "$TMPFILE" 2>/dev/null; then
+if grep -qiE "${WON_PATTERNS}" "$TMPFILE" 2>/dev/null; then
     WON_FLAG=true
 fi
 
@@ -265,6 +274,16 @@ if [[ "$SAVE_OUTPUT" == true ]]; then
     cp "$TMPFILE" "$OUTPUT_FILE"
     [[ "$QUIET" != true ]] && echo ""
     [[ "$QUIET" != true ]] && echo "Output saved to: $OUTPUT_FILE"
+fi
+
+# Copy output to additional directory if requested (only on success)
+if [[ -n "$COPY_OUTPUT_DIR" && "$PASS" == true && -f "$OUTPUT_FILE" ]]; then
+    if [[ -d "$COPY_OUTPUT_DIR" ]]; then
+        cp "$OUTPUT_FILE" "$COPY_OUTPUT_DIR/walkthrough_output.txt"
+        [[ "$QUIET" != true ]] && echo "Output copied to: $COPY_OUTPUT_DIR/walkthrough_output.txt"
+    else
+        echo "WARNING: --copy-output directory not found: $COPY_OUTPUT_DIR" >&2
+    fi
 fi
 
 # Exit code

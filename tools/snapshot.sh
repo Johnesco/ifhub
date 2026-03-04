@@ -117,13 +117,29 @@ else
         PREV_NAME="$(basename "$PREV_VERSION")"
         echo "  Copying template from $PREV_NAME..."
 
-        # Copy player pages
-        for page in index.html parchment.html glulxe.html source.html walkthrough.html; do
+        # Copy player pages (walkthrough.html generated from template below)
+        for page in index.html parchment.html glulxe.html source.html; do
             if [[ -f "$PREV_VERSION/$page" ]]; then
                 cp "$PREV_VERSION/$page" "$VERSION_DIR/$page"
                 echo "    $page"
             fi
         done
+
+        # Generate walkthrough.html from template
+        WALK_TEMPLATE="$SCRIPT_DIR/web/walkthrough-template.html"
+        if [[ -f "$WALK_TEMPLATE" ]]; then
+            WALK_TITLE="Walkthrough — $(basename "$PROJECT_DIR") ($VERSION)"
+            WALK_TITLE_ESCAPED=$(printf '%s\n' "$WALK_TITLE" | sed 's/[&/\]/\\&/g')
+            sed -e "s/__TITLE__/$WALK_TITLE_ESCAPED/g" \
+                -e "s/__HEADER__/Walkthrough ($VERSION)/g" \
+                -e "s|__BACK_HREF__|../|g" \
+                -e "s/__STORAGE_KEY__/$NAME/g" \
+                "$WALK_TEMPLATE" > "$VERSION_DIR/walkthrough.html"
+            echo "    walkthrough.html (generated from template)"
+        elif [[ -f "$PREV_VERSION/walkthrough.html" ]]; then
+            cp "$PREV_VERSION/walkthrough.html" "$VERSION_DIR/walkthrough.html"
+            echo "    walkthrough.html (copied from $PREV_NAME)"
+        fi
 
         # Copy lib/ (except the binary we already created)
         if [[ -d "$PREV_VERSION/lib" ]]; then

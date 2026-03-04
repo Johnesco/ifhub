@@ -14,6 +14,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PCRE_GREP="$SCRIPT_DIR/pcre_grep.py"
 
 # Defaults
 CONFIG=""
@@ -112,11 +113,11 @@ for SEED in $(seq 1 "$MAX_SEEDS"); do
     DIAG=$(bash "$RUN_WALKTHROUGH" --config "$CONFIG" $MODE_FLAG --seed "$SEED" --no-save 2>/dev/null) || true
 
     # Extract score from "Score:   N/MAX" line
-    SCORE=$(echo "$DIAG" | grep -oP 'Score:\s+\K[0-9]+') || SCORE=""
+    SCORE=$(echo "$DIAG" | python3 "$PCRE_GREP" -o -l 'Score:\s+\K[0-9]+') || SCORE=""
 
     # Fallback: try N/N pattern
     if [[ -z "$SCORE" ]]; then
-        SCORE=$(echo "$DIAG" | grep -oP '[0-9]+(?=/[0-9]+)' | head -1) || SCORE="0"
+        SCORE=$(echo "$DIAG" | python3 "$PCRE_GREP" -o '[0-9]+(?=/[0-9]+)' | head -1) || SCORE="0"
     fi
     [[ -z "$SCORE" ]] && SCORE=0
 

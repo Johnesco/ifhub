@@ -1,3 +1,9 @@
+<!-- Template tokens (substituted by setup-web.sh and deploy.sh):
+     __TITLE__      — Game title (from story.ni or games.json)
+     __STORY_FILE__ — Binary filename, e.g. "game.ulx.js" or "game.gblorb.js"
+     __STORY_PATH__ — Full path to binary, e.g. "lib/parchment/game.ulx.js"
+     __LIB_PATH__   — Parchment library path, e.g. "lib/parchment/" or "../../lib/parchment/"
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,6 +72,8 @@ div#gameport {
   color: #e8d090;
   caret-color: #e8d090;
 }
+
+.Style_user1 { display: none; }
 
 .Style_header {
   color: #e8d8b0;

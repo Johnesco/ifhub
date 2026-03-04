@@ -52,6 +52,14 @@ fi
 # and Inform 7 derives filenames from the title. This causes inblorb to fail with
 # an invalid "storyfile leafname" error on Windows.
 TITLE_LINE=$(head -1 "$PROJECT_DIR/story.ni")
+
+# Extract the game title from story.ni (first quoted string on the first line)
+# e.g. "Zork I - The Great Underground Empire" by "John Doe" → Zork I - The Great Underground Empire
+GAME_TITLE=$(echo "$TITLE_LINE" | sed -n 's/^"\([^"]*\)".*/\1/p')
+if [[ -z "$GAME_TITLE" ]]; then
+    GAME_TITLE="$NAME"  # fallback to directory name
+fi
+
 if [[ "$TITLE_LINE" == *":"* ]]; then
     echo "ERROR: story.ni title contains a colon:" >&2
     echo "  $TITLE_LINE" >&2
@@ -131,17 +139,22 @@ if [[ -f "$PROJECT_DIR/play-template.html" ]]; then
 fi
 if [[ "$SOUND" == true ]]; then
     bash "$SCRIPT_DIR/web/setup-web.sh" \
-        --title "$NAME" \
+        --title "$GAME_TITLE" \
         --blorb "$PROJECT_DIR/$NAME.gblorb" \
         --out "$PROJECT_DIR/web" \
         $TEMPLATE_FLAG
 else
     bash "$SCRIPT_DIR/web/setup-web.sh" \
-        --title "$NAME" \
+        --title "$GAME_TITLE" \
         --ulx "$PROJECT_DIR/$NAME.ulx" \
         --out "$PROJECT_DIR/web" \
         $TEMPLATE_FLAG
 fi
+
+# Validate web player
+echo ""
+echo "Validating web player..."
+bash "$SCRIPT_DIR/validate-web.sh" "$PROJECT_DIR/web"
 
 ULX_SIZE=$(wc -c < "$PROJECT_DIR/$NAME.ulx" | tr -d ' ')
 echo ""
@@ -153,5 +166,9 @@ if [[ "$SOUND" == true ]]; then
 fi
 echo "  Web:    $PROJECT_DIR/web/play.html"
 echo ""
-echo "  Test:   cd $PROJECT_DIR && wsl -e bash tests/run-tests.sh"
+if [[ ("$OSTYPE" == "msys" || "$OSTYPE" == "cygwin") && -x "$SCRIPT_DIR/interpreters/glulxe.exe" ]]; then
+    echo "  Test:   cd $PROJECT_DIR && bash tests/run-tests.sh"
+else
+    echo "  Test:   cd $PROJECT_DIR && wsl -e bash tests/run-tests.sh"
+fi
 echo "  Play:   python -m http.server 8000 --directory $PROJECT_DIR/web"

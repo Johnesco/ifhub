@@ -9,7 +9,7 @@
 #
 # Stages (in pipeline order):
 #   compile   — I7 → I6 → Glulx → Blorb(if sound) → web player
-#   test      — Walkthrough + regtest (requires WSL)
+#   test      — Walkthrough + regtest (native or WSL)
 #   snapshot  — Freeze to versions/vN/ (requires --version)
 #   deploy    — Copy to ifhub/games/, generate pages
 #   push      — Stage changes, show summary, prompt before commit/push
@@ -355,6 +355,14 @@ stage_compile() {
 stage_test() {
     local has_tests=false
 
+    # Detect native Windows interpreter
+    local native_glulxe="$SCRIPT_DIR/interpreters/glulxe.exe"
+    local use_native=false
+    if [[ ("$OSTYPE" == "msys" || "$OSTYPE" == "cygwin") && -x "$native_glulxe" ]]; then
+        use_native=true
+        echo -e "  ${GREEN}Using native glulxe.exe (no WSL needed)${NC}"
+    fi
+
     # Walkthrough test
     if [[ -f "$PROJECT_DIR/tests/run-walkthrough.sh" ]]; then
         echo "  Running walkthrough..."
@@ -367,14 +375,50 @@ stage_test() {
                 seed_flag="--seed $seed"
             fi
         fi
-        wsl -e bash "$(wslpath "$PROJECT_DIR/tests/run-walkthrough.sh")" $seed_flag --no-save
+
+        # Determine walkthrough output copy destination
+        local copy_flag=""
+        local wt_output_dir="${PIPELINE_WALKTHROUGH_OUTPUT_DIR:-}"
+        if [[ -z "$wt_output_dir" ]]; then
+            # Derive from project layout
+            if [[ "$PIPELINE_VERSIONED" == true && -n "$PIPELINE_CURRENT_VERSION" ]]; then
+                wt_output_dir="$PROJECT_DIR/versions/$PIPELINE_CURRENT_VERSION"
+            elif [[ -d "$PROJECT_DIR/web" ]]; then
+                wt_output_dir="$PROJECT_DIR/web"
+            fi
+        fi
+        if [[ -n "$wt_output_dir" && -d "$wt_output_dir" ]]; then
+            copy_flag="--copy-output $wt_output_dir"
+        fi
+
+        if [[ "$use_native" == true ]]; then
+            # Run directly with bash (project.conf picks up native paths)
+            bash "$PROJECT_DIR/tests/run-walkthrough.sh" $seed_flag $copy_flag
+        else
+            # WSL fallback
+            source "$SCRIPT_DIR/testing/wsl-check.sh"
+            check_wsl_health
+            local wsl_path
+            wsl_path=$(gitbash_to_wsl_path "$PROJECT_DIR/tests/run-walkthrough.sh")
+            timeout 300 wsl -e bash "$wsl_path" $seed_flag $copy_flag
+        fi
         has_tests=true
     fi
 
     # RegTest
     if [[ -f "$PROJECT_DIR/tests/run-tests.sh" ]]; then
         echo "  Running regtests..."
-        wsl -e bash "$(wslpath "$PROJECT_DIR/tests/run-tests.sh")"
+        if [[ "$use_native" == true ]]; then
+            bash "$PROJECT_DIR/tests/run-tests.sh"
+        else
+            if ! type gitbash_to_wsl_path &>/dev/null; then
+                source "$SCRIPT_DIR/testing/wsl-check.sh"
+                check_wsl_health
+            fi
+            local wsl_path
+            wsl_path=$(gitbash_to_wsl_path "$PROJECT_DIR/tests/run-tests.sh")
+            timeout 300 wsl -e bash "$wsl_path"
+        fi
         has_tests=true
     fi
 

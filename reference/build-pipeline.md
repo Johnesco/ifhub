@@ -271,25 +271,19 @@ Add an entry to `ifhub/games.json`:
 
 Set `"sound": true` to enable sound controls in the hub UI. Omit the field or set `false` for games without sound.
 
-### 6b: Add to deploy.sh
+### 6b: Add deploy config to games.json
 
-Add the game to the `GAMES` array:
+Add a `deploy` object to the game's entry in `games.json`:
 
-```bash
-"<game>  projects/<game>/story.ni  projects/<game>/web/lib/parchment/<game>.ulx.js"
+```json
+"deploy": {
+  "source": "projects/<game>/story.ni",
+  "binary": "projects/<game>/web/lib/parchment/<game>.ulx.js",
+  "walkthroughDir": "projects/<game>/web"
+}
 ```
 
-If the game has walkthroughs, add to `WALKTHROUGH_DIRS`:
-
-```bash
-[<game>]="projects/<game>/web"
-```
-
-If the game has sound, add to `SOUND_DIRS`:
-
-```bash
-[<game>]="projects/<game>/web"
-```
+Omit `walkthroughDir` if the game has no walkthrough files.
 
 ### 6c: Run the Deploy
 
@@ -387,11 +381,11 @@ Edit values directly in `sound-config.js`. Volume is 0.0-1.0, multiplied by mast
 | I6 compiler | `/c/Program Files/Inform7IDE/Compilers/inform6.exe` | Compiles .i6 → .ulx |
 | Internal | `/c/Program Files/Inform7IDE/Internal` | Extensions, templates |
 | Setup script | `tools/web/setup-web.sh` | Bootstrap web player |
-| Sound engine (source of truth) | `tools/web/sound-engine.js` | Shared, copied to projects |
-| Play template (projects) | `tools/web/play-template.html` | Template for project play pages |
-| Play template (ifhub) | `ifhub/play-template.html` | Template for ifhub standalone pages |
-| Deploy script | `ifhub/deploy.sh` | Copies assets into ifhub/games/ |
-| Game registry | `ifhub/games.json` | Game metadata for hub UI |
+| Play template | `tools/web/play-template.html` | Single template for all play pages (projects + hub) |
+| Web validator | `tools/validate-web.sh` | Post-build validation (7 checks) |
+| Deploy scripts | `tools/deploy/*.py` | Asset copying + page generation (Python) |
+| Deploy orchestrator | `ifhub/deploy.sh` | Copies assets into ifhub/games/ |
+| Game registry | `ifhub/games.json` | Game metadata, deploy paths, hub UI config |
 | Sound editing guide | `reference/sound.md` | Trigger modes, architecture, editing |
 
 ## Related Documentation

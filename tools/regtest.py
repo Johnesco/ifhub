@@ -29,12 +29,24 @@ except:
 import sys
 import os
 import optparse
-import select
 import time
 import fnmatch
 import subprocess
 import re
 import types
+import threading
+
+# select.select() only works on sockets on Windows, not pipes.
+# Import it for Unix, use threading fallback on Windows.
+try:
+    import select
+    # Test if select works on pipes (fails on Windows)
+    if sys.platform == 'win32':
+        _use_select = False
+    else:
+        _use_select = True
+except ImportError:
+    _use_select = False
 
 gamefile = None
 terppath = None
@@ -600,20 +612,45 @@ class GameStateCheap(GameState):
     def accept_output(self):
         self.storywin = []
         output = bytearray()
-        
+
         timeout_time = time.time() + opts.timeout_secs
 
-        while (select.select([self.outfile],[],[],opts.timeout_secs)[0] != []):
-            ch = self.outfile.read(1)
-            if ch == b'':
-                break
-            output += ch
-            if (output[-2:] == b'\n>'):
-                break
-            
+        if _use_select:
+            while (select.select([self.outfile],[],[],opts.timeout_secs)[0] != []):
+                ch = self.outfile.read(1)
+                if ch == b'':
+                    break
+                output += ch
+                if (output[-2:] == b'\n>'):
+                    break
+        else:
+            # Windows: read byte-by-byte in a thread to avoid blocking.
+            # Native Windows interpreters output \r\n line endings, so
+            # strip \r and check for \n> as the prompt marker.
+            read_error = [None]
+            def _reader():
+                try:
+                    while True:
+                        ch = self.outfile.read(1)
+                        if ch == b'':
+                            break
+                        if ch == b'\r':
+                            continue
+                        output.extend(ch)
+                        if (output[-2:] == b'\n>'):
+                            break
+                except Exception as e:
+                    read_error[0] = e
+            t = threading.Thread(target=_reader, daemon=True)
+            t.start()
+            remaining = timeout_time - time.time()
+            t.join(timeout=max(remaining, 0.1))
+            if read_error[0]:
+                raise read_error[0]
+
         if time.time() >= timeout_time:
             raise Exception('Timed out awaiting output')
-            
+
         dat = output.decode('utf-8')
         res = dat.split('\n')
         if (opts.verbose):
