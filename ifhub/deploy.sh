@@ -135,13 +135,15 @@ echo ""
 echo "Generating standalone play pages..."
 
 python3 -c "
-import json, time, re, os
+import json, time, re, os, sys
 
-with open('games.json') as f:
+i7_root = sys.argv[1]
+
+with open('games.json', encoding='utf-8') as f:
     games = json.load(f)
 
-with open('play-template.html') as f:
-    template = f.read()
+with open('play-template.html', encoding='utf-8') as f:
+    generic_template = f.read()
 
 # Cache-busting: append ?v=<timestamp> to .js and .css references so browsers
 # don't serve stale scripts after a rebuild (e.g. after switching parchment.js).
@@ -156,13 +158,32 @@ for g in games:
     title = g['title']
     binary = g['binary'].split('/')[-1]
 
-    page = template.replace('__TITLE__', title)
+    # Per-game template support: if playTemplate is set in games.json,
+    # use that project-specific template (preserves CSS atmospheric effects).
+    # Otherwise fall back to the generic hub template.
+    custom_tmpl = g.get('playTemplate')
+    if custom_tmpl:
+        tmpl_path = os.path.join(i7_root, custom_tmpl)
+        if os.path.isfile(tmpl_path):
+            with open(tmpl_path, encoding='utf-8') as f:
+                tmpl = f.read()
+            print('  ' + gid + ': using custom template ' + custom_tmpl)
+        else:
+            print('  WARNING: ' + tmpl_path + ' not found, using generic template')
+            tmpl = generic_template
+    else:
+        tmpl = generic_template
+
+    page = tmpl.replace('__TITLE__', title)
     page = page.replace('__BINARY__', binary)
+    page = page.replace('__STORY_FILE__', binary)
+    page = page.replace('__STORY_PATH__', binary)
+    page = page.replace('__LIB_PATH__', '../../lib/parchment/')
     page = re.sub(r'\.js\"', '.js?' + cache_bust + '\"', page)
     page = re.sub(r'\.css\"', '.css?' + cache_bust + '\"', page)
 
     # Write play.html (renamed from index.html)
-    with open(dest + '/play.html', 'w') as f:
+    with open(dest + '/play.html', 'w', encoding='utf-8') as f:
         f.write(page)
     print('  ' + gid + ': play.html generated')
 
@@ -177,10 +198,10 @@ for g in games:
 </head><body>
 <p>Redirecting to <a href=\"play.html\">play page</a>...</p>
 </body></html>'''
-        with open(dest + '/index.html', 'w') as f:
+        with open(dest + '/index.html', 'w', encoding='utf-8') as f:
             f.write(redirect)
         print('  ' + gid + ': index.html redirect generated')
-"
+" "$I7_ROOT"
 
 # --- Generate landing pages ---
 echo ""
@@ -189,10 +210,10 @@ echo "Generating landing pages..."
 python3 -c "
 import json, re, os
 
-with open('games.json') as f:
+with open('games.json', encoding='utf-8') as f:
     games = json.load(f)
 
-with open('landing-template.html') as f:
+with open('landing-template.html', encoding='utf-8') as f:
     landing_tmpl = f.read()
 
 # Build game map for version lookups
@@ -321,7 +342,7 @@ for g in games:
     # Write landing page
     dest = 'games/' + base
     os.makedirs(dest, exist_ok=True)
-    with open(dest + '/index.html', 'w') as f:
+    with open(dest + '/index.html', 'w', encoding='utf-8') as f:
         f.write(page)
     print('  ' + base + ': landing page generated')
 "

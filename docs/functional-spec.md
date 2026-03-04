@@ -6,7 +6,11 @@
 
 ## 1. Overview
 
-IF Hub is a static website that serves multiple interactive fiction (IF) games through a unified browser-based interface. Users can play games, read syntax-highlighted source code, and follow annotated walkthroughs — all without downloads, plugins, or server-side logic.
+IF Hub is a development hub and web player for Inform 7 interactive fiction. It provides:
+
+- **A shared toolchain** — compilation, testing, web player setup, project scaffolding, and deployment
+- **A multi-game web player** — the `ifhub/` static site where users play games, read source code, and follow walkthroughs
+- **Inform 7 reference documentation** — syntax guides, formatting, world model, and more
 
 Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment), a JavaScript interpreter for the Glulx and Z-machine virtual machines. Sound-enabled games embed audio in native blorb format.
 
@@ -14,6 +18,12 @@ Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment)
 - Pure static site — no server, no accounts, no tracking
 - All game binaries and assets are committed to the repo
 - Deployed to GitHub Pages from the repo directly
+- Projects are separate repositories — IF Hub provides tools, projects consume them. The `projects/` directory is gitignored; each project is checked out locally for development
+
+**Section map:**
+- Sections 2–9: The web player application (pages, registry, source viewer, sound, deploy, binary format, visual design, hosting)
+- Section 10: Compilation pipeline (shared build tools)
+- Section 11: Testing framework (shared test infrastructure)
 
 ---
 
@@ -416,3 +426,366 @@ Dark theme throughout:
 - Local development: `python -m http.server 8000` from the `ifhub/` directory
 - No build step beyond `deploy.sh` — the site is ready to serve as-is
 - `file://` protocol does not work (CORS restrictions on JSONP script loading)
+
+---
+
+## 10. Compilation Pipeline
+
+IF Hub provides shared tools for compiling, packaging, and deploying Inform 7 projects. All tools live in `tools/` and operate on projects under `projects/<name>/`.
+
+### 10.1 Compilation (`compile.sh`)
+
+```
+bash /c/code/ifhub/tools/compile.sh <game-name> [--sound]
+```
+
+Compiles a project's `story.ni` to a playable web game in a single command.
+
+**Standard pipeline** (4 steps):
+1. Inform 7 → Inform 6 (`inform7.exe -source story.ni -o story.i6`)
+2. Inform 6 → Glulx (`inform6.exe -w -G story.i6 <name>.ulx`)
+3. Clean intermediates (`story.i6`)
+4. Update web player (`setup-web.sh` → base64-encode `.ulx` into `.ulx.js`)
+
+**Sound pipeline** (`--sound`, 6 steps):
+1. Inform 7 → Inform 6
+2. Inform 6 → Glulx
+3. Generate blurb manifest (`generate-blurb.sh`)
+4. Package blorb (`inblorb <name>.blurb <name>.gblorb`)
+5. Clean intermediates (`story.i6`, `.blurb`)
+6. Update web player (`setup-web.sh` → base64-encode `.gblorb` into `.gblorb.js`)
+
+**Pre-flight checks** (run before expensive compilation):
+- Colon in story title — Windows cannot have colons in filenames; `inblorb` fails. Exits with guidance to use a dash instead.
+- Missing `Sounds/` directory — when `--sound` is passed, verifies `.ogg` files exist at `project/Sounds/` before starting.
+
+**Custom template support:** If `play-template.html` exists in the project root, it is passed to `setup-web.sh` via `--template`.
+
+**Output:**
+- `<name>.ulx` — Glulx binary (always produced)
+- `<name>.gblorb` — Blorb package (only with `--sound`)
+- `web/play.html` — Ready-to-serve Parchment player page
+- `web/lib/parchment/` — Parchment library + base64-encoded game binary
+
+### 10.2 Sound Manifest (`generate-blurb.sh`)
+
+```
+bash /c/code/ifhub/tools/generate-blurb.sh \
+    --ulx <path> --source <path> --sounds <path> --out <path>
+```
+
+Parses `story.ni` for `Sound of ... is the file "..."` declarations and generates a `.blurb` file for `inblorb`. Resource IDs start at 3 (1 and 2 are reserved for cover images by convention). Converts Git Bash paths to Windows paths for `inblorb.exe` compatibility.
+
+### 10.3 Web Player Setup (`setup-web.sh`)
+
+```
+bash /c/code/ifhub/tools/web/setup-web.sh \
+    --title <title> --ulx <path> --out <path>
+    # or --blorb <path> instead of --ulx
+```
+
+Bootstraps a Parchment web player for any project:
+1. Creates `<out>/lib/parchment/` with all 12 Parchment library files
+2. Base64-encodes the game binary into a `.ulx.js` or `.gblorb.js` wrapper
+3. Generates `play.html` from the template with cache-busting `?v=<timestamp>` params
+
+Accepts `--template` for project-specific HTML templates (overrides the default `play-template.html`).
+
+### 10.4 Project Scaffolding (`new-project.sh`)
+
+```
+bash /c/code/ifhub/tools/new-project.sh "Game Title" game-name
+```
+
+Creates a complete project skeleton at `projects/<game-name>/`:
+
+| File | Purpose |
+|------|---------|
+| `story.ni` | Starter Inform 7 source with title, scoring, and one room |
+| `CLAUDE.md` | Project guide with build/test/play instructions |
+| `.gitignore` | Ignores build output, IDE files, `_site/` |
+| `.github/workflows/deploy-pages.yml` | GitHub Pages deployment workflow |
+| `tests/project.conf` | Test configuration (pre-populated for glulxe) |
+| `tests/run-tests.sh` | Thin wrapper → `tools/testing/run-tests.sh` |
+| `tests/run-walkthrough.sh` | Thin wrapper → `tools/testing/run-walkthrough.sh` |
+| `tests/find-seeds.sh` | Thin wrapper → `tools/testing/find-seeds.sh` |
+| `tests/seeds.conf` | Golden seeds placeholder |
+| `tests/<name>.regtest` | Starter RegTest with a smoke test |
+| `tests/inform7/walkthrough.txt` | Starter walkthrough (single `look` command) |
+
+The `web/` directory is created later by `compile.sh`.
+
+### 10.5 Version Snapshots (`snapshot.sh`)
+
+```
+bash /c/code/ifhub/tools/snapshot.sh <game-name> <version>
+bash /c/code/ifhub/tools/snapshot.sh <game-name> <version> --update
+```
+
+Manages frozen version snapshots in `projects/<name>/versions/<version>/`.
+
+**New version** (no `--update`):
+- Creates the version directory
+- Copies `story.ni` from project root
+- Base64-encodes `.ulx` into `<name>.ulx.js`
+- Copies template files (player pages, `lib/`, `media/`) from the previous version
+- Copies walkthrough data from `tests/inform7/` if present
+
+**Update existing** (`--update`):
+- Overwrites `story.ni`, re-encodes binary, copies updated walkthrough data
+
+### 10.6 Site Assembly (`build-site.sh`)
+
+```
+bash /c/code/ifhub/tools/build-site.sh <game-name>
+```
+
+Assembles a deployable `_site/` directory by copying `web/*` then overlaying each `versions/vN/`. The assembled output matches what GitHub Actions produces for deployment. If no version snapshots exist, `_site/` is just a copy of `web/`.
+
+### 10.7 Publishing (`publish.sh`)
+
+```
+bash /c/code/ifhub/tools/publish.sh <game-name> ["commit message"]
+```
+
+Publishes a project to GitHub Pages at `johnesco.github.io/<game-name>/`.
+
+**First run:** Initializes a git repo, creates a GitHub repo via `gh`, pushes, and enables GitHub Pages with workflow-based deployment.
+
+**Subsequent runs:** Stages all changes, commits, and pushes to trigger redeployment.
+
+---
+
+## 11. Testing Framework
+
+IF Hub provides a shared, engine-agnostic testing framework. The framework scripts live in `tools/testing/` and `tools/regtest.py`. Projects supply configuration and test data; the framework handles execution and diagnostics.
+
+### 11.1 Architecture
+
+```
+tools/
+├── regtest.py                  ← RegTest runner (Python, used by all projects)
+└── testing/
+    ├── run-walkthrough.sh      ← Walkthrough runner (config-driven)
+    ├── find-seeds.sh           ← RNG seed sweeper (config-driven)
+    └── run-tests.sh            ← RegTest wrapper (config-driven)
+```
+
+All three scripts in `tools/testing/` require `--config PATH` pointing to a project's `tests/project.conf`. The config file is a bash-sourceable script that defines engine paths, game paths, score patterns, and diagnostic settings.
+
+Projects provide thin wrapper scripts that pre-configure `--config` and delegate to the framework:
+
+```bash
+#!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+I7_HUB="/mnt/c/code/ifhub"
+CONFIG="$SCRIPT_DIR/project.conf"
+exec bash "$I7_HUB/tools/testing/run-walkthrough.sh" --config "$CONFIG" "$@"
+```
+
+Both invocation styles work:
+```bash
+# Via project wrapper
+wsl -e bash tests/run-walkthrough.sh --seed 3
+
+# Via framework directly
+wsl -e bash tools/testing/run-walkthrough.sh --config projects/zork1/tests/project.conf --seed 3
+```
+
+### 11.2 Test Types
+
+#### 11.2.1 Walkthroughs (`run-walkthrough.sh`)
+
+Deterministic end-to-end playthroughs that pipe a command file through an interpreter and evaluate the result.
+
+```
+bash run-walkthrough.sh --config PATH [--alt] [--seed N] [--no-seed] [--diff] [--quiet] [--no-save]
+```
+
+| Flag | Purpose |
+|------|---------|
+| `--alt` | Use the alternate engine (e.g., dfrotz for Z-machine) |
+| `--seed N` | Override the RNG seed |
+| `--no-seed` | Run with true randomness (no seed) |
+| `--diff` | Show unified diff against saved baseline output |
+| `--quiet` | Suppress diagnostics, return only the exit code |
+| `--no-save` | Don't overwrite the saved output file |
+
+**Execution flow:**
+1. Sources `project.conf` for engine/game/walkthrough paths
+2. Loads golden seed from `seeds.conf` (if no `--seed` or `--no-seed`)
+3. Checks binary hash against stored hash for staleness warning
+4. Appends `score` command to walkthrough input (ensures final score is captured)
+5. Pipes input through interpreter, captures transcript
+6. Extracts score using regex patterns from config
+7. Counts deaths, errors ("can't see", "can't go"), score changes
+8. Checks for endgame/won patterns
+9. Runs `diagnostics_extra()` hook if defined in config
+10. Reports pass/fail based on `PASS_THRESHOLD`
+11. Saves transcript to output file (unless `--no-save`)
+
+**Exit codes:** 0 = pass, 1 = fail, 2 = configuration error.
+
+#### 11.2.2 RegTest (`run-tests.sh`)
+
+Targeted scenario testing using `regtest.py`. Each test sends a sequence of commands and asserts expected text appears in the response.
+
+```
+bash run-tests.sh --config PATH [regtest-options...] [test-pattern]
+```
+
+All arguments after `--config` are passed through to `regtest.py`:
+- `-v` — verbose (show transcripts)
+- `-l` — list available tests
+- `--vital` — stop on first error
+- `<pattern>` — run only tests matching the pattern
+
+RegTest files (`.regtest`) define tests as `* test-name` blocks with `> command` / `expected output` pairs.
+
+#### 11.2.3 Seed Sweeps (`find-seeds.sh`)
+
+Brute-force search for RNG seeds where the walkthrough achieves a passing score. Used after code changes invalidate the current golden seed.
+
+```
+bash find-seeds.sh --config PATH [--alt] [--max N] [--stop|--no-stop]
+```
+
+| Flag | Purpose |
+|------|---------|
+| `--alt` | Sweep for the alternate engine |
+| `--max N` | Search range (default: 200) |
+| `--stop` | Stop on first passing seed (default) |
+| `--no-stop` | Continue sweep to find all passing seeds |
+
+**Output:** Reports best/worst/median/average scores, pass rate, and recommends a golden seed with a `seeds.conf`-formatted line including the binary hash and date.
+
+### 11.3 Configuration Contract (`project.conf`)
+
+Each project provides a `tests/project.conf` that is sourced by the framework. The framework sets `PROJECT_DIR` before sourcing.
+
+#### Required Variables
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `PROJECT_NAME` | string | Display name for diagnostics output |
+| `PRIMARY_ENGINE_NAME` | string | Engine identifier (e.g., `"glulxe"`) |
+| `PRIMARY_ENGINE_PATH` | path | Absolute path to interpreter binary |
+| `PRIMARY_ENGINE_SEED_FLAG` | string | CLI flag for RNG seeding (e.g., `"--rngseed"`) |
+| `PRIMARY_GAME_PATH` | path | Path to compiled game binary |
+| `PRIMARY_WALKTHROUGH` | path | Path to walkthrough command file |
+| `PRIMARY_OUTPUT_FILE` | path | Path to save transcript output |
+| `PRIMARY_SEEDS_KEY` | string | Key for `seeds.conf` lookup (e.g., `"glulxe"`) |
+| `SCORE_REGEX` | PCRE | Regex to extract final score from transcript |
+| `SCORE_FALLBACK_REGEX` | PCRE | Fallback score regex (different output format) |
+| `MAX_SCORE_REGEX` | PCRE | Regex to extract maximum possible score |
+| `PASS_THRESHOLD` | integer | Minimum score for a passing walkthrough |
+| `DEFAULT_MAX_SCORE` | integer | Displayed max when regex doesn't match |
+| `DEATH_PATTERNS` | PCRE | Pipe-delimited patterns matching death messages |
+| `WON_PATTERNS` | PCRE | Pipe-delimited patterns matching endgame/victory |
+
+#### Optional Variables
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `ALT_ENGINE_NAME` | string | Alternate engine identifier (e.g., `"dfrotz"`) |
+| `ALT_ENGINE_PATH` | path | Path to alternate interpreter |
+| `ALT_ENGINE_SEED_FLAG` | string | Alternate engine's seed flag |
+| `ALT_GAME_PATH` | path | Path to alternate game binary |
+| `ALT_WALKTHROUGH` | path | Path to alternate walkthrough |
+| `ALT_OUTPUT_FILE` | path | Path to alternate output file |
+| `ALT_SEEDS_KEY` | string | Key for alternate engine in `seeds.conf` |
+| `REGTEST_FILE` | path | Path to `.regtest` file |
+| `REGTEST_ENGINE` | path | Path to interpreter for RegTest |
+| `REGTEST_GAME` | path | Path to game binary for RegTest |
+| `SCORELESS_GAME` | boolean | Set to `true` for games without scoring; pass/fail uses `WON_PATTERNS` instead |
+
+#### `diagnostics_extra()` Hook
+
+Projects can define a `diagnostics_extra()` function in `project.conf` that receives the transcript file path as `$1`. The framework calls it during the diagnostics phase of `run-walkthrough.sh`. Used for project-specific analysis (e.g., Zork I tracks troll and thief encounters).
+
+### 11.4 Golden Seed Methodology
+
+Interactive fiction interpreters use random number generators for combat outcomes, NPC behavior, and other non-deterministic events. A **golden seed** is an RNG seed value that produces a deterministic walkthrough achieving a passing score.
+
+#### `seeds.conf` Format
+
+```
+engine:seed:hash_prefix:date
+```
+
+| Field | Description |
+|-------|-------------|
+| `engine` | Matches `PRIMARY_SEEDS_KEY` or `ALT_SEEDS_KEY` in `project.conf` |
+| `seed` | Integer RNG seed value |
+| `hash_prefix` | First 8 characters of the game binary's SHA-256 hash |
+| `date` | ISO date when the seed was discovered (`YYYY-MM-DD`) |
+
+Example:
+```
+glulxe:3:a1b2c3d4:2026-02-15
+dfrotz:7:e5f6a7b8:2026-02-15
+```
+
+#### Binary Hash Verification
+
+When `run-walkthrough.sh` loads a golden seed, it computes the current binary's SHA-256 hash and compares the first 8 characters against the stored hash. A mismatch produces a warning — the game binary has changed since the seed was discovered, and the seed may no longer produce a passing walkthrough.
+
+#### Seed Discovery Workflow
+
+1. Code change invalidates the current golden seed (walkthrough fails)
+2. Run `find-seeds.sh` to sweep seeds 1–200 (or higher with `--max`)
+3. Script reports the first passing seed with a ready-to-paste `seeds.conf` line
+4. Update `tests/seeds.conf` with the new seed
+
+### 11.5 Interpreter Requirements
+
+All test execution requires **WSL** (Windows Subsystem for Linux) with Linux-native interpreters. The Windows GUI interpreters (`C:\Program Files\Inform7IDE\Interpreters\`) do not support piped I/O and cannot be used for automated testing.
+
+| Interpreter | VM | Standard Path | Seed Flag |
+|-------------|-----|---------------|-----------|
+| `glulxe` | Glulx | `~/glulxe/glulxe` | `--rngseed N` |
+| `dfrotz` | Z-machine | `~/frotz-install/usr/games/dfrotz` | `-s N` |
+
+Both interpreters use `-q` (quiet mode) to suppress interpreter chrome and produce clean transcript output.
+
+**WSL dependency:** If WSL is unresponsive (`wsl -e echo` hangs), all tests are blocked with no Windows-native fallback. Common fix: `wsl --shutdown` from PowerShell, then retry.
+
+### 11.6 Per-Project Test Structure
+
+Each project maintains a `tests/` directory with configuration, wrapper scripts, and test data. The `new-project.sh` scaffolding tool creates this structure automatically.
+
+```
+tests/
+├── project.conf           ← Configuration (sourced by framework)
+├── run-tests.sh           ← Wrapper → tools/testing/run-tests.sh
+├── run-walkthrough.sh     ← Wrapper → tools/testing/run-walkthrough.sh
+├── find-seeds.sh          ← Wrapper → tools/testing/find-seeds.sh
+├── seeds.conf             ← Golden seeds (engine:seed:hash:date)
+├── <name>.regtest         ← RegTest scenario files
+└── inform7/               ← Test data for primary engine
+    ├── walkthrough.txt            ← Walkthrough commands
+    └── walkthrough_output.txt     ← Generated transcript (gitignored)
+```
+
+Projects with an alternate engine (e.g., Zork I with both Glulx and Z-machine) add a parallel data directory:
+
+```
+tests/
+├── inform7/               ← Primary engine (glulxe) test data
+│   ├── walkthrough.txt
+│   └── walkthrough_output.txt
+└── zil/                   ← Alternate engine (dfrotz) test data
+    ├── walkthrough.txt
+    └── walkthrough_output.txt
+```
+
+### 11.7 Adding Tests to a New Project
+
+For projects created with `new-project.sh`, the test infrastructure is ready immediately. For manual setup:
+
+1. **Create `tests/project.conf`** — Define all required variables (see 11.3). Use an existing config as a template.
+2. **Create wrapper scripts** — Three thin scripts (`run-tests.sh`, `run-walkthrough.sh`, `find-seeds.sh`) that delegate to `tools/testing/` with `--config`.
+3. **Write a walkthrough** — A plain text file with one command per line. Append `score` at the end to capture the final score.
+4. **Write RegTest scenarios** — A `.regtest` file with `* test-name` blocks testing specific mechanics.
+5. **Discover a golden seed** — Run `find-seeds.sh` and update `seeds.conf`.
+6. **Verify** — Run all three test types and confirm pass results.

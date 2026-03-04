@@ -125,6 +125,8 @@ CACHE_BUST="v=$(date +%s)"
 echo "Generating play.html..."
 sed -e "s/__TITLE__/$TITLE/g" \
     -e "s/__STORY_FILE__/$STORY_JS/g" \
+    -e "s|__STORY_PATH__|lib/parchment/$STORY_JS|g" \
+    -e "s|__LIB_PATH__|lib/parchment/|g" \
     -e "s/\.js\"/\.js?$CACHE_BUST\"/g" \
     -e "s/\.css\"/\.css?$CACHE_BUST\"/g" \
     "$TEMPLATE" > "$OUT_DIR/play.html"

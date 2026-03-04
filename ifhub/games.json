@@ -45,6 +45,7 @@
     "binary": "games/zork1-v4/zork1.gblorb.js",
     "walkthrough": "games/zork1-v4/walkthrough.html",
     "sound": "blorb",
+    "playTemplate": "projects/zork1/play-template.html",
     "versionLabel": "v4 \u2014 Modern IF (Current)",
     "card": {
       "title": "Zork I - The Great Underground Empire",
@@ -201,6 +202,7 @@
     "source": "games/feverdream/story.ni",
     "binary": "games/feverdream/feverdream.gblorb.js",
     "walkthrough": "games/feverdream/walkthrough.html",
+    "playTemplate": "projects/feverdream/play-template.html",
     "sound": "blorb",
     "card": {
       "title": "Fever Dream",

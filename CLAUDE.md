@@ -162,6 +162,68 @@ wsl -e bash tools/testing/run-walkthrough.sh --config projects/zork1/tests/proje
 Each project has a `tests/` subfolder with project-specific config, data, and wrapper scripts.
 The `project.conf` file centralizes all project-specific paths and patterns.
 
+## Build Pipeline (`tools/pipeline.sh`)
+
+A thin orchestrator that chains existing scripts in order with error handling. Every existing script continues to work standalone.
+
+### Usage
+
+```bash
+# Default: compile only (fast dev iteration)
+bash /c/code/ifhub/tools/pipeline.sh zork1
+
+# Compile + test
+bash /c/code/ifhub/tools/pipeline.sh zork1 compile test
+
+# Full pipeline (no snapshot)
+bash /c/code/ifhub/tools/pipeline.sh zork1 --all       # compile test deploy push
+
+# Version release
+bash /c/code/ifhub/tools/pipeline.sh zork1 --ship --version v4   # compile test snapshot deploy push
+
+# Resume after failure
+bash /c/code/ifhub/tools/pipeline.sh zork1 --continue
+
+# Other flags
+#   --force         Skip staleness checks
+#   --dry-run       Show what would happen
+#   --message "msg" Commit message for push stage
+```
+
+### Pipeline Stages
+
+| Stage | What it does | Calls |
+|-------|-------------|-------|
+| **compile** | I7 → I6 → Glulx → Blorb(if sound) → web player | `compile.sh` |
+| **test** | Walkthrough + regtest (requires WSL) | `run-walkthrough.sh`, `run-tests.sh` |
+| **snapshot** | Freeze to `versions/vN/` | `snapshot.sh` (requires `--version`) |
+| **deploy** | Copy to `ifhub/games/`, generate pages | `deploy.sh` |
+| **push** | Stage changes, show summary, prompt before commit/push | `git` |
+
+Default with no stages = `compile` only. Stages are reordered to pipeline order automatically.
+
+### Project Capability Detection
+
+The pipeline reads `PIPELINE_*` fields from `tests/project.conf`:
+
+```bash
+PIPELINE_SOUND=true                 # compile with --sound
+PIPELINE_VERSIONED=true             # has versions/ directory
+PIPELINE_CURRENT_VERSION="v4"       # default --version for snapshot
+PIPELINE_HUB_ID="zork1-v4"         # game ID in games.json
+PIPELINE_TESTS="walkthrough,regtest"  # available test types
+```
+
+Projects without these fields get fallback inference from the filesystem (e.g., `Sounds/` directory = sound enabled).
+
+### Staleness Detection
+
+Pipeline writes `.pipeline-state` (gitignored) after each stage. Source/binary hashes are compared to skip redundant work. Use `--force` to override.
+
+### Per-Game Templates (deploy.sh)
+
+`deploy.sh` supports per-game play page templates via the `playTemplate` field in `games.json`. When set, the project's custom template (with atmospheric CSS effects, etc.) is used instead of the generic `ifhub/play-template.html`. All templates use `__LIB_PATH__` as a placeholder — `setup-web.sh` substitutes `lib/parchment/` (project-local) and `deploy.sh` substitutes `../../lib/parchment/` (hub context).
+
 ## Web Player (`tools/web/`)
 
 Parchment 2025.1 is a browser-based Glulx interpreter that plays `.ulx` and `.gblorb` games in any modern browser. The shared library files (12 files) live in `tools/web/parchment/` — each project gets its own copy.
@@ -520,9 +582,7 @@ For Inform 7 syntax and conventions, see C:\code\ifhub\CLAUDE.md
 
 Every software change — feature, bug fix, refactor, or data update — follows this sequence. No step may be skipped.
 
-The **project specification** (`CLAUDE.md`) is the authoritative record of all application features, behavior, and data formats. It is the single source of truth for what this application does.
-
-> If a separate functional spec is created later, it will supersede CLAUDE.md as the primary spec. Until then, CLAUDE.md is the primary record.
+The **project specification** (`docs/functional-spec.md`) is the authoritative record of all application features, behavior, and data formats. It is the single source of truth for what this application does.
 
 **Before ANY change**, follow these steps in order:
 
