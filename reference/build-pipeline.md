@@ -249,7 +249,19 @@ Play through to the trigger point. Verify:
 
 IF Hub serves all games through a unified browser interface at GitHub Pages.
 
-### 6a: Register the Game
+### 6a: Create a Landing Page
+
+Copy `tools/web/landing-template.html` to `projects/<game>/web/landing.html` and fill in the `ifhub:*` meta tags:
+
+```html
+<meta name="ifhub:title" content="My Game">
+<meta name="ifhub:meta" content="A Subtitle">
+<meta name="ifhub:description" content="Landing page description.">
+```
+
+Add game-specific content (prose, version history, community links, etc.) to the HTML body.
+
+### 6b: Register the Game
 
 Add an entry to `ifhub/games.json`:
 
@@ -260,30 +272,17 @@ Add an entry to `ifhub/games.json`:
   "sourceLabel": "<game>.ni",
   "source": "games/<game>/story.ni",
   "binary": "games/<game>/<game>.ulx.js",
-  "sound": true,
-  "card": {
-    "title": "My Game",
-    "meta": "A Subtitle",
-    "description": "Landing page description."
+  "sound": "blorb",
+  "landing": "projects/<game>/web/landing.html",
+  "deploy": {
+    "source": "projects/<game>/story.ni",
+    "binary": "projects/<game>/web/lib/parchment/<game>.ulx.js",
+    "walkthroughDir": "projects/<game>/web"
   }
 }
 ```
 
-Set `"sound": true` to enable sound controls in the hub UI. Omit the field or set `false` for games without sound.
-
-### 6b: Add deploy config to games.json
-
-Add a `deploy` object to the game's entry in `games.json`:
-
-```json
-"deploy": {
-  "source": "projects/<game>/story.ni",
-  "binary": "projects/<game>/web/lib/parchment/<game>.ulx.js",
-  "walkthroughDir": "projects/<game>/web"
-}
-```
-
-Omit `walkthroughDir` if the game has no walkthrough files.
+Set `"sound": "blorb"` for games with native Glk sound. Omit `walkthroughDir` if the game has no walkthrough files.
 
 ### 6c: Run the Deploy
 
@@ -292,7 +291,7 @@ cd ifhub
 bash deploy.sh
 ```
 
-This copies source, binary, walkthroughs, and sound assets from the project into `ifhub/games/<game>/`, then generates standalone `index.html` play pages.
+This copies source, binary, walkthroughs, and landing pages from the project into `ifhub/games/<game>/`, generates standalone play pages, and extracts card metadata into `cards.json`.
 
 ### 6d: Test the Hub Locally
 

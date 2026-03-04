@@ -5,8 +5,8 @@
 #   bash deploy.sh
 #
 # Copies from each project: source (.ni), base64 binary (.ulx.js/.gblorb.js),
-# walkthrough files, custom landing pages, and extra pages. Then generates
-# standalone play.html and landing pages from templates + games.json.
+# walkthrough files, and landing pages. Then generates standalone play.html pages,
+# walkthrough pages, and extracts card metadata from landing pages into cards.json.
 
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -26,19 +26,50 @@ if [[ -f "$v0_browser" ]]; then
   echo "  zork1-v0: source-browser.html copied"
 fi
 
-# --- Copy Dracula custom landing page + BASIC source ---
+# --- Copy landing pages from projects ---
 echo ""
-echo "Copying Dracula custom landing..."
+echo "Copying landing pages..."
 
-dracula_landing="$I7_ROOT/projects/dracula/web/index.html"
-if [[ -f "$dracula_landing" ]]; then
-  cp "$dracula_landing" "games/dracula/index.html"
-  echo "  dracula: custom landing page copied"
-  # Fix fetch paths: ../src/basic/ → src/basic/, ../src/inform/story.ni → story.ni
-  sed -i "s|fetch('../src/basic/|fetch('src/basic/|g" "games/dracula/index.html"
-  sed -i "s|fetch('../src/inform/story.ni')|fetch('story.ni')|g" "games/dracula/index.html"
-  echo "  dracula: fetch paths fixed"
-fi
+# Read landing fields from games.json and copy each to games/<base>/index.html
+# Use mapfile to avoid pipe-to-while subshell issue on Git Bash
+mapfile -t landing_entries < <(python3 -c "
+import json, sys
+with open('games.json') as f:
+    games = json.load(f)
+for g in games:
+    landing = g.get('landing')
+    if landing:
+        print(g['id'] + '|' + landing)
+")
+
+for entry in "${landing_entries[@]}"; do
+    entry="${entry%$'\r'}"  # strip Windows CR
+    gid="${entry%%|*}"
+    landing_rel="${entry#*|}"
+    # Compute base directory (strip -v\d+ suffix)
+    base=$(echo "$gid" | sed 's/-v[0-9]*$//')
+    landing_src="$I7_ROOT/$landing_rel"
+    dest_dir="games/$base"
+    mkdir -p "$dest_dir"
+
+    if [[ -f "$landing_src" ]]; then
+        cp "$landing_src" "$dest_dir/index.html"
+        echo "  $base: landing page copied from $landing_rel"
+
+        # Apply path fixups for Dracula (fetch paths differ between project and hub context)
+        if [[ "$base" == "dracula" ]]; then
+            sed -i "s|fetch('../src/basic/|fetch('src/basic/|g" "$dest_dir/index.html"
+            sed -i "s|fetch('../src/inform/story.ni')|fetch('story.ni')|g" "$dest_dir/index.html"
+            echo "  dracula: fetch paths fixed"
+        fi
+    else
+        echo "  WARNING: landing page not found: $landing_src"
+    fi
+done
+
+# --- Copy Dracula BASIC source files ---
+echo ""
+echo "Copying Dracula BASIC source..."
 
 mkdir -p "games/dracula/src/basic"
 for f in "$I7_ROOT/projects/dracula/src/basic/"*.bas; do
@@ -106,13 +137,13 @@ if [[ $validation_errors -gt 0 ]]; then
     echo "WARNING: $validation_errors game(s) failed validation"
 fi
 
-# --- Generate landing pages ---
+# --- Extract card metadata from landing pages ---
 echo ""
-echo "Generating landing pages..."
+echo "Extracting card metadata..."
 
-python3 "$I7_ROOT/tools/deploy/generate-landing-pages.py" \
+python3 "$I7_ROOT/tools/deploy/extract-cards.py" \
     --games-json games.json \
-    --template landing-template.html
+    --i7-root "$I7_ROOT"
 
 echo ""
 echo "Done. Serve with:  python -m http.server 8000 --directory $(pwd)"

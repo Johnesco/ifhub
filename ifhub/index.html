@@ -147,38 +147,30 @@ footer a {
 <div id="games"></div>
 
 <script>
-fetch('games.json')
+fetch('cards.json')
   .then(r => r.json())
-  .then(games => {
-    const byId = {};
-    games.forEach(g => byId[g.id] = g);
-
+  .then(cards => {
     const container = document.getElementById('games');
-    games.filter(g => g.card).forEach(g => {
-      const c = g.card;
-      const playLabel = 'Play fullscreen' + (g.sound ? ' (with sound)' : '');
-
-      // Compute landing directory: strip -v\d+$ suffix for versioned games
-      const base = c.versions ? g.id.replace(/-v\d+$/, '') : g.id;
+    cards.forEach(card => {
+      const playLabel = 'Play fullscreen' + (card.sound ? ' (with sound)' : '');
 
       let versions = '';
-      if (c.versions) {
-        const links = c.versions.map(vid => {
-          const v = byId[vid];
-          return `<a href="games/${vid}/play.html">${v && v.versionLabel || vid}</a>`;
-        }).join(' ');
+      if (card.versions) {
+        const links = card.versions.map(v =>
+          `<a href="games/${v.id}/play.html">${v.label || v.id}</a>`
+        ).join(' ');
         versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
       }
 
       container.insertAdjacentHTML('beforeend',
         `<div class="game-card">
-          <h3><a href="games/${base}/">${c.title}</a></h3>
-          <p class="game-meta">${c.meta}</p>
-          <p>${c.description}</p>
+          <h3><a href="games/${card.base}/">${card.title}</a></h3>
+          <p class="game-meta">${card.meta}</p>
+          <p>${card.description}</p>
           <div class="game-links">
-            <a href="games/${g.id}/play.html">${playLabel}</a>
-            <a href="app.html?game=${g.id}">Play in IF Hub</a>
-            <a href="games/${base}/">About</a>
+            <a href="games/${card.id}/play.html">${playLabel}</a>
+            <a href="app.html?game=${card.id}">Play in IF Hub</a>
+            <a href="games/${card.base}/">About</a>
           </div>
           ${versions}
         </div>`
