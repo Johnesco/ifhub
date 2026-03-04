@@ -384,7 +384,7 @@ body.mood-tree #gameport::after {
   filter: blur(0.3px);
 }
 
-/* ── Egg taken — golden explosion, screen shake, shockwave ── */
+/* ── Egg in trophy case — golden explosion, screen shake, shockwave ── */
 
 @keyframes eggFlash {
   0%   { opacity: 0; }
@@ -580,12 +580,16 @@ body.sword-glow-bright::after {
 (function() {
   'use strict';
 
-  // Only activate for Zork1 games
+  // Only activate for Zork1 v3+ games (v3 added sound/atmosphere, v4 added enhanced effects)
   if (!binaryPath || binaryPath.indexOf('zork1') === -1) return;
 
-  // Detect version — v4+ gets enhanced effects (CRT, tree, egg, reversed status bar, larger font)
+  // Detect version — v3+ gets mood theming, v4+ gets enhanced effects
   var versionMatch = binaryPath.match(/zork1-v(\d+)/);
   var version = versionMatch ? parseInt(versionMatch[1], 10) : 99; // no version = current/latest
+
+  // v0–v2: no atmospheric effects at all
+  if (version < 3) return;
+
   var enhanced = version >= 4;
 
   if (enhanced) {
@@ -721,6 +725,7 @@ body.sword-glow-bright::after {
 
   // ── Room-specific visual effects ──
 
+  var eggTaken = false;  // tree sway only activates after egg is taken
   var leafContainer = null;
   var LEAF_COLORS = ['#4a8030','#5a9035','#3d7028','#6aaa40','#8ab850',
                      '#a0c060','#7a6030','#9a8040','#c4a050','#b8a040'];
@@ -753,7 +758,7 @@ body.sword-glow-bright::after {
   }
 
   function handleRoomEffects(roomName) {
-    if (roomName === 'Up a Tree') {
+    if (roomName === 'Up a Tree' && eggTaken) {
       document.body.classList.add('mood-tree');
       spawnLeaves();
     } else {
@@ -762,7 +767,16 @@ body.sword-glow-bright::after {
     }
   }
 
-  // ── Egg-taken golden flash event ──
+  function triggerTreeSway() {
+    eggTaken = true;
+    console.log('[mood] Egg taken — tree disturbed!');
+    if (currentRoom === 'Up a Tree') {
+      document.body.classList.add('mood-tree');
+      spawnLeaves();
+    }
+  }
+
+  // ── Trophy case golden flash event ──
 
   var lastNodeText = '';
   var eggFlashCooldown = false;
@@ -770,7 +784,7 @@ body.sword-glow-bright::after {
   function triggerEggFlash() {
     if (eggFlashCooldown) return;
     eggFlashCooldown = true;
-    console.log('[mood] EGG TAKEN \u2014 golden flash!');
+    console.log('[mood] Egg in trophy case \u2014 golden flash!');
 
     // Double flash overlay
     var ov1 = document.createElement('div'); ov1.className = 'egg-overlay';
@@ -823,7 +837,7 @@ body.sword-glow-bright::after {
     if (level) document.body.classList.add(level);
   }
 
-  // Watch buffer text for game events (egg flash, sword glow)
+  // Watch buffer text for game events (tree sway, trophy flash, sword glow)
   function watchBuffer() {
     function tryAttach() {
       var buf = document.querySelector('.BufferWindow');
@@ -834,8 +848,12 @@ body.sword-glow-bright::after {
             var node = muts[i].addedNodes[j];
             if (node.nodeType !== 1) continue;
             var text = (node.textContent || '').trim();
-            // Egg flash
+            // Egg taken — trigger tree sway
             if (/^taken\.?$/i.test(text) && /\begg\b/.test(lastNodeText)) {
+              triggerTreeSway();
+            }
+            // Egg in trophy case — golden explosion
+            if (/^done\.?$/i.test(text) && /\begg\b/.test(lastNodeText) && /\b(case|trophy)\b/.test(lastNodeText)) {
               triggerEggFlash();
             }
             // Sword glow
