@@ -117,6 +117,64 @@ footer a {
   color: #887755;
   border-bottom-color: #3a3020;
 }
+
+.game-picker {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0 8px;
+  padding: 16px 20px;
+  background: #111;
+  border: 1px solid #1e1a14;
+  border-radius: 6px;
+}
+
+.game-picker select {
+  flex: 1;
+  padding: 10px 12px;
+  font-size: 1em;
+  font-family: Georgia, "Times New Roman", serif;
+  background: #1a1610;
+  color: #d4c5a9;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.game-picker label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9em;
+  color: #aa9966;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.game-picker input[type="checkbox"] {
+  accent-color: #e8d090;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.game-picker button {
+  padding: 10px 28px;
+  font-size: 1.05em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: #e8d090;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.game-picker button:hover {
+  background: #ffe8a0;
+}
 </style>
 </head>
 <body>
@@ -142,6 +200,12 @@ footer a {
   effects that play alongside the text.
 </p>
 
+<div class="game-picker">
+  <select id="game-pick"><option value="">Loading&hellip;</option></select>
+  <label><input type="checkbox" id="fullscreen-check"> Fullscreen?</label>
+  <button id="play-btn">PLAY</button>
+</div>
+
 <h2>Games</h2>
 
 <div id="games"></div>
@@ -150,6 +214,29 @@ footer a {
 fetch('cards.json')
   .then(r => r.json())
   .then(cards => {
+    // Populate game picker dropdown
+    const select = document.getElementById('game-pick');
+    select.innerHTML = '';
+    cards.forEach(card => {
+      const label = card.title + (card.sound ? ' (with sound)' : '');
+      select.insertAdjacentHTML('beforeend',
+        `<option value="${card.id}">${label}</option>`
+      );
+    });
+
+    // Wire PLAY button
+    document.getElementById('play-btn').addEventListener('click', () => {
+      const id = select.value;
+      if (!id) return;
+      const fullscreen = document.getElementById('fullscreen-check').checked;
+      if (fullscreen) {
+        window.location.href = `games/${id}/play.html`;
+      } else {
+        window.location.href = `app.html?game=${id}`;
+      }
+    });
+
+    // Render game cards
     const container = document.getElementById('games');
     cards.forEach(card => {
       const playLabel = 'Play fullscreen' + (card.sound ? ' (with sound)' : '');
@@ -170,7 +257,6 @@ fetch('cards.json')
           <div class="game-links">
             <a href="games/${card.id}/play.html">${playLabel}</a>
             <a href="app.html?game=${card.id}">Play in IF Hub</a>
-            <a href="games/${card.base}/">About</a>
           </div>
           ${versions}
         </div>`

@@ -983,9 +983,14 @@ function switchGame(gameId) {
   // Update dropdown
   document.getElementById('game-select').value = gameId;
 
-  // Build iframe URL — pass binary path and title as params
+  // Build iframe URL — use per-game play page if available, else shared player
   var iframe = document.getElementById('game-frame');
-  var iframeSrc = 'play.html?binary=' + encodeURIComponent(g.binary) + '&title=' + encodeURIComponent(g.title);
+  var iframeSrc;
+  if (g.playTemplate) {
+      iframeSrc = 'games/' + gameId + '/play.html';
+  } else {
+      iframeSrc = 'play.html?binary=' + encodeURIComponent(g.binary) + '&title=' + encodeURIComponent(g.title);
+  }
   iframe.src = iframeSrc;
   iframe.title = g.title + ' \u2014 Interactive Fiction';
 
