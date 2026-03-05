@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import shutil
 
 
@@ -67,7 +68,7 @@ def main():
         if wt_dir:
             wt_path = os.path.join(args.i7_root, wt_dir)
             # Derive base project name (e.g. "zork1-v4" → "zork1", "sample" → "sample")
-            base_id = gid.split("-")[0]
+            base_id = re.sub(r"-v\d+$", "", gid)
             for wf in WALKTHROUGH_FILES:
                 wf_src = os.path.join(wt_path, wf)
                 if os.path.isfile(wf_src):

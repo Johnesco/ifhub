@@ -1,12 +1,18 @@
 #!/bin/bash
-# Compile an Inform 7 project and update its web player.
+# Compile an Inform 7 project and optionally update its web player.
 #
 # Usage:
-#   bash /c/code/ifhub/tools/compile.sh <game-name> [--sound]
+#   bash /c/code/ifhub/tools/compile.sh <game-name> [--sound] [--source PATH] [--compile-only]
+#
+# Options:
+#   --sound          Embed .ogg audio in a .gblorb binary
+#   --source PATH    Use this story.ni instead of the project's own
+#   --compile-only   Skip the web player update step (setup-web.sh + validate-web.sh)
 #
 # Examples:
 #   bash /c/code/ifhub/tools/compile.sh sample
 #   bash /c/code/ifhub/tools/compile.sh zork1 --sound
+#   bash /c/code/ifhub/tools/compile.sh zork1 --source versions/v1/story.ni --compile-only
 #
 # Steps:
 #   1. Compiles story.ni → story.i6 (Inform 7 → Inform 6)
@@ -15,7 +21,7 @@
 #     2b. generate-blurb.sh → <name>.blurb
 #     2c. inblorb <name>.blurb → <name>.gblorb
 #   3. Cleans up intermediates (story.i6, .blurb)
-#   4. Sets up web player (encodes .gblorb if --sound, otherwise .ulx)
+#   4. Sets up web player (unless --compile-only)
 
 set -euo pipefail
 
@@ -23,7 +29,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 I7_ROOT="$(dirname "$SCRIPT_DIR")"
 
 if [[ $# -lt 1 ]]; then
-    echo "Usage: $0 <game-name> [--sound]" >&2
+    echo "Usage: $0 <game-name> [--sound] [--source PATH] [--compile-only]" >&2
     echo "  Example: $0 zork1 --sound" >&2
     exit 1
 fi
@@ -31,18 +37,24 @@ fi
 NAME="$1"
 shift
 SOUND=false
+SOURCE_PATH=""
+COMPILE_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --sound) SOUND=true; shift ;;
-        *)       echo "Unknown option: $1" >&2; exit 1 ;;
+        --sound)        SOUND=true; shift ;;
+        --source)       SOURCE_PATH="$2"; shift 2 ;;
+        --compile-only) COMPILE_ONLY=true; shift ;;
+        *)              echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
 
 PROJECT_DIR="$I7_ROOT/projects/$NAME"
 
-if [[ ! -f "$PROJECT_DIR/story.ni" ]]; then
-    echo "ERROR: story.ni not found at $PROJECT_DIR/story.ni" >&2
+SOURCE_FILE="${SOURCE_PATH:-$PROJECT_DIR/story.ni}"
+
+if [[ ! -f "$SOURCE_FILE" ]]; then
+    echo "ERROR: story.ni not found at $SOURCE_FILE" >&2
     exit 1
 fi
 
@@ -51,7 +63,7 @@ fi
 # Check for colons in the story title — Windows cannot have colons in filenames,
 # and Inform 7 derives filenames from the title. This causes inblorb to fail with
 # an invalid "storyfile leafname" error on Windows.
-TITLE_LINE=$(head -1 "$PROJECT_DIR/story.ni")
+TITLE_LINE=$(head -1 "$SOURCE_FILE")
 
 # Extract the game title from story.ni (first quoted string on the first line)
 # e.g. "Zork I - The Great Underground Empire" by "John Doe" → Zork I - The Great Underground Empire
@@ -98,7 +110,7 @@ echo "=== Compiling $NAME ==="
 echo "  [1/$TOTAL_STEPS] Inform 7 → Inform 6..."
 "$I7_COMPILER" \
     -internal "$I7_INTERNAL" \
-    -source "$PROJECT_DIR/story.ni" \
+    -source "$SOURCE_FILE" \
     -o "$PROJECT_DIR/story.i6" \
     -silence
 
@@ -113,7 +125,7 @@ if [[ "$SOUND" == true ]]; then
     echo "  [3/$TOTAL_STEPS] Generating blurb..."
     bash "$SCRIPT_DIR/generate-blurb.sh" \
         --ulx "$PROJECT_DIR/$NAME.ulx" \
-        --source "$PROJECT_DIR/story.ni" \
+        --source "$SOURCE_FILE" \
         --sounds "$PROJECT_DIR/Sounds" \
         --out "$PROJECT_DIR/$NAME.blurb"
 
@@ -130,31 +142,35 @@ if [[ "$SOUND" == true ]]; then
     rm -f "$PROJECT_DIR/$NAME.blurb"
 fi
 
-# Step 4: Update web player
-echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Updating web player..."
-TEMPLATE_FLAG=""
-if [[ -f "$PROJECT_DIR/play-template.html" ]]; then
-    TEMPLATE_FLAG="--template $PROJECT_DIR/play-template.html"
-    echo "  Using project template: $PROJECT_DIR/play-template.html"
-fi
-if [[ "$SOUND" == true ]]; then
-    bash "$SCRIPT_DIR/web/setup-web.sh" \
-        --title "$GAME_TITLE" \
-        --blorb "$PROJECT_DIR/$NAME.gblorb" \
-        --out "$PROJECT_DIR/web" \
-        $TEMPLATE_FLAG
-else
-    bash "$SCRIPT_DIR/web/setup-web.sh" \
-        --title "$GAME_TITLE" \
-        --ulx "$PROJECT_DIR/$NAME.ulx" \
-        --out "$PROJECT_DIR/web" \
-        $TEMPLATE_FLAG
-fi
+# Step 4: Update web player (skip with --compile-only)
+if [[ "$COMPILE_ONLY" != true ]]; then
+    echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Updating web player..."
+    TEMPLATE_FLAG=""
+    if [[ -f "$PROJECT_DIR/play-template.html" ]]; then
+        TEMPLATE_FLAG="--template $PROJECT_DIR/play-template.html"
+        echo "  Using project template: $PROJECT_DIR/play-template.html"
+    fi
+    if [[ "$SOUND" == true ]]; then
+        bash "$SCRIPT_DIR/web/setup-web.sh" \
+            --title "$GAME_TITLE" \
+            --blorb "$PROJECT_DIR/$NAME.gblorb" \
+            --out "$PROJECT_DIR/web" \
+            $TEMPLATE_FLAG
+    else
+        bash "$SCRIPT_DIR/web/setup-web.sh" \
+            --title "$GAME_TITLE" \
+            --ulx "$PROJECT_DIR/$NAME.ulx" \
+            --out "$PROJECT_DIR/web" \
+            $TEMPLATE_FLAG
+    fi
 
-# Validate web player
-echo ""
-echo "Validating web player..."
-bash "$SCRIPT_DIR/validate-web.sh" "$PROJECT_DIR/web"
+    # Validate web player
+    echo ""
+    echo "Validating web player..."
+    bash "$SCRIPT_DIR/validate-web.sh" "$PROJECT_DIR/web"
+else
+    echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Skipping web player (--compile-only)"
+fi
 
 ULX_SIZE=$(wc -c < "$PROJECT_DIR/$NAME.ulx" | tr -d ' ')
 echo ""

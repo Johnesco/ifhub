@@ -10,13 +10,14 @@
 # New version (no --update):
 #   1. Creates <version>/ directory
 #   2. Copies story.ni from project root
-#   3. Base64-encodes .ulx into <name>.ulx.js
+#   3. Base64-encodes .ulx (or .gblorb) into the web binary
 #   4. Copies template files (player pages, lib/) from the previous version
 #
 # Update existing version (--update):
-#   1. Overwrites story.ni from project root
-#   2. Re-encodes .ulx into <name>.ulx.js
-#   3. Copies walkthrough data from tests/ if present
+#   1. Recompiles from the version's own frozen story.ni (never overwrites it)
+#   2. Auto-detects binary type (.gblorb vs .ulx) from existing web files
+#   3. Re-encodes the compiled binary into the version's lib/parchment/
+#   4. Copies walkthrough command files from tests/ (but not walkthrough_output.txt)
 
 set -euo pipefail
 
@@ -47,15 +48,9 @@ if [[ ! -d "$PROJECT_DIR" ]]; then
     exit 1
 fi
 
-# --- Validate source files ---
-if [[ ! -f "$PROJECT_DIR/story.ni" ]]; then
+# --- Validate project ---
+if [[ ! -f "$PROJECT_DIR/story.ni" && "$UPDATE" != true ]]; then
     echo "ERROR: No story.ni in $PROJECT_DIR" >&2
-    exit 1
-fi
-
-ULX_FILE="$PROJECT_DIR/$NAME.ulx"
-if [[ ! -f "$ULX_FILE" ]]; then
-    echo "ERROR: No $NAME.ulx in $PROJECT_DIR — compile first" >&2
     exit 1
 fi
 
@@ -66,21 +61,51 @@ if [[ "$UPDATE" == true ]]; then
         exit 1
     fi
 
+    # Never overwrite frozen source — compile from the version's own story.ni
+    if [[ ! -f "$VERSION_DIR/story.ni" ]]; then
+        echo "ERROR: No frozen story.ni in $VERSION_DIR" >&2
+        echo "  (This version may not have Inform 7 source — e.g. ZIL-only versions)" >&2
+        exit 1
+    fi
+
     echo "Updating $VERSION..."
 
-    # Copy source
-    cp "$PROJECT_DIR/story.ni" "$VERSION_DIR/story.ni"
-    echo "  story.ni updated"
+    # Auto-detect binary type from existing web files
+    BINARY_TYPE="ulx"
+    if [[ -f "$VERSION_DIR/lib/parchment/$NAME.gblorb.js" ]]; then
+        BINARY_TYPE="gblorb"
+    fi
+    echo "  Binary type: $BINARY_TYPE"
 
-    # Encode binary
-    B64=$(base64 -w 0 "$ULX_FILE")
-    echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
-    echo "  $NAME.ulx.js updated"
+    # Recompile from the version's frozen source
+    COMPILE_ARGS=("$NAME" --source "$VERSION_DIR/story.ni" --compile-only)
+    if [[ "$BINARY_TYPE" == "gblorb" ]]; then
+        COMPILE_ARGS+=(--sound)
+    fi
+    bash "$SCRIPT_DIR/compile.sh" "${COMPILE_ARGS[@]}"
 
-    # Copy walkthrough data if present
+    # Encode the compiled binary into the version's lib/parchment/
+    if [[ "$BINARY_TYPE" == "gblorb" ]]; then
+        B64=$(base64 -w 0 "$PROJECT_DIR/$NAME.gblorb")
+        echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.gblorb.js"
+        echo "  $NAME.gblorb.js updated"
+        # Also update .ulx.js companion if it exists
+        if [[ -f "$VERSION_DIR/lib/parchment/$NAME.ulx.js" ]]; then
+            B64_ULX=$(base64 -w 0 "$PROJECT_DIR/$NAME.ulx")
+            echo "processBase64Zcode('${B64_ULX}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
+            echo "  $NAME.ulx.js updated (companion)"
+        fi
+    else
+        B64=$(base64 -w 0 "$PROJECT_DIR/$NAME.ulx")
+        echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
+        echo "  $NAME.ulx.js updated"
+    fi
+
+    # Copy walkthrough command files if present (but NOT walkthrough_output.txt —
+    # that's version-specific game output, generated from THIS version's binary)
     WALK_DIR="$PROJECT_DIR/tests/inform7"
     if [[ -d "$WALK_DIR" ]]; then
-        for wf in walkthrough.txt walkthrough-guide.txt walkthrough_output.txt; do
+        for wf in walkthrough.txt walkthrough-guide.txt; do
             if [[ -f "$WALK_DIR/$wf" ]]; then
                 cp "$WALK_DIR/$wf" "$VERSION_DIR/$wf"
                 echo "  $wf updated"
@@ -106,11 +131,26 @@ else
     cp "$PROJECT_DIR/story.ni" "$VERSION_DIR/story.ni"
     echo "  story.ni copied"
 
-    # Encode binary
+    # Encode binary — prefer .gblorb if it exists, else .ulx
     mkdir -p "$VERSION_DIR/lib/parchment"
-    B64=$(base64 -w 0 "$ULX_FILE")
-    echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
-    echo "  $NAME.ulx.js created"
+    if [[ -f "$PROJECT_DIR/$NAME.gblorb" ]]; then
+        B64=$(base64 -w 0 "$PROJECT_DIR/$NAME.gblorb")
+        echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.gblorb.js"
+        echo "  $NAME.gblorb.js created"
+        # Also encode .ulx companion if it exists
+        if [[ -f "$PROJECT_DIR/$NAME.ulx" ]]; then
+            B64_ULX=$(base64 -w 0 "$PROJECT_DIR/$NAME.ulx")
+            echo "processBase64Zcode('${B64_ULX}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
+            echo "  $NAME.ulx.js created (companion)"
+        fi
+    elif [[ -f "$PROJECT_DIR/$NAME.ulx" ]]; then
+        B64=$(base64 -w 0 "$PROJECT_DIR/$NAME.ulx")
+        echo "processBase64Zcode('${B64}')" > "$VERSION_DIR/lib/parchment/$NAME.ulx.js"
+        echo "  $NAME.ulx.js created"
+    else
+        echo "ERROR: No $NAME.gblorb or $NAME.ulx in $PROJECT_DIR — compile first" >&2
+        exit 1
+    fi
 
     # Copy template files from previous version
     if [[ -n "$PREV_VERSION" && -d "$PREV_VERSION" ]]; then
@@ -154,7 +194,7 @@ else
             # Copy parchment engine files (not the binary)
             for f in "$PREV_VERSION"/lib/parchment/*; do
                 fname="$(basename "$f")"
-                if [[ "$fname" != *".ulx.js" && "$fname" != *".z3.js" ]]; then
+                if [[ "$fname" != *".ulx.js" && "$fname" != *".gblorb.js" && "$fname" != *".z3.js" ]]; then
                     cp "$f" "$VERSION_DIR/lib/parchment/$fname"
                     echo "    lib/parchment/$fname"
                 fi

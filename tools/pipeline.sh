@@ -125,11 +125,17 @@ for stage in compile test snapshot deploy push; do
 done
 STAGES=("${ORDERED_STAGES[@]}")
 
-# Snapshot requires --version
+# Snapshot requires --version in v[0-9]+ format
 for s in "${STAGES[@]}"; do
-    if [[ "$s" == "snapshot" && -z "$VERSION" ]]; then
-        echo "ERROR: snapshot stage requires --version" >&2
-        exit 1
+    if [[ "$s" == "snapshot" ]]; then
+        if [[ -z "$VERSION" ]]; then
+            echo "ERROR: snapshot stage requires --version" >&2
+            exit 1
+        fi
+        if [[ ! "$VERSION" =~ ^v[0-9]+$ ]]; then
+            echo "ERROR: --version must match v[0-9]+ format (got: $VERSION)" >&2
+            exit 1
+        fi
     fi
 done
 
@@ -428,6 +434,14 @@ stage_test() {
 }
 
 stage_snapshot() {
+    # Sync root story.ni to the version directory before recompiling.
+    # snapshot.sh --update never overwrites frozen source (it compiles from
+    # the version's own story.ni), so pipeline must sync it explicitly.
+    local version_dir="$PROJECT_DIR/versions/$VERSION"
+    if [[ -d "$version_dir" && -f "$PROJECT_DIR/story.ni" ]]; then
+        cp "$PROJECT_DIR/story.ni" "$version_dir/story.ni"
+        echo "  story.ni synced to $VERSION"
+    fi
     bash "$SCRIPT_DIR/snapshot.sh" "$NAME" "$VERSION" --update
 }
 

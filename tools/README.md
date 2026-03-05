@@ -23,30 +23,40 @@ Creates:
 
 ### `compile.sh` — Compile a Project
 
-Runs the full compilation pipeline and updates the web player.
+Runs the full compilation pipeline and optionally updates the web player.
 
 ```bash
-bash tools/compile.sh <game-name>           # standard compile (ULX)
-bash tools/compile.sh <game-name> --sound   # with embedded blorb sound
+bash tools/compile.sh <game-name>                          # standard compile (ULX)
+bash tools/compile.sh <game-name> --sound                  # with embedded blorb sound
+bash tools/compile.sh <game-name> --source PATH            # compile from alternate story.ni
+bash tools/compile.sh <game-name> --compile-only           # skip web player update
+bash tools/compile.sh <game-name> --source PATH --compile-only --sound  # all flags combined
 ```
+
+**Options:**
+| Flag | Purpose |
+|------|---------|
+| `--sound` | Embed `.ogg` audio in a `.gblorb` binary |
+| `--source PATH` | Use this `story.ni` instead of the project's own |
+| `--compile-only` | Skip the web player update step (`setup-web.sh` + `validate-web.sh`) |
 
 Steps (standard):
 1. Inform 7 → Inform 6 (via `inform7.exe`)
 2. Inform 6 → Glulx (via `inform6.exe`)
 3. Clean up intermediate `.i6` file
-4. Update web player (copies Parchment libs, base64-encodes `.ulx`)
+4. Update web player (copies Parchment libs, base64-encodes `.ulx`) — skipped with `--compile-only`
 
 Additional steps with `--sound`:
 3. Generate `.blurb` manifest from sound declarations in `story.ni`
 4. Build `.gblorb` blorb with embedded audio (via `inblorb`)
 5. Clean up intermediates
-6. Update web player (base64-encodes `.gblorb` instead of `.ulx`)
+6. Update web player (base64-encodes `.gblorb` instead of `.ulx`) — skipped with `--compile-only`
 
 **Pre-flight checks** (run before expensive compilation):
 - Rejects titles with colons (`:`) — invalid filenames on Windows
 - Rejects `--sound` if `Sounds/` directory is missing at project root
 
-Output: `projects/<name>/<name>.ulx` (+ `.gblorb` with `--sound`) and `projects/<name>/web/play.html`
+Output: `projects/<name>/<name>.ulx` (+ `.gblorb` with `--sound`) and `projects/<name>/web/play.html` (unless `--compile-only`)
 
 ### `publish.sh` — Publish to GitHub Pages
 
@@ -77,19 +87,24 @@ Creates or updates a frozen version snapshot in `versions/<version>/`.
 # Create new version (copies from previous version's template)
 bash tools/snapshot.sh <game-name> v4
 
-# Update existing version (refreshes source, binary, walkthrough data)
+# Update existing version (recompile from frozen source, re-encode binary)
 bash tools/snapshot.sh <game-name> v3 --update
 ```
 
-New version creates:
+**New version** creates:
 - `story.ni` — Frozen copy of current source
-- `lib/parchment/<name>.ulx.js` — Base64-encoded binary
-- Template files (player pages, libs) copied from previous version
+- `lib/parchment/<name>.ulx.js` or `<name>.gblorb.js` — Base64-encoded binary (prefers `.gblorb` if it exists)
+- Template files (player pages, libs) copied from previous version (excludes `*.ulx.js`, `*.gblorb.js`, `*.z3.js`)
 
-Update mode overwrites:
-- `story.ni` — Re-synced from project root
-- `<name>.ulx.js` — Re-encoded from current binary
-- Walkthrough files — Copied from `tests/inform7/` if present
+**Update mode** (`--update`):
+- **Never overwrites frozen source** — compiles from the version's own `story.ni`
+- Auto-detects binary type (`.gblorb` vs `.ulx`) from existing web files
+- Recompiles via `compile.sh --source <version>/story.ni --compile-only` (adds `--sound` for gblorb)
+- Re-encodes the compiled binary into `lib/parchment/`
+- Copies walkthrough command files (`walkthrough.txt`, `walkthrough-guide.txt`) from `tests/inform7/` if present
+- Does **not** overwrite `walkthrough_output.txt` — that's version-specific game output
+
+Versions without a `story.ni` (e.g., ZIL-only v0) will error on `--update`.
 
 ---
 
@@ -297,6 +312,13 @@ bash tools/compile.sh zork1
 bash tools/snapshot.sh zork1 v4
 bash tools/build-site.sh zork1
 python -m http.server 8000 --directory projects/zork1/_site  # preview
+```
+
+### Recompile a frozen version from its own source
+```bash
+bash tools/snapshot.sh zork1 v1 --update      # recompiles from v1's story.ni
+bash tools/snapshot.sh zork1 v3 --update      # auto-detects --sound for gblorb versions
+bash ifhub/deploy.sh                           # redeploy to hub
 ```
 
 ### Update IF Hub with latest games
