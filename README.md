@@ -17,6 +17,9 @@ bash tools/compile.sh mygame
 # Compile with embedded sound (requires Sounds/*.ogg at project root)
 bash tools/compile.sh mygame --sound
 
+# Compile from alternate source (e.g., a frozen version snapshot)
+bash tools/compile.sh mygame --source path/to/story.ni --compile-only
+
 # Play locally
 python -m http.server 8000 --directory projects/mygame/web
 # Open http://localhost:8000/play.html
@@ -79,10 +82,11 @@ All scripts live in `tools/`. See [`tools/README.md`](tools/README.md) for full 
 | Script | Purpose |
 |--------|---------|
 | `new-project.sh` | Scaffold a new Inform 7 project with build, test, and deploy infrastructure |
-| `compile.sh` | Compile a project (I7 → I6 → Glulx → optional blorb) and update its web player |
+| `compile.sh` | Compile a project (I7 → I6 → Glulx → optional blorb) and optionally update its web player |
 | `publish.sh` | Publish a project to GitHub Pages (creates repo on first run) |
 | `build-site.sh` | Assemble `_site/` from `web/` + version snapshots for deployment |
-| `snapshot.sh` | Freeze current source into a numbered version snapshot |
+| `snapshot.sh` | Freeze/update version snapshots (recompiles from frozen source, supports `.gblorb`) |
+| `run.py` | Interactive pipeline runner — arrow-key menus for common tasks (`pip install InquirerPy`) |
 | `regtest.py` | Shared RegTest runner (by Andrew Plotkin) for regression testing |
 
 ### Testing Framework (`tools/testing/`)
@@ -139,7 +143,10 @@ Inform 7 is installed system-wide. CLI compilation uses `-source` and `-o` flags
 
 ```bash
 # Compile via compile.sh (recommended)
-bash tools/compile.sh <game-name>
+bash tools/compile.sh <game-name>                          # standard
+bash tools/compile.sh <game-name> --sound                  # with blorb sound
+bash tools/compile.sh <game-name> --source PATH            # alternate story.ni
+bash tools/compile.sh <game-name> --compile-only           # skip web player update
 
 # Or manually:
 # Step 1: I7 → I6

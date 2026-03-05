@@ -16,8 +16,10 @@ Chapter 1 - Bibliographic and Settings
 
 When play begins:
 	now the left hand status line is "[the player's surroundings]   Score: [score]/[turn count]";
-	now the right hand status line is "";
-	say "[bold type]Sample[roman type][line break]An Interactive Fiction by Claude Code[line break]Release 1[paragraph break]".
+	now the right hand status line is "".
+
+After printing the banner text:
+	say "A practice game for learning Inform 7.[paragraph break]".
 
 Chapter 2 - Score Ranks
 

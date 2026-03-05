@@ -7,6 +7,8 @@
 
 The story headline is "A Subtitle".
 The story genre is "Fiction".
+The release number is 1.
+The story creation year is 2026.
 The story description is "A brief description."
 
 Part 1 - Setup
@@ -15,6 +17,10 @@ Chapter 1 - The World
 
 [... source code ...]
 ```
+
+### Banner Convention
+
+The compiler auto-generates a startup banner from bibliographic fields. To add custom attribution lines after the banner, use `After printing the banner text` — never `When play begins: say "..."` (creates a double header). See CLAUDE.md "IF Banner Convention" for full details.
 
 ## World Model
 

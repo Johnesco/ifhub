@@ -2,6 +2,7 @@
 
 The story headline is "An Interactive Adventure".
 The story genre is "Horror".
+The release number is 1.
 The story description is "Explore Dracula's Castle and uncover its dark secret before midnight strikes."
 
 Part 1 - Configuration
