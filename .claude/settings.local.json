@@ -58,7 +58,13 @@
       "WebFetch(domain:www.ifarchive.org)",
       "Bash(gh label:*)",
       "Bash(gh project:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(python3:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(pip install:*)",
+      "Bash(do echo:*)",
+      "Bash(cmp:*)"
     ]
   }
 }
