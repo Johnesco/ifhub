@@ -10,8 +10,8 @@
     "versionLabel": "v0 \u2014 Original ZIL",
     "deploy": {
       "source": null,
-      "binary": "projects/zork1/versions/v0/zork1.z3.js",
-      "walkthroughDir": "projects/zork1/versions/v0"
+      "binary": "projects/zork1/v0/zork1.z3.js",
+      "walkthroughDir": "projects/zork1/v0"
     }
   },
   {
@@ -23,9 +23,9 @@
     "walkthrough": "games/zork1-v1/walkthrough.html",
     "versionLabel": "v1 \u2014 The Port",
     "deploy": {
-      "source": "projects/zork1/versions/v1/story.ni",
-      "binary": "projects/zork1/versions/v1/lib/parchment/zork1.ulx.js",
-      "walkthroughDir": "projects/zork1/versions/v1"
+      "source": "projects/zork1/v1/story.ni",
+      "binary": "projects/zork1/v1/lib/parchment/zork1.ulx.js",
+      "walkthroughDir": "projects/zork1/v1"
     }
   },
   {
@@ -37,9 +37,9 @@
     "walkthrough": "games/zork1-v2/walkthrough.html",
     "versionLabel": "v2 \u2014 Bug Fixes",
     "deploy": {
-      "source": "projects/zork1/versions/v2/story.ni",
-      "binary": "projects/zork1/versions/v2/lib/parchment/zork1.ulx.js",
-      "walkthroughDir": "projects/zork1/versions/v2"
+      "source": "projects/zork1/v2/story.ni",
+      "binary": "projects/zork1/v2/lib/parchment/zork1.ulx.js",
+      "walkthroughDir": "projects/zork1/v2"
     }
   },
   {
@@ -52,9 +52,9 @@
     "sound": "blorb",
     "versionLabel": "v3 \u2014 Sound",
     "deploy": {
-      "source": "projects/zork1/versions/v3/story.ni",
-      "binary": "projects/zork1/versions/v3/lib/parchment/zork1.gblorb.js",
-      "walkthroughDir": "projects/zork1/versions/v3"
+      "source": "projects/zork1/v3/story.ni",
+      "binary": "projects/zork1/v3/lib/parchment/zork1.gblorb.js",
+      "walkthroughDir": "projects/zork1/v3"
     }
   },
   {
@@ -68,11 +68,11 @@
     "playTemplate": "projects/zork1/play-template.html",
     "versionLabel": "v4 \u2014 Modern IF (Current)",
     "deploy": {
-      "source": "projects/zork1/versions/v4/story.ni",
-      "binary": "projects/zork1/versions/v4/lib/parchment/zork1.gblorb.js",
-      "walkthroughDir": "projects/zork1/versions/v4"
+      "source": "projects/zork1/v4/story.ni",
+      "binary": "projects/zork1/v4/lib/parchment/zork1.gblorb.js",
+      "walkthroughDir": "projects/zork1/v4"
     },
-    "landing": "projects/zork1/web/index.html"
+    "landing": "projects/zork1/index.html"
   },
   {
     "id": "dracula-v0",
@@ -98,10 +98,10 @@
     "versionLabel": "Current \u2014 Inform 7",
     "deploy": {
       "source": "projects/dracula/story.ni",
-      "binary": "projects/dracula/web/lib/parchment/dracula.ulx.js",
+      "binary": "projects/dracula/lib/parchment/dracula.ulx.js",
       "walkthroughDir": "projects/dracula/tests/inform7"
     },
-    "landing": "projects/dracula/web/index.html"
+    "landing": "projects/dracula/index.html"
   },
   {
     "id": "feverdream",

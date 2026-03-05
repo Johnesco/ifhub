@@ -21,14 +21,14 @@ python3 "$I7_ROOT/tools/deploy/copy-assets.py" \
 
 # Copy v0 source browsers and assets
 # Zork1 v0: ZIL source browser (fetches from GitHub raw URLs)
-v0_src="$I7_ROOT/projects/zork1/versions/v0/source.html"
+v0_src="$I7_ROOT/projects/zork1/v0/source.html"
 if [[ -f "$v0_src" ]]; then
   cp "$v0_src" "games/zork1-v0/source-browser.html"
   echo "  zork1-v0: source-browser.html copied"
 fi
 
 # Dracula v0: BASIC source browser + source files + placeholder play page
-dracula_v0="$I7_ROOT/projects/dracula/versions/v0"
+dracula_v0="$I7_ROOT/projects/dracula/v0"
 if [[ -d "$dracula_v0" ]]; then
   mkdir -p "games/dracula-v0"
   for f in source.html dracula.bas dracula-annotated.bas play.html index.html walkthrough.html; do
@@ -96,7 +96,7 @@ echo "Copying Zork1 extra pages..."
 
 mkdir -p "games/zork1/extras" "games/zork1/extras/scenarios"
 for f in map.html mapV0.html scenarios.html testing.html translation-challenges.html fdesc.html; do
-  src_file="$I7_ROOT/projects/zork1/web/$f"
+  src_file="$I7_ROOT/projects/zork1/$f"
   if [[ -f "$src_file" ]]; then
     cp "$src_file" "games/zork1/extras/$f"
     echo "  zork1: extras/$f copied"
@@ -106,8 +106,8 @@ for f in map.html mapV0.html scenarios.html testing.html translation-challenges.
 done
 
 # Copy scenarios directory contents
-if [[ -d "$I7_ROOT/projects/zork1/web/scenarios" ]]; then
-  cp "$I7_ROOT/projects/zork1/web/scenarios/"* "games/zork1/extras/scenarios/"
+if [[ -d "$I7_ROOT/projects/zork1/scenarios" ]]; then
+  cp "$I7_ROOT/projects/zork1/scenarios/"* "games/zork1/extras/scenarios/"
   echo "  zork1: extras/scenarios/* copied"
 fi
 

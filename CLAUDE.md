@@ -27,7 +27,7 @@ C:\code\ifhub\
 │   ├── parchment-troubleshooting.md ← Web player errors, sound gotchas, binary format
 │   └── windows-pitfalls.md ← Git Bash grep/subshell issues, MSYS2 interpreter build
 ├── tools/
-│   ├── build-site.sh      ← Assemble _site/ from web/ + versions/ for deployment
+│   ├── build-site.sh      ← Assemble _site/ from flat project layout for deployment
 │   ├── snapshot.sh        ← Freeze/update version snapshots (recompiles from frozen source)
 │   ├── run.py             ← Interactive pipeline runner (Python CLI with arrow-key menus)
 │   ├── regtest.py         ← Shared RegTest runner (used by all project test suites)
@@ -69,9 +69,9 @@ C:\code\ifhub\
 │   ├── feverdream/        ← Fever Dream
 │   ├── sample/            ← Sample practice game
 │   └── zork1/             ← Zork I: Inform 7 Edition
-│       ├── web/           ← Site-level pages (landing, map, scenarios)
-│       ├── versions/      ← Frozen version snapshots (v0, v1, v2, v3, v4)
-│       └── _site/         ← Assembled deploy directory (gitignored)
+│       ├── v0/, v1/, ...  ← Frozen version snapshots (flat layout)
+│       ├── lib/parchment/ ← Parchment engine + latest game binary
+│       └── index.html     ← Landing page (+ play.html, source.html, etc.)
 └── ifhub/                 ← IF Hub web player
     ├── index.html         ← Landing page (reads cards.json, renders cards)
     ├── app.html           ← Split-pane player (game + source viewer)
@@ -221,7 +221,7 @@ bash /c/code/ifhub/tools/pipeline.sh zork1 --continue
 |-------|-------------|-------|
 | **compile** | I7 → I6 → Glulx → Blorb(if sound) → web player | `compile.sh` |
 | **test** | Walkthrough + regtest (native or WSL) | `run-walkthrough.sh`, `run-tests.sh` |
-| **snapshot** | Sync root source to `versions/vN/`, recompile from it | `snapshot.sh` (requires `--version`) |
+| **snapshot** | Sync root source to `vN/`, recompile from it | `snapshot.sh` (requires `--version`) |
 | **deploy** | Copy source, binary, and walkthrough files to `ifhub/games/`, generate pages | `deploy.sh` |
 | **push** | Stage changes, show summary, prompt before commit/push | `git` |
 
@@ -233,7 +233,7 @@ The pipeline reads `PIPELINE_*` fields from `tests/project.conf`:
 
 ```bash
 PIPELINE_SOUND=true                 # compile with --sound
-PIPELINE_VERSIONED=true             # has versions/ directory
+PIPELINE_VERSIONED=true             # has version directories (v0/, v1/, etc.)
 PIPELINE_CURRENT_VERSION="v4"       # default --version for snapshot
 PIPELINE_HUB_ID="zork1-v4"         # game ID in games.json
 PIPELINE_TESTS="walkthrough,regtest"  # available test types
@@ -292,7 +292,7 @@ project/web/
 
 To serve locally:
 ```bash
-python -m http.server 8000 --directory project/web
+python -m http.server 8000 --directory project
 # then open http://localhost:8000/play.html
 ```
 
@@ -315,7 +315,7 @@ Current `walkthroughDir` sources (from `games.json`):
 
 | Game ID | walkthroughDir |
 |---------|---------------|
-| zork1-v0 through v4 | `projects/zork1/versions/vN/` |
+| zork1-v0 through v4 | `projects/zork1/vN/` |
 | dracula | `projects/dracula/tests/inform7/` |
 | feverdream | `projects/feverdream/tests/` |
 | sample | `projects/sample/web/` |
@@ -336,7 +336,7 @@ Each Inform 7 project lives under `C:\code\ifhub\projects\`.
 
 ### Version Snapshots (opt-in)
 
-Projects with multiple playable milestones can use a `versions/` directory to store frozen snapshots. Tools: `snapshot.sh` (freeze/update), `build-site.sh` (assemble `_site/` from `web/` + `versions/`). GitHub Actions assembles `_site/` inline for deployment. The `_site/` directory is gitignored. `snapshot.sh --update` recompiles from the version's own frozen `story.ni` (never overwrites it) and auto-detects `.gblorb` vs `.ulx` binary type.
+Projects with multiple playable milestones store frozen snapshots in `vN/` directories at the project root (flat layout). Tools: `snapshot.sh` (freeze/update), `build-site.sh` (assemble `_site/` for local preview). GitHub Actions assembles `_site/` from site-level files + version directories. The `_site/` directory is gitignored. `snapshot.sh --update` recompiles from the version's own frozen `story.ni` (never overwrites it) and auto-detects `.gblorb` vs `.ulx` binary type.
 
 ### Known Projects
 

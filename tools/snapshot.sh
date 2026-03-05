@@ -40,8 +40,7 @@ if [[ "${3:-}" == "--update" ]]; then
 fi
 
 PROJECT_DIR="$I7_ROOT/projects/$NAME"
-VERSIONS_DIR="$PROJECT_DIR/versions"
-VERSION_DIR="$VERSIONS_DIR/$VERSION"
+VERSION_DIR="$PROJECT_DIR/$VERSION"
 
 if [[ ! -d "$PROJECT_DIR" ]]; then
     echo "ERROR: Project not found: $PROJECT_DIR" >&2
@@ -120,9 +119,8 @@ else
     fi
 
     # Find previous version to copy template from
-    mkdir -p "$VERSIONS_DIR"
     PREV_VERSION=""
-    PREV_VERSION=$(ls -1d "$VERSIONS_DIR"/v[0-9]* 2>/dev/null | sort -V | tail -1 || true)
+    PREV_VERSION=$(ls -1d "$PROJECT_DIR"/v[0-9]* 2>/dev/null | sort -V | tail -1 || true)
 
     echo "Creating $VERSION..."
     mkdir -p "$VERSION_DIR"

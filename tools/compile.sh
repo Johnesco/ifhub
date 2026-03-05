@@ -145,6 +145,12 @@ fi
 # Step 4: Update web player (skip with --compile-only)
 if [[ "$COMPILE_ONLY" != true ]]; then
     echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Updating web player..."
+    # Detect web output directory: flat layout (project root) or legacy web/ subdirectory
+    if [[ -d "$PROJECT_DIR/web" ]]; then
+        WEB_DIR="$PROJECT_DIR/web"
+    else
+        WEB_DIR="$PROJECT_DIR"
+    fi
     TEMPLATE_FLAG=""
     if [[ -f "$PROJECT_DIR/play-template.html" ]]; then
         TEMPLATE_FLAG="--template $PROJECT_DIR/play-template.html"
@@ -154,20 +160,20 @@ if [[ "$COMPILE_ONLY" != true ]]; then
         bash "$SCRIPT_DIR/web/setup-web.sh" \
             --title "$GAME_TITLE" \
             --blorb "$PROJECT_DIR/$NAME.gblorb" \
-            --out "$PROJECT_DIR/web" \
+            --out "$WEB_DIR" \
             $TEMPLATE_FLAG
     else
         bash "$SCRIPT_DIR/web/setup-web.sh" \
             --title "$GAME_TITLE" \
             --ulx "$PROJECT_DIR/$NAME.ulx" \
-            --out "$PROJECT_DIR/web" \
+            --out "$WEB_DIR" \
             $TEMPLATE_FLAG
     fi
 
     # Validate web player
     echo ""
     echo "Validating web player..."
-    bash "$SCRIPT_DIR/validate-web.sh" "$PROJECT_DIR/web"
+    bash "$SCRIPT_DIR/validate-web.sh" "$WEB_DIR"
 else
     echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Skipping web player (--compile-only)"
 fi
@@ -180,7 +186,7 @@ if [[ "$SOUND" == true ]]; then
     BLORB_SIZE=$(wc -c < "$PROJECT_DIR/$NAME.gblorb" | tr -d ' ')
     echo "  Blorb:  $PROJECT_DIR/$NAME.gblorb ($BLORB_SIZE bytes)"
 fi
-echo "  Web:    $PROJECT_DIR/web/play.html"
+echo "  Web:    $WEB_DIR/play.html"
 echo ""
 if [[ ("$OSTYPE" == "msys" || "$OSTYPE" == "cygwin") && -x "$SCRIPT_DIR/interpreters/glulxe.exe" ]]; then
     echo "  Test:   cd $PROJECT_DIR && bash tests/run-tests.sh"
