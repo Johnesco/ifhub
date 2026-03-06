@@ -383,9 +383,11 @@ stage_test() {
         if [[ -z "$wt_output_dir" ]]; then
             # Derive from project layout
             if [[ "$PIPELINE_VERSIONED" == true && -n "$PIPELINE_CURRENT_VERSION" ]]; then
-                wt_output_dir="$PROJECT_DIR/versions/$PIPELINE_CURRENT_VERSION"
+                wt_output_dir="$PROJECT_DIR/$PIPELINE_CURRENT_VERSION"
             elif [[ -d "$PROJECT_DIR/web" ]]; then
                 wt_output_dir="$PROJECT_DIR/web"
+            else
+                wt_output_dir="$PROJECT_DIR"
             fi
         fi
         if [[ -n "$wt_output_dir" && -d "$wt_output_dir" ]]; then
@@ -403,6 +405,22 @@ stage_test() {
             wsl_path=$(gitbash_to_wsl_path "$PROJECT_DIR/tests/run-walkthrough.sh")
             timeout 300 wsl -e bash "$wsl_path" $seed_flag $copy_flag
         fi
+        # Post-test: regenerate walkthrough guide and sync to web root
+        local wt_src_dir="$PROJECT_DIR/tests/inform7"
+        if [[ -f "$wt_src_dir/walkthrough_output.txt" && -f "$wt_src_dir/walkthrough.txt" ]]; then
+            echo "  Regenerating walkthrough guide..."
+            python "$SCRIPT_DIR/testing/generate-guide.py" \
+                --walkthrough "$wt_src_dir/walkthrough.txt" \
+                --transcript "$wt_src_dir/walkthrough_output.txt" \
+                -o "$wt_src_dir/walkthrough-guide.txt"
+            # Sync guide to web-serving directory (output.txt already copied by --copy-output)
+            if [[ -n "${wt_output_dir:-}" && -d "${wt_output_dir:-}" && \
+                  "$(cd "$wt_output_dir" && pwd)" != "$(cd "$wt_src_dir" && pwd)" ]]; then
+                cp "$wt_src_dir/walkthrough-guide.txt" "$wt_output_dir/walkthrough-guide.txt"
+                echo "  Walkthrough files synced to: ${wt_output_dir#$PROJECT_DIR/}"
+            fi
+        fi
+
         has_tests=true
     fi
 
