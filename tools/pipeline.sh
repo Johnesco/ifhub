@@ -11,12 +11,11 @@
 #   compile   — I7 → I6 → Glulx → Blorb(if sound) → web player
 #   test      — Walkthrough + regtest (native or WSL)
 #   snapshot  — Freeze to versions/vN/ (requires --version)
-#   deploy    — Copy to ifhub/games/, generate pages
 #   push      — Stage changes, show summary, prompt before commit/push
 #
 # Flags:
-#   --all             Run: compile test deploy push
-#   --ship            Run: compile test snapshot deploy push (requires --version)
+#   --all             Run: compile test push
+#   --ship            Run: compile test snapshot push (requires --version)
 #   --version vN      Version for snapshot stage
 #   --force           Skip staleness checks
 #   --dry-run         Show what would happen without executing
@@ -26,7 +25,7 @@
 # Examples:
 #   bash pipeline.sh zork1                          # compile only (default)
 #   bash pipeline.sh zork1 compile test             # compile + test
-#   bash pipeline.sh zork1 --all                    # compile test deploy push
+#   bash pipeline.sh zork1 --all                    # compile test push
 #   bash pipeline.sh zork1 --ship --version v4      # full release pipeline
 #   bash pipeline.sh zork1 --continue               # resume after failure
 
@@ -70,7 +69,7 @@ while [[ $# -gt 0 ]]; do
             else
                 # It's a stage name
                 case "$1" in
-                    compile|test|snapshot|deploy|push) STAGES+=("$1") ;;
+                    compile|test|snapshot|push) STAGES+=("$1") ;;
                     *) echo "Unknown stage: $1" >&2; exit 1 ;;
                 esac
             fi
@@ -84,7 +83,7 @@ if [[ -z "$NAME" ]]; then
     echo "" >&2
     echo "  bash pipeline.sh zork1                     # compile only" >&2
     echo "  bash pipeline.sh zork1 compile test        # compile + test" >&2
-    echo "  bash pipeline.sh zork1 --all               # compile test deploy push" >&2
+    echo "  bash pipeline.sh zork1 --all               # compile test push" >&2
     echo "  bash pipeline.sh zork1 --ship --version v4 # full release" >&2
     exit 1
 fi
@@ -99,13 +98,13 @@ fi
 
 # --- Expand --all and --ship into stage lists ---
 if [[ "$SHIP" == true ]]; then
-    STAGES=(compile test snapshot deploy push)
+    STAGES=(compile test snapshot push)
     if [[ -z "$VERSION" ]]; then
         echo "ERROR: --ship requires --version" >&2
         exit 1
     fi
 elif [[ "$ALL" == true ]]; then
-    STAGES=(compile test deploy push)
+    STAGES=(compile test push)
 fi
 
 # Default: compile only
@@ -115,7 +114,7 @@ fi
 
 # Enforce stage ordering — reorder to pipeline order
 ORDERED_STAGES=()
-for stage in compile test snapshot deploy push; do
+for stage in compile test snapshot push; do
     for s in "${STAGES[@]}"; do
         if [[ "$s" == "$stage" ]]; then
             ORDERED_STAGES+=("$stage")
@@ -238,7 +237,7 @@ if [[ "$CONTINUE" == true ]]; then
     # Build stage list starting from the failed stage
     RESUME_STAGES=()
     FOUND=false
-    for stage in compile test snapshot deploy push; do
+    for stage in compile test snapshot push; do
         if [[ "$stage" == "$STAGE_FAILED" ]]; then
             FOUND=true
         fi
@@ -285,9 +284,6 @@ run_stage() {
             snapshot)
                 echo "    snapshot.sh $NAME $VERSION --update"
                 ;;
-            deploy)
-                echo "    deploy.sh (from ifhub/)"
-                ;;
             push)
                 echo "    git add + commit + push (with confirmation)"
                 ;;
@@ -311,7 +307,6 @@ run_stage() {
         compile)  stage_compile ;;
         test)     stage_test ;;
         snapshot) stage_snapshot ;;
-        deploy)   stage_deploy ;;
         push)     stage_push ;;
     esac
 
@@ -443,12 +438,6 @@ stage_snapshot() {
         echo "  story.ni synced to $VERSION"
     fi
     bash "$SCRIPT_DIR/snapshot.sh" "$NAME" "$VERSION" --update
-}
-
-stage_deploy() {
-    pushd "$I7_ROOT/ifhub" > /dev/null
-    bash deploy.sh
-    popd > /dev/null
 }
 
 stage_push() {

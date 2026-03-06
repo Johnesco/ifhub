@@ -1,136 +1,95 @@
 [
   {
     "id": "zork1-v0",
-    "title": "Zork I (v0 \u2014 Original ZIL)",
+    "title": "Zork I (v0 — Original ZIL)",
+    "versionLabel": "v0 — Original ZIL",
     "sourceLabel": "ZIL Source",
-    "source": "games/zork1-v0/source-browser.html",
     "sourceBrowser": true,
-    "binary": "games/zork1-v0/zork1.z3.js",
-    "walkthrough": "games/zork1-v0/walkthrough.html",
-    "versionLabel": "v0 \u2014 Original ZIL",
-    "deploy": {
-      "source": null,
-      "binary": "projects/zork1/v0/zork1.z3.js",
-      "walkthroughDir": "projects/zork1/v0"
-    }
+    "playUrl": "/zork1/v0/play.html",
+    "walkthroughUrl": "/zork1/v0/walkthrough.html",
+    "sourceUrl": "/zork1/v0/source.html",
+    "landingUrl": "/zork1/"
   },
   {
     "id": "zork1-v1",
     "title": "Zork I (v1)",
+    "versionLabel": "v1 — The Port",
     "sourceLabel": "zork1-v1.ni",
-    "source": "games/zork1-v1/story.ni",
-    "binary": "games/zork1-v1/zork1.ulx.js",
-    "walkthrough": "games/zork1-v1/walkthrough.html",
-    "versionLabel": "v1 \u2014 The Port",
-    "deploy": {
-      "source": "projects/zork1/v1/story.ni",
-      "binary": "projects/zork1/v1/lib/parchment/zork1.ulx.js",
-      "walkthroughDir": "projects/zork1/v1"
-    }
+    "playUrl": "/zork1/v1/play.html",
+    "walkthroughUrl": "/zork1/v1/walkthrough.html",
+    "sourceUrl": "/zork1/v1/story.ni",
+    "landingUrl": "/zork1/"
   },
   {
     "id": "zork1-v2",
     "title": "Zork I (v2)",
+    "versionLabel": "v2 — Bug Fixes",
     "sourceLabel": "zork1-v2.ni",
-    "source": "games/zork1-v2/story.ni",
-    "binary": "games/zork1-v2/zork1.ulx.js",
-    "walkthrough": "games/zork1-v2/walkthrough.html",
-    "versionLabel": "v2 \u2014 Bug Fixes",
-    "deploy": {
-      "source": "projects/zork1/v2/story.ni",
-      "binary": "projects/zork1/v2/lib/parchment/zork1.ulx.js",
-      "walkthroughDir": "projects/zork1/v2"
-    }
+    "playUrl": "/zork1/v2/play.html",
+    "walkthroughUrl": "/zork1/v2/walkthrough.html",
+    "sourceUrl": "/zork1/v2/story.ni",
+    "landingUrl": "/zork1/"
   },
   {
     "id": "zork1-v3",
     "title": "Zork I (v3)",
+    "versionLabel": "v3 — Sound",
     "sourceLabel": "zork1-v3.ni",
-    "source": "games/zork1-v3/story.ni",
-    "binary": "games/zork1-v3/zork1.gblorb.js",
-    "walkthrough": "games/zork1-v3/walkthrough.html",
     "sound": "blorb",
-    "versionLabel": "v3 \u2014 Sound",
-    "deploy": {
-      "source": "projects/zork1/v3/story.ni",
-      "binary": "projects/zork1/v3/lib/parchment/zork1.gblorb.js",
-      "walkthroughDir": "projects/zork1/v3"
-    }
+    "playUrl": "/zork1/v3/play.html",
+    "walkthroughUrl": "/zork1/v3/walkthrough.html",
+    "sourceUrl": "/zork1/v3/story.ni",
+    "landingUrl": "/zork1/"
   },
   {
     "id": "zork1-v4",
-    "title": "Zork I (v4 \u2014 Current)",
+    "title": "Zork I (v4 — Current)",
+    "versionLabel": "v4 — Modern IF (Current)",
     "sourceLabel": "zork1-v4.ni",
-    "source": "games/zork1-v4/story.ni",
-    "binary": "games/zork1-v4/zork1.gblorb.js",
-    "walkthrough": "games/zork1-v4/walkthrough.html",
     "sound": "blorb",
-    "playTemplate": "projects/zork1/play-template.html",
-    "versionLabel": "v4 \u2014 Modern IF (Current)",
-    "deploy": {
-      "source": "projects/zork1/v4/story.ni",
-      "binary": "projects/zork1/v4/lib/parchment/zork1.gblorb.js",
-      "walkthroughDir": "projects/zork1/v4"
-    },
-    "landing": "projects/zork1/index.html"
+    "playUrl": "/zork1/v4/play.html",
+    "walkthroughUrl": "/zork1/v4/walkthrough.html",
+    "sourceUrl": "/zork1/v4/story.ni",
+    "landingUrl": "/zork1/"
   },
   {
     "id": "dracula-v0",
-    "title": "Dracula\u2019s Castle (v0 \u2014 Original BASIC)",
+    "title": "Dracula's Castle (v0 — Original BASIC)",
+    "versionLabel": "v0 — Original BASIC",
     "sourceLabel": "BASIC Source",
-    "source": "games/dracula-v0/source.html",
     "sourceBrowser": true,
-    "walkthrough": "games/dracula-v0/walkthrough.html",
-    "versionLabel": "v0 \u2014 Original BASIC",
-    "deploy": {
-      "source": null,
-      "binary": null,
-      "walkthroughDir": null
-    }
+    "playUrl": "/dracula/v0/play.html",
+    "walkthroughUrl": "/dracula/v0/walkthrough.html",
+    "sourceUrl": "/dracula/v0/source.html",
+    "landingUrl": "/dracula/"
   },
   {
     "id": "dracula",
-    "title": "Dracula\u2019s Castle (Current)",
+    "title": "Dracula's Castle (Current)",
+    "versionLabel": "Current — Inform 7",
     "sourceLabel": "dracula.ni",
-    "source": "games/dracula/story.ni",
-    "binary": "games/dracula/dracula.ulx.js",
-    "walkthrough": "games/dracula/walkthrough.html",
-    "versionLabel": "Current \u2014 Inform 7",
-    "deploy": {
-      "source": "projects/dracula/story.ni",
-      "binary": "projects/dracula/lib/parchment/dracula.ulx.js",
-      "walkthroughDir": "projects/dracula/tests/inform7"
-    },
-    "landing": "projects/dracula/index.html"
+    "playUrl": "/dracula/play.html",
+    "walkthroughUrl": "/dracula/walkthrough.html",
+    "sourceUrl": "/dracula/story.ni",
+    "landingUrl": "/dracula/"
   },
   {
     "id": "feverdream",
     "title": "Fever Dream",
     "sourceLabel": "feverdream.ni",
-    "source": "games/feverdream/story.ni",
-    "binary": "games/feverdream/feverdream.gblorb.js",
-    "walkthrough": "games/feverdream/walkthrough.html",
-    "playTemplate": "projects/feverdream/play-template.html",
     "sound": "blorb",
-    "deploy": {
-      "source": "projects/feverdream/story.ni",
-      "binary": "projects/feverdream/lib/parchment/feverdream.gblorb.js",
-      "walkthroughDir": "projects/feverdream/tests"
-    },
-    "landing": "projects/feverdream/index.html"
+    "playUrl": "/feverdream/play.html",
+    "walkthroughUrl": "/feverdream/walkthrough.html",
+    "sourceUrl": "/feverdream/story.ni",
+    "landingUrl": "/feverdream/"
   },
   {
     "id": "sample",
     "title": "Sample",
     "sourceLabel": "sample.ni",
-    "source": "games/sample/story.ni",
-    "binary": "games/sample/sample.ulx.js",
-    "walkthrough": "games/sample/walkthrough.html",
-    "deploy": {
-      "source": "projects/sample/story.ni",
-      "binary": "projects/sample/lib/parchment/sample.ulx.js",
-      "walkthroughDir": "projects/sample"
-    },
-    "landing": "projects/sample/index.html"
+    "playUrl": "/sample/play.html",
+    "walkthroughUrl": "/sample/walkthrough.html",
+    "sourceUrl": "/sample/story.ni",
+    "landingUrl": "/sample/"
   }
 ]

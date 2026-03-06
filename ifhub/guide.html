@@ -260,12 +260,9 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
 &boxv;   &boxvr;&boxh;&boxh; play.html           Dynamic game player (iframe target)
 &boxv;   &boxvr;&boxh;&boxh; guide.html          This page
 &boxv;   &boxvr;&boxh;&boxh; games.json          Game registry
-&boxv;   &boxvr;&boxh;&boxh; deploy.sh           Asset gatherer + page generator
 &boxv;   &boxvr;&boxh;&boxh; lib/parchment/      Shared Parchment libraries
-&boxv;   &boxur;&boxh;&boxh; games/              Deployed game assets
-&boxv;       &boxvr;&boxh;&boxh; zork1-v4/       story.ni + gblorb.js + index.html
-&boxv;       &boxvr;&boxh;&boxh; feverdream/     story.ni + gblorb.js + index.html
-&boxv;       &boxur;&boxh;&boxh; ...
+&boxv;   &boxvr;&boxh;&boxh; games.json          Game registry (URL-based)
+&boxv;   &boxur;&boxh;&boxh; cards.json          Card metadata for landing page
 &boxur;&boxh;&boxh; reference/              Inform 7 language docs + sound guide</div>
 
 <!-- ======================================== -->
@@ -403,37 +400,26 @@ bash tools/compile.sh feverdream --sound
 bash tools/compile.sh dracula
 bash tools/compile.sh sample</code></pre>
 
-<h3>Step 2: Deploy to hub</h3>
-<pre><code>cd ifhub && bash deploy.sh</code></pre>
-
-<p><code>deploy.sh</code> does three things:</p>
-<ol>
-  <li><strong>Copies assets</strong> &mdash; for each game defined in the <code>GAMES</code> array,
-    copies <code>story.ni</code> and the base64 binary (<code>.ulx.js</code> or <code>.gblorb.js</code>)
-    into <code>ifhub/games/&lt;id&gt;/</code></li>
-  <li><strong>Copies walkthroughs</strong> &mdash; HTML walkthroughs and transcripts</li>
-  <li><strong>Generates standalone play pages</strong> &mdash; runs <code>tools/deploy/generate-play-pages.py</code>
-    which reads <code>games.json</code> and <code>tools/web/play-template.html</code>, substitutes
-    title/binary, appends cache-busting params, and writes <code>games/&lt;id&gt;/play.html</code> for each game</li>
-</ol>
+<h3>Step 2: Publish each game</h3>
+<p>Each game project deploys to GitHub Pages from its own repo. The hub references
+  games by URL &mdash; no copying or deployment needed.</p>
 
 <h3>Adding a new game</h3>
-<p>Update <code>games.json</code> only:</p>
+<p>Update <code>games.json</code> and <code>cards.json</code>:</p>
 <ol>
-  <li>Add a game entry with id, title, binary path, and optional sound/card/walkthrough fields</li>
-  <li>Add a <code>deploy</code> object with <code>source</code>, <code>binary</code>, and <code>walkthroughDir</code> paths
-    (relative to the ifhub root) so <code>deploy.sh</code> knows where to find the project assets</li>
+  <li>Ensure the game has the 4 standard pages (play.html, source.html, walkthrough.html, index.html)</li>
+  <li>Deploy the game repo to GitHub Pages</li>
+  <li>Add a game entry to <code>games.json</code> with URL fields (<code>playUrl</code>, <code>sourceUrl</code>, <code>walkthroughUrl</code>, <code>landingUrl</code>)</li>
+  <li>Add card metadata to <code>cards.json</code></li>
 </ol>
 
 <h3>Entry points</h3>
-<p>Each game is playable from three places:</p>
+<p>Each game is playable from two places:</p>
 <ul>
-  <li><strong>Standalone</strong> &mdash; <code>games/&lt;id&gt;/index.html</code> &mdash; full-page player
-    with the binary loaded directly</li>
+  <li><strong>Game&rsquo;s own site</strong> &mdash; e.g., <code>/zork1/v4/play.html</code> &mdash; full-page player
+    served from the game&rsquo;s own GitHub Pages repo</li>
   <li><strong>IF Hub app</strong> &mdash; <code>app.html?game=&lt;id&gt;</code> &mdash; split-pane interface
-    with source viewer, loaded in an iframe</li>
-  <li><strong>Direct play</strong> &mdash; <code>play.html?binary=...&amp;title=...</code> &mdash; dynamic
-    player used as the iframe target</li>
+    with source viewer; iframes the game&rsquo;s own play page</li>
 </ul>
 
 <!-- ======================================== -->
@@ -503,7 +489,7 @@ cd projects/zork1 && wsl -e bash tests/find-seeds.sh</code></pre>
 <h3>Browser cache</h3>
 <p>
   After rebuilding, browsers may serve stale JavaScript. Both <code>setup-web.sh</code>
-  and <code>deploy.sh</code> append <code>?v=&lt;timestamp&gt;</code> cache-busting params to all
+  and <code>setup-web.sh</code> append <code>?v=&lt;timestamp&gt;</code> cache-busting params to all
   <code>.js</code> and <code>.css</code> references. If testing manually, use Ctrl+Shift+R
   or an incognito window.
 </p>

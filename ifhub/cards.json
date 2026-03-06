@@ -6,23 +6,29 @@
     "meta": "Infocom (translated to Inform 7)",
     "description": "A full translation of Infocom's classic adventure game from the original ZIL source code to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, audio-enhanced experience.",
     "sound": "blorb",
+    "playUrl": "/zork1/v4/play.html",
+    "landingUrl": "/zork1/",
     "versions": [
       {
         "id": "zork1-v3",
         "label": "v3 — Sound",
-        "sound": "blorb"
+        "sound": "blorb",
+        "playUrl": "/zork1/v3/play.html"
       },
       {
         "id": "zork1-v2",
-        "label": "v2 — Bug Fixes"
+        "label": "v2 — Bug Fixes",
+        "playUrl": "/zork1/v2/play.html"
       },
       {
         "id": "zork1-v1",
-        "label": "v1 — The Port"
+        "label": "v1 — The Port",
+        "playUrl": "/zork1/v1/play.html"
       },
       {
         "id": "zork1-v0",
-        "label": "v0 — Original ZIL"
+        "label": "v0 — Original ZIL",
+        "playUrl": "/zork1/v0/play.html"
       }
     ]
   },
@@ -32,10 +38,13 @@
     "title": "Dracula's Castle",
     "meta": "An Interactive Adventure",
     "description": "Explore Dracula's Castle and uncover its dark secret before midnight strikes. A horror-themed adventure written in Inform 7.",
+    "playUrl": "/dracula/play.html",
+    "landingUrl": "/dracula/",
     "versions": [
       {
         "id": "dracula-v0",
-        "label": "v0 — Original BASIC"
+        "label": "v0 — Original BASIC",
+        "playUrl": "/dracula/v0/play.html"
       }
     ]
   },
@@ -45,13 +54,17 @@
     "title": "Fever Dream",
     "meta": "A Perceptual Horror",
     "description": "Three items alter your perception. The world stays the same. You do not.",
-    "sound": "blorb"
+    "sound": "blorb",
+    "playUrl": "/feverdream/play.html",
+    "landingUrl": "/feverdream/"
   },
   {
     "id": "sample",
     "base": "sample",
     "title": "Sample",
     "meta": "An Interactive Fiction",
-    "description": "A practice project for learning Inform 7 — small, self-contained, and useful for testing the toolchain."
+    "description": "A practice project for learning Inform 7 — small, self-contained, and useful for testing the toolchain.",
+    "playUrl": "/sample/play.html",
+    "landingUrl": "/sample/"
   }
 ]

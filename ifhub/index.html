@@ -224,13 +224,20 @@ fetch('cards.json')
       );
     });
 
+    // Build a map from id → playUrl for the play button
+    const playUrlMap = {};
+    cards.forEach(card => {
+      playUrlMap[card.id] = card.playUrl;
+      if (card.versions) card.versions.forEach(v => { playUrlMap[v.id] = v.playUrl; });
+    });
+
     // Wire PLAY button
     document.getElementById('play-btn').addEventListener('click', () => {
       const id = select.value;
       if (!id) return;
       const fullscreen = document.getElementById('fullscreen-check').checked;
       if (fullscreen) {
-        window.location.href = `games/${id}/play.html`;
+        window.location.href = playUrlMap[id] || `app.html?game=${id}`;
       } else {
         window.location.href = `app.html?game=${id}`;
       }
@@ -244,18 +251,18 @@ fetch('cards.json')
       let versions = '';
       if (card.versions) {
         const links = card.versions.map(v =>
-          `<a href="games/${v.id}/play.html">${v.label || v.id}</a>`
+          `<a href="${v.playUrl}">${v.label || v.id}</a>`
         ).join(' ');
         versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
       }
 
       container.insertAdjacentHTML('beforeend',
         `<div class="game-card">
-          <h3><a href="games/${card.base}/">${card.title}</a></h3>
+          <h3><a href="${card.landingUrl}">${card.title}</a></h3>
           <p class="game-meta">${card.meta}</p>
           <p>${card.description}</p>
           <div class="game-links">
-            <a href="games/${card.id}/play.html">${playLabel}</a>
+            <a href="${card.playUrl}">${playLabel}</a>
             <a href="app.html?game=${card.id}">Play in IF Hub</a>
           </div>
           ${versions}
