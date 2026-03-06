@@ -251,8 +251,9 @@ fetch('cards.json')
       let versions = '';
       if (card.versions) {
         const links = card.versions.map(v =>
-          `<a href="${v.playUrl}">${v.label || v.id}</a>`
-        ).join(' ');
+          `<a href="${v.playUrl}">${v.label || v.id}</a>` +
+          ` <a href="app.html?game=${v.id}" style="color:#887755; font-size:0.9em;">(hub)</a>`
+        ).join(' &nbsp; ');
         versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
       }
 
@@ -304,7 +305,7 @@ fetch('cards.json')
   <p>
     Built with <a href="http://inform7.com/">Inform 7</a>.
     Playable via <a href="https://github.com/curiousdannii/parchment">Parchment</a>.
-    <a href="guide.html">How it works</a>.
+    <a href="importing.html">Adding games</a>.
   </p>
 </footer>
 
