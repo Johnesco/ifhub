@@ -4,6 +4,12 @@ Central hub for Inform 7 authoring, compilation, testing, and web deployment. Al
 
 **Live site**: [johnesco.github.io/ifhub](https://johnesco.github.io/ifhub/)
 
+### Online Documentation
+
+- **[IF Hub](https://johnesco.github.io/ifhub/)** — Browse and play all games
+- **[Split-Pane Player](https://johnesco.github.io/ifhub/app.html)** — Play with side-by-side source code and walkthrough
+- **[Publishing Guide](https://johnesco.github.io/ifhub/importing.html)** — Step-by-step guide for adding a new game to the hub
+
 ## Quick Start
 
 ```bash

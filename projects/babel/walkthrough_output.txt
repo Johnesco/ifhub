@@ -1,0 +1,61 @@
+
+
+
+
+Babel Fish Puzzle Permutation 2013 - An Homage To Adams and Meretzky
+An Interactive Fiction by Taupelink
+Release 1 / Serial number 260306 / Inform 7 v10.1.2 / D
+
+Vogon Hold
+A squalid room. Along one wall is a dispenser. A large fan, built in to the floor, intermittently blasts a jet of air up into the room. You have items in your inventory. An intercom repeats an unintelligible three-word phrase.
+
+>It has a button.
+
+>A Babel fish shoots out of the dispenser. It arcs downward.
+It falls into a drain.
+
+>You are carrying:
+  a gown
+  a towel
+  a satchel
+  a loose pile of mail
+
+>You put the towel on the drain.
+
+>A Babel fish shoots out of the dispenser. It arcs downward.
+The Babel fish lands on the towel. A floorborne robot appears, grabs the fish, and whizzes toward a panel in the wall.
+The floor robot zips through the panel.
+
+>You put the satchel on the panel.
+
+>A Babel fish shoots out of the dispenser. It arcs downward.
+The Babel fish lands on the towel. A floorborne robot appears, grabs the fish, and whizzes toward a panel in the wall.
+The floor robot plows into the satchel, sending the Babel fish flying. It continues flying.
+It sails through a small hole in the wall, just under a metal hook.
+
+>You put the gown on the metal hook.
+
+>A Babel fish shoots out of the dispenser. It arcs downward.
+The Babel fish lands on the towel. A floorborne robot appears, grabs the fish, and whizzes toward a panel in the wall.
+The floor robot plows into the satchel, sending the Babel fish flying. It continues flying.
+The Babel fish bounces off of the gown. It is lifted toward the ceiling by a sudden gust from the fan. An airborne robot flies into the room.
+The air robot catches the Babel fish (which is all the flying junk it can find) and exits.
+
+>You put the loose pile of mail on the large fan.
+
+>A Babel fish shoots out of the dispenser. It arcs downward.
+The Babel fish lands on the towel. A floorborne robot appears, grabs the fish, and whizzes toward a panel in the wall.
+The floor robot plows into the satchel, sending the Babel fish flying. It continues flying.
+The Babel fish bounces off of the gown. It is lifted into a cloud of junk mail by a sudden gust from the fan. An airborne robot flies into the room.
+The air robot starts collecting the plume of mail. The fish is ignored.
+The Babel fish lands in your ear. You can suddenly understand the announcement on the intercom. It says:
+
+
+    *** You have won ***
+
+
+
+
+Would you like to RESTART, RESTORE a saved game, QUIT or UNDO the last command?
+> 
+<end of input>

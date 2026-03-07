@@ -7,11 +7,12 @@ A standalone static site that serves multiple Inform 7 games through a single br
 ```
 ifhub/
 ├── CLAUDE.md              ← You are here
-├── index.html             ← Landing page (reads cards.json, renders game cards)
-├── app.html               ← Player UI (game selector, source viewer, tabs)
+├── index.html             ← Landing page (reads cards.json, renders game cards with Source/Walkthrough links)
+├── app.html               ← Split-pane player (game iframe + source viewer + walkthrough)
 ├── play.html              ← Shared Parchment player (standalone use; has version-gated CSS effects for zork1 v4+)
-├── games.json             ← Game registry (id, title, URLs, sound flag)
-├── cards.json             ← Card metadata for landing page
+├── importing.html         ← Guide for adding new games to the hub
+├── games.json             ← Game registry (id, title, URLs, sound flag, sourceBrowser)
+├── cards.json             ← Card metadata for landing page (title, description, versions)
 └── lib/parchment/         ← Shared Parchment JS libraries (checked in)
 ```
 
@@ -21,8 +22,17 @@ The hub serves games **in-place** — `app.html` iframes each game's own play pa
 
 - `games.json` uses URL-based fields: `playUrl`, `sourceUrl`, `walkthroughUrl`, `landingUrl`
 - `app.html` loads `iframe.src = game.playUrl` — one line, no file construction
-- Source viewer fetches `game.sourceUrl` (same origin on GitHub Pages)
+- Source viewer fetches `game.sourceUrl` (same origin on GitHub Pages); when `sourceBrowser: true`, loads an iframe instead
 - All games deploy to `johnesco.github.io/<game>/`, so same-origin iframes and fetch work
+
+### Current Games
+
+| ID | Source Mode | Sound |
+|----|-------------|-------|
+| `zork1-v0` through `zork1-v4` | v0: sourceBrowser (ZIL), v1–v4: raw .ni | v3–v4: blorb |
+| `dracula-v0`, `dracula` | v0: sourceBrowser (BASIC), current: raw .ni | No |
+| `feverdream` | raw .ni | blorb |
+| `sample` | sourceBrowser | No |
 
 ## Running Locally
 
@@ -53,12 +63,16 @@ Pure static site — no server-side logic. Deployed to GitHub Pages from the rep
 - Game projects have their own GitHub Pages sites (landing pages, play pages, source)
 - For shared Inform 7 tooling and references, see `C:\code\ifhub\CLAUDE.md`
 
-## CSS Mood Theming (Zork1 v4+)
+## CSS Overlay System
 
-The shared `play.html` includes version-gated CSS atmospheric effects for Zork I v4 and later. When the binary path matches `zork1-v(\d+)` with version >= 4 (or no version number, meaning current/latest), the page adds `body.zork1-enhanced` and activates: zone-reactive mood palettes, CRT terminal intro, reversed status bar, Up a Tree effects (canopy glow, falling leaves), egg taken golden explosion, larger fonts (19px/17px), text fade-in, and synchronized color transitions.
+All games use a three-tier CSS overlay architecture. Full documentation in `C:\code\ifhub\reference\css-overlay.md`.
 
-The Zork1 v4 game repo has its own hand-crafted `play.html` with all effects baked in (no version gating needed).
+- **Tier 1**: Parchment base (`parchment.css` + `main.css`) — shared library
+- **Tier 2**: Static overlay — inline `<style>` in each game's `play.html` (dark theme, CSS variables, layout)
+- **Tier 3**: Dynamic mood system — Houdini `@property` + MutationObserver JS (zork1 v4, feverdream only)
+
+The shared `play.html` version-gates Tier 3 effects for Zork I. When the binary path matches `zork1-v(\d+)` with version >= 4, it adds `body.zork1-enhanced` and activates mood palettes + effects. Other games get Tier 2 static theming only.
 
 ### MutationObserver Input Detection
 
-Parchment in WASM mode (Emglken) does **not** wrap user input in `.Input` CSS class spans. The egg flash detection tracks the previous buffer node's text (`lastNodeText`) instead of querying `.BufferWindow .Input` elements. This is because the user's command (e.g., "take egg") appears as a regular added node immediately before the game response ("Taken.") in the DOM mutation sequence.
+Parchment in WASM mode (Emglken) does **not** wrap user input in `.Input` CSS class spans. Event detection tracks the previous buffer node's text (`lastNodeText`) instead of querying `.BufferWindow .Input` elements.

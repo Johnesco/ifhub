@@ -85,24 +85,93 @@ a:hover {
 .game-card p {
   font-size: 0.95em;
   color: #b0a080;
+  margin-bottom: 14px;
+}
+
+.card-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 10px;
 }
 
-.game-card .game-links {
+.card-controls select {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 0.95em;
+  font-family: Georgia, "Times New Roman", serif;
+  background: #1a1610;
+  color: #d4c5a9;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.card-controls label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85em;
+  color: #aa9966;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.card-controls input[type="checkbox"] {
+  accent-color: #e8d090;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.card-controls button {
+  padding: 8px 22px;
+  font-size: 0.95em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: bold;
+  letter-spacing: 1px;
+  background: #e8d090;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.card-controls button:hover {
+  background: #ffe8a0;
+}
+
+.game-links {
   display: flex;
   gap: 20px;
-  font-size: 0.95em;
+  font-size: 0.9em;
 }
 
-.feature-list {
+.tech-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
   margin: 16px 0;
-  padding-left: 20px;
-  font-size: 0.95em;
-  color: #b0a080;
 }
 
-.feature-list li {
-  margin-bottom: 6px;
+.tech-card {
+  padding: 16px 18px;
+  background: #111;
+  border: 1px solid #1e1a14;
+  border-radius: 6px;
+}
+
+.tech-card strong {
+  color: #c4b48a;
+  font-size: 0.95em;
+}
+
+.tech-card p {
+  font-size: 0.88em;
+  color: #998870;
+  margin-bottom: 0;
+  margin-top: 4px;
 }
 
 footer {
@@ -118,62 +187,10 @@ footer a {
   border-bottom-color: #3a3020;
 }
 
-.game-picker {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin: 24px 0 8px;
-  padding: 16px 20px;
-  background: #111;
-  border: 1px solid #1e1a14;
-  border-radius: 6px;
-}
-
-.game-picker select {
-  flex: 1;
-  padding: 10px 12px;
-  font-size: 1em;
-  font-family: Georgia, "Times New Roman", serif;
-  background: #1a1610;
-  color: #d4c5a9;
-  border: 1px solid #2a2418;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.game-picker label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.9em;
-  color: #aa9966;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.game-picker input[type="checkbox"] {
-  accent-color: #e8d090;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-}
-
-.game-picker button {
-  padding: 10px 28px;
-  font-size: 1.05em;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: bold;
-  letter-spacing: 1px;
-  background: #e8d090;
-  color: #0a0a0a;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.game-picker button:hover {
-  background: #ffe8a0;
+@media (max-width: 600px) {
+  .tech-grid { grid-template-columns: 1fr; }
+  .card-controls { flex-wrap: wrap; }
+  .card-controls select { min-width: 0; }
 }
 </style>
 </head>
@@ -183,28 +200,10 @@ footer a {
 <p class="subtitle">An Interactive Fiction Player &amp; Source Browser</p>
 
 <p>
-  IF Hub is a browser-based player for
-  <a href="http://inform7.com/">Inform 7</a> games. Pick a game, play it
-  online, and read the source code side by side &mdash; all in one interface.
-  Every game runs entirely in your browser via
-  <a href="https://github.com/curiousdannii/parchment">Parchment</a>, a
-  JavaScript interpreter for the <a href="https://www.eblong.com/zarf/glulx/">Glulx</a>
-  and <a href="https://www.inform-fiction.org/zmachine/standards/z1point1/">Z-machine</a>
-  virtual machines. No downloads, no plugins.
+  IF Hub plays text adventures in the browser. Pick a game, play it online, and
+  read the source code side by side &mdash; all in one interface. No downloads,
+  no plugins.
 </p>
-
-<p>
-  The source viewer gives you syntax-highlighted Inform 7 code with a
-  navigable outline, search, and line numbers. Games with walkthroughs
-  include annotated guides. Some games feature ambient audio and sound
-  effects that play alongside the text.
-</p>
-
-<div class="game-picker">
-  <select id="game-pick"><option value="">Loading&hellip;</option></select>
-  <label><input type="checkbox" id="fullscreen-check"> Fullscreen?</label>
-  <button id="play-btn">PLAY</button>
-</div>
 
 <h2>Games</h2>
 
@@ -214,91 +213,151 @@ footer a {
 fetch('cards.json')
   .then(r => r.json())
   .then(cards => {
-    // Populate game picker dropdown
-    const select = document.getElementById('game-pick');
-    select.innerHTML = '';
-    cards.forEach(card => {
-      const label = card.title + (card.sound ? ' (with sound)' : '');
-      select.insertAdjacentHTML('beforeend',
-        `<option value="${card.id}">${label}</option>`
-      );
-    });
-
-    // Build a map from id → playUrl for the play button
-    const playUrlMap = {};
-    cards.forEach(card => {
-      playUrlMap[card.id] = card.playUrl;
-      if (card.versions) card.versions.forEach(v => { playUrlMap[v.id] = v.playUrl; });
-    });
-
-    // Wire PLAY button
-    document.getElementById('play-btn').addEventListener('click', () => {
-      const id = select.value;
-      if (!id) return;
-      const fullscreen = document.getElementById('fullscreen-check').checked;
-      if (fullscreen) {
-        window.location.href = playUrlMap[id] || `app.html?game=${id}`;
-      } else {
-        window.location.href = `app.html?game=${id}`;
-      }
-    });
-
-    // Render game cards
     const container = document.getElementById('games');
-    cards.forEach(card => {
-      const playLabel = 'Play fullscreen' + (card.sound ? ' (with sound)' : '');
 
-      let versions = '';
+    cards.forEach((card, cardIdx) => {
+      // Build options list: primary + versions
+      const options = [];
+      const soundTag = card.sound ? ' (sound)' : '';
+      const primaryLabel = card.primaryLabel || card.title;
+      options.push({ id: card.id, label: primaryLabel + soundTag, playUrl: card.playUrl });
+
       if (card.versions) {
-        const links = card.versions.map(v =>
-          `<a href="${v.playUrl}">${v.label || v.id}</a>` +
-          ` <a href="app.html?game=${v.id}" style="color:#887755; font-size:0.9em;">(hub)</a>`
-        ).join(' &nbsp; ');
-        versions = `<div class="game-links" style="margin-top:8px; font-size:0.88em;">${links}</div>`;
+        card.versions.forEach(v => {
+          const vSound = v.sound ? ' (sound)' : '';
+          options.push({ id: v.id, label: v.label + vSound, playUrl: v.playUrl });
+        });
       }
 
-      container.insertAdjacentHTML('beforeend',
+      // Build select options HTML
+      const optionsHtml = options.map(o =>
+        `<option value="${o.id}" data-play="${o.playUrl}">${o.label}</option>`
+      ).join('');
+
+      const cardHtml =
         `<div class="game-card">
           <h3><a href="${card.landingUrl}">${card.title}</a></h3>
           <p class="game-meta">${card.meta}</p>
           <p>${card.description}</p>
+          <div class="card-controls">
+            <select id="pick-${cardIdx}">${optionsHtml}</select>
+            <label><input type="checkbox" id="fs-${cardIdx}"> Fullscreen</label>
+            <button data-card="${cardIdx}">PLAY</button>
+          </div>
           <div class="game-links">
-            <a href="${card.playUrl}">${playLabel}</a>
-            <a href="app.html?game=${card.id}">Play in IF Hub</a>
             <a href="/${card.base}/source.html">Source</a>
             <a href="/${card.base}/walkthrough.html">Walkthrough</a>
           </div>
-          ${versions}
-        </div>`
-      );
+        </div>`;
+
+      container.insertAdjacentHTML('beforeend', cardHtml);
+
+      // Wire play button
+      container.querySelector(`button[data-card="${cardIdx}"]`).addEventListener('click', () => {
+        const select = document.getElementById('pick-' + cardIdx);
+        const selected = select.options[select.selectedIndex];
+        const id = selected.value;
+        const playUrl = selected.dataset.play;
+        const fullscreen = document.getElementById('fs-' + cardIdx).checked;
+
+        if (fullscreen) {
+          window.location.href = playUrl;
+        } else {
+          window.location.href = 'app.html?game=' + id;
+        }
+      });
     });
   });
 </script>
 
-<h2>What&rsquo;s Inside</h2>
+<h2>How It Works</h2>
 
-<ul class="feature-list">
-  <li><strong>Play in the browser</strong> &mdash; Glulx and Z-machine games run via Parchment with no install</li>
-  <li><strong>Source viewer</strong> &mdash; syntax-highlighted Inform 7 code with outline navigation and search</li>
-  <li><strong>Walkthroughs</strong> &mdash; annotated step-by-step guides with full transcripts</li>
-  <li><strong>Audio</strong> &mdash; ambient music and sound effects for games that support it</li>
-  <li><strong>Resizable layout</strong> &mdash; drag the divider to balance game and source panes</li>
-</ul>
+<p>
+  Every game runs entirely in your browser.
+  <a href="https://github.com/curiousdannii/parchment">Parchment</a> is a JavaScript
+  interpreter that executes the same virtual machine formats that powered Infocom&rsquo;s
+  games in the 1980s. The games here span three eras of interactive fiction:
+</p>
+
+<div class="tech-grid">
+  <div class="tech-card">
+    <strong>ZIL &rarr; Z-machine</strong>
+    <p>
+      Infocom&rsquo;s original language. Zork I v0 plays the unmodified 1980s source,
+      compiled with <a href="https://foss.heptapod.net/zilf/zilf">ZILF</a> to a .z3
+      binary and run via Parchment&rsquo;s Z-machine interpreter.
+    </p>
+  </div>
+  <div class="tech-card">
+    <strong>BASIC &rarr; Inform 7</strong>
+    <p>
+      Dracula&rsquo;s Castle started as a type-in BASIC listing from the early 1980s.
+      The original source is preserved with annotations; the playable version is a
+      faithful translation to Inform 7.
+    </p>
+  </div>
+  <div class="tech-card">
+    <strong>Inform 7 &rarr; Glulx</strong>
+    <p>
+      Most games here are written in <a href="http://inform7.com/">Inform 7</a>,
+      a language that reads like English prose. Source compiles to Glulx and runs
+      via Parchment&rsquo;s WASM engine.
+    </p>
+  </div>
+  <div class="tech-card">
+    <strong>Sound &rarr; Blorb</strong>
+    <p>
+      Games with audio embed .ogg files directly in the game binary as a
+      <a href="https://www.eblong.com/zarf/blorb/">Blorb</a> package. Parchment
+      plays them through the Web Audio API &mdash; no external files.
+    </p>
+  </div>
+</div>
+
+<h2>Source Viewers</h2>
+
+<p>
+  Every game has a source browser. The Inform 7 viewer provides syntax highlighting,
+  a navigable outline from Part/Chapter/Section headings, and search.
+  Zork I v0 has a dedicated ZIL source browser covering all ten original Infocom
+  source files with annotations explaining the game engine. Dracula includes both
+  the original annotated BASIC listing and the Inform 7 translation side by side.
+</p>
+
+<h2>Testing &amp; Toolchain</h2>
+
+<p>
+  The games are tested with a deterministic walkthrough system. Each game has a
+  walkthrough &mdash; a sequence of commands that completes the game. A golden RNG seed
+  ensures combat, NPC behavior, and other random events produce the same outcome
+  every run. The walkthrough runner pipes commands through native CLI interpreters
+  (<a href="https://github.com/erkyrath/glulxe">glulxe</a> for Glulx,
+  <a href="https://gitlab.com/DavidGriffith/frotz">frotz</a> for Z-machine)
+  built from source, captures the transcript, and checks the final score.
+</p>
+
+<p>
+  The entire toolchain &mdash; compilation, blorb packaging, web player generation,
+  testing, and deployment &mdash; runs from the command line. There is no IDE
+  dependency. Inform 7 source compiles to Inform 6, then to a Glulx binary,
+  optionally packaged with sound into a Blorb, base64-encoded into a JavaScript
+  wrapper, and served as a static page. Each game is its own
+  <a href="https://pages.github.com/">GitHub Pages</a> site; the hub iframes
+  them directly.
+</p>
 
 <h2>About</h2>
 
 <p>
-  IF Hub is a static site &mdash; no server-side logic, no accounts, no tracking.
-  It serves games built with <a href="http://inform7.com/">Inform 7</a>,
-  a programming language that reads like natural English and compiles to
-  virtual machine formats that have been around since the 1980s. The same
-  technology that powered Infocom&rsquo;s games now runs in any modern browser.
+  IF Hub is a static site &mdash; no server, no accounts, no tracking. All
+  source code is visible. The games, the player, the toolchain, and this site
+  are open. If you want to see how any of it works, open the source tab while
+  you play.
 </p>
 
 <p>
-  All source code is visible. The games, the player, and this site are
-  open. If you want to see how any of it works, open the source tab while
-  you play.
+  Built with <a href="https://claude.ai/">Claude</a> by
+  <a href="https://www.anthropic.com/">Anthropic</a>.
 </p>
 
 <footer>
@@ -306,6 +365,7 @@ fetch('cards.json')
     Built with <a href="http://inform7.com/">Inform 7</a>.
     Playable via <a href="https://github.com/curiousdannii/parchment">Parchment</a>.
     <a href="importing.html">Adding games</a>.
+    <a href="https://github.com/Johnesco/ifhub">Source on GitHub</a>.
   </p>
 </footer>
 

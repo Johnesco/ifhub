@@ -1,0 +1,12 @@
+> examine dispenser
+> push button
+> inventory
+> cover drain with towel
+> push button
+> put satchel in front of panel
+> push button
+> hang gown on hook
+> push button
+> put mail on fan
+# GAME WON
+> push button

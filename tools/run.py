@@ -42,7 +42,8 @@ PROJECTS_DIR = os.path.join(I7_ROOT, "projects")
 IFHUB_DIR = os.path.join(I7_ROOT, "ifhub")
 PIPELINE_SH = os.path.join(SCRIPT_DIR, "pipeline.sh")
 SNAPSHOT_SH = os.path.join(SCRIPT_DIR, "snapshot.sh")
-DEPLOY_SH = os.path.join(IFHUB_DIR, "deploy.sh")
+PUBLISH_SH = os.path.join(SCRIPT_DIR, "publish.sh")
+DEV_SERVER_PY = os.path.join(SCRIPT_DIR, "dev-server.py")
 TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
 # ---------------------------------------------------------------------------
@@ -89,6 +90,16 @@ def run_command(cmd: str, cwd: str | None = None) -> int:
 
     try:
         result = subprocess.run([bash, "-c", full_cmd], cwd=cwd)
+        return result.returncode
+    except KeyboardInterrupt:
+        print("\n\nInterrupted.")
+        return 130
+
+
+def run_python(cmd: str) -> int:
+    """Run a Python command with live terminal output. Returns exit code."""
+    try:
+        result = subprocess.run([sys.executable] + cmd.split())
         return result.returncode
     except KeyboardInterrupt:
         print("\n\nInterrupted.")
@@ -162,14 +173,15 @@ def get_golden_seed(project_dir: str) -> str | None:
 
 
 def get_versions(project_dir: str) -> list[str]:
-    """Return sorted list of version names (e.g., ['v0', 'v1', 'v2'])."""
-    versions_dir = os.path.join(project_dir, "versions")
-    if not os.path.isdir(versions_dir):
-        return []
+    """Return sorted list of version names (e.g., ['v0', 'v1', 'v2']).
+
+    Versions are flat directories at the project root (v0/, v1/, etc.),
+    not inside a versions/ subdirectory.
+    """
     versions = []
-    for name in os.listdir(versions_dir):
-        if re.match(r"^v\d+", name) and os.path.isdir(
-            os.path.join(versions_dir, name)
+    for name in os.listdir(project_dir):
+        if re.match(r"^v\d+$", name) and os.path.isdir(
+            os.path.join(project_dir, name)
         ):
             versions.append(name)
     return sorted(versions, key=lambda v: int(re.search(r"\d+", v).group()))
@@ -180,13 +192,13 @@ def get_compilable_versions(project_dir: str, versions: list[str]) -> list[str]:
     return [
         v
         for v in versions
-        if os.path.isfile(os.path.join(project_dir, "versions", v, "story.ni"))
+        if os.path.isfile(os.path.join(project_dir, v, "story.ni"))
     ]
 
 
 def detect_version_binary_type(project_dir: str, game_name: str, version: str) -> str:
     """Detect binary type (.gblorb or .ulx) for a version snapshot."""
-    parchment_dir = os.path.join(project_dir, "versions", version, "lib", "parchment")
+    parchment_dir = os.path.join(project_dir, version, "lib", "parchment")
     # Check for gblorb first (sound-enabled)
     gblorb_pattern = os.path.join(parchment_dir, "*.gblorb.js")
     if glob.glob(gblorb_pattern):
@@ -216,8 +228,14 @@ def load_projects() -> list[ProjectInfo]:
             sound = True
 
         versioned = fields.get("PIPELINE_VERSIONED", "").lower() == "true"
-        if not versioned and os.path.isdir(os.path.join(project_dir, "versions")):
-            versioned = True
+        if not versioned:
+            # Check flat layout: v0/, v1/, etc. at project root
+            for entry in os.listdir(project_dir):
+                if re.match(r"^v\d+$", entry) and os.path.isdir(
+                    os.path.join(project_dir, entry)
+                ):
+                    versioned = True
+                    break
 
         current_version = fields.get("PIPELINE_CURRENT_VERSION", "")
         hub_id = fields.get("PIPELINE_HUB_ID", name)
@@ -433,8 +451,11 @@ def snapshot_cmd(game: str, version: str) -> str:
     return f'bash "{to_posix(SNAPSHOT_SH)}" {game} {version} --update'
 
 
-def deploy_cmd() -> tuple[str, str]:
-    return (f'bash "{to_posix(DEPLOY_SH)}"', IFHUB_DIR)
+def publish_cmd(game: str, message: str = "") -> str:
+    cmd = f'bash "{to_posix(PUBLISH_SH)}" {game}'
+    if message:
+        cmd += f' "{message}"'
+    return cmd
 
 
 # --- Build ---
@@ -455,7 +476,7 @@ def preset_build_test(projects: list[ProjectInfo]):
 
 
 def preset_release(projects: list[ProjectInfo]):
-    """Release version."""
+    """Release version (compile + test + snapshot + push)."""
     project = prompt_game(projects)
 
     if project.versioned:
@@ -475,7 +496,7 @@ def preset_release(projects: list[ProjectInfo]):
             [
                 (
                     pipeline_cmd(
-                        project.name, "compile", "test", "deploy", "--force"
+                        project.name, "compile", "test", "push", "--force"
                     ),
                     None,
                 )
@@ -551,7 +572,7 @@ def preset_find_seeds(projects: list[ProjectInfo]):
     confirm_and_run([(cmd, None)])
 
 
-# --- Deploy & Serve ---
+# --- Publish & Serve ---
 
 
 def preset_recompile_versions(projects: list[ProjectInfo]):
@@ -559,38 +580,38 @@ def preset_recompile_versions(projects: list[ProjectInfo]):
     project = prompt_game(projects, needs_versioned=True)
     selected = prompt_versions_checkbox(project)
 
-    do_deploy = prompt_or_cancel(
-        lambda: inquirer.confirm(
-            message="Deploy to hub after?", default=True
-        ).execute()
-    )
-
     commands: list[tuple[str, str | None]] = []
     for v in selected:
         commands.append((snapshot_cmd(project.name, v), None))
-    if do_deploy:
-        commands.append(deploy_cmd())
 
     confirm_and_run(commands)
 
 
-def preset_deploy_hub(projects: list[ProjectInfo]):
-    """Deploy hub assets."""
-    confirm_and_run([deploy_cmd()])
+def preset_publish(projects: list[ProjectInfo]):
+    """Publish game to GitHub Pages."""
+    project = prompt_game(projects)
+
+    message = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Commit message (blank = default):", default=""
+        ).execute()
+    )
+
+    confirm_and_run([(publish_cmd(project.name, message.strip()), None)])
 
 
 def preset_serve(projects: list[ProjectInfo]):
     """Serve locally."""
-    # Build target choices: IF Hub + per-project web dirs
-    serve_choices = [{"name": "IF Hub (ifhub/)", "value": ("ifhub", IFHUB_DIR)}]
+    serve_choices = [
+        {"name": "IF Hub + all games (dev-server.py)", "value": "dev-server"},
+    ]
+    # Also offer per-project simple servers
     for p in projects:
-        web_dir = os.path.join(p.dir, "web")
-        if os.path.isdir(web_dir):
-            serve_choices.append(
-                {"name": f"{p.name} (projects/{p.name}/web/)", "value": (p.name, web_dir)}
-            )
+        serve_choices.append(
+            {"name": f"{p.name} only (projects/{p.name}/)", "value": p.name}
+        )
 
-    target_name, target_dir = prompt_or_cancel(
+    target = prompt_or_cancel(
         lambda: inquirer.select(
             message="Select target:", choices=serve_choices, pointer=">"
         ).execute()
@@ -600,13 +621,20 @@ def preset_serve(projects: list[ProjectInfo]):
         lambda: inquirer.text(message="Port:", default="8000").execute()
     )
 
-    posix_dir = to_posix(target_dir)
-    cmd = f'python -m http.server {port.strip()} --directory "{posix_dir}"'
-    print(f"\nServing {target_name} at http://localhost:{port.strip()}/")
-    print("Press Ctrl-C to stop.\n")
+    if target == "dev-server":
+        # Use the multi-root dev server
+        print(f"\nServing IF Hub + all games at http://127.0.0.1:{port.strip()}/ifhub/app.html")
+        print("Press Ctrl-C to stop.\n")
+        exit_code = run_python(f"{DEV_SERVER_PY} --port {port.strip()}")
+    else:
+        # Simple per-project server
+        project = next(p for p in projects if p.name == target)
+        posix_dir = to_posix(project.dir)
+        cmd = f'python -m http.server {port.strip()} --directory "{posix_dir}"'
+        print(f"\nServing {target} at http://localhost:{port.strip()}/")
+        print("Press Ctrl-C to stop.\n")
+        exit_code = run_command(cmd)
 
-    # Run directly — Ctrl-C exits cleanly (exit code 130)
-    exit_code = run_command(cmd)
     if exit_code != 0 and exit_code != 130:
         print(f"\nServer exited with code {exit_code}")
 
@@ -645,7 +673,7 @@ def preset_custom(projects: list[ProjectInfo]):
     """Custom (pick stages)."""
     project = prompt_game(projects)
 
-    all_stages = ["compile", "test", "snapshot", "deploy", "push"]
+    all_stages = ["compile", "test", "snapshot", "push"]
     stages = prompt_or_cancel(
         lambda: inquirer.checkbox(
             message="Select stages:",
@@ -710,14 +738,14 @@ PRESETS = [
         "name": "Find seeds (RNG sweep)",
         "value": preset_find_seeds,
     },
-    Separator("--- Deploy & Serve ---"),
+    Separator("--- Publish & Serve ---"),
     {
         "name": "Recompile frozen versions",
         "value": preset_recompile_versions,
     },
     {
-        "name": "Deploy hub assets",
-        "value": preset_deploy_hub,
+        "name": "Publish to GitHub Pages",
+        "value": preset_publish,
     },
     {
         "name": "Serve locally",
