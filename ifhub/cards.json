@@ -95,5 +95,14 @@
     "description": "An interactive fiction game.",
     "playUrl": "/if-pipeline-test/play.html",
     "landingUrl": "/if-pipeline-test/"
+  },
+  {
+    "id": "if-pipeline-test2",
+    "base": "if-pipeline-test2",
+    "title": "If Pipeline Test2",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/if-pipeline-test2/play.html",
+    "landingUrl": "/if-pipeline-test2/"
   }
 ]
