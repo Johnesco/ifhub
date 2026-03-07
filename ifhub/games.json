@@ -84,16 +84,6 @@
     "landingUrl": "/feverdream/"
   },
   {
-    "id": "sample",
-    "title": "Sample",
-    "sourceLabel": "sample.ni",
-    "sourceBrowser": true,
-    "playUrl": "/sample/play.html",
-    "walkthroughUrl": "/sample/walkthrough.html",
-    "sourceUrl": "/sample/source.html",
-    "landingUrl": "/sample/"
-  },
-  {
     "id": "babel",
     "title": "Babel Fish Puzzle Permutation 2013 - An Homage To Adams and Meretzky",
     "sourceLabel": "babel.ni",

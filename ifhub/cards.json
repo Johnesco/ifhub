@@ -61,15 +61,6 @@
     "landingUrl": "/feverdream/"
   },
   {
-    "id": "sample",
-    "base": "sample",
-    "title": "Sample",
-    "meta": "An Interactive Fiction",
-    "description": "A practice project for learning Inform 7 — small, self-contained, and useful for testing the toolchain.",
-    "playUrl": "/sample/play.html",
-    "landingUrl": "/sample/"
-  },
-  {
     "id": "babel",
     "base": "babel",
     "title": "Babel Fish Puzzle Permutation 2013 - An Homage To Adams and Meretzky",
