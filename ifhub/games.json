@@ -94,16 +94,6 @@
     "sourceUrl": "/babel/source.html"
   },
   {
-    "id": "disenchantment12",
-    "title": "Disenchantment Bay",
-    "sourceLabel": "disenchantment12.ni",
-    "playUrl": "/disenchantment12/play.html",
-    "walkthroughUrl": "/disenchantment12/walkthrough.html",
-    "landingUrl": "/disenchantment12/",
-    "sourceBrowser": true,
-    "sourceUrl": "/disenchantment12/source.html"
-  },
-  {
     "id": "sample",
     "title": "Sample",
     "sourceLabel": "sample.ni",

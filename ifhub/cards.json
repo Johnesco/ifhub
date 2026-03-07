@@ -70,15 +70,6 @@
     "landingUrl": "/babel/"
   },
   {
-    "id": "disenchantment12",
-    "base": "disenchantment12",
-    "title": "Disenchantment Bay",
-    "meta": "An Interactive Fiction",
-    "description": "Navigate a charter boat in Yakutat Bay, Alaska. Barter with the captain, scoop glacier ice, and chill a Coke to earn your fishing rods.",
-    "playUrl": "/disenchantment12/play.html",
-    "landingUrl": "/disenchantment12/"
-  },
-  {
     "id": "sample",
     "base": "sample",
     "title": "Sample",
