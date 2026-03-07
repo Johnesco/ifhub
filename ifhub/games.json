@@ -112,5 +112,15 @@
     "landingUrl": "/disenchantment12/",
     "sourceBrowser": true,
     "sourceUrl": "/disenchantment12/source.html"
+  },
+  {
+    "id": "if-pipeline-test",
+    "title": "If Pipeline Test",
+    "sourceLabel": "if-pipeline-test.ni",
+    "playUrl": "/if-pipeline-test/play.html",
+    "walkthroughUrl": "/if-pipeline-test/walkthrough.html",
+    "landingUrl": "/if-pipeline-test/",
+    "sourceBrowser": true,
+    "sourceUrl": "/if-pipeline-test/source.html"
   }
 ]

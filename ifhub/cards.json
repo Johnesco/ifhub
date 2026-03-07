@@ -86,5 +86,14 @@
     "description": "Navigate a charter boat in Yakutat Bay, Alaska. Barter with the captain, scoop glacier ice, and chill a Coke to earn your fishing rods.",
     "playUrl": "/disenchantment12/play.html",
     "landingUrl": "/disenchantment12/"
+  },
+  {
+    "id": "if-pipeline-test",
+    "base": "if-pipeline-test",
+    "title": "If Pipeline Test",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/if-pipeline-test/play.html",
+    "landingUrl": "/if-pipeline-test/"
   }
 ]
