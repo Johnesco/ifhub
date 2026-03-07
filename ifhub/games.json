@@ -112,15 +112,5 @@
     "landingUrl": "/sample/",
     "sourceBrowser": true,
     "sourceUrl": "/sample/source.html"
-  },
-  {
-    "id": "if-pipeline-test3",
-    "title": "If Pipeline Test3",
-    "sourceLabel": "if-pipeline-test3.ni",
-    "playUrl": "/if-pipeline-test3/play.html",
-    "walkthroughUrl": "/if-pipeline-test3/walkthrough.html",
-    "landingUrl": "/if-pipeline-test3/",
-    "sourceBrowser": true,
-    "sourceUrl": "/if-pipeline-test3/source.html"
   }
 ]
