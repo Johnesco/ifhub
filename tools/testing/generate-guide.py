@@ -7,13 +7,17 @@ annotations.
 
 Usage:
     python3 generate-guide.py --walkthrough PATH --output PATH [--transcript PATH]
+    python3 generate-guide.py --walkthrough PATH --output PATH --force
 
 If --transcript is omitted, outputs a skeleton guide (commands only, no annotations).
 """
 
 import argparse
+import os
 import re
 import sys
+
+GUIDE_MARKER = "# Auto-generated walkthrough guide"
 
 
 def parse_transcript(transcript_path):
@@ -58,7 +62,7 @@ def detect_room_name(response):
     """Try to detect a room name from a response.
 
     Room names in Inform 7 transcripts appear as the first line of a
-    movement response — a short title line followed by a longer description.
+    movement response -- a short title line followed by a longer description.
     Heuristic: first line is short (<60 chars), starts with uppercase,
     doesn't start with common response words.
     """
@@ -115,7 +119,7 @@ WORD_TO_NUM = {
 
 
 def normalize_points(text):
-    """Convert word-form numbers to digits (e.g., 'five' → '5')."""
+    """Convert word-form numbers to digits (e.g., 'five' -> '5')."""
     return str(WORD_TO_NUM.get(text.lower(), text))
 
 
@@ -137,14 +141,190 @@ def detect_events(response):
     return events
 
 
+# ---------------------------------------------------------------------------
+# Rich annotation detectors
+# ---------------------------------------------------------------------------
+
+def detect_taken(response, command):
+    """Detect item pickup from 'Taken.' response. Returns item name or None."""
+    if not response:
+        return None
+    first_line = response.split("\n")[0].strip()
+    if not first_line.startswith("Taken"):
+        return None
+    m = re.match(r"(?:take|get|pick up)\s+(.+?)(?:\s+(?:from|off)\s+.+)?$",
+                 command, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def detect_unlock_open(response, command):
+    """Detect unlock/open events. Returns list of annotation strings."""
+    annotations = []
+    if not response:
+        return annotations
+    resp_lower = response.lower()
+    cmd_lower = command.lower().strip()
+
+    # Unlock detection
+    if cmd_lower.startswith("unlock"):
+        m = re.match(r"unlock\s+(.+?)(?:\s+with\s+.+)?$", command, re.IGNORECASE)
+        if m:
+            annotations.append(f"Unlock the {m.group(1).strip()}")
+
+    # Open detection (only when response indicates something was revealed)
+    if cmd_lower.startswith("open") and re.search(r"reveal", resp_lower):
+        if not re.search(r"already open", resp_lower):
+            m = re.match(r"open\s+(.+)", command, re.IGNORECASE)
+            if m:
+                annotations.append(f"Open the {m.group(1).strip()}")
+
+    return annotations
+
+
+def detect_container_put(command):
+    """Detect 'put X in Y' commands. Returns (item, container) or None."""
+    m = re.match(r"put\s+(.+?)\s+in\s+(.+)", command, re.IGNORECASE)
+    if m:
+        return (m.group(1).strip(), m.group(2).strip())
+    return None
+
+
+def detect_npc_interaction(command):
+    """Detect NPC interaction commands. Returns annotation string or None."""
+    patterns = [
+        (r"give\s+(.+?)\s+to\s+(.+)", "Give {0} to {1}"),
+        (r"show\s+(.+?)\s+to\s+(.+)", "Show {0} to {1}"),
+        (r"ask\s+(.+?)\s+about\s+(.+)", "Ask {0} about {1}"),
+        (r"tell\s+(.+?)\s+about\s+(.+)", "Tell {0} about {1}"),
+    ]
+    for pattern, fmt in patterns:
+        m = re.match(pattern, command, re.IGNORECASE)
+        if m:
+            return fmt.format(*[g.strip() for g in m.groups()])
+    return None
+
+
+COMBAT_VERBS = {"kill", "attack", "hit", "fight", "strike"}
+
+NAV_WORDS = {
+    "n", "s", "e", "w", "ne", "nw", "se", "sw", "u", "d",
+    "north", "south", "east", "west", "northeast", "northwest",
+    "southeast", "southwest", "up", "down", "in", "out",
+}
+
+
+def find_repeated_sequences(commands):
+    """Find runs of 3+ identical non-navigation commands.
+
+    Returns dict mapping start_index -> (end_index_inclusive, count).
+    Simple navigation commands (n, s, e, w, etc.) are excluded since
+    repeated movement is normal, not a notable action.
+    """
+    sequences = {}
+    i = 0
+    while i < len(commands):
+        cmd_lower = commands[i].strip().lower()
+        # Skip navigation commands
+        if cmd_lower in NAV_WORDS:
+            i += 1
+            continue
+        j = i + 1
+        while j < len(commands) and commands[j].lower() == commands[i].lower():
+            j += 1
+        count = j - i
+        if count >= 3:
+            sequences[i] = (j - 1, count)
+            i = j
+        else:
+            i += 1
+    return sequences
+
+
+def extract_combat_target(command):
+    """Extract the target from a combat command like 'kill troll with sword'."""
+    m = re.match(r"(?:kill|attack|hit|fight|strike)\s+(.+?)(?:\s+with\s+.+)?$",
+                 command, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    return "enemy"
+
+
+def is_combat_command(command):
+    """Check if a command starts with a combat verb."""
+    first_word = command.strip().lower().split()[0] if command.strip() else ""
+    return first_word in COMBAT_VERBS
+
+
+# ---------------------------------------------------------------------------
+# Hand-written guide detection
+# ---------------------------------------------------------------------------
+
+def is_hand_written(filepath):
+    """Detect if an existing guide file appears to be hand-written.
+
+    Auto-generated guides start with GUIDE_MARKER. If the file has that
+    marker, it's auto-generated (safe to overwrite).
+
+    If there's no marker, we check for prose-style comments (long comment
+    lines containing sentences). Two or more such lines indicate a
+    hand-written guide.
+
+    Legacy auto-generated guides (no marker, no prose) are safe to overwrite.
+    """
+    if not os.path.exists(filepath):
+        return False
+    with open(filepath, encoding="utf-8") as f:
+        content = f.read()
+    first_line = content.split("\n")[0].strip()
+    if first_line == GUIDE_MARKER:
+        return False  # Has our auto-generated marker
+
+    # Count comment lines that look like prose
+    prose_count = 0
+    for line in content.split("\n"):
+        line = line.strip()
+        if line.startswith("# ") and not line.startswith("## "):
+            comment = line[2:]
+            if len(comment) > 40 and "." in comment:
+                prose_count += 1
+
+    return prose_count >= 2
+
+
+# ---------------------------------------------------------------------------
+# Guide generation
+# ---------------------------------------------------------------------------
+
 def generate_guide(commands, responses=None, sound_prompt=False):
     """Generate guide text from commands and optional transcript responses."""
-    lines = []
+    lines = [GUIDE_MARKER, ""]
     current_room = None
 
     # If the game has a sound prompt, the first command answers it and has no
     # corresponding > prompt in the transcript. Offset responses by -1.
     resp_offset = -1 if sound_prompt else 0
+
+    # Pre-scan for repeated sequences (combat, digging, waiting, etc.)
+    repeated = find_repeated_sequences(commands)
+    in_repeated = set()
+    for start, (end, count) in repeated.items():
+        for idx in range(start + 1, end + 1):
+            in_repeated.add(idx)
+
+    # Stage tracking (only for longer games)
+    total_commands = len(commands)
+    use_stages = total_commands >= 50
+    stage_num = 0
+    cmds_since_stage = 0
+    rooms_visited = {}  # room name -> visit count
+    stage_gap = max(15, total_commands // 8)
+
+    if use_stages:
+        stage_num = 1
+        lines.append(f"## Stage {stage_num}")
+        lines.append("")
 
     for i, cmd in enumerate(commands):
         resp_idx = i + resp_offset
@@ -152,20 +332,68 @@ def generate_guide(commands, responses=None, sound_prompt=False):
         if responses and 0 <= resp_idx < len(responses):
             response = responses[resp_idx]
 
+        cmds_since_stage += 1
+
         # Detect room change
         room = detect_room_name(response) if response else None
         if room and room != current_room:
-            if lines:
+            # Stage break: returning to a hub room after enough commands
+            if use_stages:
+                visit_count = rooms_visited.get(room, 0)
+                if visit_count >= 3 and cmds_since_stage >= stage_gap:
+                    stage_num += 1
+                    cmds_since_stage = 0
+                    lines.append("")
+                    lines.append(f"## Stage {stage_num}")
+
+            if lines and lines[-1] != "":
                 lines.append("")
             lines.append(f"## {room}")
             lines.append("")
+            rooms_visited[room] = rooms_visited.get(room, 0) + 1
             current_room = room
 
-        # Detect events
+        # Build annotations for this command
+        annotations = []
+
+        # Repeated sequence start annotation
+        if i in repeated:
+            _, count = repeated[i]
+            if is_combat_command(cmd):
+                target = extract_combat_target(cmd)
+                annotations.append(f"Combat: {target} ({count} attempts)")
+            else:
+                annotations.append(f"Repeat: {cmd} ({count} times)")
+
+        # Annotations for non-repeated commands (skip interior of sequences)
+        if i not in in_repeated:
+            # Item pickup
+            taken = detect_taken(response, cmd)
+            if taken:
+                annotations.append(f"Pick up the {taken}")
+
+            # Unlock / open
+            unlock_notes = detect_unlock_open(response, cmd)
+            annotations.extend(unlock_notes)
+
+            # Container interaction
+            container = detect_container_put(cmd)
+            if container:
+                annotations.append(f"Store the {container[0]} in the {container[1]}")
+
+            # NPC interaction
+            npc = detect_npc_interaction(cmd)
+            if npc:
+                annotations.append(npc)
+
+        # Score / death / win events (always detected, even in sequences)
         if response:
             events = detect_events(response)
-            for event in events:
-                lines.append(f"# {event}")
+            annotations.extend(events)
+
+        # Emit annotations before the command
+        for ann in annotations:
+            lines.append(f"# {ann}")
 
         # Output command
         lines.append(f"> {cmd}")
@@ -189,7 +417,17 @@ def main():
         "--output", "-o",
         help="Output path (default: stdout)"
     )
+    parser.add_argument(
+        "--force", action="store_true",
+        help="Overwrite even if output file appears hand-written"
+    )
     args = parser.parse_args()
+
+    # Check for hand-written guide
+    if args.output and not args.force and is_hand_written(args.output):
+        print(f"Skipping {args.output} -- appears to be a hand-written guide. "
+              f"Use --force to overwrite.", file=sys.stderr)
+        sys.exit(0)
 
     # Read commands
     with open(args.walkthrough, encoding="utf-8") as f:
@@ -202,7 +440,7 @@ def main():
         preamble, responses = parse_transcript(args.transcript)
         sound_prompt = has_sound_prompt(preamble)
         if sound_prompt:
-            print("Detected sound prompt — offsetting command/response alignment", file=sys.stderr)
+            print("Detected sound prompt -- offsetting command/response alignment", file=sys.stderr)
 
     # Generate guide
     guide = generate_guide(commands, responses, sound_prompt=sound_prompt)

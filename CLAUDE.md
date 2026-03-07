@@ -47,6 +47,7 @@ C:\code\ifhub\
 │   ├── generate-blurb.sh  ← Generate .blurb from story.ni sound declarations
 │   ├── extract-commands.sh ← Extract walkthrough commands from transcript or story.ni
 │   ├── register-game.sh   ← Register a game in IF Hub (adds to games.json + cards.json)
+│   ├── push-hub.sh        ← Push hub registry changes (games.json + cards.json) to GitHub
 │   ├── publish.sh         ← Publish a project to its own GitHub Pages repo
 │   └── web/               ← Web player setup
 │       ├── setup-web.sh        ← Bootstrap a Parchment web player for any project
@@ -137,7 +138,7 @@ The testing framework provides three reusable scripts driven by a per-project `p
 | `run-walkthrough.sh` | Runs a walkthrough through an interpreter with RNG seeding and diagnostics |
 | `find-seeds.sh` | Sweeps RNG seeds to find ones where the walkthrough achieves a passing score |
 | `run-tests.sh` | Wraps `regtest.py` with project-specific engine/game/test file |
-| `generate-guide.py` | Generates `walkthrough-guide.txt` from walkthrough commands + transcript (auto-detects sound prompt) |
+| `generate-guide.py` | Generates rich `walkthrough-guide.txt` from walkthrough commands + transcript (item pickups, combat, containers, stages, NPC interactions; auto-detects sound prompt; preserves hand-written guides) |
 | `pcre_grep.py` | Portable `grep -oP` replacement using Python `re` (Git Bash lacks PCRE grep) |
 | `wsl-check.sh` | WSL health check (`check_wsl_health`) and path conversion (`gitbash_to_wsl_path`) |
 
@@ -335,9 +336,7 @@ The hub at `ifhub/` serves games **in-place** — it iframes each game's own pla
 - All games deploy to `johnesco.github.io/<game>/`, so same-origin iframes and fetch work freely
 
 **Adding a new game:**
-1. **Enable GitHub Pages** on the game repo — required, the hub serves nothing without it
-   - Settings → Pages → Source: "Deploy from a branch", select `main`/`master`, path `/`
-   - Or: `gh api repos/Johnesco/<game>/pages -X POST --input - <<< '{"build_type":"legacy","source":{"branch":"main","path":"/"}}'`
+1. **Enable GitHub Pages** on the game repo — `publish.sh` does this automatically (workflow deployment via GitHub Actions)
 2. Add an entry to `games.json` with `id`, `title`, and URL fields
 3. Add card metadata to `cards.json`
 4. Verify `johnesco.github.io/<game>/play.html` loads before adding to the hub
@@ -438,16 +437,15 @@ Adds entries to `ifhub/games.json` and `ifhub/cards.json`. Prints a reminder to 
 bash /c/code/ifhub/tools/publish.sh <name>
 ```
 
-First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables Pages (legacy deployment for flat layout, workflow for `web/` layout). Subsequent runs: commits and pushes changes.
+First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables GitHub Pages (workflow deployment via GitHub Actions). If no workflow file exists, publish.sh auto-generates one. Subsequent runs: commits and pushes changes.
 
-### Step 8: Commit hub changes
+### Step 8: Push hub changes
 
 ```bash
-cd /c/code/ifhub
-git add ifhub/games.json ifhub/cards.json projects/<name>/
-git commit -m "Add <name> to IF Hub"
-git push
+bash /c/code/ifhub/tools/push-hub.sh <name>
 ```
+
+Stages `games.json` and `cards.json`, commits, and pushes. Skips if no changes.
 
 ### Quick reference
 
@@ -458,6 +456,7 @@ git push
 | Generate pages | `tools/web/generate-pages.sh` | `index.html`, `source.html` |
 | Register | `tools/register-game.sh` | `games.json` + `cards.json` entries |
 | Publish | `tools/publish.sh` | GitHub repo + Pages deployment |
+| Push hub | `tools/push-hub.sh` | Commits + pushes hub registry to GitHub |
 
 ## Projects
 
@@ -482,6 +481,7 @@ projects/<game>/
 ├── CLAUDE.md              ← Project guide (points to hub for shared docs)
 ├── story.ni               ← Source of truth (Inform 7 source)
 ├── <game>.ulx             ← Compiled Glulx binary (gitignored)
+├── .github/workflows/deploy-pages.yml ← GitHub Actions workflow for Pages
 ├── index.html             ← Landing page
 ├── play.html              ← Parchment player (CSS overlay theming)
 ├── source.html            ← Source browser
