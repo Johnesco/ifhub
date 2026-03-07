@@ -44,6 +44,10 @@ PIPELINE_SH = os.path.join(SCRIPT_DIR, "pipeline.sh")
 SNAPSHOT_SH = os.path.join(SCRIPT_DIR, "snapshot.sh")
 PUBLISH_SH = os.path.join(SCRIPT_DIR, "publish.sh")
 DEV_SERVER_PY = os.path.join(SCRIPT_DIR, "dev-server.py")
+COMPILE_SH = os.path.join(SCRIPT_DIR, "compile.sh")
+EXTRACT_COMMANDS_SH = os.path.join(SCRIPT_DIR, "extract-commands.sh")
+GENERATE_PAGES_SH = os.path.join(SCRIPT_DIR, "web", "generate-pages.sh")
+REGISTER_GAME_SH = os.path.join(SCRIPT_DIR, "register-game.sh")
 TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
 # ---------------------------------------------------------------------------
@@ -458,6 +462,41 @@ def publish_cmd(game: str, message: str = "") -> str:
     return cmd
 
 
+def compile_cmd(game: str, sound: bool = False) -> str:
+    cmd = f'bash "{to_posix(COMPILE_SH)}" {game}'
+    if sound:
+        cmd += " --sound"
+    return cmd
+
+
+def extract_commands_cmd(source_path: str, output_path: str) -> str:
+    return (
+        f'bash "{to_posix(EXTRACT_COMMANDS_SH)}" --from-source '
+        f'"{to_posix(source_path)}" -o "{to_posix(output_path)}"'
+    )
+
+
+def generate_pages_cmd(title: str, meta: str, description: str, out_dir: str) -> str:
+    return (
+        f'bash "{to_posix(GENERATE_PAGES_SH)}" '
+        f'--title "{title}" --meta "{meta}" --description "{description}" '
+        f'--out "{to_posix(out_dir)}"'
+    )
+
+
+def register_game_cmd(
+    name: str, title: str, meta: str, description: str, sound: str = ""
+) -> str:
+    cmd = (
+        f'bash "{to_posix(REGISTER_GAME_SH)}" '
+        f'--name {name} --title "{title}" --meta "{meta}" '
+        f'--description "{description}"'
+    )
+    if sound:
+        cmd += f" --sound {sound}"
+    return cmd
+
+
 # --- Build ---
 
 
@@ -588,7 +627,7 @@ def preset_recompile_versions(projects: list[ProjectInfo]):
 
 
 def preset_publish(projects: list[ProjectInfo]):
-    """Publish game to GitHub Pages."""
+    """Publish update to GitHub Pages."""
     project = prompt_game(projects)
 
     message = prompt_or_cancel(
@@ -598,6 +637,73 @@ def preset_publish(projects: list[ProjectInfo]):
     )
 
     confirm_and_run([(publish_cmd(project.name, message.strip()), None)])
+
+
+def preset_publish_new(projects: list[ProjectInfo]):
+    """Publish new game (extract → compile → pages → register → publish)."""
+    project = prompt_game(projects)
+
+    title = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Title:",
+            default=project.name.replace("-", " ").replace("_", " ").title(),
+        ).execute()
+    )
+    meta = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Subtitle:", default="An Interactive Fiction"
+        ).execute()
+    )
+    description = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Description:", default="An interactive fiction game."
+        ).execute()
+    )
+    sound = prompt_or_cancel(
+        lambda: inquirer.confirm(
+            message="Sound enabled (blorb)?", default=project.sound
+        ).execute()
+    )
+
+    commands: list[tuple[str, str | None]] = []
+
+    # Step 1: Extract walkthrough from Test me (if present in source)
+    story_path = os.path.join(project.dir, "story.ni")
+    has_test_me = False
+    try:
+        with open(story_path, "r", encoding="utf-8") as f:
+            has_test_me = bool(
+                re.search(r"Test\s+\w+\s+with", f.read(), re.IGNORECASE)
+            )
+    except OSError:
+        pass
+
+    if has_test_me:
+        walk_dir = os.path.join(project.dir, "tests", "inform7")
+        walk_file = os.path.join(walk_dir, "walkthrough.txt")
+        commands.append((f'mkdir -p "{to_posix(walk_dir)}"', None))
+        commands.append((extract_commands_cmd(story_path, walk_file), None))
+
+    # Step 2: Compile (+ web player + auto-walkthrough)
+    commands.append((compile_cmd(project.name, sound), None))
+
+    # Step 3: Generate pages (index.html + source.html)
+    commands.append(
+        (generate_pages_cmd(title, meta, description, project.dir), None)
+    )
+
+    # Step 4: Register in hub (games.json + cards.json)
+    sound_type = "blorb" if sound else ""
+    commands.append(
+        (register_game_cmd(project.name, title, meta, description, sound_type), None)
+    )
+
+    # Step 5: Publish to GitHub Pages
+    commands.append(
+        (publish_cmd(project.name, f"Initial publish: {title}"), None)
+    )
+
+    confirm_and_run(commands)
 
 
 def preset_serve(projects: list[ProjectInfo]):
@@ -740,12 +846,16 @@ PRESETS = [
     },
     Separator("--- Publish & Serve ---"),
     {
-        "name": "Recompile frozen versions",
-        "value": preset_recompile_versions,
+        "name": "Publish new game (full flow)",
+        "value": preset_publish_new,
     },
     {
-        "name": "Publish to GitHub Pages",
+        "name": "Publish update",
         "value": preset_publish,
+    },
+    {
+        "name": "Recompile frozen versions",
+        "value": preset_recompile_versions,
     },
     {
         "name": "Serve locally",
