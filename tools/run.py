@@ -703,6 +703,18 @@ def preset_publish_new(projects: list[ProjectInfo]):
         (publish_cmd(project.name, f"Initial publish: {title}"), None)
     )
 
+    # Step 6: Push hub changes (games.json + cards.json)
+    ifhub_root = to_posix(I7_ROOT)
+    commands.append(
+        (
+            f'cd "{ifhub_root}" && '
+            f'git add ifhub/games.json ifhub/cards.json && '
+            f'git diff --cached --quiet || '
+            f'git commit -m "Register {project.name} in IF Hub" && git push',
+            None,
+        )
+    )
+
     confirm_and_run(commands)
 
 
