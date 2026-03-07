@@ -56,7 +56,14 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
     git push -u origin main
 
     echo "  Enabling GitHub Pages..."
-    gh api "repos/Johnesco/$NAME/pages" -X POST -f build_type=workflow 2>/dev/null || true
+    if [[ -f ".github/workflows/deploy-pages.yml" ]]; then
+        # Workflow-based deployment (projects with web/ subdirectory + CI assembly)
+        gh api "repos/Johnesco/$NAME/pages" -X POST -f build_type=workflow 2>/dev/null || true
+    else
+        # Legacy deployment: serve directly from branch root (flat-layout projects)
+        gh api "repos/Johnesco/$NAME/pages" -X POST \
+            --input - 2>/dev/null <<< '{"build_type":"legacy","source":{"branch":"main","path":"/"}}' || true
+    fi
 
     echo ""
     echo "=== Published ==="

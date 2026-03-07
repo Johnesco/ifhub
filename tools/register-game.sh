@@ -122,5 +122,6 @@ else:
         f.write("\n")
     print(f"  cards.json: added '{name}'")
 
-print("\nDone.")
+print(f"\nDone. Next: publish to GitHub Pages with:")
+print(f"  bash /c/code/ifhub/tools/publish.sh {name}")
 PYEOF
