@@ -10,7 +10,7 @@
 # Stages (in pipeline order):
 #   compile   — I7 → I6 → Glulx → Blorb(if sound) → web player
 #   test      — Walkthrough + regtest (native or WSL)
-#   snapshot  — Freeze to versions/vN/ (requires --version)
+#   snapshot  — Freeze to vN/ (requires --version)
 #   push      — Stage changes, show summary, prompt before commit/push
 #
 # Flags:
@@ -450,7 +450,7 @@ stage_snapshot() {
     # Sync root story.ni to the version directory before recompiling.
     # snapshot.sh --update never overwrites frozen source (it compiles from
     # the version's own story.ni), so pipeline must sync it explicitly.
-    local version_dir="$PROJECT_DIR/versions/$VERSION"
+    local version_dir="$PROJECT_DIR/$VERSION"
     if [[ -d "$version_dir" && -f "$PROJECT_DIR/story.ni" ]]; then
         cp "$PROJECT_DIR/story.ni" "$version_dir/story.ni"
         echo "  story.ni synced to $VERSION"

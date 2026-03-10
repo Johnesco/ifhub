@@ -64,7 +64,16 @@
       "Bash(taskkill:*)",
       "Bash(pip install:*)",
       "Bash(do echo:*)",
-      "Bash(cmp:*)"
+      "Bash(cmp:*)",
+      "Bash(tasklist:*)",
+      "Read(//tmp/if-pipeline-test2/.github/**)",
+      "Read(//tmp/if-pipeline-test2/.github/workflows/**)",
+      "Bash(gh issue:*)",
+      "WebFetch(domain:qbjs.org)",
+      "Bash(find:*)",
+      "Bash(file:*)",
+      "Bash(tools/interpreters/glulxe.exe:*)",
+      "Bash(pkill:*)"
     ]
   }
 }

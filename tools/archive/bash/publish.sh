@@ -55,15 +55,59 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
     echo "  Pushing to GitHub..."
     git push -u origin main
 
-    echo "  Enabling GitHub Pages..."
-    if [[ -f ".github/workflows/deploy-pages.yml" ]]; then
-        # Workflow-based deployment (projects with web/ subdirectory + CI assembly)
-        gh api "repos/Johnesco/$NAME/pages" -X POST -f build_type=workflow 2>/dev/null || true
-    else
-        # Legacy deployment: serve directly from branch root (flat-layout projects)
-        gh api "repos/Johnesco/$NAME/pages" -X POST \
-            --input - 2>/dev/null <<< '{"build_type":"legacy","source":{"branch":"main","path":"/"}}' || true
+    echo "  Enabling GitHub Pages (workflow deployment)..."
+    # Ensure workflow file exists for deployment
+    if [[ ! -f ".github/workflows/deploy-pages.yml" ]]; then
+        echo "  Adding deploy-pages.yml workflow..."
+        mkdir -p .github/workflows
+        cat > .github/workflows/deploy-pages.yml << 'WORKFLOW_EOF'
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          [ -d web ] && cp -r web/* _site/ || true
+          [ -d lib ] && cp -r lib _site/ || true
+          cp *.html _site/ 2>/dev/null || true
+          cp *.txt _site/ 2>/dev/null || true
+          cp story.ni _site/ 2>/dev/null || true
+          shopt -s nullglob
+          for v in v[0-9]*/; do
+            cp -r "$v" "_site/$v"
+          done
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
+WORKFLOW_EOF
+        git add .github/workflows/deploy-pages.yml
+        git commit --amend --no-edit
     fi
+    gh api "repos/Johnesco/$NAME/pages" -X POST -f build_type=workflow 2>/dev/null || true
 
     echo ""
     echo "=== Published ==="

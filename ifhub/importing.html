@@ -290,6 +290,10 @@ hr {
 
 <p>The hub simply <em>references</em> each game by URL. The split-pane player (<code>app.html</code>) loads the game in an iframe pointing directly at the game&rsquo;s own <code>play.html</code>, fetches source code from the game&rsquo;s own <code>source.html</code> or <code>story.ni</code>, and loads walkthroughs from the game&rsquo;s own <code>walkthrough.html</code>.</p>
 
+<div class="note">
+  <strong>Prefer the Dashboard.</strong> The <a href="dashboard.html">IF Hub Dashboard</a> provides a browser-based GUI for the entire pipeline &mdash; creating projects, compiling, publishing, and registering &mdash; without touching the command line. The steps below document the underlying scripts for reference.
+</div>
+
 <!-- ===== ARCHITECTURE ===== -->
 <h2 id="architecture">Architecture</h2>
 
@@ -372,10 +376,10 @@ hr {
 <p>Use the shared compilation tools:</p>
 
 <pre><code><span class="comment"># Standard compilation (no sound):</span>
-bash /c/code/ifhub/tools/compile.sh <span class="path">game-name</span>
+python /c/code/ifhub/tools/compile.py <span class="path">game-name</span>
 
 <span class="comment"># With native blorb sound (embeds .ogg audio in .gblorb):</span>
-bash /c/code/ifhub/tools/compile.sh <span class="path">game-name</span> <span class="flag">--sound</span></code></pre>
+python /c/code/ifhub/tools/compile.py <span class="path">game-name</span> <span class="flag">--sound</span></code></pre>
 
 <p>This compiles the source, base64-encodes the binary, generates <code>play.html</code>, and validates the result &mdash; all in one command.</p>
 
@@ -386,7 +390,7 @@ bash /c/code/ifhub/tools/compile.sh <span class="path">game-name</span> <span cl
   <li>
     <h3>Write the game and first compile</h3>
     <p>Place <code>story.ni</code> in <code>projects/mygame/</code> and compile:</p>
-<pre><code>bash /c/code/ifhub/tools/compile.sh <span class="path">mygame</span></code></pre>
+<pre><code>python /c/code/ifhub/tools/compile.py <span class="path">mygame</span></code></pre>
     <p>This compiles the source, base64-encodes the binary, generates <code>play.html</code> and <code>walkthrough.html</code>, and validates the result.</p>
   </li>
 
@@ -395,24 +399,24 @@ bash /c/code/ifhub/tools/compile.sh <span class="path">game-name</span> <span cl
     <p>Extract walkthrough commands from the game&rsquo;s source (if it has <code>Test me with &ldquo;...&rdquo;</code>) or from a TRANSCRIPT file recorded during play.</p>
 <pre><code><span class="comment"># From Test me in source:</span>
 mkdir -p projects/<span class="path">mygame</span>/tests/inform7
-bash /c/code/ifhub/tools/extract-commands.sh <span class="flag">--from-source</span> \
+python /c/code/ifhub/tools/extract_commands.py <span class="flag">--from-source</span> \
     projects/<span class="path">mygame</span>/story.ni \
     -o projects/<span class="path">mygame</span>/tests/inform7/walkthrough.txt
 
 <span class="comment"># Or from a TRANSCRIPT file (recorded by typing TRANSCRIPT in-game):</span>
-bash /c/code/ifhub/tools/extract-commands.sh transcript.txt \
+python /c/code/ifhub/tools/extract_commands.py transcript.txt \
     -o projects/<span class="path">mygame</span>/tests/inform7/walkthrough.txt</code></pre>
   </li>
 
   <li>
     <h3>Recompile (with walkthrough)</h3>
     <p>Now that walkthrough commands exist, recompiling auto-generates the transcript, annotated guide, and copies everything to the web root:</p>
-<pre><code>bash /c/code/ifhub/tools/compile.sh <span class="path">mygame</span></code></pre>
+<pre><code>python /c/code/ifhub/tools/compile.py <span class="path">mygame</span></code></pre>
   </li>
 
   <li>
     <h3>Generate landing page and source browser</h3>
-<pre><code>bash /c/code/ifhub/tools/web/generate-pages.sh \
+<pre><code>python /c/code/ifhub/tools/web/generate_pages.py \
     --title <span class="string">"My Game"</span> \
     --meta <span class="string">"An Interactive Fiction"</span> \
     --description <span class="string">"A brief description of the game."</span> \
@@ -422,7 +426,7 @@ bash /c/code/ifhub/tools/extract-commands.sh transcript.txt \
 
   <li>
     <h3>Register in IF Hub</h3>
-<pre><code>bash /c/code/ifhub/tools/register-game.sh \
+<pre><code>python /c/code/ifhub/tools/register_game.py \
     --name <span class="path">mygame</span> \
     --title <span class="string">"My Game"</span> \
     --meta <span class="string">"An Interactive Fiction"</span> \
@@ -432,16 +436,14 @@ bash /c/code/ifhub/tools/extract-commands.sh transcript.txt \
 
   <li>
     <h3>Publish to GitHub Pages</h3>
-<pre><code>bash /c/code/ifhub/tools/publish.sh <span class="path">mygame</span></code></pre>
-    <p>First run: creates a <code>Johnesco/mygame</code> GitHub repo, pushes all files, and enables Pages. Subsequent runs: commits and pushes to trigger redeployment.</p>
+<pre><code>python /c/code/ifhub/tools/publish.py <span class="path">mygame</span></code></pre>
+    <p>First run: creates a <code>Johnesco/mygame</code> GitHub repo, pushes all files, and enables GitHub Pages via a GitHub Actions workflow (auto-generated if missing). Subsequent runs: commits and pushes to trigger redeployment.</p>
   </li>
 
   <li>
-    <h3>Commit hub changes</h3>
-<pre><code>cd /c/code/ifhub
-git add ifhub/games.json ifhub/cards.json projects/<span class="path">mygame</span>/
-git commit -m <span class="string">"Add mygame to IF Hub"</span>
-git push</code></pre>
+    <h3>Push hub changes</h3>
+<pre><code>python /c/code/ifhub/tools/push_hub.py <span class="path">mygame</span></code></pre>
+    <p>Stages <code>games.json</code> and <code>cards.json</code>, commits with a message referencing the game name, and pushes to the hub repo. Skips if no changes.</p>
   </li>
 
   <li>
@@ -563,7 +565,7 @@ git push</code></pre>
 
 <h3>Generating walkthrough files</h3>
 
-<p><code>compile.sh</code> handles this automatically. When <code>tests/inform7/walkthrough.txt</code> exists and <code>glulxe.exe</code> is available, it:</p>
+<p><code>compile.py</code> handles this automatically. When <code>tests/inform7/walkthrough.txt</code> exists and <code>glulxe.exe</code> is available, it:</p>
 
 <ol>
   <li>Runs the walkthrough commands through the interpreter &rarr; <code>walkthrough_output.txt</code></li>
@@ -574,22 +576,22 @@ git push</code></pre>
 <p>To create the initial walkthrough commands:</p>
 
 <pre><code><span class="comment"># From "Test me with ..." in story.ni:</span>
-bash /c/code/ifhub/tools/extract-commands.sh <span class="flag">--from-source</span> story.ni \
+python /c/code/ifhub/tools/extract_commands.py <span class="flag">--from-source</span> story.ni \
     -o tests/inform7/walkthrough.txt
 
 <span class="comment"># From a TRANSCRIPT file (recorded in Parchment, IDE, or any interpreter):</span>
-bash /c/code/ifhub/tools/extract-commands.sh transcript.txt \
+python /c/code/ifhub/tools/extract_commands.py transcript.txt \
     -o tests/inform7/walkthrough.txt
 
 <span class="comment"># Then recompile to generate the transcript and guide:</span>
-bash /c/code/ifhub/tools/compile.sh <span class="path">mygame</span></code></pre>
+python /c/code/ifhub/tools/compile.py <span class="path">mygame</span></code></pre>
 
 <!-- ===== LOCAL DEV ===== -->
 <h2 id="local-dev">Local Development</h2>
 
-<p>The dev server at <code>tools/dev-server.py</code> maps URL prefixes to local directories, providing production-equivalent URLs without deploying to GitHub Pages:</p>
+<p>The dev server at <code>tools/dev_server.py</code> maps URL prefixes to local directories, providing production-equivalent URLs without deploying to GitHub Pages:</p>
 
-<pre><code>python tools/dev-server.py [--port 8000]
+<pre><code>python tools/dev_server.py [--port 8000]
 <span class="comment"># /ifhub/*      &rarr; ifhub/</span>
 <span class="comment"># /mygame/*     &rarr; projects/mygame/</span>
 <span class="comment"># Open http://127.0.0.1:8000/ifhub/app.html</span></code></pre>

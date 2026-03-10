@@ -214,6 +214,146 @@ NAV_WORDS = {
     "southeast", "southwest", "up", "down", "in", "out",
 }
 
+# ---------------------------------------------------------------------------
+# Response excerpt filtering
+# ---------------------------------------------------------------------------
+
+BORING_RESPONSES = {
+    "taken", "dropped", "ok", "done", "closed", "locked", "unlocked",
+    "opened", "worn", "removed",
+}
+
+SKIP_LINE_PATTERNS = [
+    re.compile(r"score has just gone (up|down)", re.IGNORECASE),
+    re.compile(r"^\[Your score", re.IGNORECASE),
+    re.compile(r"^\[sound effect", re.IGNORECASE),
+    re.compile(r"^\*\*\*"),
+    re.compile(r"^Would you like to (RESTART|RESTORE|QUIT|UNDO)", re.IGNORECASE),
+    re.compile(r"^Obvious exits?:", re.IGNORECASE),
+    re.compile(r"^You can see\b", re.IGNORECASE),
+    re.compile(r"^>"),
+]
+
+ERROR_PATTERNS = [
+    re.compile(r"You can't see any such thing", re.IGNORECASE),
+    re.compile(r"That's not something you can", re.IGNORECASE),
+    re.compile(r"That's already (open|closed)", re.IGNORECASE),
+    re.compile(r"You already have", re.IGNORECASE),
+    re.compile(r"You aren't holding", re.IGNORECASE),
+    re.compile(r"There is nothing .* to", re.IGNORECASE),
+    re.compile(r"I didn't understand", re.IGNORECASE),
+    re.compile(r"That noun did not make sense", re.IGNORECASE),
+    re.compile(r"You can't go that way", re.IGNORECASE),
+]
+
+
+def wrap_excerpt(text, width=78):
+    """Wrap text into comment lines: '# first line' then '#   continuation'.
+
+    Returns list of strings like ['# The bell suddenly...', '#   wraiths...'].
+    """
+    prefix_first = "# "
+    prefix_cont = "#   "
+    result = []
+    remaining = text
+    first = True
+    while remaining:
+        prefix = prefix_first if first else prefix_cont
+        max_chars = width - len(prefix)
+        if len(remaining) <= max_chars:
+            result.append(prefix + remaining)
+            break
+        # Find a break point at a space near max_chars
+        brk = remaining.rfind(" ", 0, max_chars + 1)
+        if brk <= 0:
+            brk = max_chars  # Force break if no space found
+        result.append(prefix + remaining[:brk])
+        remaining = remaining[brk:].lstrip()
+        first = False
+    return result
+
+
+def extract_response_excerpt(response, room, taken):
+    """Extract an interesting narrative excerpt from a game response.
+
+    Returns a list of comment lines (already wrapped), or empty list
+    if the response is boring/generic.
+
+    Args:
+        response: Full response text from transcript
+        room: Detected room name (or None) — used to strip room descriptions
+        taken: Whether 'Taken.' was detected for this command
+    """
+    if not response:
+        return []
+
+    resp_lines = response.split("\n")
+
+    # Filter out score/sound/game-end/meta lines
+    filtered = []
+    for line in resp_lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if any(pat.search(stripped) for pat in SKIP_LINE_PATTERNS):
+            continue
+        filtered.append(stripped)
+
+    if not filtered:
+        return []
+
+    # If a room was detected, take only text BEFORE the room name line.
+    # This captures narrative like "The trap door crashes shut..." that
+    # precedes the new room heading.
+    if room:
+        pre_room = []
+        for line in filtered:
+            if line == room:
+                break
+            pre_room.append(line)
+        filtered = pre_room
+        if not filtered:
+            return []
+
+    # If "Taken." detected, strip that line but keep any extra text
+    if taken:
+        filtered = [l for l in filtered if not l.startswith("Taken")]
+        if not filtered:
+            return []
+
+    # Skip "Dropped." entirely
+    if len(filtered) == 1 and filtered[0].lower().startswith("dropped"):
+        return []
+
+    # Skip error responses
+    full_text = " ".join(filtered)
+    for pat in ERROR_PATTERNS:
+        if pat.search(full_text):
+            return []
+
+    # Skip single-word boring responses
+    if full_text.strip().rstrip(".").lower() in BORING_RESPONSES:
+        return []
+
+    # Cap at ~150 chars, break at sentence boundary
+    if len(full_text) > 150:
+        # Try to break at a sentence boundary
+        truncated = full_text[:160]
+        # Find last sentence-ending punctuation
+        for end_char in [".", "!", "?"]:
+            last_pos = truncated.rfind(end_char)
+            if last_pos > 50:  # Only if we keep a reasonable chunk
+                full_text = truncated[:last_pos + 1]
+                break
+        else:
+            full_text = full_text[:150].rsplit(" ", 1)[0] + "..."
+
+    # Skip if too short to be interesting
+    if len(full_text) < 10:
+        return []
+
+    return wrap_excerpt(full_text)
+
 
 def find_repeated_sequences(commands):
     """Find runs of 3+ identical non-navigation commands.
@@ -265,7 +405,9 @@ def is_hand_written(filepath):
     """Detect if an existing guide file appears to be hand-written.
 
     Auto-generated guides start with GUIDE_MARKER. If the file has that
-    marker, it's auto-generated (safe to overwrite).
+    marker, it's auto-generated (safe to overwrite). Note that auto-generated
+    excerpt comments (# narrative text...) don't trigger hand-written
+    detection when GUIDE_MARKER is present.
 
     If there's no marker, we check for prose-style comments (long comment
     lines containing sentences). Two or more such lines indicate a
@@ -326,6 +468,9 @@ def generate_guide(commands, responses=None, sound_prompt=False):
         lines.append(f"## Stage {stage_num}")
         lines.append("")
 
+    prev_had_content = False  # True when previous cmd had annotations/excerpt
+    cmds_in_current_room = 0  # Commands emitted since last room header
+
     for i, cmd in enumerate(commands):
         resp_idx = i + resp_offset
         response = None
@@ -352,9 +497,14 @@ def generate_guide(commands, responses=None, sound_prompt=False):
             lines.append("")
             rooms_visited[room] = rooms_visited.get(room, 0) + 1
             current_room = room
+            prev_had_content = False
+            cmds_in_current_room = 0
+
+        cmds_in_current_room += 1
 
         # Build annotations for this command
         annotations = []
+        taken = None
 
         # Repeated sequence start annotation
         if i in repeated:
@@ -391,12 +541,33 @@ def generate_guide(commands, responses=None, sound_prompt=False):
             events = detect_events(response)
             annotations.extend(events)
 
+        # Extract response excerpt (skip interior of repeated sequences)
+        excerpt_lines = []
+        if i not in in_repeated and response:
+            excerpt_lines = extract_response_excerpt(
+                response, room, taken is not None
+            )
+
+        has_content = bool(annotations or excerpt_lines)
+
+        # Insert blank line when transitioning from plain navigation to
+        # annotated/excerpted action within the same room
+        if has_content and not prev_had_content and cmds_in_current_room > 1:
+            if lines and lines[-1] != "":
+                lines.append("")
+
         # Emit annotations before the command
         for ann in annotations:
             lines.append(f"# {ann}")
 
+        # Emit excerpt after annotations, before command
+        for exc in excerpt_lines:
+            lines.append(exc)
+
         # Output command
         lines.append(f"> {cmd}")
+
+        prev_had_content = has_content
 
     return "\n".join(lines) + "\n"
 

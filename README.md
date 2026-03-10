@@ -15,26 +15,26 @@ Central hub for Inform 7 authoring, compilation, testing, and web deployment. Al
 
 ```bash
 # Create a new project
-bash tools/new-project.sh "My Game" mygame
+python tools/new_project.py "My Game" mygame
 
 # Edit the source
 # (edit projects/mygame/story.ni)
 
 # Compile and set up web player
-bash tools/compile.sh mygame
+python tools/compile.py mygame
 
 # Compile with embedded sound (requires Sounds/*.ogg at project root)
-bash tools/compile.sh mygame --sound
+python tools/compile.py mygame --sound
 
 # Play locally (hub + all games at production URLs)
 python tools/dev-server.py
 # Open http://127.0.0.1:8000/ifhub/app.html
 
 # Run tests
-bash projects/mygame/tests/run-tests.sh
+python tools/testing/run_tests.py --config projects/mygame/tests/project.conf
 
 # Publish to GitHub Pages
-bash tools/publish.sh mygame
+python tools/publish.py mygame
 
 # Interactive pipeline runner (arrow-key menus)
 python tools/run.py
@@ -48,12 +48,13 @@ ifhub/
 ├── CLAUDE.md              ← AI assistant instructions and full conventions
 ├── reference/             ← Inform 7 language reference docs
 ├── tools/                 ← Shared scripts (see tools/README.md)
-│   ├── compile.sh         ← Compile I7 → I6 → Glulx → optional blorb → web player
-│   ├── new-project.sh     ← Scaffold a new project with build, test, and deploy infra
-│   ├── publish.sh         ← Publish a project to GitHub Pages
-│   ├── pipeline.sh        ← Orchestrator: compile → test → snapshot → push
-│   ├── snapshot.sh        ← Freeze/update version snapshots
-│   ├── build-site.sh      ← Assemble _site/ for deployment
+│   ├── compile.py         ← Compile I7 → I6 → Glulx → optional blorb → web player
+│   ├── new_project.py     ← Scaffold a new project with build, test, and deploy infra
+│   ├── publish.py         ← Publish a project to GitHub Pages
+│   ├── pipeline.py        ← Orchestrator: compile → test → snapshot → push
+│   ├── snapshot.py        ← Freeze/update version snapshots
+│   ├── build_site.py      ← Assemble _site/ for deployment
+│   ├── lib/               ← Shared Python library
 │   ├── run.py             ← Interactive pipeline runner (pip install InquirerPy)
 │   ├── dev-server.py      ← Multi-root dev server (hub + all games)
 │   ├── regtest.py         ← Shared RegTest runner
@@ -76,7 +77,7 @@ ifhub/
 
 | Project | Description | Sound | Pages |
 |---------|-------------|-------|-------|
-| **[zork1](https://johnesco.github.io/zork1/)** | Zork I — The Great Underground Empire (ZIL-to-I7 translation, 5 versions) | v3–v4: 25 sounds (blorb) | [Play](https://johnesco.github.io/ifhub/app.html?game=zork1-v4) |
+| **[zork1](https://johnesco.github.io/zork1/)** | Zork I — The Great Underground Empire (ZIL-to-I7 translation, 4 versions) | v3+: 25 sounds (blorb) | [Play](https://johnesco.github.io/ifhub/app.html?game=zork1) |
 | **[dracula](https://johnesco.github.io/dracula/)** | Dracula's Castle — 1980s BASIC text adventure + Inform 7 translation | — | [Play](https://johnesco.github.io/ifhub/app.html?game=dracula) |
 | **[feverdream](https://johnesco.github.io/feverdream/)** | Fever Dream — A Perceptual Horror | blorb | [Play](https://johnesco.github.io/ifhub/app.html?game=feverdream) |
 | **[sample](https://johnesco.github.io/sample/)** | Sample — Inform 7 practice game | — | [Play](https://johnesco.github.io/ifhub/app.html?game=sample) |
@@ -97,14 +98,15 @@ All scripts live in `tools/`. See [`tools/README.md`](tools/README.md) for full 
 
 | Script | Purpose |
 |--------|---------|
-| `compile.sh` | Compile a project (I7 → I6 → Glulx → optional blorb → web player → walkthrough) |
-| `extract-commands.sh` | Extract walkthrough commands from a TRANSCRIPT file or `Test me` in source |
-| `register-game.sh` | Register a game in IF Hub (adds to `games.json` + `cards.json`) |
-| `new-project.sh` | Scaffold a new project with build, test, and deploy infrastructure |
-| `publish.sh` | Publish a project to GitHub Pages (creates repo on first run) |
-| `pipeline.sh` | Orchestrator: compile → test → snapshot → push |
-| `snapshot.sh` | Freeze/update version snapshots (recompiles from frozen source) |
-| `build-site.sh` | Assemble `_site/` from project root + version directories |
+| `compile.py` | Compile a project (I7 → I6 → Glulx → optional blorb → web player → walkthrough) |
+| `extract_commands.py` | Extract walkthrough commands from a TRANSCRIPT file or `Test me` in source |
+| `register_game.py` | Register a game in IF Hub (adds to `games.json` + `cards.json`) |
+| `push_hub.py` | Push hub registry changes (`games.json` + `cards.json`) to GitHub |
+| `new_project.py` | Scaffold a new project with build, test, and deploy infrastructure |
+| `publish.py` | Publish a project to GitHub Pages (creates repo on first run) |
+| `pipeline.py` | Orchestrator: compile → test → snapshot → push |
+| `snapshot.py` | Freeze/update version snapshots (recompiles from frozen source) |
+| `build_site.py` | Assemble `_site/` from project root + version directories |
 | `run.py` | Interactive pipeline runner — arrow-key menus for common tasks |
 | `dev-server.py` | Multi-root dev server (serves hub + all games at production URLs) |
 | `regtest.py` | Shared RegTest runner for regression testing |
@@ -115,18 +117,18 @@ Deterministic walkthrough-based testing with native CLI interpreters built from 
 
 | Script | Purpose |
 |--------|---------|
-| `run-walkthrough.sh` | Run a walkthrough with RNG seeding and diagnostics |
-| `find-seeds.sh` | Sweep RNG seeds to find deterministic golden seeds |
-| `run-tests.sh` | Run RegTest regression tests for a project |
+| `run_walkthrough.py` | Run a walkthrough with RNG seeding and diagnostics |
+| `find_seeds.py` | Sweep RNG seeds to find deterministic golden seeds |
+| `run_tests.py` | Run RegTest regression tests for a project |
 
-**Interpreters**: `glulxe.exe` (Glulx) and `dfrotz.exe` (Z-machine) built from source in MSYS2 UCRT64. These are gitignored — each developer builds locally with `bash tools/interpreters/build.sh`. Tests auto-detect native interpreters on Git Bash and fall back to WSL.
+**Interpreters**: `glulxe.exe` (Glulx) and `dfrotz.exe` (Z-machine) built from source in MSYS2 UCRT64. These are gitignored — each developer builds locally with `bash tools/interpreters/build.sh`. Tests auto-detect native interpreters and fall back to WSL.
 
 ### Web Player (`tools/web/`)
 
 | File | Purpose |
 |------|---------|
-| `setup-web.sh` | Bootstrap a Parchment web player for any project |
-| `generate-pages.sh` | Generate `index.html` + `source.html` from templates |
+| `setup_web.py` | Bootstrap a Parchment web player for any project |
+| `generate_pages.py` | Generate `index.html` + `source.html` from templates |
 | `play-template.html` | HTML template for player pages |
 | `landing-template.html` | Template for project landing pages |
 | `source-template.html` | Template for source browser pages |
@@ -137,7 +139,7 @@ Deterministic walkthrough-based testing with native CLI interpreters built from 
 Games with sound use native Glk/Blorb — audio is embedded directly in the `.gblorb` binary. Parchment 2025.1 plays sounds via AudioContext when the game issues Glk sound channel calls.
 
 ```bash
-bash tools/compile.sh zork1 --sound
+python tools/compile.py zork1 --sound
 ```
 
 **Requirements**: Sound declarations in `story.ni` (`Sound of X is the file "Y.ogg"`) and `.ogg` files in `projects/<name>/Sounds/`.
@@ -149,10 +151,10 @@ See `reference/sound.md` for the full architecture.
 Inform 7 is installed system-wide. CLI compilation uses `-source` and `-o` flags — no `.inform/` IDE bundles needed.
 
 ```bash
-bash tools/compile.sh <game-name>                    # standard
-bash tools/compile.sh <game-name> --sound             # with blorb sound
-bash tools/compile.sh <game-name> --source PATH       # alternate story.ni
-bash tools/compile.sh <game-name> --compile-only      # skip web player update
+python tools/compile.py <game-name>                    # standard
+python tools/compile.py <game-name> --sound             # with blorb sound
+python tools/compile.py <game-name> --source PATH       # alternate story.ni
+python tools/compile.py <game-name> --compile-only      # skip web player update
 ```
 
 ## Reference Docs
@@ -167,7 +169,6 @@ The `reference/` directory contains Inform 7 language reference:
 - **activities-phrases.md** — Activities, phrase definitions, control flow
 - **sound.md** — Sound architecture, native blorb, Parchment integration
 - **parchment-troubleshooting.md** — Web player errors and debugging
-- **windows-pitfalls.md** — Git Bash and MSYS2 gotchas
 
 ## Built With
 

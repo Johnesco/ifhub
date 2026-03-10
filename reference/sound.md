@@ -25,7 +25,7 @@ The Jan 2025 release (2025.1.14) was a major architectural overhaul:
 1. **Colon in title bug**: `Release.blurb` generates a `storyfile leafname` containing colons from the game title, producing an invalid filename on Windows (e.g., `"Zork I - The Great Underground E.gblorb"`)
 2. **ULX-instead-of-gblorb bug**: The `base64` line in `Release.blurb` encodes `output.ulx` (the naked binary without sounds) instead of `output.gblorb` (the full blorb with embedded audio), so the web player gets a game file with no sound resources
 
-**Workaround**: Generate the `.blurb` file manually with `generate-blurb.sh`, run `inblorb` to create the `.gblorb`, then base64-encode the `.gblorb` instead of the `.ulx`. This is automated via `compile.sh --sound`.
+**Workaround**: Generate the `.blurb` file manually with `generate_blurb.py`, run `inblorb` to create the `.gblorb`, then base64-encode the `.gblorb` instead of the `.ulx`. This is automated via `compile.py --sound`.
 
 **Assessment**: **Native blorb sound works today** with the CLI workaround. When the upstream bugs are fixed, the standard IDE Release pipeline will produce correct blorb-encoded web players automatically.
 
@@ -88,7 +88,7 @@ The Jan 2025 release (2025.1.14) was a major architectural overhaul:
 
 ## Decision (Updated March 2026)
 
-**All sound games now use native Glk/Blorb sound.** As of March 2026, zork1 (v3, v4) and feverdream have been converted from the JS overlay to native blorb. The JS overlay infrastructure is retained for potential future use — set `"sound": "overlay"` in `games.json` to activate it for a new game.
+**All sound games now use native Glk/Blorb sound.** As of March 2026, zork1 (v3) and feverdream have been converted from the JS overlay to native blorb. The JS overlay infrastructure is retained for potential future use — set `"sound": "overlay"` in `games.json` to activate it for a new game.
 
 **Two sound approaches are available**, both integrated into our pipeline:
 
@@ -98,13 +98,13 @@ Parchment's built-in sound works when the game binary is a `.gblorb` with embedd
 
 **Use when**: The game has Inform 7 sound declarations and you want embedded audio with no external JS dependencies.
 
-**CLI command**: `bash tools/compile.sh zork1 --sound`
+**CLI command**: `python tools/compile.py zork1 --sound`
 
 **Tradeoffs**:
 - Larger file size (~25MB for zork1 with 25 sounds vs ~1.3MB without)
 - Requires `.ogg` sound files in `project/Sounds/`
 - Sound timing is controlled by the game engine (Glk sound channels)
-- Workaround needed for two upstream Inform 7 bugs (automated by `generate-blurb.sh`)
+- Workaround needed for two upstream Inform 7 bugs (automated by `generate_blurb.py`)
 
 ### 2. Custom JavaScript Overlay (sound-engine.js)
 
@@ -112,7 +112,7 @@ Our MutationObserver-based approach watches the DOM and plays HTML5 Audio indepe
 
 **Use when**: No source changes needed, hot-swappable triggers, fine-grained control over timing/volume/zones, or the game doesn't have Inform 7 sound declarations.
 
-**CLI command**: `bash tools/compile.sh zork1` (then add sound-config.js manually)
+**CLI command**: `python tools/compile.py zork1` (then add sound-config.js manually)
 
 **Tradeoffs**:
 - Requires per-game JavaScript configuration
@@ -133,7 +133,7 @@ Our MutationObserver-based approach watches the DOM and plays HTML5 Audio indepe
 | Zone-based ambient crossfading | Built in (Glk channels) | Yes (ambient-audio.js) |
 | Works offline (single file) | Yes (all embedded) | No (needs audio files) |
 | games.json sound value | `"blorb"` | `"overlay"` |
-| deploy.sh SOUND_DIRS needed | No | Yes |
+| Hub deployment config needed | No | Yes (legacy) |
 
 Both approaches can coexist in the same project. The JS overlay will work regardless of whether the game binary is `.ulx` or `.gblorb`.
 
@@ -143,7 +143,7 @@ When the two upstream Inform 7 bugs are fixed:
 1. The colon-in-title filename bug
 2. The ULX-encoded-instead-of-gblorb bug
 
-...the manual `generate-blurb.sh` + `inblorb` steps become unnecessary. The standard IDE Release pipeline will encode the `.gblorb` automatically, and `compile.sh --sound` can be simplified to just pass the IDE-generated blorb to `setup-web.sh`.
+...the manual `generate_blurb.py` + `inblorb` steps become unnecessary. The standard IDE Release pipeline will encode the `.gblorb` automatically, and `compile.py --sound` can be simplified to just pass the IDE-generated blorb to `setup_web.py`.
 
 ## Native Blorb Sound Architecture
 
@@ -151,9 +151,9 @@ When the two upstream Inform 7 bugs are fixed:
 
 1. **story.ni** declares sounds: `Sound of forest-ambient is the file "forest.ogg".`
 2. **inform7** compiles the declarations into Glk sound opcodes in the game binary
-3. **generate-blurb.sh** parses story.ni, assigns resource IDs (starting from 3), generates a `.blurb` file
+3. **generate_blurb.py** parses story.ni, assigns resource IDs (starting from 3), generates a `.blurb` file
 4. **inblorb** packages the `.ulx` game binary + `.ogg` sound files into a single `.gblorb` blorb file
-5. **setup-web.sh --blorb** base64-encodes the `.gblorb` into a `.gblorb.js` file
+5. **setup_web.py --blorb** base64-encodes the `.gblorb` into a `.gblorb.js` file
 6. **Parchment 2025.1** loads the blorb, parses the resource map, and plays sounds via AudioContext when the game issues Glk sound channel calls
 
 ### Upstream Bugs (Inform 7 v10.1.2)
@@ -162,7 +162,7 @@ When the two upstream Inform 7 bugs are fixed:
 
 The `Release.blurb` file uses `storyfile leafname` with the game title, which may contain colons. On Windows, colons are illegal in filenames. Example: `"Zork I - The Great Underground E.gblorb"` causes the release to fail.
 
-**Workaround**: Use `generate-blurb.sh` which generates a sanitized blurb without the leafname directive.
+**Workaround**: Use `generate_blurb.py` which generates a sanitized blurb without the leafname directive.
 
 **Bug 2: ULX encoded instead of gblorb**
 
@@ -176,13 +176,13 @@ base64 "zork1.inform\Build\output.ulx" to "...\Zork I - The Great Underground E.
 base64 "zork1.inform\Build\output.gblorb" to "...\zork1.gblorb.js"
 ```
 
-**Workaround**: `compile.sh --sound` runs `generate-blurb.sh` + `inblorb` + `setup-web.sh --blorb` to produce a correct blorb-encoded web player.
+**Workaround**: `compile.py --sound` runs `generate_blurb.py` + `inblorb` + `setup_web.py --blorb` to produce a correct blorb-encoded web player.
 
 ### Resource ID Mapping
 
 Sound resource IDs are assigned by the Inform 7 compiler based on declaration order in `story.ni`. IDs 1 and 2 are reserved (cover image and small cover). Sound IDs start at 3.
 
-The `generate-blurb.sh` script parses declarations in source order to match the compiler's assignment. This has been validated against the IDE-generated `Release.blurb` — the IDs match exactly.
+The `generate_blurb.py` script parses declarations in source order to match the compiler's assignment. This has been validated against the IDE-generated `Release.blurb` — the IDs match exactly.
 
 ### File Size Impact
 
@@ -308,14 +308,14 @@ The overlay approach observes Parchment's DOM output rather than hooking into th
 
 ### Adding Sound to a New Project
 
-1. Copy the sound engine: `bash tools/web/setup-web.sh --sound ...` (or manually copy `tools/web/sound-engine.js` to `project/web/lib/`)
+1. Copy the sound engine: `python tools/web/setup_web.py --sound ...` (or manually copy `tools/web/sound-engine.js` to `project/web/lib/`)
 2. Create `project/web/lib/sound-config.js` with trigger definitions (see template above)
 3. Create audio assets in `project/web/audio/sfx/`
 4. Add to `play.html`:
    - CSS: `.Style_user1 { display: none; }` (in `<style>` block)
    - Scripts: `<script src="lib/sound-engine.js"></script>` and `<script src="lib/sound-config.js"></script>` before `</body>`
 5. If using Style_user1 triggers: add `Include Glulx Text Effects by Emily Short` and the `issue sound command` phrase to `story.ni`
-6. For ifhub deployment: set `"sound": "overlay"` in `games.json` and add the project to `SOUND_DIRS` in `deploy.sh`
+6. For ifhub deployment: set `"sound": "overlay"` in `games.json`
 
 ### File Locations
 
@@ -439,7 +439,7 @@ If you see `[Sound effect number N here.]` text instead of hearing audio, work t
 
 When `gestalt_Sound` returns 0, the Inform 7 runtime disables sound and prints text fallback instead.
 
-**Fix**: In your play.html, change `<script src="...main.js">` to `<script src="...parchment.js">`. The `setup-web.sh` script now validates this and warns if the wrong file is referenced.
+**Fix**: In your play.html, change `<script src="...main.js">` to `<script src="...parchment.js">`. The `setup_web.py` script now validates this and warns if the wrong file is referenced.
 
 ### 2. Colon in story title
 
@@ -447,13 +447,13 @@ When `gestalt_Sound` returns 0, the Inform 7 runtime disables sound and prints t
 
 **Cause**: Inform 7 derives filenames from the title in line 1 of `story.ni`. Colons (`:`) are illegal in Windows filenames. The title `"Zork I: The Great Underground Empire"` produces `Zork I: The Great Underground E.gblorb` which cannot be written.
 
-**Fix**: Replace `:` with `-` in the title: `"Zork I - The Great Underground Empire"`. The `compile.sh` script now checks for this before compilation and exits with a clear error.
+**Fix**: Replace `:` with `-` in the title: `"Zork I - The Great Underground Empire"`. The `compile.py` script now checks for this before compilation and exits with a clear error.
 
 ### 3. Sounds/ directory not at project root
 
-**Symptom**: `compile.sh --sound` fails at the "Generating blurb" step, or `generate-blurb.sh` reports "Sounds directory not found".
+**Symptom**: `compile.py --sound` fails at the "Generating blurb" step, or `generate_blurb.py` reports "Sounds directory not found".
 
-**Cause**: `compile.sh` looks for `.ogg` files at `projects/<name>/Sounds/`. If your sound files are in `<name>.materials/Sounds/` (the Inform 7 IDE convention), they won't be found.
+**Cause**: `compile.py` looks for `.ogg` files at `projects/<name>/Sounds/`. If your sound files are in `<name>.materials/Sounds/` (the Inform 7 IDE convention), they won't be found.
 
 **Fix**: Copy the sounds to the project root:
 ```bash
@@ -467,7 +467,7 @@ Do NOT symlink — the sound directories may diverge between projects.
 
 **Cause**: The browser cached the old JavaScript files. HTTP servers like `python -m http.server` don't set cache-control headers, so browsers aggressively cache `.js` files.
 
-**Fix**: Hard refresh with Ctrl+Shift+R, or open in an incognito/private window. Both `setup-web.sh` and `deploy.sh` now append `?v=<timestamp>` cache-busting params to all `.js` and `.css` references to prevent this.
+**Fix**: Hard refresh with Ctrl+Shift+R, or open in an incognito/private window. `setup_web.py` and `compile.py` append `?v=<timestamp>` cache-busting params to all `.js` and `.css` references to prevent this.
 
 ### 5. Binary is .ulx instead of .gblorb
 
@@ -475,7 +475,7 @@ Do NOT symlink — the sound directories may diverge between projects.
 
 **Cause**: The base64-encoded file contains a naked `.ulx` binary (no embedded audio resources) instead of a `.gblorb` (blorb with sounds).
 
-**Fix**: Recompile with `compile.sh <name> --sound` which automatically encodes the `.gblorb` via `setup-web.sh --blorb`. Check that the output says "Encoding name.gblorb" not "Encoding name.ulx".
+**Fix**: Recompile with `compile.py <name> --sound` which automatically encodes the `.gblorb` via `setup_web.py --blorb`. Check that the output says "Encoding name.gblorb" not "Encoding name.ulx".
 
 ### 6. Missing `story_name` in parchment_options
 

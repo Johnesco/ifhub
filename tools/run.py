@@ -2,7 +2,7 @@
 """Interactive Pipeline Runner for IF Hub.
 
 Presents arrow-key menus to select pipeline tasks and games,
-then delegates to existing bash scripts via subprocess.
+then delegates to Python scripts via subprocess.
 
 Usage:
     python tools/run.py
@@ -13,7 +13,6 @@ Requires: pip install InquirerPy
 import glob
 import os
 import re
-import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -40,14 +39,16 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 I7_ROOT = os.path.dirname(SCRIPT_DIR)
 PROJECTS_DIR = os.path.join(I7_ROOT, "projects")
 IFHUB_DIR = os.path.join(I7_ROOT, "ifhub")
-PIPELINE_SH = os.path.join(SCRIPT_DIR, "pipeline.sh")
-SNAPSHOT_SH = os.path.join(SCRIPT_DIR, "snapshot.sh")
-PUBLISH_SH = os.path.join(SCRIPT_DIR, "publish.sh")
+PIPELINE_PY = os.path.join(SCRIPT_DIR, "pipeline.py")
+SNAPSHOT_PY = os.path.join(SCRIPT_DIR, "snapshot.py")
+PUBLISH_PY = os.path.join(SCRIPT_DIR, "publish.py")
 DEV_SERVER_PY = os.path.join(SCRIPT_DIR, "dev-server.py")
-COMPILE_SH = os.path.join(SCRIPT_DIR, "compile.sh")
-EXTRACT_COMMANDS_SH = os.path.join(SCRIPT_DIR, "extract-commands.sh")
-GENERATE_PAGES_SH = os.path.join(SCRIPT_DIR, "web", "generate-pages.sh")
-REGISTER_GAME_SH = os.path.join(SCRIPT_DIR, "register-game.sh")
+COMPILE_PY = os.path.join(SCRIPT_DIR, "compile.py")
+EXTRACT_COMMANDS_PY = os.path.join(SCRIPT_DIR, "extract_commands.py")
+GENERATE_PAGES_PY = os.path.join(SCRIPT_DIR, "web", "generate_pages.py")
+REGISTER_GAME_PY = os.path.join(SCRIPT_DIR, "register_game.py")
+PUSH_HUB_PY = os.path.join(SCRIPT_DIR, "push_hub.py")
+NEW_PROJECT_PY = os.path.join(SCRIPT_DIR, "new_project.py")
 TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
 # ---------------------------------------------------------------------------
@@ -55,59 +56,22 @@ TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 # ---------------------------------------------------------------------------
 
 
-def to_posix(path: str) -> str:
-    """Convert a Windows path to MSYS2/Git Bash posix form.
+def run_command(cmd: list[str], cwd: str | None = None) -> int:
+    """Run a command with live terminal output. Returns exit code.
 
-    C:\\code\\ifhub -> /c/code/ifhub
+    cmd is a list of arguments (first element is the executable).
     """
-    path = path.replace("\\", "/")
-    # Convert drive letter  C:/... -> /c/...
-    m = re.match(r"^([A-Za-z]):/", path)
-    if m:
-        path = "/" + m.group(1).lower() + "/" + path[3:]
-    return path
-
-
-def find_bash() -> str:
-    """Return the path to a usable bash executable."""
-    # Prefer Git Bash on Windows
-    git_bash = r"C:\Program Files\Git\bin\bash.exe"
-    if os.path.isfile(git_bash):
-        return git_bash
-    found = shutil.which("bash")
-    if found:
-        return found
-    print("ERROR: Cannot find bash. Install Git for Windows or add bash to PATH.")
-    sys.exit(1)
-
-
-def run_command(cmd: str, cwd: str | None = None) -> int:
-    """Run a bash command with live terminal output. Returns exit code."""
-    bash = find_bash()
-    posix_cwd = to_posix(cwd) if cwd else None
-
-    # Build the full command — cd first if cwd is specified
-    if posix_cwd:
-        full_cmd = f'cd "{posix_cwd}" && {cmd}'
-    else:
-        full_cmd = cmd
-
     try:
-        result = subprocess.run([bash, "-c", full_cmd], cwd=cwd)
+        result = subprocess.run(cmd, cwd=cwd)
         return result.returncode
     except KeyboardInterrupt:
         print("\n\nInterrupted.")
         return 130
 
 
-def run_python(cmd: str) -> int:
-    """Run a Python command with live terminal output. Returns exit code."""
-    try:
-        result = subprocess.run([sys.executable] + cmd.split())
-        return result.returncode
-    except KeyboardInterrupt:
-        print("\n\nInterrupted.")
-        return 130
+def py_cmd(*args: str) -> list[str]:
+    """Build a Python subprocess command list."""
+    return [sys.executable, *args]
 
 
 def prompt_or_cancel(prompt_fn):
@@ -245,12 +209,13 @@ def load_projects() -> list[ProjectInfo]:
         hub_id = fields.get("PIPELINE_HUB_ID", name)
         tests = fields.get("PIPELINE_TESTS", "")
 
+        # Detect capabilities from test data files
         has_walkthrough = os.path.isfile(
-            os.path.join(project_dir, "tests", "run-walkthrough.sh")
+            os.path.join(project_dir, "tests", "inform7", "walkthrough.txt")
         )
-        has_regtest = os.path.isfile(
-            os.path.join(project_dir, "tests", "run-tests.sh")
-        )
+        has_regtest = bool(glob.glob(
+            os.path.join(project_dir, "tests", "*.regtest")
+        ))
 
         versions = get_versions(project_dir) if versioned else []
         compilable = get_compilable_versions(project_dir, versions) if versioned else []
@@ -383,24 +348,30 @@ def prompt_version_text(project: ProjectInfo) -> str:
 # ---------------------------------------------------------------------------
 
 
-def preview_commands(commands: list[tuple[str, str | None]]):
+def fmt_cmd(cmd: list[str]) -> str:
+    """Format a command list as a readable string for display."""
+    return " ".join(cmd)
+
+
+def preview_commands(commands: list[tuple[list[str], str | None]]):
     """Print a numbered command preview."""
     print()
     print("Commands to run:")
     for i, (cmd, cwd) in enumerate(commands, 1):
+        display = fmt_cmd(cmd)
         if cwd:
-            print(f"  {i}. (cd {to_posix(cwd)}) {cmd}")
+            print(f"  {i}. (cd {cwd}) {display}")
         else:
-            print(f"  {i}. {cmd}")
+            print(f"  {i}. {display}")
     print()
 
 
-def execute_commands(commands: list[tuple[str, str | None]]):
+def execute_commands(commands: list[tuple[list[str], str | None]]):
     """Execute commands with error handling and continue/abort prompt."""
     total = len(commands)
     for i, (cmd, cwd) in enumerate(commands, 1):
         if total > 1:
-            print(f"\n[{i}/{total}] {cmd}")
+            print(f"\n[{i}/{total}] {fmt_cmd(cmd)}")
         exit_code = run_command(cmd, cwd)
 
         if exit_code == 130:
@@ -423,7 +394,7 @@ def execute_commands(commands: list[tuple[str, str | None]]):
                 sys.exit(exit_code)
 
 
-def confirm_and_run(commands: list[tuple[str, str | None]]):
+def confirm_and_run(commands: list[tuple[list[str], str | None]]):
     """Preview, confirm, and execute commands."""
     if not commands:
         print("Nothing to run.")
@@ -446,58 +417,96 @@ def confirm_and_run(commands: list[tuple[str, str | None]]):
 # Preset implementations
 # ---------------------------------------------------------------------------
 
-# Shared path helpers
-def pipeline_cmd(game: str, *args: str) -> str:
-    return f'bash "{to_posix(PIPELINE_SH)}" {game} {" ".join(args)}'
+# Shared command builders (return list[str] for subprocess)
+def pipeline_cmd(game: str, *args: str) -> list[str]:
+    return py_cmd(PIPELINE_PY, game, *args)
 
 
-def snapshot_cmd(game: str, version: str) -> str:
-    return f'bash "{to_posix(SNAPSHOT_SH)}" {game} {version} --update'
+def snapshot_cmd(game: str, version: str) -> list[str]:
+    return py_cmd(SNAPSHOT_PY, game, version, "--update")
 
 
-def publish_cmd(game: str, message: str = "") -> str:
-    cmd = f'bash "{to_posix(PUBLISH_SH)}" {game}'
+def publish_cmd(game: str, message: str = "") -> list[str]:
+    cmd = py_cmd(PUBLISH_PY, game)
     if message:
-        cmd += f' "{message}"'
+        cmd.append(message)
     return cmd
 
 
-def compile_cmd(game: str, sound: bool = False) -> str:
-    cmd = f'bash "{to_posix(COMPILE_SH)}" {game}'
+def compile_cmd(game: str, sound: bool = False) -> list[str]:
+    cmd = py_cmd(COMPILE_PY, game)
     if sound:
-        cmd += " --sound"
+        cmd.append("--sound")
     return cmd
 
 
-def extract_commands_cmd(source_path: str, output_path: str) -> str:
-    return (
-        f'bash "{to_posix(EXTRACT_COMMANDS_SH)}" --from-source '
-        f'"{to_posix(source_path)}" -o "{to_posix(output_path)}"'
-    )
+def extract_commands_cmd(source_path: str, output_path: str) -> list[str]:
+    return py_cmd(EXTRACT_COMMANDS_PY, "--from-source", source_path, "-o", output_path)
 
 
-def generate_pages_cmd(title: str, meta: str, description: str, out_dir: str) -> str:
-    return (
-        f'bash "{to_posix(GENERATE_PAGES_SH)}" '
-        f'--title "{title}" --meta "{meta}" --description "{description}" '
-        f'--out "{to_posix(out_dir)}"'
+def generate_pages_cmd(title: str, meta: str, description: str, out_dir: str) -> list[str]:
+    return py_cmd(
+        GENERATE_PAGES_PY,
+        "--title", title, "--meta", meta, "--description", description,
+        "--out", out_dir,
     )
 
 
 def register_game_cmd(
     name: str, title: str, meta: str, description: str, sound: str = ""
-) -> str:
-    cmd = (
-        f'bash "{to_posix(REGISTER_GAME_SH)}" '
-        f'--name {name} --title "{title}" --meta "{meta}" '
-        f'--description "{description}"'
+) -> list[str]:
+    cmd = py_cmd(
+        REGISTER_GAME_PY,
+        "--name", name, "--title", title, "--meta", meta,
+        "--description", description,
     )
     if sound:
-        cmd += f" --sound {sound}"
+        cmd.extend(["--sound", sound])
     return cmd
 
 
+def push_hub_cmd(game: str) -> list[str]:
+    return py_cmd(PUSH_HUB_PY, game)
+
+
+def new_project_cmd(title: str, name: str) -> list[str]:
+    return py_cmd(NEW_PROJECT_PY, title, name)
+
+
 # --- Build ---
+
+
+def preset_create_project(projects: list[ProjectInfo]):
+    """Create a new project (scaffold with new_project.py)."""
+    name = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Game name (lowercase, hyphens ok):", default=""
+        ).execute()
+    ).strip()
+    if not name:
+        print("No name provided.")
+        sys.exit(0)
+    if not re.match(r"^[a-z0-9]([a-z0-9_-]*[a-z0-9])?$", name):
+        print("Name must be lowercase alphanumeric (hyphens/underscores ok).")
+        sys.exit(1)
+
+    # Check if it already exists
+    project_dir = os.path.join(PROJECTS_DIR, name)
+    if os.path.isdir(project_dir):
+        print(f"ERROR: Project '{name}' already exists at {project_dir}")
+        sys.exit(1)
+
+    title = prompt_or_cancel(
+        lambda: inquirer.text(
+            message="Title:",
+            default=name.replace("-", " ").replace("_", " ").title(),
+        ).execute()
+    )
+
+    confirm_and_run([(new_project_cmd(title, name), None)])
+    print()
+    print(f"Next: edit projects/{name}/story.ni, then use 'Publish new game'")
+
 
 
 def preset_quick_build(projects: list[ProjectInfo]):
@@ -559,10 +568,10 @@ def preset_walkthroughs(projects: list[ProjectInfo]):
         ).execute()
     )
 
-    wt_script = to_posix(os.path.join(project.dir, "tests", "run-walkthrough.sh"))
-    cmd = f'bash "{wt_script}"'
+    conf_path = os.path.join(project.dir, "tests", "project.conf")
+    cmd = py_cmd(os.path.join(TESTING_DIR, "run_walkthrough.py"), "--config", conf_path)
     if seed.strip():
-        cmd += f" --seed {seed.strip()}"
+        cmd.extend(["--seed", seed.strip()])
 
     confirm_and_run([(cmd, None)])
 
@@ -577,10 +586,10 @@ def preset_regtests(projects: list[ProjectInfo]):
         ).execute()
     )
 
-    rt_script = to_posix(os.path.join(project.dir, "tests", "run-tests.sh"))
-    cmd = f'bash "{rt_script}"'
+    conf_path = os.path.join(project.dir, "tests", "project.conf")
+    cmd = py_cmd(os.path.join(TESTING_DIR, "run_tests.py"), "--config", conf_path)
     if pattern.strip():
-        cmd += f" {pattern.strip()}"
+        cmd.append(pattern.strip())
 
     confirm_and_run([(cmd, None)])
 
@@ -601,12 +610,12 @@ def preset_find_seeds(projects: list[ProjectInfo]):
         ).execute()
     )
 
-    conf_path = to_posix(os.path.join(project.dir, "tests", "project.conf"))
-    find_seeds = to_posix(os.path.join(TESTING_DIR, "find-seeds.sh"))
-    cmd = f'bash "{find_seeds}" --config "{conf_path}"'
+    conf_path = os.path.join(project.dir, "tests", "project.conf")
+    find_seeds_py = os.path.join(TESTING_DIR, "find_seeds.py")
+    cmd = py_cmd(find_seeds_py, "--config", conf_path)
     if max_seeds.strip():
-        cmd += f" --max {max_seeds.strip()}"
-    cmd += " --stop" if stop_first else " --no-stop"
+        cmd.extend(["--max", max_seeds.strip()])
+    cmd.append("--stop" if stop_first else "--no-stop")
 
     confirm_and_run([(cmd, None)])
 
@@ -681,7 +690,7 @@ def preset_publish_new(projects: list[ProjectInfo]):
     if has_test_me:
         walk_dir = os.path.join(project.dir, "tests", "inform7")
         walk_file = os.path.join(walk_dir, "walkthrough.txt")
-        commands.append((f'mkdir -p "{to_posix(walk_dir)}"', None))
+        os.makedirs(walk_dir, exist_ok=True)
         commands.append((extract_commands_cmd(story_path, walk_file), None))
 
     # Step 2: Compile (+ web player + auto-walkthrough)
@@ -704,16 +713,7 @@ def preset_publish_new(projects: list[ProjectInfo]):
     )
 
     # Step 6: Push hub changes (games.json + cards.json)
-    ifhub_root = to_posix(I7_ROOT)
-    commands.append(
-        (
-            f'cd "{ifhub_root}" && '
-            f'git add ifhub/games.json ifhub/cards.json && '
-            f'git diff --cached --quiet || '
-            f'git commit -m "Register {project.name} in IF Hub" && git push',
-            None,
-        )
-    )
+    commands.append((push_hub_cmd(project.name), None))
 
     confirm_and_run(commands)
 
@@ -743,12 +743,11 @@ def preset_serve(projects: list[ProjectInfo]):
         # Use the multi-root dev server
         print(f"\nServing IF Hub + all games at http://127.0.0.1:{port.strip()}/ifhub/app.html")
         print("Press Ctrl-C to stop.\n")
-        exit_code = run_python(f"{DEV_SERVER_PY} --port {port.strip()}")
+        exit_code = run_command(py_cmd(DEV_SERVER_PY, "--port", port.strip()))
     else:
         # Simple per-project server
         project = next(p for p in projects if p.name == target)
-        posix_dir = to_posix(project.dir)
-        cmd = f'python -m http.server {port.strip()} --directory "{posix_dir}"'
+        cmd = py_cmd("-m", "http.server", port.strip(), "--directory", project.dir)
         print(f"\nServing {target} at http://localhost:{port.strip()}/")
         print("Press Ctrl-C to stop.\n")
         exit_code = run_command(cmd)
@@ -782,7 +781,7 @@ def preset_full_pipeline(projects: list[ProjectInfo]):
         cmd = pipeline_cmd(project.name, "--all", "--force")
 
     if message.strip():
-        cmd += f' --message "{message.strip()}"'
+        cmd.extend(["--message", message.strip()])
 
     confirm_and_run([(cmd, None)])
 
@@ -815,12 +814,11 @@ def preset_custom(projects: list[ProjectInfo]):
             ).execute()
         )
 
-    stage_str = " ".join(stages)
-    cmd = pipeline_cmd(project.name, stage_str, "--force")
+    cmd = pipeline_cmd(project.name, *stages, "--force")
     if version:
-        cmd += f" --version {version}"
+        cmd.extend(["--version", version])
     if message.strip():
-        cmd += f' --message "{message.strip()}"'
+        cmd.extend(["--message", message.strip()])
 
     confirm_and_run([(cmd, None)])
 
@@ -831,6 +829,10 @@ def preset_custom(projects: list[ProjectInfo]):
 
 PRESETS = [
     Separator("--- Build ---"),
+    {
+        "name": "Create new project",
+        "value": preset_create_project,
+    },
     {
         "name": "Quick build (compile only)",
         "value": preset_quick_build,

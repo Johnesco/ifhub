@@ -113,6 +113,9 @@ fi
 
 # Output
 if [[ -n "$OUTPUT" ]]; then
+    if [[ -f "$OUTPUT" ]]; then
+        echo "WARNING: $OUTPUT already exists — overwriting" >&2
+    fi
     echo "$RESULT" > "$OUTPUT"
     echo "Extracted $COUNT commands → $OUTPUT"
 else

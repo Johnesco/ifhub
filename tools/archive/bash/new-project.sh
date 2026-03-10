@@ -150,12 +150,15 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p _site
-          cp -r web/* _site/
-          if [ -d versions ]; then
-            for v in versions/*/; do
-              cp -r "$v" "_site/$(basename "$v")"
-            done
-          fi
+          [ -d web ] && cp -r web/* _site/ || true
+          [ -d lib ] && cp -r lib _site/ || true
+          cp *.html _site/ 2>/dev/null || true
+          cp *.txt _site/ 2>/dev/null || true
+          cp story.ni _site/ 2>/dev/null || true
+          shopt -s nullglob
+          for v in v[0-9]*/; do
+            cp -r "$v" "_site/$v"
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -270,9 +273,9 @@ C:\\code\\ifhub\\projects\\$NAME\\
 ├── CLAUDE.md              ← You are here
 ├── story.ni               ← Source of truth (Inform 7 source)
 ├── $NAME.ulx              ← Compiled Glulx binary (build output)
-├── web/
-│   ├── play.html          ← Browser-playable game (Parchment player)
-│   └── lib/parchment/     ← Parchment JS libraries + $NAME.ulx.js
+├── play.html              ← Browser-playable game (Parchment player)
+├── lib/parchment/         ← Parchment JS libraries + $NAME.ulx.js
+├── .github/workflows/     ← GitHub Actions workflow for Pages deployment
 └── tests/
     ├── project.conf       ← Test configuration
     ├── run-tests.sh       ← RegTest runner (wrapper)
@@ -314,7 +317,7 @@ wsl -e bash tests/find-seeds.sh
 ## Play Locally
 
 \`\`\`bash
-python -m http.server 8000 --directory web
+python -m http.server 8000
 # Then open http://localhost:8000/play.html
 \`\`\`
 

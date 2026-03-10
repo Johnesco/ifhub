@@ -2,17 +2,18 @@
 # Compile an Inform 7 project and optionally update its web player.
 #
 # Usage:
-#   bash /c/code/ifhub/tools/compile.sh <game-name> [--sound] [--source PATH] [--compile-only]
+#   bash /c/code/ifhub/tools/compile.sh <game-name> [--sound] [--source PATH] [--compile-only] [--force]
 #
 # Options:
 #   --sound          Embed .ogg audio in a .gblorb binary
 #   --source PATH    Use this story.ni instead of the project's own
 #   --compile-only   Skip the web player update step (setup-web.sh + validate-web.sh)
+#   --force          Overwrite play.html even if it already exists (may have custom CSS)
 #
 # Examples:
 #   bash /c/code/ifhub/tools/compile.sh sample
 #   bash /c/code/ifhub/tools/compile.sh zork1 --sound
-#   bash /c/code/ifhub/tools/compile.sh zork1 --source versions/v1/story.ni --compile-only
+#   bash /c/code/ifhub/tools/compile.sh zork1 --source v1/story.ni --compile-only
 #
 # Steps:
 #   1. Compiles story.ni → story.i6 (Inform 7 → Inform 6)
@@ -39,12 +40,14 @@ shift
 SOUND=false
 SOURCE_PATH=""
 COMPILE_ONLY=false
+FORCE=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --sound)        SOUND=true; shift ;;
         --source)       SOURCE_PATH="$2"; shift 2 ;;
         --compile-only) COMPILE_ONLY=true; shift ;;
+        --force)        FORCE=true; shift ;;
         *)              echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -145,7 +148,7 @@ fi
 # Step 4: Update web player (skip with --compile-only)
 if [[ "$COMPILE_ONLY" != true ]]; then
     echo "  [$TOTAL_STEPS/$TOTAL_STEPS] Updating web player..."
-    # Detect web output directory: flat layout (project root) or legacy web/ subdirectory
+    # Detect web output directory: web/ if it exists (versioned projects), else project root
     if [[ -d "$PROJECT_DIR/web" ]]; then
         WEB_DIR="$PROJECT_DIR/web"
     else
@@ -156,20 +159,24 @@ if [[ "$COMPILE_ONLY" != true ]]; then
         TEMPLATE_FLAG="--template $PROJECT_DIR/play-template.html"
         echo "  Using project template: $PROJECT_DIR/play-template.html"
     fi
+    FORCE_FLAG=""
+    if [[ "$FORCE" == true ]]; then
+        FORCE_FLAG="--force"
+    fi
     if [[ "$SOUND" == true ]]; then
         bash "$SCRIPT_DIR/web/setup-web.sh" \
             --title "$GAME_TITLE" \
             --blorb "$PROJECT_DIR/$NAME.gblorb" \
             --out "$WEB_DIR" \
             --walkthrough \
-            $TEMPLATE_FLAG
+            $TEMPLATE_FLAG $FORCE_FLAG
     else
         bash "$SCRIPT_DIR/web/setup-web.sh" \
             --title "$GAME_TITLE" \
             --ulx "$PROJECT_DIR/$NAME.ulx" \
             --out "$WEB_DIR" \
             --walkthrough \
-            $TEMPLATE_FLAG
+            $TEMPLATE_FLAG $FORCE_FLAG
     fi
 
     # Generate walkthrough transcript if commands exist and interpreter is available
@@ -219,4 +226,4 @@ if [[ ("$OSTYPE" == "msys" || "$OSTYPE" == "cygwin") && -x "$SCRIPT_DIR/interpre
 else
     echo "  Test:   cd $PROJECT_DIR && wsl -e bash tests/run-tests.sh"
 fi
-echo "  Play:   python -m http.server 8000 --directory $PROJECT_DIR/web"
+echo "  Play:   python -m http.server 8000 --directory $WEB_DIR"

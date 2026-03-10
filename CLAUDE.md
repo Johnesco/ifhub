@@ -9,7 +9,6 @@ Any project under `C:\code\` that needs to generate, edit, or build Inform 7 sou
 C:\code\ifhub\
 ├── CLAUDE.md              ← You are here
 ├── .claude/skills/
-│   ├── bash-pitfalls/     ← Triggered on *.sh, project.conf, tools/** edits
 │   └── web-player-debug/  ← Triggered on play.html, *.ulx.js, parchment/** edits
 ├── reference/
 │   ├── syntax-guide.md    ← Core Inform 7 syntax and structure
@@ -25,33 +24,43 @@ C:\code\ifhub\
 │   ├── sound-overlay/     ← Archived JS overlay system (replaced by native blorb)
 │   ├── css-overlay.md     ← CSS overlay system: three-tier theming architecture for play.html
 │   ├── glk-styling.md    ← Glk text styles, colors, images, windows, hyperlinks (Emglken/AsyncGlk stack)
-│   ├── parchment-troubleshooting.md ← Web player errors, sound gotchas, binary format
-│   └── windows-pitfalls.md ← Git Bash grep/subshell issues, MSYS2 interpreter build
+│   └── parchment-troubleshooting.md ← Web player errors, sound gotchas, binary format
 ├── tools/
-│   ├── build-site.sh      ← Assemble _site/ from flat project layout for deployment
-│   ├── snapshot.sh        ← Freeze/update version snapshots (recompiles from frozen source)
+│   ├── lib/               ← Shared Python library modules
+│   │   ├── paths.py            ← Path resolution, compiler paths, project dirs
+│   │   ├── output.py           ← Terminal colors (ANSI), status prefixes
+│   │   ├── process.py          ← Subprocess wrappers (run, run_interpreter)
+│   │   ├── config.py           ← project.conf parser (ProjectConfig dataclass)
+│   │   ├── web.py              ← Web player utilities (base64, templates, validation)
+│   │   ├── git.py              ← Git/GitHub operations
+│   │   └── regex.py            ← PCRE pattern utilities (\K conversion)
+│   ├── build_site.py      ← Assemble _site/ from flat project layout for deployment
+│   ├── snapshot.py        ← Freeze/update version snapshots (recompiles from frozen source)
+│   ├── compile.py         ← I7→I6→Glulx→Blorb→web player compilation
+│   ├── pipeline.py        ← Unified build pipeline orchestrator
+│   ├── publish.py         ← Publish a project to its own GitHub Pages repo
 │   ├── run.py             ← Interactive pipeline runner (Python CLI with arrow-key menus)
 │   ├── regtest.py         ← Shared RegTest runner (used by all project test suites)
+│   ├── validate_web.py    ← Post-build web player validation (7 checks)
+│   ├── generate_blurb.py  ← Generate .blurb from story.ni sound declarations
+│   ├── extract_commands.py ← Extract walkthrough commands from transcript or story.ni
+│   ├── register_game.py   ← Register a game in IF Hub (adds to games.json + cards.json)
+│   ├── push_hub.py        ← Push hub registry changes (games.json + cards.json) to GitHub
+│   ├── new_project.py     ← Create a new project scaffold
 │   ├── interpreters/      ← Native Windows CLI interpreters (built locally)
 │   │   ├── build.sh            ← MSYS2 build script (clones + compiles from source)
 │   │   ├── glulxe.exe          ← Glulx interpreter (gitignored, built by build.sh)
 │   │   └── dfrotz.exe          ← Z-machine interpreter (gitignored, built by build.sh)
 │   ├── testing/           ← Generic testing framework
-│   │   ├── run-walkthrough.sh  ← Walkthrough runner (config-driven)
-│   │   ├── find-seeds.sh       ← RNG seed sweeper (config-driven)
-│   │   ├── run-tests.sh        ← RegTest wrapper (config-driven)
-│   │   ├── pcre_grep.py        ← Portable grep -oP replacement (Python re)
-│   │   └── wsl-check.sh        ← WSL health check and path conversion
+│   │   ├── run_walkthrough.py  ← Walkthrough runner (config-driven)
+│   │   ├── find_seeds.py       ← RNG seed sweeper (config-driven)
+│   │   ├── run_tests.py        ← RegTest wrapper (config-driven)
+│   │   └── generate-guide.py   ← Walkthrough guide generator
 │   ├── dev-server.py      ← Multi-root dev server (serves hub + all games at production URLs)
-│   ├── validate-web.sh    ← Post-build web player validation (7 checks)
-│   ├── generate-blurb.sh  ← Generate .blurb from story.ni sound declarations
-│   ├── extract-commands.sh ← Extract walkthrough commands from transcript or story.ni
-│   ├── register-game.sh   ← Register a game in IF Hub (adds to games.json + cards.json)
-│   ├── push-hub.sh        ← Push hub registry changes (games.json + cards.json) to GitHub
-│   ├── publish.sh         ← Publish a project to its own GitHub Pages repo
+│   ├── archive/bash/      ← Archived original bash scripts (reference only)
 │   └── web/               ← Web player setup
-│       ├── setup-web.sh        ← Bootstrap a Parchment web player for any project
-│       ├── generate-pages.sh   ← Generate index.html + source.html from templates
+│       ├── setup_web.py        ← Bootstrap a Parchment web player for any project
+│       ├── generate_pages.py   ← Generate index.html + source.html from templates
 │       ├── play-template.html  ← HTML template (__TITLE__, __STORY_FILE__ placeholders)
 │       ├── landing-template.html ← Landing page template (ifhub:* meta tags + __PLACEHOLDER__ values)
 │       ├── source-template.html  ← Source browser template (syntax-highlighted viewer)
@@ -98,13 +107,13 @@ Inform 7 is installed system-wide via the GUI installer:
 CLI compilation — compile directly from `story.ni`, no `.inform` bundle needed:
 ```bash
 # Standard compilation (no sound):
-bash /c/code/ifhub/tools/compile.sh <game-name>
+python /c/code/ifhub/tools/compile.py <game-name>
 
 # With native blorb sound (embeds .ogg audio in .gblorb):
-bash /c/code/ifhub/tools/compile.sh <game-name> --sound
+python /c/code/ifhub/tools/compile.py <game-name> --sound
 
 # Compile from alternate source (e.g., a frozen version snapshot):
-bash /c/code/ifhub/tools/compile.sh <game-name> --source <path/to/story.ni> --compile-only
+python /c/code/ifhub/tools/compile.py <game-name> --source <path/to/story.ni> --compile-only
 ```
 
 For manual compilation steps, see `reference/build-pipeline.md`. Do NOT create `.inform/` IDE project bundles — the `-source` and `-o` flags let us compile without them.
@@ -131,66 +140,48 @@ The test framework auto-detects native interpreters via `project.conf` platform 
 
 ### Testing Framework (`tools/testing/`)
 
-The testing framework provides three reusable scripts driven by a per-project `project.conf`:
+The testing framework provides three reusable Python scripts driven by a per-project `project.conf`:
 
 | Script | Purpose |
 |---|---|
-| `run-walkthrough.sh` | Runs a walkthrough through an interpreter with RNG seeding and diagnostics |
-| `find-seeds.sh` | Sweeps RNG seeds to find ones where the walkthrough achieves a passing score |
-| `run-tests.sh` | Wraps `regtest.py` with project-specific engine/game/test file |
+| `run_walkthrough.py` | Runs a walkthrough through an interpreter with RNG seeding and diagnostics |
+| `find_seeds.py` | Sweeps RNG seeds to find ones where the walkthrough achieves a passing score |
+| `run_tests.py` | Wraps `regtest.py` with project-specific engine/game/test file |
 | `generate-guide.py` | Generates rich `walkthrough-guide.txt` from walkthrough commands + transcript (item pickups, combat, containers, stages, NPC interactions; auto-detects sound prompt; preserves hand-written guides) |
-| `pcre_grep.py` | Portable `grep -oP` replacement using Python `re` (Git Bash lacks PCRE grep) |
-| `wsl-check.sh` | WSL health check (`check_wsl_health`) and path conversion (`gitbash_to_wsl_path`) |
 
-All three test scripts require `--config PATH` pointing to a project's `tests/project.conf`. The config file is a bash-sourceable file that defines:
+All three test scripts require `--config PATH` pointing to a project's `tests/project.conf`. The config file defines:
 
-- Platform detection (native Windows vs WSL interpreter paths)
 - Engine paths, seed flags, and game file paths (primary + optional alternate)
 - Score extraction regex patterns and pass threshold
 - Diagnostic grep patterns (deaths, won-flag)
 - RegTest file, engine, and game paths
-- Optional `diagnostics_extra()` function for project-specific output
+
+Config files are parsed by `tools/lib/config.py` which extracts key=value pairs via regex (no bash sourcing needed).
 
 #### Adding Testing to a New Project
 
 1. Create `<name>/tests/project.conf` (see `projects/zork1/tests/project.conf` as a template)
-2. Create thin wrapper scripts in `<name>/tests/` that delegate to `tools/testing/`:
-   ```bash
-   #!/bin/bash
-   SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-   PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-   # Platform-aware ifhub root
-   if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
-       I7_ROOT="/c/code/ifhub"
-   else
-       I7_ROOT="/mnt/c/code/ifhub"
-   fi
-   exec bash "$I7_ROOT/tools/testing/run-walkthrough.sh" --config "$SCRIPT_DIR/project.conf" "$@"
-   ```
-3. Add walkthrough data files, seeds.conf, and regtest files as needed
+2. Add walkthrough data files (`tests/inform7/walkthrough.txt`), seeds.conf, and regtest files as needed
+3. Run tests using the framework directly with `--config`:
 
-#### Generic vs Project Scripts
-
-- **Generic** (`tools/testing/*.sh`): Use `--config` + `--alt` flags. Engine-agnostic.
-- **Project wrappers** (`<name>/tests/*.sh`): Pre-configure `--config`, translate legacy flags (e.g., `--zil` → `--alt`).
-
-Both invocation styles work:
 ```bash
-# Via project wrapper — native (Git Bash, if interpreters built)
-bash tests/run-walkthrough.sh --zil --seed 3
+# Walkthrough
+python tools/testing/run_walkthrough.py --config projects/<name>/tests/project.conf --seed 5
 
-# Via project wrapper — WSL fallback (if no native interpreters)
-wsl -e bash tests/run-walkthrough.sh --zil --seed 3
+# Seed sweep
+python tools/testing/find_seeds.py --config projects/<name>/tests/project.conf
 
-# Via generic framework directly
-bash tools/testing/run-walkthrough.sh --config projects/zork1/tests/project.conf --alt --seed 3
+# Regtests
+python tools/testing/run_tests.py --config projects/<name>/tests/project.conf
 ```
+
+No per-project wrapper scripts needed — all projects use the same framework scripts with `--config`.
 
 ### Per-Project Tests
 Each project has a `tests/` subfolder with project-specific config, data, and wrapper scripts.
 The `project.conf` file centralizes all project-specific paths and patterns.
 
-## Build Pipeline (`tools/pipeline.sh`)
+## Build Pipeline (`tools/pipeline.py`)
 
 A thin orchestrator that chains existing scripts in order with error handling. Every existing script continues to work standalone.
 
@@ -198,19 +189,19 @@ A thin orchestrator that chains existing scripts in order with error handling. E
 
 ```bash
 # Default: compile only (fast dev iteration)
-bash /c/code/ifhub/tools/pipeline.sh zork1
+python /c/code/ifhub/tools/pipeline.py zork1
 
 # Compile + test
-bash /c/code/ifhub/tools/pipeline.sh zork1 compile test
+python /c/code/ifhub/tools/pipeline.py zork1 compile test
 
 # Full pipeline (no snapshot)
-bash /c/code/ifhub/tools/pipeline.sh zork1 --all       # compile test push
+python /c/code/ifhub/tools/pipeline.py zork1 --all       # compile test push
 
 # Version release
-bash /c/code/ifhub/tools/pipeline.sh zork1 --ship --version v4   # compile test snapshot push
+python /c/code/ifhub/tools/pipeline.py zork1 --ship --version v3   # compile test snapshot push
 
 # Resume after failure
-bash /c/code/ifhub/tools/pipeline.sh zork1 --continue
+python /c/code/ifhub/tools/pipeline.py zork1 --continue
 
 # Other flags
 #   --force         Skip staleness checks
@@ -222,9 +213,9 @@ bash /c/code/ifhub/tools/pipeline.sh zork1 --continue
 
 | Stage | What it does | Calls |
 |-------|-------------|-------|
-| **compile** | I7 → I6 → Glulx → Blorb(if sound) → web player | `compile.sh` |
-| **test** | Walkthrough + regtest + guide regen + sync to web root | `run-walkthrough.sh`, `generate-guide.py`, `run-tests.sh` |
-| **snapshot** | Sync root source to `vN/`, recompile from it | `snapshot.sh` (requires `--version`) |
+| **compile** | I7 → I6 → Glulx → Blorb(if sound) → web player | `compile.py` |
+| **test** | Walkthrough + regtest + guide regen + sync to web root | `run_walkthrough.py`, `generate-guide.py`, `run_tests.py` |
+| **snapshot** | Sync root source to `vN/`, recompile from it | `snapshot.py` (requires `--version`) |
 | **push** | Stage changes, show summary, prompt before commit/push | `git` |
 
 Default with no stages = `compile` only. Stages are reordered to pipeline order automatically.
@@ -236,8 +227,8 @@ The pipeline reads `PIPELINE_*` fields from `tests/project.conf`:
 ```bash
 PIPELINE_SOUND=true                 # compile with --sound
 PIPELINE_VERSIONED=true             # has version directories (v0/, v1/, etc.)
-PIPELINE_CURRENT_VERSION="v4"       # default --version for snapshot
-PIPELINE_HUB_ID="zork1-v4"         # game ID in games.json
+PIPELINE_CURRENT_VERSION=""          # empty = current (root), or "vN" for snapshot
+PIPELINE_HUB_ID="zork1"            # game ID in games.json (bare = current)
 PIPELINE_TESTS="walkthrough,regtest"  # available test types
 ```
 
@@ -250,7 +241,7 @@ Each project has walkthrough data in two places:
 - **Project root** — served by `walkthrough.html` on GitHub Pages
 
 The pipeline's test stage keeps them in sync automatically:
-1. `run-walkthrough.sh` generates `walkthrough_output.txt` and copies it to the web root via `--copy-output`
+1. `run_walkthrough.py` generates `walkthrough_output.txt` and copies it to the web root via `--copy-output`
 2. `generate-guide.py` regenerates `walkthrough-guide.txt` from the walkthrough + transcript
 3. The guide is copied to the web root alongside the transcript
 
@@ -278,13 +269,13 @@ Parchment 2025.1 is a browser-based Glulx interpreter that plays `.ulx` and `.gb
 Use the setup script:
 ```bash
 # Standard (no sound embedded):
-bash /c/code/ifhub/tools/web/setup-web.sh \
+python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --ulx /path/to/game.ulx \
     --out /path/to/project/web
 
 # With native blorb sound:
-bash /c/code/ifhub/tools/web/setup-web.sh \
+python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --blorb /path/to/game.gblorb \
     --out /path/to/project/web
@@ -336,7 +327,7 @@ The hub at `ifhub/` serves games **in-place** — it iframes each game's own pla
 - All games deploy to `johnesco.github.io/<game>/`, so same-origin iframes and fetch work freely
 
 **Adding a new game:**
-1. **Enable GitHub Pages** on the game repo — `publish.sh` does this automatically (workflow deployment via GitHub Actions)
+1. **Enable GitHub Pages** on the game repo — `publish.py` does this automatically (workflow deployment via GitHub Actions)
 2. Add an entry to `games.json` with `id`, `title`, and URL fields
 3. Add card metadata to `cards.json`
 4. Verify `johnesco.github.io/<game>/play.html` loads before adding to the hub
@@ -350,7 +341,7 @@ python tools/dev-server.py [--port 8000]
 
 ### CSS Overlay Theming
 
-Each game's `play.html` layers custom CSS on top of Parchment's base styles. Three tiers: Parchment base → static overlay (all projects) → dynamic mood system (zork1 v4, feverdream). See `reference/css-overlay.md` for full architecture.
+Each game's `play.html` layers custom CSS on top of Parchment's base styles. Three tiers: Parchment base → static overlay (all projects) → dynamic mood system (zork1 v3, feverdream). See `reference/css-overlay.md` for full architecture.
 
 ### Troubleshooting
 
@@ -367,7 +358,7 @@ Create `projects/<name>/story.ni` (or use an existing source file). The first li
 ### Step 2: First compile
 
 ```bash
-bash /c/code/ifhub/tools/compile.sh <name>
+python /c/code/ifhub/tools/compile.py <name>
 ```
 
 Generates: `<name>.ulx`, `play.html`, `walkthrough.html`, Parchment libraries. If `tests/inform7/walkthrough.txt` exists, also generates the transcript and guide automatically.
@@ -383,14 +374,14 @@ Play the game and record a transcript using one of these methods:
 4. Extract commands:
 ```bash
 mkdir -p projects/<name>/tests/inform7
-bash /c/code/ifhub/tools/extract-commands.sh transcript.txt \
+python /c/code/ifhub/tools/extract_commands.py transcript.txt \
     -o projects/<name>/tests/inform7/walkthrough.txt
 ```
 
 **B. From `Test me` in source** (for games with built-in test commands):
 ```bash
 mkdir -p projects/<name>/tests/inform7
-bash /c/code/ifhub/tools/extract-commands.sh --from-source projects/<name>/story.ni \
+python /c/code/ifhub/tools/extract_commands.py --from-source projects/<name>/story.ni \
     -o projects/<name>/tests/inform7/walkthrough.txt
 ```
 
@@ -399,10 +390,10 @@ bash /c/code/ifhub/tools/extract-commands.sh --from-source projects/<name>/story
 ### Step 4: Recompile (with walkthrough)
 
 ```bash
-bash /c/code/ifhub/tools/compile.sh <name>
+python /c/code/ifhub/tools/compile.py <name>
 ```
 
-Now that `tests/inform7/walkthrough.txt` exists, compile.sh automatically:
+Now that `tests/inform7/walkthrough.txt` exists, compile.py automatically:
 - Runs the commands through `glulxe.exe` → generates `walkthrough_output.txt`
 - Runs `generate-guide.py` → generates `walkthrough-guide.txt`
 - Copies all walkthrough files to the web root
@@ -410,7 +401,7 @@ Now that `tests/inform7/walkthrough.txt` exists, compile.sh automatically:
 ### Step 5: Generate landing page + source browser
 
 ```bash
-bash /c/code/ifhub/tools/web/generate-pages.sh \
+python /c/code/ifhub/tools/web/generate_pages.py \
     --title "Game Title" \
     --meta "Subtitle" \
     --description "Game description" \
@@ -422,27 +413,27 @@ Generates: `index.html` (landing page with Play/Source/Walkthrough links), `sour
 ### Step 6: Register in IF Hub
 
 ```bash
-bash /c/code/ifhub/tools/register-game.sh \
+python /c/code/ifhub/tools/register_game.py \
     --name <name> \
     --title "Game Title" \
     --meta "Subtitle" \
     --description "Game description"
 ```
 
-Adds entries to `ifhub/games.json` and `ifhub/cards.json`. Prints a reminder to run `publish.sh`.
+Adds entries to `ifhub/games.json` and `ifhub/cards.json`. Prints a reminder to run `publish.py`.
 
 ### Step 7: Publish to GitHub Pages
 
 ```bash
-bash /c/code/ifhub/tools/publish.sh <name>
+python /c/code/ifhub/tools/publish.py <name>
 ```
 
-First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables GitHub Pages (workflow deployment via GitHub Actions). If no workflow file exists, publish.sh auto-generates one. Subsequent runs: commits and pushes changes.
+First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables GitHub Pages (workflow deployment via GitHub Actions). If no workflow file exists, publish.py auto-generates one. Subsequent runs: commits and pushes changes.
 
 ### Step 8: Push hub changes
 
 ```bash
-bash /c/code/ifhub/tools/push-hub.sh <name>
+python /c/code/ifhub/tools/push_hub.py <name>
 ```
 
 Stages `games.json` and `cards.json`, commits, and pushes. Skips if no changes.
@@ -451,12 +442,12 @@ Stages `games.json` and `cards.json`, commits, and pushes. Skips if no changes.
 
 | Step | Script | What it produces |
 |------|--------|-----------------|
-| Compile | `tools/compile.sh` | `.ulx`, `play.html`, `walkthrough.html`, transcript, guide |
-| Extract commands | `tools/extract-commands.sh` | `walkthrough.txt` from transcript or source |
-| Generate pages | `tools/web/generate-pages.sh` | `index.html`, `source.html` |
-| Register | `tools/register-game.sh` | `games.json` + `cards.json` entries |
-| Publish | `tools/publish.sh` | GitHub repo + Pages deployment |
-| Push hub | `tools/push-hub.sh` | Commits + pushes hub registry to GitHub |
+| Compile | `tools/compile.py` | `.ulx`, `play.html`, `walkthrough.html`, transcript, guide |
+| Extract commands | `tools/extract_commands.py` | `walkthrough.txt` from transcript or source |
+| Generate pages | `tools/web/generate_pages.py` | `index.html`, `source.html` |
+| Register | `tools/register_game.py` | `games.json` + `cards.json` entries |
+| Publish | `tools/publish.py` | GitHub repo + Pages deployment |
+| Push hub | `tools/push_hub.py` | Commits + pushes hub registry to GitHub |
 
 ## Projects
 
@@ -468,9 +459,18 @@ Each Inform 7 project lives under `C:\code\ifhub\projects\`.
 - Other repos (like `C:\code\resume\writing\`) may contain **read-only snapshots** of source for display — those are NOT for compilation or editing
 - When a project compiles, the output (.ulx, .ulx.js) is used by the project's own web player
 
+### Version Convention
+
+All versioned projects follow the same two-tier model:
+
+- **vN** (v0, v1, v2...) — frozen published snapshots in `vN/` directories. Each has a subtitle (e.g., "v3 — Multimedia"). Immutable once published. Contains its own `story.ni` and compiled binary.
+- **Current** — the root `story.ni`, always in progress. Displayed as "Game Name (Current)" in the hub dropdown and landing page. No version number. Changes freely. When ready, frozen into the next numbered version.
+
+In `games.json`, frozen versions use IDs like `gamename-vN`; current uses just `gamename`. In `cards.json`, current is the primary card entry.
+
 ### Version Snapshots (opt-in)
 
-Projects with multiple playable milestones store frozen snapshots in `vN/` directories at the project root (flat layout). Tools: `snapshot.sh` (freeze/update), `build-site.sh` (assemble `_site/` for local preview). GitHub Actions assembles `_site/` from site-level files + version directories. The `_site/` directory is gitignored. `snapshot.sh --update` recompiles from the version's own frozen `story.ni` (never overwrites it) and auto-detects `.gblorb` vs `.ulx` binary type.
+Projects with multiple playable milestones store frozen snapshots in `vN/` directories at the project root (flat layout). Tools: `snapshot.py` (freeze/update), `build_site.py` (assemble `_site/` for local preview). GitHub Actions assembles `_site/` from site-level files + version directories. The `_site/` directory is gitignored. `snapshot.py --update` recompiles from the version's own frozen `story.ni` (never overwrites it) and auto-detects `.gblorb` vs `.ulx` binary type.
 
 ### Standard Project Layout
 
@@ -492,8 +492,6 @@ projects/<game>/
 ├── lib/parchment/         ← Parchment engine + <game>.ulx.js (base64 binary)
 └── tests/
     ├── project.conf       ← Project-specific test + pipeline configuration
-    ├── run-walkthrough.sh ← Thin wrapper → tools/testing/run-walkthrough.sh
-    ├── find-seeds.sh      ← Thin wrapper → tools/testing/find-seeds.sh
     ├── seeds.conf         ← Golden seeds for deterministic testing
     └── inform7/           ← Canonical walkthrough data
         ├── walkthrough.txt
@@ -504,14 +502,14 @@ projects/<game>/
 Optional additions per project:
 - `Sounds/` + `<game>.gblorb` + `<game>.blurb` — sound projects (zork1, feverdream)
 - `v0/`, `v1/`, etc. — versioned projects with frozen snapshots (zork1, dracula)
-- `run-tests.sh` + `<game>.regtest` — projects with regression test suites (zork1, sample)
+- `<game>.regtest` — projects with regression test suites (zork1, sample)
 - `README.md` — public-facing description (zork1, dracula)
 
 ### Known Projects
 
 | Project | Sound | Versions | CSS Effects | Tests |
 |---|---|---|---|---|
-| zork1 | blorb (v3+) | v0–v4 | Mood palettes, CRT, tree, egg, sword (v4) | walkthrough, regtest, scenarios |
+| zork1 | blorb (v3+) | v0–v3 | Mood palettes, CRT, tree, egg, sword (v3) | walkthrough, regtest, scenarios |
 | dracula | No | v0 (BASIC) | Static dark theme | walkthrough |
 | feverdream | blorb | None | Mood palettes, monitor, glass, fungus, spray | walkthrough (scoreless) |
 | sample | No | None | Static dark theme | walkthrough, regtest |
@@ -576,13 +574,13 @@ The story description is "Brief description."
 ```
 
 **B. Release number = version number:**
-- Versioned projects: v1→1, v2→2, v3→3, v4→4
+- Versioned projects: v1→1, v2→2, v3→3
 - Non-versioned: sequential (1, 2, 3...)
 - Never encode dates or other data in the release number
 
 **C. Serial number = build fingerprint:**
 - Auto-generated by compiler (YYMMDD compilation date) — never hardcode
-- "Release 4 / Serial number 260304" = v4, compiled March 4, 2026
+- "Release 3 / Serial number 260308" = v3, compiled March 8, 2026
 
 **D. Custom attribution uses `After printing the banner text`:**
 ```inform7
@@ -607,9 +605,9 @@ See `reference/syntax-guide.md` for full reference. Quick hits:
 - Web playable via Quixe (Glulx interpreter in JS)
 - Always test: rooms are reachable, actions respond, text renders properly
 
-## Windows / Git Bash Pitfalls
+## Windows Notes
 
-Key pitfalls: no `grep -oP` (use `pcre_grep.py` or `grep -E`), pipe-to-`while read` loses variables (use `mapfile`), native interpreters require MSYS2 build. See `reference/windows-pitfalls.md` for full details and examples.
+All tooling is Python — no bash dependency for build, test, or deploy workflows. Native interpreters (`glulxe.exe`, `dfrotz.exe`) are built via MSYS2 (see `tools/interpreters/build.sh`). Original bash scripts are archived in `tools/archive/bash/` for reference.
 
 ## Reference from Other Projects
 

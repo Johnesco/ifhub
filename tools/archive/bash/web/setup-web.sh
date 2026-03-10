@@ -17,6 +17,11 @@
 #
 # --ulx:   Encode a naked .ulx binary (no embedded resources)
 # --blorb: Encode a .gblorb blorb file (with embedded sounds/images)
+# --force: Overwrite play.html and walkthrough.html even if they already exist
+#
+# Safety: play.html and walkthrough.html are SKIPPED if they already exist
+# (they may contain custom CSS, effects, or hand-crafted content).
+# The game binary and Parchment libraries are always updated.
 #
 # After setup, serve locally with:
 #   python -m http.server 8000 --directory /path/to/project/web
@@ -35,6 +40,7 @@ BLORB_PATH=""
 OUT_DIR=""
 CUSTOM_TEMPLATE=""
 WALKTHROUGH=false
+FORCE=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -44,6 +50,7 @@ while [[ $# -gt 0 ]]; do
         --out)    OUT_DIR="$2"; shift 2 ;;
         --template) CUSTOM_TEMPLATE="$2"; shift 2 ;;
         --walkthrough) WALKTHROUGH=true; shift ;;
+        --force)  FORCE=true; shift ;;
         *)        echo "Unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -118,22 +125,26 @@ echo "Encoding $GAME_BASENAME → $STORY_JS..."
 B64=$(base64 -w 0 "$GAME_PATH")
 echo "processBase64Zcode('${B64}')" > "$OUT_DIR/lib/parchment/$STORY_JS"
 
-# Generate play.html from template
-# Cache-busting: append ?v=<timestamp> to .js and .css src/href so browsers
-# don't serve stale scripts after a rebuild. Without this, switching from
-# main.js to parchment.js (or updating any library) can appear to have no
-# effect until the user manually clears their cache.
-CACHE_BUST="v=$(date +%s)"
-# Escape title for sed safety (handles /, &, \ in titles)
-TITLE_ESCAPED=$(printf '%s\n' "$TITLE" | sed 's/[&/\]/\\&/g')
-echo "Generating play.html..."
-sed -e "s/__TITLE__/$TITLE_ESCAPED/g" \
-    -e "s/__STORY_FILE__/$STORY_JS/g" \
-    -e "s|__STORY_PATH__|lib/parchment/$STORY_JS|g" \
-    -e "s|__LIB_PATH__|lib/parchment/|g" \
-    -e "s/\.js\"/\.js?$CACHE_BUST\"/g" \
-    -e "s/\.css\"/\.css?$CACHE_BUST\"/g" \
-    "$TEMPLATE" > "$OUT_DIR/play.html"
+# Generate play.html from template (skip if exists — may contain custom work)
+if [[ -f "$OUT_DIR/play.html" && "$FORCE" != true ]]; then
+    echo "  play.html already exists (use --force to overwrite)"
+else
+    # Cache-busting: append ?v=<timestamp> to .js and .css src/href so browsers
+    # don't serve stale scripts after a rebuild. Without this, switching from
+    # main.js to parchment.js (or updating any library) can appear to have no
+    # effect until the user manually clears their cache.
+    CACHE_BUST="v=$(date +%s)"
+    # Escape title for sed safety (handles /, &, \ in titles)
+    TITLE_ESCAPED=$(printf '%s\n' "$TITLE" | sed 's/[&/\]/\\&/g')
+    echo "Generating play.html..."
+    sed -e "s/__TITLE__/$TITLE_ESCAPED/g" \
+        -e "s/__STORY_FILE__/$STORY_JS/g" \
+        -e "s|__STORY_PATH__|lib/parchment/$STORY_JS|g" \
+        -e "s|__LIB_PATH__|lib/parchment/|g" \
+        -e "s/\.js\"/\.js?$CACHE_BUST\"/g" \
+        -e "s/\.css\"/\.css?$CACHE_BUST\"/g" \
+        "$TEMPLATE" > "$OUT_DIR/play.html"
+fi
 
 # Validate: play.html must load parchment.js (not main.js) for sound to work.
 # See the comment above about the difference between the two files.
@@ -155,22 +166,26 @@ if ! grep -q 'story_name' "$OUT_DIR/play.html"; then
     echo "  $TEMPLATE" >&2
 fi
 
-# Generate walkthrough.html from template if requested
+# Generate walkthrough.html from template if requested (skip if exists)
 if [[ "$WALKTHROUGH" == true ]]; then
-    WALK_TEMPLATE="$SCRIPT_DIR/walkthrough-template.html"
-    if [[ -f "$WALK_TEMPLATE" ]]; then
-        # Derive storage key from game binary name (e.g. "zork1" from "zork1.ulx")
-        STORAGE_KEY=$(basename "${GAME_PATH%.*}" | sed 's/\..*//')
-        TITLE_ESCAPED_WALK=$(printf '%s\n' "Walkthrough — $TITLE" | sed 's/[&/\]/\\&/g')
-        echo "Generating walkthrough.html..."
-        sed -e "s/__TITLE__/$TITLE_ESCAPED_WALK/g" \
-            -e "s/__HEADER__/Walkthrough/g" \
-            -e "s|__BACK_HREF__|play.html|g" \
-            -e "s/__STORAGE_KEY__/$STORAGE_KEY/g" \
-            "$WALK_TEMPLATE" > "$OUT_DIR/walkthrough.html"
-        echo "  walkthrough.html generated"
+    if [[ -f "$OUT_DIR/walkthrough.html" && "$FORCE" != true ]]; then
+        echo "  walkthrough.html already exists (use --force to overwrite)"
     else
-        echo "WARNING: walkthrough template not found at $WALK_TEMPLATE" >&2
+        WALK_TEMPLATE="$SCRIPT_DIR/walkthrough-template.html"
+        if [[ -f "$WALK_TEMPLATE" ]]; then
+            # Derive storage key from game binary name (e.g. "zork1" from "zork1.ulx")
+            STORAGE_KEY=$(basename "${GAME_PATH%.*}" | sed 's/\..*//')
+            TITLE_ESCAPED_WALK=$(printf '%s\n' "Walkthrough — $TITLE" | sed 's/[&/\]/\\&/g')
+            echo "Generating walkthrough.html..."
+            sed -e "s/__TITLE__/$TITLE_ESCAPED_WALK/g" \
+                -e "s/__HEADER__/Walkthrough/g" \
+                -e "s|__BACK_HREF__|play.html|g" \
+                -e "s/__STORAGE_KEY__/$STORAGE_KEY/g" \
+                "$WALK_TEMPLATE" > "$OUT_DIR/walkthrough.html"
+            echo "  walkthrough.html generated"
+        else
+            echo "WARNING: walkthrough template not found at $WALK_TEMPLATE" >&2
+        fi
     fi
 fi
 

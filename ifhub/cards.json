@@ -1,18 +1,18 @@
 [
   {
-    "id": "zork1-v4",
+    "id": "zork1",
     "base": "zork1",
     "title": "Zork I - The Great Underground Empire",
     "meta": "Infocom (translated to Inform 7)",
-    "description": "A full translation of Infocom's classic adventure game from the original ZIL source code to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, audio-enhanced experience.",
-    "primaryLabel": "v4 — Modern IF",
+    "description": "A full translation of Infocom's classic adventure game from the original ZIL source code to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, multimedia experience.",
+    "primaryLabel": "Current",
     "sound": "blorb",
-    "playUrl": "/zork1/v4/play.html",
+    "playUrl": "/zork1/play.html",
     "landingUrl": "/zork1/",
     "versions": [
       {
         "id": "zork1-v3",
-        "label": "v3 — Sound",
+        "label": "v3 — Multimedia",
         "sound": "blorb",
         "playUrl": "/zork1/v3/play.html"
       },

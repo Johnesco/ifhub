@@ -91,7 +91,7 @@ Simple projects (sample, dracula) use only Tier 2. The CSS template comes from `
 
 ### Tier 3: Dynamic Mood System (advanced projects)
 
-Projects with atmospheric effects (zork1 v4, feverdream) add two more layers on top of the static overlay:
+Projects with atmospheric effects (zork1 v3, feverdream) add two more layers on top of the static overlay:
 
 #### 3a. Houdini `@property` Color Transitions
 
@@ -171,12 +171,12 @@ Dynamic DOM injection creates particles (`.leaf`, `.egg-spark`, `.glass-shard`) 
 | sample | Parchment base | Dark theme, standard layout | None |
 | dracula | Parchment base | Dark theme, standard layout | None |
 | feverdream | Parchment base | Dark theme, custom colors | Mood zones, event effects |
-| zork1 v1-v3 | Parchment base | Dark theme, standard layout | None |
-| zork1 v4 | Parchment base | Dark theme, larger fonts | Mood zones, CRT, tree, egg, sword |
+| zork1 v1-v2 | Parchment base | Dark theme, standard layout | None |
+| zork1 v3 | Parchment base | Dark theme, larger fonts | Mood zones, CRT, tree, egg, sword |
 
 ## IF Hub Shared Player
 
-`ifhub/play.html` version-gates Tier 3 effects. When the binary path matches `zork1-v(\d+)` with version >= 4, it adds `body.zork1-enhanced` and activates the mood system. Other games get Tier 2 static theming only.
+`ifhub/play.html` version-gates Tier 3 effects. When the binary path matches `zork1-v(\d+)` with version >= 3, it adds `body.zork1-enhanced` and activates the mood system. Other games get Tier 2 static theming only.
 
 ## Adding Mood Theming to a New Project
 

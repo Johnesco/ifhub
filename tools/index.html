@@ -425,12 +425,12 @@ footer a:hover {
 <span class="file">CLAUDE.md</span>              <span class="desc">Hub documentation &amp; conventions</span>
 <span class="dir">reference/</span>             <span class="desc">Inform 7 language reference (9 guides)</span>
 <span class="dir">tools/</span>                 <span class="desc">Shared build, test, and web tooling</span>
-    <span class="file">build-site.sh</span>      <span class="desc">Assemble _site/ from web/ + versions/</span>
-    <span class="file">compile.sh</span>         <span class="desc">Compile story.ni &rarr; .ulx + web player</span>
-    <span class="file">new-project.sh</span>     <span class="desc">Scaffold a complete new project</span>
-    <span class="file">publish.sh</span>         <span class="desc">Deploy to GitHub Pages</span>
+    <span class="file">build_site.py</span>      <span class="desc">Assemble _site/ from web/ + vN/ snapshots</span>
+    <span class="file">compile.py</span>         <span class="desc">Compile story.ni &rarr; .ulx + web player</span>
+    <span class="file">new_project.py</span>     <span class="desc">Scaffold a complete new project</span>
+    <span class="file">publish.py</span>         <span class="desc">Deploy to GitHub Pages</span>
     <span class="file">regtest.py</span>         <span class="desc">Shared RegTest runner</span>
-    <span class="file">snapshot.sh</span>        <span class="desc">Freeze source into a version snapshot</span>
+    <span class="file">snapshot.py</span>        <span class="desc">Freeze source into a version snapshot</span>
     <span class="dir">testing/</span>           <span class="desc">Generic testing framework</span>
     <span class="dir">web/</span>               <span class="desc">Parchment web player setup</span>
     <span class="file">index.html</span>         <span class="desc">This page</span>
@@ -440,7 +440,7 @@ footer a:hover {
     <span class="dir">sample/</span>            <span class="desc">Sample practice game</span>
     <span class="dir">zork1/</span>             <span class="desc">Zork I: Inform 7 Edition</span>
         <span class="dir">web/</span>           <span class="desc">Site-level pages (landing, map, scenarios)</span>
-        <span class="dir">versions/</span>      <span class="desc">Frozen version snapshots (v0&ndash;v3)</span>
+        <span class="dir">v0/, v1/, ...</span>  <span class="desc">Frozen version snapshots (flat layout)</span>
 <span class="dir">ifhub/</span>                 <span class="desc">IF Hub &mdash; multi-game web player</span></div>
 </section>
 
@@ -453,7 +453,7 @@ footer a:hover {
     <div class="pipeline-step">
       <div class="step-num">1</div>
       <div class="step-title">Create</div>
-      <div class="step-cmd">new-project.sh</div>
+      <div class="step-cmd">new_project.py</div>
       <div class="step-output">project scaffold</div>
     </div>
     <div class="pipeline-arrow">&rarr;</div>
@@ -467,28 +467,28 @@ footer a:hover {
     <div class="pipeline-step">
       <div class="step-num">3</div>
       <div class="step-title">Compile</div>
-      <div class="step-cmd">compile.sh</div>
+      <div class="step-cmd">compile.py</div>
       <div class="step-output">.ulx + web player</div>
     </div>
     <div class="pipeline-arrow">&rarr;</div>
     <div class="pipeline-step">
       <div class="step-num">4</div>
       <div class="step-title">Test</div>
-      <div class="step-cmd">run-tests.sh</div>
+      <div class="step-cmd">run_tests.py</div>
       <div class="step-output">pass / fail</div>
     </div>
     <div class="pipeline-arrow">&rarr;</div>
     <div class="pipeline-step">
       <div class="step-num">5</div>
       <div class="step-title">Publish</div>
-      <div class="step-cmd">publish.sh</div>
+      <div class="step-cmd">publish.py</div>
       <div class="step-output">GitHub Pages</div>
     </div>
     <div class="pipeline-arrow">&rarr;</div>
     <div class="pipeline-step">
       <div class="step-num">6</div>
       <div class="step-title">Hub</div>
-      <div class="step-cmd">deploy.sh</div>
+      <div class="step-cmd">publish.py</div>
       <div class="step-output">IF Hub player</div>
     </div>
   </div>
@@ -498,24 +498,24 @@ footer a:hover {
 <section id="tools">
   <h2>Tools Reference</h2>
 
-  <!-- build-site.sh -->
+  <!-- build_site.py -->
   <div class="card">
-    <h3>build-site.sh <span class="badge">deploy</span></h3>
-    <p class="purpose">Assemble a deployable _site/ directory from web/ + versions/.</p>
-    <pre>bash /c/code/ifhub/tools/build-site.sh &lt;game-name&gt;</pre>
+    <h3>build_site.py <span class="badge">deploy</span></h3>
+    <p class="purpose">Assemble a deployable _site/ directory from web/ + vN/ snapshots.</p>
+    <pre>python /c/code/ifhub/tools/build_site.py &lt;game-name&gt;</pre>
     <ul>
       <li>Copies web/* into _site/</li>
-      <li>Overlays each versions/vN/ as _site/vN/ (if versions/ exists)</li>
-      <li>Projects without versions/ get a simple copy of web/</li>
+      <li>Overlays each vN/ as _site/vN/ (if version directories exist)</li>
+      <li>Projects without version directories get a simple copy of web/</li>
       <li>Output: <code>projects/&lt;game-name&gt;/_site/</code> (gitignored)</li>
     </ul>
   </div>
 
-  <!-- compile.sh -->
+  <!-- compile.py -->
   <div class="card">
-    <h3>compile.sh <span class="badge">step 3</span></h3>
+    <h3>compile.py <span class="badge">step 3</span></h3>
     <p class="purpose">Compile story.ni to Glulx binary and set up the web player.</p>
-    <pre>bash /c/code/ifhub/tools/compile.sh &lt;game-name&gt;</pre>
+    <pre>python /c/code/ifhub/tools/compile.py &lt;game-name&gt;</pre>
     <ul>
       <li>Compiles I7 source to I6 intermediate</li>
       <li>Compiles I6 to Glulx (.ulx)</li>
@@ -524,11 +524,11 @@ footer a:hover {
     </ul>
   </div>
 
-  <!-- new-project.sh -->
+  <!-- new_project.py -->
   <div class="card">
-    <h3>new-project.sh <span class="badge">step 1</span></h3>
+    <h3>new_project.py <span class="badge">step 1</span></h3>
     <p class="purpose">Scaffold a complete new Inform 7 project with all infrastructure.</p>
-    <pre>bash /c/code/ifhub/tools/new-project.sh "Game Title" game-name</pre>
+    <pre>python /c/code/ifhub/tools/new_project.py "Game Title" game-name</pre>
     <ul>
       <li>Creates story.ni with starter source</li>
       <li>Sets up test wrappers, project.conf, starter regtest</li>
@@ -537,11 +537,11 @@ footer a:hover {
     </ul>
   </div>
 
-  <!-- publish.sh -->
+  <!-- publish.py -->
   <div class="card">
-    <h3>publish.sh <span class="badge">step 5</span></h3>
+    <h3>publish.py <span class="badge">step 5</span></h3>
     <p class="purpose">Deploy a project to GitHub Pages (create repo on first run).</p>
-    <pre>bash /c/code/ifhub/tools/publish.sh &lt;game-name&gt; ["commit message"]</pre>
+    <pre>python /c/code/ifhub/tools/publish.py &lt;game-name&gt; ["commit message"]</pre>
     <ul>
       <li>First run: creates GitHub repo, enables Pages, pushes</li>
       <li>Later runs: commits changes and pushes to trigger redeployment</li>
@@ -561,12 +561,12 @@ footer a:hover {
     </ul>
   </div>
 
-  <!-- snapshot.sh -->
+  <!-- snapshot.py -->
   <div class="card">
-    <h3>snapshot.sh <span class="badge">deploy</span></h3>
+    <h3>snapshot.py <span class="badge">deploy</span></h3>
     <p class="purpose">Freeze current working source into a version snapshot.</p>
-    <pre>bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt;
-bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update</pre>
+    <pre>python /c/code/ifhub/tools/snapshot.py &lt;game-name&gt; &lt;version&gt;
+python /c/code/ifhub/tools/snapshot.py &lt;game-name&gt; &lt;version&gt; --update</pre>
     <ul>
       <li>New version: copies story.ni, encodes .ulx, copies template from previous version</li>
       <li>Update (--update): refreshes source, binary, and walkthrough data</li>
@@ -574,11 +574,11 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
     </ul>
   </div>
 
-  <!-- run-walkthrough.sh -->
+  <!-- run_walkthrough.py -->
   <div class="card">
-    <h3>testing/run-walkthrough.sh <span class="badge">step 4</span></h3>
+    <h3>testing/run_walkthrough.py <span class="badge">step 4</span></h3>
     <p class="purpose">Run a walkthrough through an interpreter with RNG seeding and diagnostics.</p>
-    <pre>bash tools/testing/run-walkthrough.sh --config &lt;path&gt; [options]
+    <pre>python /c/code/ifhub/tools/testing/run_walkthrough.py --config &lt;path&gt; [options]
 
   --seed 42     Override RNG seed
   --no-seed     True randomness
@@ -593,11 +593,11 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
     </ul>
   </div>
 
-  <!-- run-tests.sh -->
+  <!-- run_tests.py -->
   <div class="card">
-    <h3>testing/run-tests.sh <span class="badge">step 4</span></h3>
+    <h3>testing/run_tests.py <span class="badge">step 4</span></h3>
     <p class="purpose">RegTest wrapper with project-specific configuration.</p>
-    <pre>bash tools/testing/run-tests.sh --config &lt;path&gt; [options]
+    <pre>python /c/code/ifhub/tools/testing/run_tests.py --config &lt;path&gt; [options]
 
   -v            Verbose (show transcripts)
   -l            List available tests
@@ -609,11 +609,11 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
     </ul>
   </div>
 
-  <!-- find-seeds.sh -->
+  <!-- find_seeds.py -->
   <div class="card">
-    <h3>testing/find-seeds.sh <span class="badge">step 4</span></h3>
+    <h3>testing/find_seeds.py <span class="badge">step 4</span></h3>
     <p class="purpose">Sweep RNG seeds to find ones where the walkthrough achieves a passing score.</p>
-    <pre>bash tools/testing/find-seeds.sh --config &lt;path&gt; [options]
+    <pre>python /c/code/ifhub/tools/testing/find_seeds.py --config &lt;path&gt; [options]
 
   --max 500     Search range (default: 200)
   --stop        Stop on first pass (default)
@@ -626,11 +626,11 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
     </ul>
   </div>
 
-  <!-- setup-web.sh -->
+  <!-- setup_web.py -->
   <div class="card">
-    <h3>web/setup-web.sh <span class="badge">step 3</span></h3>
+    <h3>web/setup_web.py <span class="badge">step 3</span></h3>
     <p class="purpose">Bootstrap a Parchment web player for any project.</p>
-    <pre>bash /c/code/ifhub/tools/web/setup-web.sh \
+    <pre>python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --ulx /path/to/game.ulx \
     --out /path/to/project/web</pre>
@@ -638,7 +638,7 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
       <li>Copies all 7 Parchment library files</li>
       <li>Base64-encodes .ulx into .ulx.js (JSONP format)</li>
       <li>Generates play.html from template</li>
-      <li>Called automatically by compile.sh</li>
+      <li>Called automatically by compile.py</li>
     </ul>
   </div>
 </section>
@@ -749,28 +749,28 @@ bash /c/code/ifhub/tools/snapshot.sh &lt;game-name&gt; &lt;version&gt; --update<
   <h2>Quick Commands</h2>
 
   <h3>Create a new project</h3>
-  <pre class="code-block">bash /c/code/ifhub/tools/new-project.sh "The Haunted Manor" manor</pre>
+  <pre class="code-block">python /c/code/ifhub/tools/new_project.py "The Haunted Manor" manor</pre>
 
   <h3>Compile</h3>
-  <pre class="code-block">bash /c/code/ifhub/tools/compile.sh sample</pre>
+  <pre class="code-block">python /c/code/ifhub/tools/compile.py sample</pre>
 
   <h3>Run regression tests</h3>
-  <pre class="code-block">wsl -e bash tests/run-tests.sh
-wsl -e bash tests/run-tests.sh -v smoke   <span class="comment"># verbose, single test</span></pre>
+  <pre class="code-block">python /c/code/ifhub/tools/testing/run_tests.py --config tests/project.conf
+python /c/code/ifhub/tools/testing/run_tests.py --config tests/project.conf -v smoke   <span class="comment"># verbose, single test</span></pre>
 
   <h3>Run walkthrough</h3>
-  <pre class="code-block">wsl -e bash tests/run-walkthrough.sh --no-seed --no-save
-wsl -e bash tests/run-walkthrough.sh --seed 42</pre>
+  <pre class="code-block">python /c/code/ifhub/tools/testing/run_walkthrough.py --config tests/project.conf --no-seed --no-save
+python /c/code/ifhub/tools/testing/run_walkthrough.py --config tests/project.conf --seed 42</pre>
 
   <h3>Find golden seeds</h3>
-  <pre class="code-block">wsl -e bash tests/find-seeds.sh --max 500</pre>
+  <pre class="code-block">python /c/code/ifhub/tools/testing/find_seeds.py --config tests/project.conf --max 500</pre>
 
   <h3>Snapshot a version</h3>
-  <pre class="code-block">bash /c/code/ifhub/tools/snapshot.sh zork1 v4          <span class="comment"># new version</span>
-bash /c/code/ifhub/tools/snapshot.sh zork1 v3 --update <span class="comment"># refresh existing</span></pre>
+  <pre class="code-block">python /c/code/ifhub/tools/snapshot.py zork1 v3          <span class="comment"># update version</span>
+python /c/code/ifhub/tools/snapshot.py zork1 v3 --update <span class="comment"># refresh existing</span></pre>
 
   <h3>Assemble site for preview</h3>
-  <pre class="code-block">bash /c/code/ifhub/tools/build-site.sh zork1
+  <pre class="code-block">python /c/code/ifhub/tools/build_site.py zork1
 python -m http.server 8000 --directory projects/zork1/_site</pre>
 
   <h3>Play locally</h3>
@@ -778,11 +778,10 @@ python -m http.server 8000 --directory projects/zork1/_site</pre>
 <span class="comment"># Open http://localhost:8000/play.html</span></pre>
 
   <h3>Publish to GitHub Pages</h3>
-  <pre class="code-block">bash /c/code/ifhub/tools/publish.sh sample "Add kitchen puzzle"</pre>
+  <pre class="code-block">python /c/code/ifhub/tools/publish.py sample "Add kitchen puzzle"</pre>
 
   <h3>Deploy to IF Hub</h3>
-  <pre class="code-block"><span class="comment"># From ifhub/</span>
-bash deploy.sh
+  <pre class="code-block">python /c/code/ifhub/tools/publish.py ifhub
 python -m http.server 8000
 <span class="comment"># Open http://localhost:8000/</span></pre>
 </section>

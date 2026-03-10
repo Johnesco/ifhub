@@ -32,8 +32,8 @@
   },
   {
     "id": "zork1-v3",
-    "title": "Zork I (v3)",
-    "versionLabel": "v3 — Sound",
+    "title": "Zork I (v3 — Multimedia)",
+    "versionLabel": "v3 — Multimedia",
     "sourceLabel": "zork1-v3.ni",
     "sound": "blorb",
     "playUrl": "/zork1/v3/play.html",
@@ -42,14 +42,14 @@
     "landingUrl": "/zork1/"
   },
   {
-    "id": "zork1-v4",
-    "title": "Zork I (v4 — Current)",
-    "versionLabel": "v4 — Modern IF (Current)",
-    "sourceLabel": "zork1-v4.ni",
+    "id": "zork1",
+    "title": "Zork I (Current)",
+    "versionLabel": "Current",
+    "sourceLabel": "zork1.ni",
     "sound": "blorb",
-    "playUrl": "/zork1/v4/play.html",
-    "walkthroughUrl": "/zork1/v4/walkthrough.html",
-    "sourceUrl": "/zork1/v4/story.ni",
+    "playUrl": "/zork1/play.html",
+    "walkthroughUrl": "/zork1/walkthrough.html",
+    "sourceUrl": "/zork1/story.ni",
     "landingUrl": "/zork1/"
   },
   {

@@ -350,12 +350,13 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
 
 <ol>
   <li><strong>Paste source code</strong> &mdash; enter a game name and paste your
-    Inform 7 source directly into the textarea. The dashboard creates
-    <code>projects/&lt;name&gt;/story.ni</code> for you.</li>
-  <li><strong>Use existing file</strong> &mdash; if you already placed a
-    <code>story.ni</code> in <code>projects/&lt;name&gt;/</code>, enter just
-    the name and leave the textarea empty. The dashboard detects the file
-    and opens the project.</li>
+    Inform 7 source directly into the textarea. The dashboard scaffolds
+    the full project structure (via <code>new_project.py</code>) and writes
+    your source to <code>projects/&lt;name&gt;/story.ni</code>.</li>
+  <li><strong>Use starter template</strong> &mdash; enter just the name and leave
+    the textarea empty. The dashboard scaffolds the project with a default
+    starter <code>story.ni</code>, test wrappers, workflow file, and
+    <code>CLAUDE.md</code>.</li>
 </ol>
 
 <div class="note">
@@ -384,7 +385,7 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
   </tr>
   <tr>
     <td><strong>Compile</strong></td>
-    <td>Runs <code>compile.sh</code> &mdash; compiles <code>story.ni</code>
+    <td>Runs <code>compile.py</code> &mdash; compiles <code>story.ni</code>
       to a Glulx binary, sets up the web player, and generates walkthrough
       files if a walkthrough exists. Auto-detects sound.</td>
   </tr>
@@ -505,28 +506,33 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
   </tr>
   <tr>
     <td><strong>Extract Walkthrough</strong></td>
-    <td><code>extract-commands.sh</code></td>
+    <td><code>extract_commands.py</code></td>
     <td>Extracts commands from <code>Test me</code> in source</td>
   </tr>
   <tr>
     <td><strong>Generate Pages</strong></td>
-    <td><code>generate-pages.sh</code></td>
+    <td><code>generate_pages.py</code></td>
     <td>Creates <code>index.html</code> + <code>source.html</code></td>
   </tr>
   <tr>
     <td><strong>Register in Hub</strong></td>
-    <td><code>register-game.sh</code></td>
+    <td><code>register_game.py</code></td>
     <td>Adds entries to <code>games.json</code> + <code>cards.json</code></td>
   </tr>
   <tr>
     <td><strong>Run Walkthrough</strong></td>
-    <td><code>run-walkthrough.sh</code></td>
+    <td><code>run_walkthrough.py</code></td>
     <td>Plays through the game with deterministic RNG seed</td>
   </tr>
   <tr>
     <td><strong>Run Regtests</strong></td>
-    <td><code>run-tests.sh</code></td>
+    <td><code>run_tests.py</code></td>
     <td>Runs regression test suite</td>
+  </tr>
+  <tr>
+    <td><strong>Unregister from Hub</strong></td>
+    <td><code>unregister_game.py</code></td>
+    <td>Removes the game from <code>games.json</code> + <code>cards.json</code> and pushes to GitHub. The game&rsquo;s standalone Pages site remains live &mdash; this only hides it from IF Hub.</td>
   </tr>
 </table>
 
@@ -568,22 +574,22 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
   <tr>
     <th>Dot</th>
     <th>Meaning</th>
-    <th>What exists</th>
+    <th>What it means</th>
   </tr>
   <tr>
     <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#6a9f55"></span> Green</td>
-    <td>Web-ready</td>
-    <td><code>play.html</code> exists &mdash; game is playable in browser</td>
+    <td>Live</td>
+    <td>Registered in IF Hub &mdash; game appears in the hub dropdown and landing page</td>
   </tr>
   <tr>
     <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c4a32e"></span> Yellow</td>
-    <td>Compiled</td>
-    <td><code>.ulx</code> or <code>.gblorb</code> exists but no web player yet</td>
+    <td>Ready</td>
+    <td><code>play.html</code> exists (compiled and web-ready) but not yet registered in the hub</td>
   </tr>
   <tr>
-    <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#555"></span> Gray</td>
-    <td>Source only</td>
-    <td>Only <code>story.ni</code> &mdash; not yet compiled</td>
+    <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#c44"></span> Red</td>
+    <td>Uncompiled</td>
+    <td>Only <code>story.ni</code> &mdash; needs to be compiled before it can be played or published</td>
   </tr>
 </table>
 
@@ -620,7 +626,7 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
   <tr>
     <td><code>/api/create</code></td>
     <td>POST</td>
-    <td>Creates <code>projects/&lt;name&gt;/story.ni</code> from posted source</td>
+    <td>Scaffolds a new project via <code>new_project.py</code>, optionally with custom source</td>
   </tr>
   <tr>
     <td><code>/api/run</code></td>
@@ -640,12 +646,12 @@ python tools/dashboard.py <span class="flag">--port 8080</span></code></pre>
 </table>
 
 <p>
-  Commands run as bash subprocesses via Git Bash. Output is streamed to
+  Commands run as Python subprocesses. Output is streamed to
   the browser via SSE (Server-Sent Events) &mdash; each line is sent as
   a JSON event as soon as the subprocess writes it. The dashboard
   delegates to the same scripts that the CLI tools use:
-  <code>compile.sh</code>, <code>publish.sh</code>,
-  <code>register-game.sh</code>, etc.
+  <code>compile.py</code>, <code>publish.py</code>,
+  <code>register_game.py</code>, etc.
 </p>
 
 <div class="note">

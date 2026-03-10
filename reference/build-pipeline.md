@@ -89,7 +89,7 @@ Parchment is a browser-based Glulx interpreter. Each project gets a `web/` direc
 ### Option A: Use the Setup Script
 
 ```bash
-bash tools/web/setup-web.sh \
+python tools/web/setup_web.py \
     --title "My Game" \
     --ulx projects/<game>/<game>.ulx \
     --out projects/<game>/web
@@ -149,7 +149,7 @@ Do NOT open `play.html` as a `file://` URL — browsers block the JSONP script l
 
 ## Step 5: Add Sound (Optional)
 
-> **Note (March 2026)**: All sound games now use **native Glk/blorb sound** instead of the JS overlay described below. Compile with `bash tools/compile.sh <game> --sound` to embed `.ogg` audio in a `.gblorb` binary. The overlay system has been archived to `reference/sound-overlay/`. The instructions below are retained for historical reference only.
+> **Note (March 2026)**: All sound games now use **native Glk/blorb sound** instead of the JS overlay described below. Compile with `python tools/compile.py <game> --sound` to embed `.ogg` audio in a `.gblorb` binary. The overlay system has been archived to `reference/sound-overlay/`. The instructions below are retained for historical reference only.
 
 Sound uses a JavaScript overlay that watches the game's DOM output. Two trigger modes:
 
@@ -161,7 +161,7 @@ Sound uses a JavaScript overlay that watches the game's DOM output. Two trigger 
 ### 5a: Copy the Sound Engine
 
 ```bash
-bash tools/web/setup-web.sh --sound ...
+python tools/web/setup_web.py --sound ...
 # Or manually:
 cp tools/web/sound-engine.js projects/<game>/web/lib/
 ```
@@ -287,11 +287,10 @@ Set `"sound": "blorb"` for games with native Glk sound. Omit `walkthroughDir` if
 ### 6c: Run the Deploy
 
 ```bash
-cd ifhub
-bash deploy.sh
+python /c/code/ifhub/tools/publish.py <game-name>
 ```
 
-This copies source, binary, walkthroughs, and landing pages from the project into `ifhub/games/<game>/`, generates standalone play pages, and extracts card metadata into `cards.json`.
+This publishes the game to GitHub Pages. The hub serves games in-place from each project's own GitHub Pages URL — no file copying into `ifhub/games/` is needed.
 
 ### 6d: Test the Hub Locally
 
@@ -309,10 +308,7 @@ Verify:
 ### 6e: Push to Deploy
 
 ```bash
-cd ifhub
-git add games/<game>/ games.json deploy.sh
-git commit -m "Add <game> to IF Hub"
-git push
+python /c/code/ifhub/tools/push_hub.py <game-name>
 ```
 
 GitHub Pages deploys automatically from the push.
@@ -339,7 +335,7 @@ echo "processBase64Zcode('${B64}')" > web/lib/parchment/<game>.ulx.js
 ### Update ifhub After Recompiling
 
 ```bash
-cd ifhub && bash deploy.sh
+python /c/code/ifhub/tools/publish.py <game-name>
 ```
 
 ### Add a Text-Matching Sound Trigger (No Recompile)
@@ -379,11 +375,11 @@ Edit values directly in `sound-config.js`. Volume is 0.0-1.0, multiplied by mast
 | I7 compiler | `/c/Program Files/Inform7IDE/Compilers/inform7.exe` | Compiles .ni → .i6 |
 | I6 compiler | `/c/Program Files/Inform7IDE/Compilers/inform6.exe` | Compiles .i6 → .ulx |
 | Internal | `/c/Program Files/Inform7IDE/Internal` | Extensions, templates |
-| Setup script | `tools/web/setup-web.sh` | Bootstrap web player |
+| Setup script | `tools/web/setup_web.py` | Bootstrap web player |
 | Play template | `tools/web/play-template.html` | Single template for all play pages (projects + hub) |
-| Web validator | `tools/validate-web.sh` | Post-build validation (7 checks) |
+| Web validator | `tools/validate_web.py` | Post-build validation (7 checks) |
 | Deploy scripts | `tools/deploy/*.py` | Asset copying + page generation (Python) |
-| Deploy orchestrator | `ifhub/deploy.sh` | Copies assets into ifhub/games/ |
+| Publisher | `tools/publish.py` | Deploys game to GitHub Pages |
 | Game registry | `ifhub/games.json` | Game metadata, deploy paths, hub UI config |
 | Sound editing guide | `reference/sound.md` | Trigger modes, architecture, editing |
 

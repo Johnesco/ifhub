@@ -9,10 +9,10 @@ Opens a browser-based dashboard for managing IF Hub game projects.
 Matches the IF Hub dark-gold theme.
 """
 
+import glob as _glob_mod
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import threading
@@ -37,35 +37,25 @@ except ImportError:
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 I7_ROOT = os.path.dirname(SCRIPT_DIR)
 PROJECTS_DIR = os.path.join(I7_ROOT, "projects")
-COMPILE_SH = os.path.join(SCRIPT_DIR, "compile.sh")
-EXTRACT_COMMANDS_SH = os.path.join(SCRIPT_DIR, "extract-commands.sh")
-GENERATE_PAGES_SH = os.path.join(SCRIPT_DIR, "web", "generate-pages.sh")
-REGISTER_GAME_SH = os.path.join(SCRIPT_DIR, "register-game.sh")
-PUBLISH_SH = os.path.join(SCRIPT_DIR, "publish.sh")
-PIPELINE_SH = os.path.join(SCRIPT_DIR, "pipeline.sh")
+COMPILE_PY = os.path.join(SCRIPT_DIR, "compile.py")
+EXTRACT_COMMANDS_PY = os.path.join(SCRIPT_DIR, "extract_commands.py")
+GENERATE_PAGES_PY = os.path.join(SCRIPT_DIR, "web", "generate_pages.py")
+REGISTER_GAME_PY = os.path.join(SCRIPT_DIR, "register_game.py")
+UNREGISTER_GAME_PY = os.path.join(SCRIPT_DIR, "unregister_game.py")
+PUBLISH_PY = os.path.join(SCRIPT_DIR, "publish.py")
+PIPELINE_PY = os.path.join(SCRIPT_DIR, "pipeline.py")
+NEW_PROJECT_PY = os.path.join(SCRIPT_DIR, "new_project.py")
+PUSH_HUB_PY = os.path.join(SCRIPT_DIR, "push_hub.py")
+TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def to_posix(path):
-    """Convert Windows path to MSYS2/Git Bash posix form."""
-    path = path.replace("\\", "/")
-    m = re.match(r"^([A-Za-z]):/", path)
-    if m:
-        path = "/" + m.group(1).lower() + "/" + path[3:]
-    return path
-
-
-def find_bash():
-    git_bash = r"C:\Program Files\Git\bin\bash.exe"
-    if os.path.isfile(git_bash):
-        return git_bash
-    found = shutil.which("bash")
-    if found:
-        return found
-    return "bash"
+def py_cmd(*args):
+    """Build a Python subprocess command list."""
+    return [sys.executable, *args]
 
 
 # ---------------------------------------------------------------------------
@@ -87,9 +77,21 @@ class ProjectInfo:
     has_play_html: bool = False
     has_ulx: bool = False
     has_git: bool = False
+    registered: bool = False
+
+
+def load_registered_ids():
+    """Return set of game IDs currently in games.json."""
+    games_path = os.path.join(I7_ROOT, "ifhub", "games.json")
+    try:
+        with open(games_path, "r", encoding="utf-8") as f:
+            return {g["id"] for g in json.load(f)}
+    except (OSError, json.JSONDecodeError):
+        return set()
 
 
 def load_projects():
+    registered_ids = load_registered_ids()
     projects = []
     for name in sorted(os.listdir(PROJECTS_DIR)):
         project_dir = os.path.join(PROJECTS_DIR, name)
@@ -126,11 +128,11 @@ def load_projects():
                     break
 
         has_walkthrough = os.path.isfile(
-            os.path.join(project_dir, "tests", "run-walkthrough.sh")
+            os.path.join(project_dir, "tests", "inform7", "walkthrough.txt")
         )
-        has_regtest = os.path.isfile(
-            os.path.join(project_dir, "tests", "run-tests.sh")
-        )
+        has_regtest = bool(_glob_mod.glob(
+            os.path.join(project_dir, "tests", "*.regtest")
+        ))
 
         has_test_me = False
         try:
@@ -165,6 +167,9 @@ def load_projects():
                 has_play_html=has_play,
                 has_ulx=has_ulx,
                 has_git=os.path.isdir(os.path.join(project_dir, ".git")),
+                registered=name in registered_ids
+                    or fields.get("PIPELINE_HUB_ID", "") in registered_ids
+                    or any(rid.startswith(name) for rid in registered_ids),
             )
         )
     return projects
@@ -175,48 +180,58 @@ def load_projects():
 # ---------------------------------------------------------------------------
 
 
-def compile_cmd(game, sound=False):
-    cmd = f'bash "{to_posix(COMPILE_SH)}" {game}'
+def compile_cmd(game, sound=False, force=False):
+    cmd = py_cmd(COMPILE_PY, game)
     if sound:
-        cmd += " --sound"
+        cmd.append("--sound")
+    if force:
+        cmd.append("--force")
     return cmd
 
 
 def extract_commands_cmd(source_path, output_path):
-    return (
-        f'bash "{to_posix(EXTRACT_COMMANDS_SH)}" --from-source '
-        f'"{to_posix(source_path)}" -o "{to_posix(output_path)}"'
-    )
+    return py_cmd(EXTRACT_COMMANDS_PY, "--from-source", source_path, "-o", output_path)
 
 
-def generate_pages_cmd(title, meta, description, out_dir):
-    return (
-        f'bash "{to_posix(GENERATE_PAGES_SH)}" '
-        f'--title "{title}" --meta "{meta}" --description "{description}" '
-        f'--out "{to_posix(out_dir)}"'
-    )
+def generate_pages_cmd(title, meta, description, out_dir, force=False):
+    cmd = py_cmd(GENERATE_PAGES_PY,
+                 "--title", title, "--meta", meta,
+                 "--description", description, "--out", out_dir)
+    if force:
+        cmd.append("--force")
+    return cmd
 
 
 def register_game_cmd(name, title, meta, description, sound=""):
-    cmd = (
-        f'bash "{to_posix(REGISTER_GAME_SH)}" '
-        f'--name {name} --title "{title}" --meta "{meta}" '
-        f'--description "{description}"'
-    )
+    cmd = py_cmd(REGISTER_GAME_PY,
+                 "--name", name, "--title", title,
+                 "--meta", meta, "--description", description)
     if sound:
-        cmd += f" --sound {sound}"
+        cmd.extend(["--sound", sound])
     return cmd
 
 
 def publish_cmd(game, message=""):
-    cmd = f'bash "{to_posix(PUBLISH_SH)}" {game}'
+    cmd = py_cmd(PUBLISH_PY, game)
     if message:
-        cmd += f' "{message}"'
+        cmd.append(message)
     return cmd
 
 
 def pipeline_cmd(game, *stages):
-    return f'bash "{to_posix(PIPELINE_SH)}" {game} {" ".join(stages)}'
+    return py_cmd(PIPELINE_PY, game, *stages)
+
+
+def new_project_cmd(title, name):
+    return py_cmd(NEW_PROJECT_PY, title, name)
+
+
+def unregister_game_cmd(name):
+    return py_cmd(UNREGISTER_GAME_PY, name)
+
+
+def push_hub_cmd(game):
+    return py_cmd(PUSH_HUB_PY, game)
 
 
 # ---------------------------------------------------------------------------
@@ -237,19 +252,25 @@ class Job:
 jobs: dict[str, Job] = {}
 
 
+def fmt_cmd(cmd):
+    """Format a command list as a readable string for display."""
+    if isinstance(cmd, list):
+        return " ".join(cmd)
+    return cmd
+
+
 def run_job(job_id, commands):
     """Run commands sequentially, appending output to job.log."""
     job = jobs[job_id]
-    bash = find_bash()
 
     for i, cmd in enumerate(commands):
         if len(commands) > 1:
-            header = f"\n--- [{i + 1}/{len(commands)}] {cmd} ---\n"
+            header = f"\n--- [{i + 1}/{len(commands)}] {fmt_cmd(cmd)} ---\n"
             job.log.append(header)
 
         try:
             proc = subprocess.Popen(
-                [bash, "-c", cmd],
+                cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -287,8 +308,10 @@ def build_commands(task, project, data):
     """Build command list for a task. Returns list or error string."""
     game = project.name
 
+    force = data.get("force", False)
+
     if task == "compile":
-        return [compile_cmd(game, project.sound)]
+        return [compile_cmd(game, project.sound, force=force)]
 
     if task == "build-test":
         return [pipeline_cmd(game, "compile", "test", "--force")]
@@ -301,35 +324,24 @@ def build_commands(task, project, data):
 
         cmds = []
         if project.has_test_me:
-            walk_dir = to_posix(
-                os.path.join(project.dir, "tests", "inform7")
-            )
-            walk_file = os.path.join(
-                project.dir, "tests", "inform7", "walkthrough.txt"
-            )
-            cmds.append(f'mkdir -p "{walk_dir}"')
+            walk_dir = os.path.join(project.dir, "tests", "inform7")
+            walk_file = os.path.join(walk_dir, "walkthrough.txt")
+            os.makedirs(walk_dir, exist_ok=True)
             cmds.append(
                 extract_commands_cmd(
                     os.path.join(project.dir, "story.ni"), walk_file
                 )
             )
 
-        cmds.append(compile_cmd(game, sound))
-        cmds.append(generate_pages_cmd(title, meta, desc, project.dir))
+        cmds.append(compile_cmd(game, sound, force=force))
+        cmds.append(generate_pages_cmd(title, meta, desc, project.dir, force=force))
         sound_type = "blorb" if sound else ""
         cmds.append(
             register_game_cmd(game, title, meta, desc, sound_type)
         )
         cmds.append(publish_cmd(game, f"Initial publish: {title}"))
         # Push hub changes (games.json + cards.json) so the live hub sees the new game
-        hub_dir = to_posix(os.path.join(I7_ROOT, "ifhub"))
-        ifhub_root = to_posix(I7_ROOT)
-        cmds.append(
-            f'cd "{ifhub_root}" && '
-            f'git add ifhub/games.json ifhub/cards.json && '
-            f'git diff --cached --quiet || '
-            f'git commit -m "Register {game} in IF Hub" && git push'
-        )
+        cmds.append(push_hub_cmd(game))
         return cmds
 
     if task == "publish-update":
@@ -337,14 +349,10 @@ def build_commands(task, project, data):
         return [publish_cmd(game, message)]
 
     if task == "extract-walkthrough":
-        walk_dir = to_posix(
-            os.path.join(project.dir, "tests", "inform7")
-        )
-        walk_file = os.path.join(
-            project.dir, "tests", "inform7", "walkthrough.txt"
-        )
+        walk_dir = os.path.join(project.dir, "tests", "inform7")
+        walk_file = os.path.join(walk_dir, "walkthrough.txt")
+        os.makedirs(walk_dir, exist_ok=True)
         return [
-            f'mkdir -p "{walk_dir}"',
             extract_commands_cmd(
                 os.path.join(project.dir, "story.ni"), walk_file
             ),
@@ -354,7 +362,7 @@ def build_commands(task, project, data):
         title = data.get("title", "")
         meta = data.get("meta", "An Interactive Fiction")
         desc = data.get("description", "An interactive fiction game.")
-        return [generate_pages_cmd(title, meta, desc, project.dir)]
+        return [generate_pages_cmd(title, meta, desc, project.dir, force=force)]
 
     if task == "register":
         title = data.get("title", "")
@@ -362,19 +370,18 @@ def build_commands(task, project, data):
         desc = data.get("description", "An interactive fiction game.")
         sound = data.get("sound", project.sound)
         sound_type = "blorb" if sound else ""
-        return [register_game_cmd(game, title, meta, desc, sound_type)]
+        return [register_game_cmd(game, title, meta, desc, sound_type), push_hub_cmd(game)]
+
+    if task == "unregister":
+        return [unregister_game_cmd(game), push_hub_cmd(game)]
 
     if task == "test-walkthrough":
-        wt = to_posix(
-            os.path.join(project.dir, "tests", "run-walkthrough.sh")
-        )
-        return [f'bash "{wt}"']
+        conf = os.path.join(project.dir, "tests", "project.conf")
+        return [py_cmd(os.path.join(TESTING_DIR, "run_walkthrough.py"), "--config", conf)]
 
     if task == "test-regtest":
-        rt = to_posix(
-            os.path.join(project.dir, "tests", "run-tests.sh")
-        )
-        return [f'bash "{rt}"']
+        conf = os.path.join(project.dir, "tests", "project.conf")
+        return [py_cmd(os.path.join(TESTING_DIR, "run_tests.py"), "--config", conf)]
 
     return f"Unknown task: {task}"
 
@@ -413,6 +420,7 @@ def api_projects():
                 "hasPlayHtml": p.has_play_html,
                 "hasUlx": p.has_ulx,
                 "hasGit": p.has_git,
+                "registered": p.registered,
             }
             for p in projects
         ]
@@ -421,7 +429,7 @@ def api_projects():
 
 @app.route("/api/create", methods=["POST"])
 def api_create():
-    """Create a new project from a game name + source code."""
+    """Create a new project by calling new_project.py, optionally with custom source."""
     data = request.json
     name = data.get("name", "").strip()
     source = data.get("source", "").strip()
@@ -439,21 +447,32 @@ def api_create():
     if os.path.isfile(story_path):
         return jsonify({"error": f"Project '{name}' already exists"}), 409
 
-    if not source:
-        return jsonify({"error": "Source code is required"}), 400
+    # Extract title from source (or use the game name as fallback)
+    title = name.replace("-", " ").replace("_", " ").title()
+    if source:
+        first_line = source.split("\n")[0].strip()
+        if not first_line.startswith('"'):
+            return jsonify(
+                {"error": 'Source must start with "Title" by "Author"'}
+            ), 400
+        # Extract title from "Title" by "Author"
+        m = re.match(r'^"([^"]+)"', first_line)
+        if m:
+            title = m.group(1)
 
-    # Validate first line looks like Inform 7
-    first_line = source.split("\n")[0].strip()
-    if not first_line.startswith('"'):
-        return jsonify(
-            {"error": 'Source must start with "Title" by "Author"'}
-        ), 400
+    # Scaffold project via new_project.py (creates tests, config, etc.)
+    result = subprocess.run(
+        new_project_cmd(title, name),
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return jsonify({"error": f"new_project.py failed: {result.stderr}"}), 500
 
-    os.makedirs(project_dir, exist_ok=True)
-    with open(story_path, "w", encoding="utf-8") as f:
-        f.write(source)
-        if not source.endswith("\n"):
-            f.write("\n")
+    # If custom source was provided, overwrite the starter story.ni
+    if source:
+        with open(story_path, "w", encoding="utf-8") as f:
+            f.write(source if source.endswith("\n") else source + "\n")
 
     return jsonify({"name": name, "dir": project_dir})
 
@@ -482,7 +501,7 @@ def api_run():
     )
     thread.start()
 
-    return jsonify({"jobId": job_id, "commands": commands})
+    return jsonify({"jobId": job_id, "commands": [fmt_cmd(c) for c in commands]})
 
 
 @app.route("/api/stream/<job_id>")
@@ -633,7 +652,7 @@ body {
 
 .dot-g { background: var(--green); }
 .dot-y { background: var(--yellow); }
-.dot-x { background: #444; }
+.dot-r { background: var(--red); }
 
 .proj-tags {
   font-size: 0.75em;
@@ -913,8 +932,7 @@ button.primary:hover:not(:disabled) {
 
 The Foyer is a room. "You stand in a grand foyer."'></textarea>
         <div class="source-hint">
-          Paste your Inform 7 source here, or leave empty if you already placed
-          a story.ni in projects/&lt;name&gt;/.
+          Paste your Inform 7 source here, or leave empty for a starter template.
         </div>
       </div>
 
@@ -942,9 +960,13 @@ The Foyer is a room. "You stand in a grand foyer."'></textarea>
     <section>
       <h3>Quick Actions</h3>
       <div class="btn-row">
-        <button onclick="run('compile')">Compile</button>
+        <button onclick="run('compile',{force:isForce()})">Compile</button>
         <button onclick="run('build-test')">Build &amp; Test</button>
         <button id="btn-pubup" onclick="pubUpdate()">Publish Update</button>
+      </div>
+      <div class="form-check" style="margin-top:6px">
+        <input id="f-force" type="checkbox">
+        <span>Force regenerate HTML (overwrite play.html, index.html, etc.)</span>
       </div>
     </section>
 
@@ -974,6 +996,7 @@ The Foyer is a room. "You stand in a grand foyer."'></textarea>
           <button onclick="run('extract-walkthrough')">Extract Walkthrough</button>
           <button onclick="run('generate-pages',fd())">Generate Pages</button>
           <button onclick="run('register',fd())">Register in Hub</button>
+          <button onclick="unregister()">Unregister from Hub</button>
         </div>
         <div class="btn-row" style="margin-top:4px">
           <button id="btn-wt" onclick="run('test-walkthrough')">Run Walkthrough</button>
@@ -1019,9 +1042,9 @@ function renderList() {
     if (p.hasWalkthrough) tags.push('walkthrough');
     if (p.hasRegtest) tags.push('regtest');
 
-    let dc = 'dot-x';
-    if (p.hasPlayHtml) dc = 'dot-g';
-    else if (p.hasUlx) dc = 'dot-y';
+    let dc = 'dot-r';
+    if (p.registered) dc = 'dot-g';
+    else if (p.hasPlayHtml) dc = 'dot-y';
 
     const d = document.createElement('div');
     d.className = 'proj-item' + (sel === p.name ? ' sel' : '');
@@ -1063,12 +1086,15 @@ function pick(name) {
   renderList();
 }
 
+function isForce() { return document.getElementById('f-force').checked; }
+
 function fd() {
   return {
     title: document.getElementById('f-title').value,
     meta: document.getElementById('f-meta').value,
     description: document.getElementById('f-desc').value,
     sound: document.getElementById('f-sound').checked,
+    force: isForce(),
   };
 }
 
@@ -1131,6 +1157,12 @@ async function run(task, extra) {
 
 function pubNew() { run('publish-new', fd()); }
 
+function unregister() {
+  if (!sel) return;
+  if (!confirm('Remove ' + sel + ' from IF Hub?\n\nThe game repo and Pages site will NOT be deleted.')) return;
+  run('unregister');
+}
+
 function pubUpdate() {
   const msg = prompt('Commit message (blank = default):');
   if (msg === null) return;
@@ -1190,29 +1222,8 @@ async function createGame() {
   cSt.className = 'st-run';
   cSt.textContent = 'Creating...';
 
-  // If source is empty, check if story.ni already exists
-  if (!source.trim()) {
-    cTerm.textContent += 'No source pasted -- checking for existing story.ni...\n';
-    // Try to load projects and see if it exists
-    await load();
-    const existing = projects.find(p => p.name === name);
-    if (existing) {
-      cTerm.textContent += 'Found existing project: ' + name + '\n';
-      cSt.className = 'st-done';
-      cSt.textContent = 'Ready';
-      hideCreate();
-      pick(name);
-      return;
-    } else {
-      cTerm.textContent += 'No story.ni found at projects/' + name + '/story.ni\n';
-      cSt.className = 'st-err';
-      cSt.textContent = 'Error';
-      return;
-    }
-  }
-
-  // Create via API
-  cTerm.textContent += 'Creating projects/' + name + '/story.ni...\n';
+  // Create via API (empty source = new_project.py scaffolds a starter)
+  cTerm.textContent += 'Creating projects/' + name + '/...\n';
 
   const r = await fetch('/api/create', {
     method: 'POST',

@@ -86,4 +86,4 @@ The `.mp3` audio files (~46 MB per game copy) are not included in this archive. 
 ## See Also
 
 - `reference/sound.md` — Full technical documentation of both sound approaches
-- `CLAUDE.md` — Pipeline documentation including `compile.sh --sound`
+- `CLAUDE.md` — Pipeline documentation including `compile.py --sound`

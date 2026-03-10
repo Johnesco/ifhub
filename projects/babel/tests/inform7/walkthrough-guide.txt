@@ -1,12 +1,31 @@
+# Auto-generated walkthrough guide
+
+# It has a button.
 > examine dispenser
+# A Babel fish shoots out of the dispenser. It arcs downward. It falls into a
+#   drain.
 > push button
+# You are carrying: a gown a towel a satchel a loose pile of mail
 > inventory
+# You put the towel on the drain.
 > cover drain with towel
+# A Babel fish shoots out of the dispenser. It arcs downward. The Babel fish
+#   lands on the towel.
 > push button
+# Store the satchel in the front of panel
+# You put the satchel on the panel.
 > put satchel in front of panel
+# A Babel fish shoots out of the dispenser. It arcs downward. The Babel fish
+#   lands on the towel.
 > push button
+# You put the gown on the metal hook.
 > hang gown on hook
+# A Babel fish shoots out of the dispenser. It arcs downward. The Babel fish
+#   lands on the towel.
 > push button
+# You put the loose pile of mail on the large fan.
 > put mail on fan
 # GAME WON
+# A Babel fish shoots out of the dispenser. It arcs downward. The Babel fish
+#   lands on the towel.
 > push button

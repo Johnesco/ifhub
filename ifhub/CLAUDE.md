@@ -9,7 +9,7 @@ ifhub/
 ├── CLAUDE.md              ← You are here
 ├── index.html             ← Landing page (reads cards.json, renders game cards with Source/Walkthrough links)
 ├── app.html               ← Split-pane player (game iframe + source viewer + walkthrough)
-├── play.html              ← Shared Parchment player (standalone use; has version-gated CSS effects for zork1 v4+)
+├── play.html              ← Shared Parchment player (standalone use; has version-gated CSS effects for zork1 v3+)
 ├── importing.html         ← Guide for adding new games to the hub
 ├── games.json             ← Game registry (id, title, URLs, sound flag, sourceBrowser)
 ├── cards.json             ← Card metadata for landing page (title, description, versions)
@@ -29,8 +29,8 @@ The hub serves games **in-place** — `app.html` iframes each game's own play pa
 
 | ID | Source Mode | Sound |
 |----|-------------|-------|
-| `zork1-v0` through `zork1-v4` | v0: sourceBrowser (ZIL), v1–v4: raw .ni | v3–v4: blorb |
-| `dracula-v0`, `dracula` | v0: sourceBrowser (BASIC), current: raw .ni | No |
+| `zork1-v0` through `zork1-v3`, `zork1` (current) | v0: sourceBrowser (ZIL), v1–v3: raw .ni | v3+: blorb |
+| `dracula-v0`, `dracula` (current) | v0: sourceBrowser (BASIC), current: raw .ni | No |
 | `feverdream` | raw .ni | blorb |
 | `sample` | sourceBrowser | No |
 
@@ -69,9 +69,9 @@ All games use a three-tier CSS overlay architecture. Full documentation in `C:\c
 
 - **Tier 1**: Parchment base (`parchment.css` + `main.css`) — shared library
 - **Tier 2**: Static overlay — inline `<style>` in each game's `play.html` (dark theme, CSS variables, layout)
-- **Tier 3**: Dynamic mood system — Houdini `@property` + MutationObserver JS (zork1 v4, feverdream only)
+- **Tier 3**: Dynamic mood system — Houdini `@property` + MutationObserver JS (zork1 v3, feverdream only)
 
-The shared `play.html` version-gates Tier 3 effects for Zork I. When the binary path matches `zork1-v(\d+)` with version >= 4, it adds `body.zork1-enhanced` and activates mood palettes + effects. Other games get Tier 2 static theming only.
+The shared `play.html` version-gates Tier 3 effects for Zork I. When the binary path matches `zork1-v(\d+)` with version >= 3, it adds `body.zork1-enhanced` and activates mood palettes + effects. Other games get Tier 2 static theming only.
 
 ### MutationObserver Input Detection
 

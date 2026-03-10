@@ -5,7 +5,7 @@
 #   bash /c/code/ifhub/tools/snapshot.sh <game-name> <version>
 #   bash /c/code/ifhub/tools/snapshot.sh <game-name> <version> --update
 #
-# Creates (or updates) a frozen version snapshot at versions/<version>/ in the project.
+# Creates (or updates) a frozen version snapshot at <version>/ in the project root.
 #
 # New version (no --update):
 #   1. Creates <version>/ directory

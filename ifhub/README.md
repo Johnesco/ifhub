@@ -8,7 +8,7 @@ IF Hub is a browser-based player for interactive fiction. Pick a game, play it o
 
 | Game | Format | Sound | Links |
 |------|--------|-------|-------|
-| **Zork I** (v0–v4) | ZIL → Z-machine, Inform 7 → Glulx | v3–v4: native blorb | [Play](https://johnesco.github.io/zork1/) · [Hub](https://johnesco.github.io/ifhub/app.html?game=zork1-v4) |
+| **Zork I** (v0–v3 + current) | ZIL → Z-machine, Inform 7 → Glulx | v3+: native blorb | [Play](https://johnesco.github.io/zork1/) · [Hub](https://johnesco.github.io/ifhub/app.html?game=zork1) |
 | **Dracula's Castle** | BASIC (original) + Inform 7 (translation) | — | [Play](https://johnesco.github.io/dracula/) · [Hub](https://johnesco.github.io/ifhub/app.html?game=dracula) |
 | **Fever Dream** | Inform 7 → Glulx | native blorb | [Hub](https://johnesco.github.io/ifhub/app.html?game=feverdream) |
 | **Sample** | Inform 7 → Glulx | — | [Play](https://johnesco.github.io/sample/) · [Hub](https://johnesco.github.io/ifhub/app.html?game=sample) |
@@ -59,13 +59,13 @@ Every game has a source browser with syntax highlighting:
 
 ### Toolchain
 
-The entire pipeline runs from the command line on Windows (Git Bash):
+The entire pipeline runs from the command line on Windows:
 
 ```
 story.ni → Inform 7 compiler → story.i6 → Inform 6 compiler → game.ulx
-         → (optional) generate-blurb.sh → inblorb → game.gblorb
+         → (optional) generate_blurb.py → inblorb → game.gblorb
          → base64 encode → game.ulx.js (or .gblorb.js)
-         → setup-web.sh → play.html + lib/parchment/
+         → setup_web.py → play.html + lib/parchment/
 ```
 
 Testing uses native CLI interpreters ([glulxe](https://github.com/erkyrath/glulxe) and [frotz](https://gitlab.com/DavidGriffith/frotz)) built from source in MSYS2. A deterministic seed system ensures reproducible walkthroughs — the same RNG seed produces the same combat outcomes, NPC behavior, and random events every run.
@@ -90,12 +90,12 @@ python tools/dev-server.py
 All steps are scripted — see [importing.html](https://johnesco.github.io/ifhub/importing.html) for the full guide.
 
 ```bash
-bash tools/compile.sh mygame                          # compile + web player + walkthrough
-bash tools/extract-commands.sh --from-source story.ni  # extract walkthrough from source
-bash tools/compile.sh mygame                          # recompile with walkthrough
-bash tools/web/generate-pages.sh --title "..." --out . # landing page + source browser
-bash tools/register-game.sh --name mygame --title "..."  # add to games.json + cards.json
-bash tools/publish.sh mygame                          # deploy to GitHub Pages
+python tools/compile.py mygame                          # compile + web player + walkthrough
+python tools/extract_commands.py --from-source story.ni  # extract walkthrough from source
+python tools/compile.py mygame                          # recompile with walkthrough
+python tools/web/generate_pages.py --title "..." --out . # landing page + source browser
+python tools/register_game.py --name mygame --title "..."  # add to games.json + cards.json
+python tools/publish.py mygame                          # deploy to GitHub Pages
 ```
 
 ## Built With

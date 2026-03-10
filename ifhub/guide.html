@@ -238,20 +238,20 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
 &boxv;   &boxv;   &boxvr;&boxh;&boxh; zork1.ulx       Compiled Glulx binary
 &boxv;   &boxv;   &boxvr;&boxh;&boxh; zork1.gblorb    Blorb with embedded audio
 &boxv;   &boxv;   &boxvr;&boxh;&boxh; web/            Standalone web player
-&boxv;   &boxv;   &boxvr;&boxh;&boxh; versions/       Frozen version snapshots (v0&ndash;v4)
+&boxv;   &boxv;   &boxvr;&boxh;&boxh; versions/       Frozen version snapshots (v0&ndash;v3)
 &boxv;   &boxv;   &boxur;&boxh;&boxh; tests/          Regression tests and walkthroughs
 &boxv;   &boxvr;&boxh;&boxh; feverdream/         Horror game with 1 sound
 &boxv;   &boxvr;&boxh;&boxh; dracula/            Dracula&rsquo;s Castle
 &boxv;   &boxur;&boxh;&boxh; sample/             Minimal test project
 &boxvr;&boxh;&boxh; tools/                  Shared scripts
-&boxv;   &boxvr;&boxh;&boxh; compile.sh          Full compilation pipeline
-&boxv;   &boxvr;&boxh;&boxh; generate-blurb.sh   Sound manifest generator
-&boxv;   &boxvr;&boxh;&boxh; new-project.sh      Project scaffolding
-&boxv;   &boxvr;&boxh;&boxh; publish.sh          GitHub Pages deployment
-&boxv;   &boxvr;&boxh;&boxh; snapshot.sh         Version snapshots
-&boxv;   &boxvr;&boxh;&boxh; build-site.sh       Multi-version site builder
+&boxv;   &boxvr;&boxh;&boxh; compile.py          Full compilation pipeline
+&boxv;   &boxvr;&boxh;&boxh; generate_blurb.py   Sound manifest generator
+&boxv;   &boxvr;&boxh;&boxh; new_project.py      Project scaffolding
+&boxv;   &boxvr;&boxh;&boxh; publish.py          GitHub Pages deployment
+&boxv;   &boxvr;&boxh;&boxh; snapshot.py         Version snapshots
+&boxv;   &boxvr;&boxh;&boxh; build_site.py       Multi-version site builder
 &boxv;   &boxur;&boxh;&boxh; web/                Parchment setup
-&boxv;       &boxvr;&boxh;&boxh; setup-web.sh    Web player bootstrapper
+&boxv;       &boxvr;&boxh;&boxh; setup_web.py    Web player bootstrapper
 &boxv;       &boxvr;&boxh;&boxh; play-template.html
 &boxv;       &boxur;&boxh;&boxh; parchment/      12 shared library files
 &boxvr;&boxh;&boxh; ifhub/                  The hub site itself
@@ -269,7 +269,7 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
 <h2 id="compilation">3. Compilation Pipeline</h2>
 
 <h3>Standard compile (no sound)</h3>
-<pre><code>bash tools/compile.sh sample</code></pre>
+<pre><code>python tools/compile.py sample</code></pre>
 
 <ol>
   <li><strong>Inform 7 &rarr; Inform 6</strong> &mdash; <code>inform7.exe</code> translates
@@ -277,16 +277,16 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
   <li><strong>Inform 6 &rarr; Glulx</strong> &mdash; <code>inform6.exe</code> compiles
     <code>story.i6</code> into a <code>.ulx</code> Glulx virtual machine binary</li>
   <li><strong>Clean up</strong> &mdash; removes the intermediate <code>story.i6</code></li>
-  <li><strong>Web player setup</strong> &mdash; <code>setup-web.sh</code> copies Parchment libraries,
+  <li><strong>Web player setup</strong> &mdash; <code>setup_web.py</code> copies Parchment libraries,
     base64-encodes the <code>.ulx</code> into a <code>.ulx.js</code> file, and generates <code>play.html</code></li>
 </ol>
 
 <h3>Compile with sound</h3>
-<pre><code>bash tools/compile.sh zork1 --sound</code></pre>
+<pre><code>python tools/compile.py zork1 --sound</code></pre>
 
 <p>Same first two steps, then:</p>
 <ol start="3">
-  <li><strong>Generate blurb</strong> &mdash; <code>generate-blurb.sh</code> parses <code>story.ni</code>
+  <li><strong>Generate blurb</strong> &mdash; <code>generate_blurb.py</code> parses <code>story.ni</code>
     for <code>Sound of X is the file "Y.ogg"</code> declarations, creates a <code>.blurb</code>
     manifest mapping resource IDs (3, 4, 5&hellip;) to <code>.ogg</code> files in <code>Sounds/</code></li>
   <li><strong>Build blorb</strong> &mdash; <code>inblorb.exe</code> reads the <code>.blurb</code> and
@@ -299,7 +299,7 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
 
 <h3>Pre-flight checks</h3>
 <p>
-  Before starting the expensive compilation, <code>compile.sh</code> validates:
+  Before starting the expensive compilation, <code>compile.py</code> validates:
 </p>
 <ul>
   <li><strong>No colons in the story title</strong> &mdash; Windows can&rsquo;t create files with <code>:</code>
@@ -322,7 +322,7 @@ story.ni  &rarr;  game.ulx  &rarr;  game.gblorb  &rarr;  game.gblorb.js  &rarr; 
 <div class="diagram">story.ni declares:  Sound of forest is the file "forest.ogg"
                     Sound of sword is the file "sword.ogg"
 
-generate-blurb.sh creates .blurb:
+generate_blurb.py creates .blurb:
     storyfile "game.ulx" include
     sound 3 "Sounds/forest.ogg"
     sound 4 "Sounds/sword.ogg"
@@ -395,10 +395,10 @@ Browser:          parchment.js loads gblorb.js
 </p>
 
 <h3>Step 1: Compile each game</h3>
-<pre><code>bash tools/compile.sh zork1 --sound
-bash tools/compile.sh feverdream --sound
-bash tools/compile.sh dracula
-bash tools/compile.sh sample</code></pre>
+<pre><code>python tools/compile.py zork1 --sound
+python tools/compile.py feverdream --sound
+python tools/compile.py dracula
+python tools/compile.py sample</code></pre>
 
 <h3>Step 2: Publish each game</h3>
 <p>Each game project deploys to GitHub Pages from its own repo. The hub references
@@ -416,7 +416,7 @@ bash tools/compile.sh sample</code></pre>
 <h3>Entry points</h3>
 <p>Each game is playable from two places:</p>
 <ul>
-  <li><strong>Game&rsquo;s own site</strong> &mdash; e.g., <code>/zork1/v4/play.html</code> &mdash; full-page player
+  <li><strong>Game&rsquo;s own site</strong> &mdash; e.g., <code>/zork1/v3/play.html</code> &mdash; full-page player
     served from the game&rsquo;s own GitHub Pages repo</li>
   <li><strong>IF Hub app</strong> &mdash; <code>app.html?game=&lt;id&gt;</code> &mdash; split-pane interface
     with source viewer; iframes the game&rsquo;s own play page</li>
@@ -432,19 +432,19 @@ bash tools/compile.sh sample</code></pre>
 
 <ul>
   <li><code>project.conf</code> &mdash; engine paths, score patterns, golden seeds</li>
-  <li><code>run-tests.sh</code> &mdash; RegTest regression tests</li>
-  <li><code>run-walkthrough.sh</code> &mdash; full walkthrough with score checking</li>
-  <li><code>find-seeds.sh</code> &mdash; sweep RNG seeds for deterministic runs</li>
+  <li><code>run_tests.py</code> &mdash; RegTest regression tests</li>
+  <li><code>run_walkthrough.py</code> &mdash; full walkthrough with score checking</li>
+  <li><code>find_seeds.py</code> &mdash; sweep RNG seeds for deterministic runs</li>
 </ul>
 
 <pre><code># Run regression tests
-cd projects/zork1 && wsl -e bash tests/run-tests.sh
+cd projects/zork1 && python tests/run_tests.py
 
 # Run walkthrough
-cd projects/zork1 && wsl -e bash tests/run-walkthrough.sh
+cd projects/zork1 && python tests/run_walkthrough.py
 
 # Find golden seeds after code changes
-cd projects/zork1 && wsl -e bash tests/find-seeds.sh</code></pre>
+cd projects/zork1 && python tests/find_seeds.py</code></pre>
 
 <!-- ======================================== -->
 <h2 id="gotchas">8. Known Gotchas</h2>
@@ -473,7 +473,7 @@ cd projects/zork1 && wsl -e bash tests/find-seeds.sh</code></pre>
 
 <h3>Sounds/ directory location</h3>
 <p>
-  <code>compile.sh --sound</code> looks for <code>.ogg</code> files at
+  <code>compile.py --sound</code> looks for <code>.ogg</code> files at
   <code>projects/&lt;name&gt;/Sounds/</code> (project root). If your sounds are in the
   Inform 7 IDE convention (<code>&lt;name&gt;.materials/Sounds/</code>), copy them over.
   Do not symlink &mdash; sound directories may diverge between projects.
@@ -488,8 +488,8 @@ cd projects/zork1 && wsl -e bash tests/find-seeds.sh</code></pre>
 
 <h3>Browser cache</h3>
 <p>
-  After rebuilding, browsers may serve stale JavaScript. Both <code>setup-web.sh</code>
-  and <code>setup-web.sh</code> append <code>?v=&lt;timestamp&gt;</code> cache-busting params to all
+  After rebuilding, browsers may serve stale JavaScript. Both <code>setup_web.py</code>
+  and <code>setup_web.py</code> append <code>?v=&lt;timestamp&gt;</code> cache-busting params to all
   <code>.js</code> and <code>.css</code> references. If testing manually, use Ctrl+Shift+R
   or an incognito window.
 </p>
@@ -506,7 +506,7 @@ cd projects/zork1 && wsl -e bash tests/find-seeds.sh</code></pre>
     <code>.gblorb</code> (blorb with sounds), so the web player gets no audio data.</li>
 </ol>
 <p>
-  Both are worked around by <code>compile.sh --sound</code>, which generates the blurb
+  Both are worked around by <code>compile.py --sound</code>, which generates the blurb
   manually and encodes the <code>.gblorb</code>.
 </p>
 
