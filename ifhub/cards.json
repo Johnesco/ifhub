@@ -86,5 +86,14 @@
     "description": "An interactive fiction game.",
     "playUrl": "/larva/play.html",
     "landingUrl": "/larva/"
+  },
+  {
+    "id": "sample",
+    "base": "sample",
+    "title": "Sample",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/sample/play.html",
+    "landingUrl": "/sample/"
   }
 ]

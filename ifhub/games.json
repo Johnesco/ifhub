@@ -112,5 +112,15 @@
     "landingUrl": "/larva/",
     "sourceBrowser": true,
     "sourceUrl": "/larva/source.html"
+  },
+  {
+    "id": "sample",
+    "title": "Sample",
+    "sourceLabel": "sample.ni",
+    "playUrl": "/sample/play.html",
+    "walkthroughUrl": "/sample/walkthrough.html",
+    "landingUrl": "/sample/",
+    "sourceBrowser": true,
+    "sourceUrl": "/sample/source.html"
   }
 ]
