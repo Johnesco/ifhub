@@ -104,5 +104,59 @@
     "description": "An interactive fiction game.",
     "playUrl": "/if-pipeline-test3/play.html",
     "landingUrl": "/if-pipeline-test3/"
+  },
+  {
+    "id": "dracula2",
+    "base": "dracula2",
+    "title": "Dracula's Castle",
+    "meta": "An Interactive Adventure",
+    "description": "Explore Dracula's Castle and uncover its dark secret before midnight strikes.",
+    "playUrl": "/dracula2/play.html",
+    "landingUrl": "/dracula2/"
+  },
+  {
+    "id": "cia-adventure",
+    "base": "cia-adventure",
+    "title": "C.I.A. Adventure",
+    "meta": "1980 Classic",
+    "description": "A classic 1980 text adventure game written in GW-BASIC.",
+    "playUrl": "/cia-adventure/play.html",
+    "landingUrl": "/cia-adventure/"
+  },
+  {
+    "id": "haunted-house",
+    "base": "haunted-house",
+    "title": "Haunted House",
+    "meta": "1983 Usborne Classic",
+    "description": "A classic 1983 Usborne text adventure with 64 rooms and a candle timer.",
+    "playUrl": "/haunted-house/play.html",
+    "landingUrl": "/haunted-house/"
+  },
+  {
+    "id": "apple-adventure",
+    "base": "apple-adventure",
+    "title": "Apple Adventure",
+    "meta": "Applesoft BASIC",
+    "description": "A text adventure game written in Apple II Applesoft BASIC.",
+    "playUrl": "/apple-adventure/play.html",
+    "landingUrl": "/apple-adventure/"
+  },
+  {
+    "id": "magic-realm",
+    "base": "magic-realm",
+    "title": "Magic Realm",
+    "meta": "QBasic Classic",
+    "description": "A text adventure game written in QBasic.",
+    "playUrl": "/magic-realm/play.html",
+    "landingUrl": "/magic-realm/"
+  },
+  {
+    "id": "seasons",
+    "base": "seasons",
+    "title": "Seasons",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/seasons/play.html",
+    "landingUrl": "/seasons/"
   }
 ]
