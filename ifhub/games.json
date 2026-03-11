@@ -102,5 +102,15 @@
     "landingUrl": "/disenchantment12/",
     "sourceBrowser": true,
     "sourceUrl": "/disenchantment12/source.html"
+  },
+  {
+    "id": "larva",
+    "title": "Larva",
+    "sourceLabel": "larva.ni",
+    "playUrl": "/larva/play.html",
+    "walkthroughUrl": "/larva/walkthrough.html",
+    "landingUrl": "/larva/",
+    "sourceBrowser": true,
+    "sourceUrl": "/larva/source.html"
   }
 ]

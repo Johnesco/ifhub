@@ -77,5 +77,14 @@
     "description": "An interactive fiction game.",
     "playUrl": "/disenchantment12/play.html",
     "landingUrl": "/disenchantment12/"
+  },
+  {
+    "id": "larva",
+    "base": "larva",
+    "title": "Larva",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/larva/play.html",
+    "landingUrl": "/larva/"
   }
 ]
