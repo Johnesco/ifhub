@@ -176,5 +176,14 @@
     "description": "You're standing on the corner of Broadway and Canal with a dead phone and the world's worst directions. Your friends are somewhere in downtown Manhattan. Find them.",
     "playUrl": "/lostinnewyork/play.html",
     "landingUrl": "/lostinnewyork/"
+  },
+  {
+    "id": "adj",
+    "base": "adj",
+    "title": "ADJ Rules",
+    "meta": "Listen to Lani.",
+    "description": "You'd better listen to her.",
+    "playUrl": "/adj/play.html",
+    "landingUrl": "/adj/"
   }
 ]

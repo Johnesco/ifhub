@@ -212,5 +212,15 @@
     "landingUrl": "/lostinnewyork/",
     "sourceBrowser": true,
     "sourceUrl": "/lostinnewyork/source.html"
+  },
+  {
+    "id": "adj",
+    "title": "ADJ Rules",
+    "sourceLabel": "adj.ni",
+    "playUrl": "/adj/play.html",
+    "walkthroughUrl": "/adj/walkthrough.html",
+    "landingUrl": "/adj/",
+    "sourceBrowser": true,
+    "sourceUrl": "/adj/source.html"
   }
 ]
