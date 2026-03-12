@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seasons</title>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<link rel="stylesheet" href="lib/parchment/parchment.css">
+<link rel="stylesheet" href="lib/parchment/main.css">
+
+<style>
+/* ── Houdini @property — register as <color> for smooth transitions ── */
+@property --mood-buffer-bg { syntax: '<color>'; inherits: true; initial-value: #080c18; }
+@property --mood-buffer-fg { syntax: '<color>'; inherits: true; initial-value: #c0d0e8; }
+@property --mood-grid-bg   { syntax: '<color>'; inherits: true; initial-value: #0c1224; }
+@property --mood-grid-fg   { syntax: '<color>'; inherits: true; initial-value: #6888b0; }
+@property --mood-accent    { syntax: '<color>'; inherits: true; initial-value: #88c0e8; }
+@property --mood-ui-bg     { syntax: '<color>'; inherits: true; initial-value: #080c18; }
+@property --mood-border    { syntax: '<color>'; inherits: true; initial-value: #101c30; }
+
+:root {
+  /* ── Mood palette — starts as Winter, updated dynamically by JS ── */
+  --mood-buffer-bg: #080c18;
+  --mood-buffer-fg: #c0d0e8;
+  --mood-grid-bg: #0c1224;
+  --mood-grid-fg: #6888b0;
+  --mood-accent: #88c0e8;
+  --mood-ui-bg: #080c18;
+  --mood-border: #101c30;
+
+  transition:
+    --mood-buffer-bg 2s ease-in-out,
+    --mood-buffer-fg 2s ease-in-out,
+    --mood-grid-bg 2s ease-in-out,
+    --mood-grid-fg 2s ease-in-out,
+    --mood-accent 2s ease-in-out,
+    --mood-ui-bg 2s ease-in-out,
+    --mood-border 2s ease-in-out;
+
+  /* ── GlkOte / AsyncGlk base theme ── */
+  --glkote-buffer-bg: #080c18;
+  --glkote-buffer-fg: #c0d0e8;
+  --glkote-buffer-reverse-bg: #c0d0e8;
+  --glkote-buffer-reverse-fg: #080c18;
+  --glkote-buffer-size: 16px;
+  --glkote-buffer-line-height: 1.6;
+  --glkote-grid-bg: #0c1224;
+  --glkote-grid-fg: #6888b0;
+  --glkote-grid-reverse-bg: #6888b0;
+  --glkote-grid-reverse-fg: #0c1224;
+  --glkote-grid-size: 14px;
+  --glkote-input-fg: #88c0e8;
+  --glkote-error-border: #882020;
+  --glkote-warning-border: #3333aa;
+  --glkote-prop-family: "Iowan Old Style", Palatino, Georgia, "Times New Roman", serif;
+  --glkote-mono-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
+  --glkote-grid-mono-family: var(--glkote-mono-family);
+
+  --asyncglk-ui-bg: #080c18;
+  --asyncglk-ui-border: #101c30;
+  --asyncglk-ui-fg: #c0d0e8;
+  --asyncglk-ui-selected: #101828;
+  --asyncglk-ui-textbox: #060a14;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: #060810;
+  overflow: hidden;
+}
+
+div#gameport {
+  position: absolute;
+  inset: 0;
+  background: var(--mood-ui-bg);
+  transition: background-color 2s ease-in-out;
+}
+
+.WindowFrame {
+  background: var(--mood-ui-bg) !important;
+}
+
+.WindowFrame:has(.GridWindow) {
+  background: var(--mood-buffer-fg) !important;
+  transition: background-color 2s ease-in-out;
+}
+
+.GridWindow,
+.GridWindow * {
+  background-color: var(--mood-buffer-fg) !important;
+  color: #0a0a0a !important;
+  font-weight: bold;
+  transition: background-color 2s ease-in-out, color 2s ease-in-out;
+}
+
+.GridWindow {
+  padding: 6px 12px;
+}
+
+.BufferWindow {
+  background-color: var(--mood-buffer-bg) !important;
+  color: var(--mood-buffer-fg) !important;
+  transition: background-color 2s ease-in-out, color 2s ease-in-out;
+}
+
+.BufferWindowInner {
+  padding: 20px 40px;
+  text-rendering: optimizeLegibility;
+}
+
+.Input {
+  font-weight: bold;
+  color: var(--mood-accent);
+  caret-color: var(--mood-accent);
+  caret-shape: underscore;
+  transition: color 2s ease-in-out, caret-color 2s ease-in-out;
+}
+
+/* ── Text fade-in ── */
+@keyframes bufferFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.BufferLine { animation: bufferFadeIn 0.3s ease-out; }
+
+.Style_user1 { display: none; }
+
+.Style_header {
+  color: var(--mood-accent);
+  transition: color 2s ease-in-out;
+}
+
+.Style_alert { color: #cc8844; }
+.Style_note  { color: #808898; }
+
+.BufferWindow {
+  scrollbar-width: thin;
+  scrollbar-color: #282830 transparent;
+}
+.BufferWindow::-webkit-scrollbar { width: 6px; }
+.BufferWindow::-webkit-scrollbar-track { background: transparent; }
+.BufferWindow::-webkit-scrollbar-thumb { background: #282830; border-radius: 3px; }
+.BufferWindow::-webkit-scrollbar-thumb:hover { background: #404050; }
+
+#loadingpane {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 35%;
+  color: #607080;
+  font-size: 1.2em;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+#loadingpane em {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEASONAL PARTICLE EFFECTS
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Seasonal vignette (colored edge glow per season) ── */
+.season-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: box-shadow 2s ease-in-out;
+  box-shadow: none;
+}
+
+body.season-winter .season-vignette {
+  box-shadow:
+    inset 0 0 150px 50px rgba(100,150,220,0.06),
+    inset 0 0 60px 20px rgba(140,180,240,0.03);
+}
+body.season-spring .season-vignette {
+  box-shadow:
+    inset 0 0 150px 50px rgba(80,180,80,0.05),
+    inset 0 0 60px 20px rgba(120,200,120,0.03);
+}
+body.season-summer .season-vignette {
+  box-shadow:
+    inset 0 0 150px 50px rgba(220,180,60,0.06),
+    inset 0 0 60px 20px rgba(240,200,80,0.03);
+}
+body.season-fall .season-vignette {
+  box-shadow:
+    inset 0 0 150px 50px rgba(200,120,40,0.06),
+    inset 0 0 60px 20px rgba(220,140,60,0.03);
+}
+
+/* ── Winter: Falling snow ── */
+
+@keyframes snowfall {
+  0%   { transform: translateY(-10px); opacity: 0; }
+  5%   { opacity: var(--sf-o, 0.3); }
+  95%  { opacity: var(--sf-o, 0.3); }
+  100% { transform: translateY(calc(100vh + 10px)); opacity: 0; }
+}
+
+@keyframes snowSway {
+  0%, 100% { margin-left: 0; }
+  25%      { margin-left: var(--ss-amt, 15px); }
+  75%      { margin-left: calc(var(--ss-amt, 15px) * -1); }
+}
+
+/* ── Spring: Blooming buds + drifting petals ── */
+
+@keyframes budBloom {
+  0%, 100% { transform: scale(0.2); opacity: 0.1; }
+  20%      { transform: scale(0.6); opacity: 0.3; background-color: #508050; }
+  45%      { transform: scale(1.0); opacity: 0.5; background-color: #80c880; }
+  65%      { transform: scale(1.4); opacity: 0.6; background-color: #d8a0b8; }
+  85%      { transform: scale(1.1); opacity: 0.4; background-color: #a0d0a0; }
+}
+
+@keyframes petalFloat {
+  0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.45; }
+  100% { transform: translateY(var(--pf-y, 80vh)) translateX(var(--pf-x, 40px)) rotate(var(--pf-rot, 200deg)); opacity: 0; }
+}
+
+/* ── Summer: God rays + dust motes + shimmer sweep ── */
+
+@keyframes rayRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.7; }
+}
+
+@keyframes moteDrift {
+  0%   { opacity: 0; transform: translate(0, 0) scale(1); }
+  15%  { opacity: var(--mote-o, 0.35); }
+  85%  { opacity: var(--mote-o, 0.35); }
+  100% { opacity: 0; transform: translate(var(--mote-dx, 30px), var(--mote-dy, -40px)) scale(0.4); }
+}
+
+@keyframes shimmerSweep {
+  0%   { left: -35%; }
+  100% { left: 110%; }
+}
+
+/* Summer: warm text glow */
+body.season-summer .BufferWindow {
+  text-shadow: 0 0 40px rgba(232,192,64,0.05);
+}
+body.season-summer .Input {
+  text-shadow: 0 0 10px rgba(232,192,64,0.2);
+}
+
+/* ── Fall: Tumbling leaves ── */
+
+/* Outer wrapper: vertical fall + horizontal sway */
+@keyframes leafFall {
+  0%   { transform: translateY(-20px) translateX(0); opacity: 0; }
+  6%   { opacity: var(--lf-o, 0.35); }
+  25%  { transform: translateY(25vh) translateX(var(--lf-drift, 35px)); }
+  50%  { transform: translateY(50vh) translateX(calc(var(--lf-drift, 35px) * -0.6)); }
+  75%  { transform: translateY(75vh) translateX(var(--lf-drift, 35px)); }
+  94%  { opacity: var(--lf-o, 0.35); }
+  100% { transform: translateY(calc(100vh + 20px)) translateX(0); opacity: 0; }
+}
+
+/* Inner: rotation + y-axis flip (tumble effect) */
+@keyframes leafTumble {
+  from { transform: rotate(0deg) rotateY(0deg); }
+  to   { transform: rotate(var(--lf-spin, 720deg)) rotateY(var(--lf-flip, 540deg)); }
+}
+</style>
+
+<script src="lib/parchment/jquery.min.js"></script>
+<script src="lib/parchment/ie.js" nomodule></script>
+<script>
+    parchment_options = {
+        default_story: ['lib/parchment/seasons.ulx.js'],
+        lib_path: 'lib/parchment/',
+        story_name: 'seasons.ulx.js',
+        use_proxy: 0,
+        do_vm_autosave: 1,
+    };
+</script>
+<script src="lib/parchment/parchment.js"></script>
+<script src="lib/parchment/resourcemap.js"></script>
+<script>
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) { window.location.reload(); }
+    });
+</script>
+
+</head>
+<body>
+
+<div id="gameport">
+  <div id="windowport">
+    <noscript>
+      <div style="text-align:center; padding:40px; color:#708090;">
+        <h2>Seasons</h2>
+        <p>JavaScript is required to play this game.</p>
+      </div>
+    </noscript>
+  </div>
+  <div id="loadingpane">
+    <div style="margin-bottom:20px; font-size:1.4em; color:#6080a0; letter-spacing:6px;">SEASONS</div>
+    <img src="lib/parchment/waiting.gif" alt="Loading" style="opacity:0.4"><br>
+    <em>Loading...</em>
+  </div>
+  <div id="errorpane" style="display:none;">
+    <div id="errorcontent">...</div>
+  </div>
+</div>
+
+<!-- Persistent seasonal vignette (colored edge glow) -->
+<div class="season-vignette"></div>
+
+<!-- ── Seasonal mood overlay + particle effects ── -->
+<script>
+(function() {
+  'use strict';
+
+  // ══════════════════════════════════════════════════════════════
+  //  MOOD PALETTE SYSTEM
+  // ══════════════════════════════════════════════════════════════
+
+  var PALETTES = {
+    winter: { bufferBg:'#080c18', bufferFg:'#c0d0e8', gridBg:'#0c1224', gridFg:'#6888b0', accent:'#88c0e8', uiBg:'#080c18', border:'#101c30' },
+    spring: { bufferBg:'#081208', bufferFg:'#a8d0a0', gridBg:'#0c1a0c', gridFg:'#58a060', accent:'#70c870', uiBg:'#081208', border:'#142c14' },
+    summer: { bufferBg:'#141008', bufferFg:'#e0d098', gridBg:'#1c1808', gridFg:'#a89040', accent:'#e8c040', uiBg:'#141008', border:'#282008' },
+    fall:   { bufferBg:'#160c08', bufferFg:'#d8b890', gridBg:'#201208', gridFg:'#a07038', accent:'#d88030', uiBg:'#160c08', border:'#281810' }
+  };
+
+  var ROOM_ZONES = {
+    'Winter': 'winter',
+    'Spring': 'spring',
+    'Summer': 'summer',
+    'Fall':   'fall'
+  };
+
+  var currentRoom = null;
+  var currentZone = null;
+
+  function applyPalette(zone) {
+    var p = PALETTES[zone] || PALETTES.winter;
+    var root = document.documentElement.style;
+    root.setProperty('--mood-buffer-bg', p.bufferBg);
+    root.setProperty('--mood-buffer-fg', p.bufferFg);
+    root.setProperty('--mood-grid-bg', p.gridBg);
+    root.setProperty('--mood-grid-fg', p.gridFg);
+    root.setProperty('--mood-accent', p.accent);
+    root.setProperty('--mood-ui-bg', p.uiBg);
+    root.setProperty('--mood-border', p.border);
+    root.setProperty('--glkote-buffer-bg', p.bufferBg);
+    root.setProperty('--glkote-buffer-fg', p.bufferFg);
+    root.setProperty('--glkote-grid-bg', p.gridBg);
+    root.setProperty('--glkote-grid-fg', p.gridFg);
+    root.setProperty('--glkote-input-fg', p.accent);
+    root.setProperty('--asyncglk-ui-bg', p.uiBg);
+    root.setProperty('--asyncglk-ui-border', p.border);
+    var gp = document.getElementById('gameport');
+    if (gp) gp.style.backgroundColor = p.uiBg;
+  }
+
+  function extractRoomName(gridWindow) {
+    var firstLine = gridWindow.querySelector('.GridLine');
+    if (!firstLine) return null;
+    var text = (firstLine.textContent || '').trim();
+    text = text.replace(/\s{2,}.*$/, '').trim();
+    return text || null;
+  }
+
+  function onRoomChange(roomName) {
+    if (roomName === currentRoom) return;
+    currentRoom = roomName;
+    var zone = ROOM_ZONES[roomName];
+    if (!zone) return;
+    currentZone = zone;
+    console.log('[seasons] ' + roomName + ' \u2192 ' + zone);
+    applyPalette(zone);
+    seasonFx.switchTo(zone);
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  SEASONAL PARTICLE EFFECTS
+  // ══════════════════════════════════════════════════════════════
+
+  var seasonFx = {
+    container: null,
+    current: null,
+
+    init: function() {
+      this.container = document.createElement('div');
+      this.container.id = 'season-fx';
+      this.container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden;opacity:1;transition:opacity 1s ease;';
+      document.body.appendChild(this.container);
+    },
+
+    switchTo: function(season) {
+      if (season === this.current) return;
+      var self = this;
+      var wasNull = (this.current === null);
+      this.current = season;
+
+      // Swap body class for CSS-driven effects (vignette, text glow)
+      document.body.className = document.body.className.replace(/\bseason-\w+/g, '').trim();
+      document.body.classList.add('season-' + season);
+
+      if (wasNull) {
+        // First load — instant, no crossfade
+        this.clear();
+        this.create(season);
+        return;
+      }
+
+      // Crossfade: fade out old particles, swap, fade in new
+      this.container.style.opacity = '0';
+      setTimeout(function() {
+        self.clear();
+        self.create(season);
+        self.container.style.opacity = '1';
+      }, 1000);
+    },
+
+    clear: function() {
+      this.container.innerHTML = '';
+    },
+
+    create: function(season) {
+      switch (season) {
+        case 'winter': this.createSnow(); break;
+        case 'spring': this.createBuds(); break;
+        case 'summer': this.createRays(); break;
+        case 'fall':   this.createLeaves(); break;
+      }
+    },
+
+    // ── WINTER: Falling snow ──────────────────────────────────
+
+    createSnow: function() {
+      var frag = document.createDocumentFragment();
+      for (var i = 0; i < 55; i++) {
+        var size = 2 + Math.random() * 2.5;
+        var x = Math.random() * 100;
+        var dur = 8 + Math.random() * 10;
+        var swayDur = 3 + Math.random() * 4;
+        var swayAmt = 8 + Math.random() * 20;
+        var delay = Math.random() * -18;  // negative = start mid-cycle
+        var opacity = 0.15 + Math.random() * 0.3;
+
+        var flake = document.createElement('div');
+        flake.style.cssText =
+          'position:absolute;border-radius:50%;' +
+          'width:' + size + 'px;height:' + size + 'px;' +
+          'background:rgba(200,215,235,' + opacity + ');' +
+          'box-shadow:0 0 ' + (size + 2) + 'px rgba(180,200,230,' + (opacity * 0.4) + ');' +
+          'left:' + x + '%;top:-10px;' +
+          '--sf-o:' + opacity + ';' +
+          '--ss-amt:' + swayAmt + 'px;' +
+          'animation:snowfall ' + dur + 's linear ' + delay + 's infinite,' +
+          'snowSway ' + swayDur + 's ease-in-out ' + delay + 's infinite;';
+        frag.appendChild(flake);
+      }
+      this.container.appendChild(frag);
+    },
+
+    // ── SPRING: Blooming buds + drifting petals ──────────────
+
+    createBuds: function() {
+      var frag = document.createDocumentFragment();
+      var positions = [];
+
+      // Top edge
+      for (var i = 0; i < 8; i++)
+        positions.push({ x: 6 + i * 12 + Math.random() * 5, y: 1 + Math.random() * 2 });
+      // Bottom edge
+      for (var i = 0; i < 8; i++)
+        positions.push({ x: 6 + i * 12 + Math.random() * 5, y: 96 + Math.random() * 2 });
+      // Left edge
+      for (var i = 0; i < 5; i++)
+        positions.push({ x: 0.5 + Math.random() * 1.5, y: 12 + i * 18 + Math.random() * 6 });
+      // Right edge
+      for (var i = 0; i < 5; i++)
+        positions.push({ x: 97.5 + Math.random() * 1.5, y: 12 + i * 18 + Math.random() * 6 });
+
+      for (var i = 0; i < positions.length; i++) {
+        var p = positions[i];
+        var size = 4 + Math.random() * 5;
+        var delay = Math.random() * 6;
+        var dur = 4 + Math.random() * 4;
+
+        var bud = document.createElement('div');
+        bud.style.cssText =
+          'position:absolute;border-radius:50% 50% 50% 0;' +
+          'width:' + size + 'px;height:' + (size * 1.3) + 'px;' +
+          'background-color:#406840;' +
+          'left:' + p.x + '%;top:' + p.y + '%;' +
+          'transform-origin:center bottom;' +
+          'animation:budBloom ' + dur + 's ease-in-out ' + delay + 's infinite alternate;';
+        frag.appendChild(bud);
+
+        // Small stem below each bud
+        var stem = document.createElement('div');
+        stem.style.cssText =
+          'position:absolute;' +
+          'width:1px;height:' + (size * 0.8) + 'px;' +
+          'background:rgba(80,120,60,0.3);' +
+          'left:calc(' + p.x + '% + ' + (size / 2) + 'px);' +
+          'top:calc(' + p.y + '% + ' + (size * 1.2) + 'px);';
+        frag.appendChild(stem);
+      }
+
+      // Drifting cherry blossom petals
+      for (var i = 0; i < 15; i++) {
+        var px = Math.random() * 100;
+        var pSize = 3 + Math.random() * 3;
+        var pDur = 12 + Math.random() * 10;
+        var pDelay = Math.random() * -20;
+        var driftX = (Math.random() - 0.5) * 80;
+        var driftY = 70 + Math.random() * 30;
+        var rot = 120 + Math.random() * 240;
+        var colors = ['rgba(220,160,180,0.4)','rgba(240,190,200,0.35)','rgba(200,140,160,0.3)','rgba(255,210,220,0.3)'];
+        var color = colors[Math.floor(Math.random() * colors.length)];
+
+        var petal = document.createElement('div');
+        petal.style.cssText =
+          'position:absolute;' +
+          'width:' + pSize + 'px;height:' + (pSize * 0.7) + 'px;' +
+          'background:' + color + ';' +
+          'border-radius:50%;' +
+          'left:' + px + '%;top:-5px;' +
+          '--pf-x:' + driftX + 'px;' +
+          '--pf-y:' + driftY + 'vh;' +
+          '--pf-rot:' + rot + 'deg;' +
+          'animation:petalFloat ' + pDur + 's linear ' + pDelay + 's infinite;';
+        frag.appendChild(petal);
+      }
+
+      this.container.appendChild(frag);
+    },
+
+    // ── SUMMER: God rays + glow + dust motes + shimmer ───────
+
+    createRays: function() {
+      var frag = document.createDocumentFragment();
+
+      // Conic god rays — emanating from upper right
+      var rays = document.createElement('div');
+      rays.style.cssText =
+        'position:absolute;' +
+        'top:-80%;right:-80%;' +
+        'width:260%;height:260%;' +
+        'background:conic-gradient(' +
+          'from 0deg at 50% 50%,' +
+          'transparent 0deg,' +
+          'rgba(232,192,64,0.04) 5deg,' +
+          'transparent 12deg,' +
+          'transparent 40deg,' +
+          'rgba(232,192,64,0.035) 45deg,' +
+          'transparent 52deg,' +
+          'transparent 80deg,' +
+          'rgba(232,192,64,0.05) 85deg,' +
+          'transparent 92deg,' +
+          'transparent 120deg,' +
+          'rgba(232,192,64,0.03) 125deg,' +
+          'transparent 132deg,' +
+          'transparent 160deg,' +
+          'rgba(232,192,64,0.04) 165deg,' +
+          'transparent 172deg,' +
+          'transparent 200deg,' +
+          'rgba(232,192,64,0.045) 205deg,' +
+          'transparent 212deg,' +
+          'transparent 240deg,' +
+          'rgba(232,192,64,0.035) 245deg,' +
+          'transparent 252deg,' +
+          'transparent 280deg,' +
+          'rgba(232,192,64,0.04) 285deg,' +
+          'transparent 292deg,' +
+          'transparent 320deg,' +
+          'rgba(232,192,64,0.03) 325deg,' +
+          'transparent 332deg,' +
+          'transparent 360deg' +
+        ');' +
+        'animation:rayRotate 55s linear infinite;';
+      frag.appendChild(rays);
+
+      // Warm radial glow at source
+      var glow = document.createElement('div');
+      glow.style.cssText =
+        'position:absolute;' +
+        'top:-15%;right:-15%;' +
+        'width:55%;height:55%;' +
+        'background:radial-gradient(ellipse at center, rgba(232,192,64,0.12) 0%, rgba(220,180,60,0.05) 40%, transparent 70%);' +
+        'animation:glowPulse 5s ease-in-out infinite;';
+      frag.appendChild(glow);
+
+      // Shimmer sweep — diagonal light band crossing the screen
+      var shimmerWrap = document.createElement('div');
+      shimmerWrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
+      var shimmerBand = document.createElement('div');
+      shimmerBand.style.cssText =
+        'position:absolute;' +
+        'top:-20%;width:25%;height:140%;' +
+        'background:linear-gradient(' +
+          '105deg,' +
+          'transparent 0%,' +
+          'rgba(255,240,200,0.03) 30%,' +
+          'rgba(255,245,210,0.07) 48%,' +
+          'rgba(255,240,200,0.03) 66%,' +
+          'transparent 100%' +
+        ');' +
+        'animation:shimmerSweep 9s ease-in-out infinite;';
+      shimmerWrap.appendChild(shimmerBand);
+      frag.appendChild(shimmerWrap);
+
+      // Floating dust motes
+      for (var i = 0; i < 18; i++) {
+        var mx = 10 + Math.random() * 80;
+        var my = 10 + Math.random() * 80;
+        var mSize = 2 + Math.random() * 2.5;
+        var mDur = 8 + Math.random() * 8;
+        var mDelay = Math.random() * -15;
+        var mdx = (Math.random() - 0.5) * 60;
+        var mdy = -20 - Math.random() * 40;
+        var mOpacity = 0.2 + Math.random() * 0.25;
+
+        var mote = document.createElement('div');
+        mote.style.cssText =
+          'position:absolute;border-radius:50%;' +
+          'width:' + mSize + 'px;height:' + mSize + 'px;' +
+          'background:rgba(240,210,120,' + mOpacity + ');' +
+          'box-shadow:0 0 ' + (mSize + 3) + 'px rgba(232,192,64,' + (mOpacity * 0.5) + ');' +
+          'left:' + mx + '%;top:' + my + '%;' +
+          '--mote-o:' + mOpacity + ';' +
+          '--mote-dx:' + mdx + 'px;' +
+          '--mote-dy:' + mdy + 'px;' +
+          'animation:moteDrift ' + mDur + 's ease-in-out ' + mDelay + 's infinite;';
+        frag.appendChild(mote);
+      }
+
+      this.container.appendChild(frag);
+    },
+
+    // ── FALL: Tumbling leaves ─────────────────────────────────
+
+    createLeaves: function() {
+      var frag = document.createDocumentFragment();
+      var leafColors = [
+        '#c87830', '#d04828', '#d8a030', '#b86020',
+        '#c06028', '#d89028', '#a85818', '#cc7030'
+      ];
+
+      for (var i = 0; i < 35; i++) {
+        var x = Math.random() * 100;
+        var w = 7 + Math.random() * 7;
+        var h = w * (0.5 + Math.random() * 0.2);
+        var fallDur = 10 + Math.random() * 12;
+        var tumbleDur = 2 + Math.random() * 4;
+        var delay = Math.random() * -20;
+        var drift = 15 + Math.random() * 35;
+        var spin = 360 + Math.random() * 720;
+        var flip = 360 + Math.random() * 540;
+        var opacity = 0.2 + Math.random() * 0.3;
+        var color = leafColors[Math.floor(Math.random() * leafColors.length)];
+
+        // Outer: fall trajectory + sway
+        var outer = document.createElement('div');
+        outer.style.cssText =
+          'position:absolute;' +
+          'left:' + x + '%;top:-20px;' +
+          '--lf-drift:' + drift + 'px;' +
+          '--lf-o:' + opacity + ';' +
+          'animation:leafFall ' + fallDur + 's linear ' + delay + 's infinite;';
+
+        // Inner: tumble rotation
+        var inner = document.createElement('div');
+        inner.style.cssText =
+          'width:' + w + 'px;height:' + h + 'px;' +
+          'background:' + color + ';' +
+          'border-radius:1px 50%;' +
+          'opacity:' + opacity + ';' +
+          '--lf-spin:' + spin + 'deg;' +
+          '--lf-flip:' + flip + 'deg;' +
+          'animation:leafTumble ' + tumbleDur + 's linear ' + delay + 's infinite;';
+
+        outer.appendChild(inner);
+        frag.appendChild(outer);
+      }
+
+      this.container.appendChild(frag);
+    }
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  //  GRID OBSERVER — room detection from status bar
+  // ══════════════════════════════════════════════════════════════
+
+  function attachGridObserver(grid) {
+    var observer = new MutationObserver(function() {
+      var firstLine = grid.querySelector('.GridLine');
+      if (!firstLine) return;
+      var text = (firstLine.textContent || '').trim().replace(/\s{2,}.*$/, '').trim();
+      if (text) onRoomChange(text);
+    });
+    observer.observe(grid, { childList: true, characterData: true, subtree: true });
+    var firstLine = grid.querySelector('.GridLine');
+    if (firstLine) {
+      var text = (firstLine.textContent || '').trim().replace(/\s{2,}.*$/, '').trim();
+      if (text) onRoomChange(text);
+    }
+  }
+
+  function init() {
+    seasonFx.init();
+    var grid = document.querySelector('.GridWindow');
+    if (grid) { attachGridObserver(grid); return; }
+    var poll = setInterval(function() {
+      grid = document.querySelector('.GridWindow');
+      if (grid) { clearInterval(poll); attachGridObserver(grid); }
+    }, 500);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
