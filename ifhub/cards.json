@@ -167,5 +167,14 @@
     "description": "A branching adventure of a farmer inheriting her grandfather's magical farm in Stardew Valley. Built with Ink.",
     "playUrl": "/ink-story/play.html",
     "landingUrl": "/ink-story/"
+  },
+  {
+    "id": "lostinnewyork",
+    "base": "lostinnewyork",
+    "title": "Lost in New York",
+    "meta": "An Ink Story",
+    "description": "You're standing on the corner of Broadway and Canal with a dead phone and the world's worst directions. Your friends are somewhere in downtown Manhattan. Find them.",
+    "playUrl": "/lostinnewyork/play.html",
+    "landingUrl": "/lostinnewyork/"
   }
 ]

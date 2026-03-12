@@ -202,5 +202,15 @@
     "landingUrl": "/ink-story/",
     "sourceBrowser": true,
     "sourceUrl": "/ink-story/source.html"
+  },
+  {
+    "id": "lostinnewyork",
+    "title": "Lost in New York",
+    "sourceLabel": "lostinnewyork.ink",
+    "playUrl": "/lostinnewyork/play.html",
+    "walkthroughUrl": "/lostinnewyork/walkthrough.html",
+    "landingUrl": "/lostinnewyork/",
+    "sourceBrowser": true,
+    "sourceUrl": "/lostinnewyork/source.html"
   }
 ]
