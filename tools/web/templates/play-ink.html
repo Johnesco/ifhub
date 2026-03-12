@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>__TITLE__</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0908;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.7;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 620px;
+  width: 100%;
+  padding: 40px 20px 80px;
+}
+
+h1 {
+  color: #e8d090;
+  font-size: 1.4em;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1e1a14;
+}
+
+#story p {
+  margin-bottom: 0.8em;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+#story .choice-echo {
+  color: #aa9966;
+  font-style: italic;
+}
+
+#choices {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #1e1a14;
+}
+
+.choice {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: #e8d090;
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 1em;
+  padding: 6px 0;
+  cursor: pointer;
+  transition: color 0.1s;
+}
+
+.choice:hover {
+  color: #ffe8a0;
+}
+
+#end {
+  color: #665a40;
+  font-style: italic;
+  margin-top: 20px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>__TITLE__</h1>
+  <div id="story"></div>
+  <div id="choices"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/inkjs@2.2.2/dist/ink.min.js"></script>
+<script>
+var storyContent = __STORY_DATA__;
+var story = new inkjs.Story(storyContent);
+var storyEl = document.getElementById('story');
+var choicesEl = document.getElementById('choices');
+
+function continueStory() {
+  while (story.canContinue) {
+    var text = story.Continue().trim();
+    if (text) {
+      var p = document.createElement('p');
+      p.innerHTML = text;
+      storyEl.appendChild(p);
+    }
+  }
+
+  choicesEl.innerHTML = '';
+
+  if (story.currentChoices.length > 0) {
+    story.currentChoices.forEach(function(choice, i) {
+      var btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.textContent = (i + 1) + '. ' + choice.text;
+      btn.onclick = function() {
+        var echo = document.createElement('p');
+        echo.className = 'choice-echo';
+        echo.textContent = '> ' + choice.text;
+        storyEl.appendChild(echo);
+
+        choicesEl.innerHTML = '';
+        story.ChooseChoiceIndex(i);
+        continueStory();
+      };
+      choicesEl.appendChild(btn);
+    });
+  } else {
+    var end = document.createElement('p');
+    end.id = 'end';
+    end.textContent = '\u2014 End \u2014';
+    storyEl.appendChild(end);
+  }
+
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+continueStory();
+</script>
+</body>
+</html>
