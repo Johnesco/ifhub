@@ -73,7 +73,18 @@
       "Bash(find:*)",
       "Bash(file:*)",
       "Bash(tools/interpreters/glulxe.exe:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(for d:*)",
+      "Read(//c/code/ifhub/**)",
+      "Bash(where inklecate:*)",
+      "Bash(where inky:*)",
+      "Read(//c/Program Files/Inky/**)",
+      "Bash(npm list:*)",
+      "Bash(\"C:/Program Files/Inky/resources/app.asar.unpacked/main-process/ink/inkjs-compatible/inklecate_win.exe\" 2>&1 | head -5)",
+      "Bash(echo \"Hello\" > projects/ink-story/test.ink && curl -s http://127.0.0.1:5000/api/projects | python -c \"import json,sys; [print\\(json.dumps\\(p, indent=2\\)\\) for p in json.load\\(sys.stdin\\) if p['name'] == 'ink-story']\" && rm projects/ink-story/test.ink)",
+      "Bash(for pid:*)",
+      "Bash(node -e 'const fs=require\\(\"fs\"\\);const html=fs.readFileSync\\(\"projects/ink-story/source.html\",\"utf8\"\\);const m=html.match\\(/<script>\\([\\\\s\\\\S]*?\\)<\\\\/script>/\\);if\\(!m\\){console.log\\(\"no script\"\\);process.exit\\(1\\);}try{new Function\\(m[1]\\);console.log\\(\"JS syntax OK\"\\)}catch\\(e\\){console.log\\(\"SYNTAX ERROR:\",e.message\\);process.exit\\(1\\)}')",
+      "Bash(node tools/check_syntax.js && rm tools/check_syntax.js)"
     ]
   }
 }
