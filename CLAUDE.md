@@ -65,10 +65,17 @@ C:\code\ifhub\
 │   ├── archive/bash/      ← Archived original bash scripts (reference only)
 │   └── web/               ← Web player setup
 │       ├── setup_web.py        ← Bootstrap a Parchment web player for any project
+│       ├── setup_basic.py      ← Bootstrap a BASIC web player (wwwbasic, qbjc, applesoft, jsdos)
 │       ├── generate_pages.py   ← Generate index.html + source.html from templates
 │       ├── play-template.html  ← HTML template (__TITLE__, __STORY_FILE__ placeholders)
 │       ├── landing-template.html ← Landing page template (ifhub:* meta tags + __PLACEHOLDER__ values)
 │       ├── source-template.html  ← Source browser template (syntax-highlighted viewer)
+│       ├── templates/          ← Play template library (one per engine)
+│       │   ├── play-parchment.html  ← Inform 7 / Z-machine (Parchment)
+│       │   ├── play-wwwbasic.html   ← GW-BASIC (Google wwwBASIC)
+│       │   ├── play-qbjc.html       ← QBasic/GW-BASIC (qbjc + xterm.js)
+│       │   ├── play-applesoft.html  ← Apple II (jsbasic)
+│       │   └── play-jsdos.html      ← DOS (js-dos / DOSBox)
 │       └── parchment/          ← Shared Parchment 2025.1 library (copy, don't symlink)
 │           ├── jquery.min.js   ← jQuery
 │           ├── main.js         ← Parchment game loader
@@ -277,18 +284,18 @@ Use the setup script:
 python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --ulx /path/to/game.ulx \
-    --out /path/to/project/web
+    --out /path/to/project
 
 # With native blorb sound:
 python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --blorb /path/to/game.gblorb \
-    --out /path/to/project/web
+    --out /path/to/project
 ```
 
 This creates:
 ```
-project/web/
+project/
 ├── play.html                  ← Ready-to-serve player page
 └── lib/parchment/
     ├── jquery.min.js          ← jQuery
@@ -351,6 +358,66 @@ Each game's `play.html` layers custom CSS on top of Parchment's base styles. Thr
 ### Troubleshooting
 
 For Parchment errors ("Error loading story 200", "Error loading engine: 404"), sound gotchas, `.ulx.js` format issues, and MutationObserver quirks, see `reference/parchment-troubleshooting.md`.
+
+## Multi-Engine BASIC Support (`tools/web/setup_basic.py`)
+
+The hub is engine-agnostic — any game that can produce a self-contained `play.html` works in the iframe player. A template library at `tools/web/templates/` provides ready-made player pages for multiple engines:
+
+| Template | Engine | Dialect | Status |
+|---|---|---|---|
+| `play-parchment.html` | Parchment 2025.1 | Inform 7 / Z-machine | Production |
+| `play-wwwbasic.html` | Google wwwBASIC | GW-BASIC (INPUT-based only) | Production |
+| `play-qbjc.html` | qbjc + xterm.js | QBasic + GW-BASIC (GOTO, INKEY$) | Template ready |
+| `play-applesoft.html` | jsbasic | Apple II Applesoft BASIC | Template ready |
+| `play-jsdos.html` | js-dos (DOSBox) | Any DOS program | Template ready |
+
+### Adding a BASIC Game
+
+```bash
+# GW-BASIC via wwwBASIC (embed .bas source inline):
+python /c/code/ifhub/tools/web/setup_basic.py \
+    --engine wwwbasic --title "My Game" \
+    --source path/to/game.bas --out path/to/project
+
+# QBasic via qbjc (pre-compile .bas -> .js first):
+# Step 1: npm install -g qbjc && qbjc game.bas -o game.js
+# Step 2:
+python /c/code/ifhub/tools/web/setup_basic.py \
+    --engine qbjc --title "My Game" \
+    --compiled path/to/game.js --out path/to/project
+
+# DOS via js-dos (create .jsdos bundle first):
+python /c/code/ifhub/tools/web/setup_basic.py \
+    --engine jsdos --title "My Game" \
+    --bundle path/to/game.jsdos --out path/to/project
+```
+
+Options: `--version-label "v0 — Original BASIC"`, `--back-href "./"`, `--force`.
+
+After generating `play.html`, register and publish like any other game:
+```bash
+python tools/register_game.py --name <id> --title "Game Title"
+python tools/publish.py <id>
+python tools/push_hub.py <id>
+```
+
+### Engine Selection Guide
+
+| If the game... | Use engine | Why |
+|---|---|---|
+| Uses INPUT/LINE INPUT only | `wwwbasic` | Simplest, already proven (dracula v0) |
+| Uses INKEY$, SCREEN, or structured QBasic | `qbjc` | Compiles to JS, handles real-time I/O |
+| Is Apple II Applesoft BASIC | `applesoft` | Authentic green-screen look |
+| Won't run in any JS interpreter | `jsdos` | Runs real DOS + real BASIC interpreter |
+| Is Inform 7 / Z-machine | `parchment` | Use `setup_web.py` (not `setup_basic.py`) |
+
+### Other Formats (No Engine Needed)
+
+Games in these formats are already self-contained HTML — just create `play.html` manually and register:
+- **Twine** — Export as single HTML file
+- **Ink/Inkle** — ink.js runtime + JSON story
+- **ChoiceScript** — Build to HTML
+- **Custom JS / static HTML fiction** — Already browser-native
 
 ## New Game Publish Flow
 

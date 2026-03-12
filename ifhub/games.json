@@ -195,8 +195,8 @@
   },
   {
     "id": "ink-story",
-    "title": "Ink Story",
-    "sourceLabel": "ink-story.ni",
+    "title": "Farmer's Heart",
+    "sourceLabel": "farmers_heart.ink",
     "playUrl": "/ink-story/play.html",
     "walkthroughUrl": "/ink-story/walkthrough.html",
     "landingUrl": "/ink-story/",

@@ -162,9 +162,9 @@
   {
     "id": "ink-story",
     "base": "ink-story",
-    "title": "Ink Story",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "title": "Farmer's Heart",
+    "meta": "An Ink Story",
+    "description": "A branching adventure of a farmer inheriting her grandfather's magical farm in Stardew Valley. Built with Ink.",
     "playUrl": "/ink-story/play.html",
     "landingUrl": "/ink-story/"
   }
