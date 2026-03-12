@@ -137,7 +137,10 @@ def main():
                   [ -d lib ] && cp -r lib _site/ || true
                   cp *.html _site/ 2>/dev/null || true
                   cp *.txt _site/ 2>/dev/null || true
-                  cp story.ni _site/ 2>/dev/null || true
+                  cp *.ni _site/ 2>/dev/null || true
+                  cp *.ink _site/ 2>/dev/null || true
+                  cp *.json _site/ 2>/dev/null || true
+                  cp *.bas _site/ 2>/dev/null || true
               - uses: actions/upload-pages-artifact@v3
                 with:
                   path: _site

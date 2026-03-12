@@ -51,13 +51,32 @@ jobs:
           [ -d lib ] && cp -r lib _site/ || true
           cp *.html _site/ 2>/dev/null || true
           cp *.txt _site/ 2>/dev/null || true
-          cp story.ni _site/ 2>/dev/null || true
+          cp *.ni _site/ 2>/dev/null || true
+          cp *.ink _site/ 2>/dev/null || true
+          cp *.json _site/ 2>/dev/null || true
+          cp *.bas _site/ 2>/dev/null || true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
 """
+
+
+def ensure_workflow(project_dir: Path):
+    """Add or update deploy-pages.yml. Returns True if a file was created/changed."""
+    workflow_dir = project_dir / ".github" / "workflows"
+    workflow_file = workflow_dir / "deploy-pages.yml"
+    if workflow_file.exists():
+        if workflow_file.read_text(encoding="utf-8") == WORKFLOW_CONTENT:
+            return False
+        print("  Updating deploy-pages.yml workflow...")
+    else:
+        print("  Adding deploy-pages.yml workflow...")
+    workflow_dir.mkdir(parents=True, exist_ok=True)
+    workflow_file.write_text(WORKFLOW_CONTENT, encoding="utf-8")
+    git.add([str(workflow_file)], cwd=project_dir)
+    return True
 
 
 def main():
@@ -84,6 +103,8 @@ def main():
         print("  Creating GitHub repo...")
         git.gh_repo_create(args.game, f"{args.game} -- An Inform 7 Game", cwd=project_dir)
 
+        ensure_workflow(project_dir)
+
         print("  Adding all files...")
         git.add_all(cwd=project_dir)
         git.commit(
@@ -93,17 +114,6 @@ def main():
 
         print("  Pushing to GitHub...")
         git.push(cwd=project_dir, set_upstream="main")
-
-        # Ensure workflow file exists
-        workflow_dir = project_dir / ".github" / "workflows"
-        workflow_file = workflow_dir / "deploy-pages.yml"
-        if not workflow_file.exists():
-            print("  Adding deploy-pages.yml workflow...")
-            workflow_dir.mkdir(parents=True, exist_ok=True)
-            workflow_file.write_text(WORKFLOW_CONTENT, encoding="utf-8")
-            git.add([str(workflow_file)], cwd=project_dir)
-            # Amend the initial commit to include the workflow
-            process.run(["git", "commit", "--amend", "--no-edit"], cwd=project_dir)
 
         print("  Enabling GitHub Pages (workflow deployment)...")
         git.gh_enable_pages(args.game)
@@ -116,6 +126,7 @@ def main():
     else:
         # --- Subsequent publishes ---
         print(f"=== Publishing {args.game} ===")
+        ensure_workflow(project_dir)
         git.add_all(cwd=project_dir)
 
         if not git.diff_cached_quiet(cwd=project_dir):
