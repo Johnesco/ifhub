@@ -174,7 +174,7 @@
   {
     "id": "cia-adventure",
     "title": "C.I.A. Adventure",
-    "sourceLabel": "cia-adventure.ni",
+    "sourceLabel": "CIA.BAS",
     "playUrl": "/cia-adventure/play.html",
     "walkthroughUrl": "/cia-adventure/walkthrough.html",
     "landingUrl": "/cia-adventure/",
@@ -210,7 +210,7 @@
   {
     "id": "magic-realm",
     "title": "Magic Realm",
-    "sourceLabel": "magic-realm.ni",
+    "sourceLabel": "MAGIC.BAS",
     "playUrl": "/magic-realm/play.html",
     "walkthroughUrl": "/magic-realm/walkthrough.html",
     "landingUrl": "/magic-realm/",
