@@ -198,7 +198,7 @@
   {
     "id": "apple-adventure",
     "title": "Apple Adventure",
-    "sourceLabel": "apple-adventure.ni",
+    "sourceLabel": "ADVENTURE.BAS",
     "playUrl": "/apple-adventure/play.html",
     "walkthroughUrl": "/apple-adventure/walkthrough.html",
     "landingUrl": "/apple-adventure/",
