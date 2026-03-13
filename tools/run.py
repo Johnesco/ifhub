@@ -10,12 +10,12 @@ Usage:
 Requires: pip install InquirerPy
 """
 
-import glob
 import os
 import re
 import subprocess
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Dependency check
@@ -38,6 +38,9 @@ except ImportError:
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 I7_ROOT = os.path.dirname(SCRIPT_DIR)
 PROJECTS_DIR = os.path.join(I7_ROOT, "projects")
+
+sys.path.insert(0, SCRIPT_DIR)
+from lib import config  # noqa: E402
 IFHUB_DIR = os.path.join(I7_ROOT, "ifhub")
 PIPELINE_PY = os.path.join(SCRIPT_DIR, "pipeline.py")
 PUBLISH_PY = os.path.join(SCRIPT_DIR, "publish.py")
@@ -91,6 +94,8 @@ def prompt_or_cancel(prompt_fn):
 class ProjectInfo:
     name: str
     dir: str
+    engine: str = "unknown"
+    source_file: str = ""
     sound: bool = False
     hub_id: str = ""
     tests: str = ""
@@ -104,37 +109,6 @@ class ProjectInfo:
 # ---------------------------------------------------------------------------
 
 
-def parse_pipeline_fields(conf_path: str) -> dict:
-    """Extract PIPELINE_* fields from a project.conf file."""
-    fields = {}
-    try:
-        with open(conf_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                m = re.match(r'^(PIPELINE_\w+)=["\']?(.*?)["\']?\s*$', line)
-                if m:
-                    fields[m.group(1)] = m.group(2)
-    except OSError:
-        pass
-    return fields
-
-
-def get_golden_seed(project_dir: str) -> str | None:
-    """Read the first glulxe seed from tests/seeds.conf."""
-    seeds_path = os.path.join(project_dir, "tests", "seeds.conf")
-    try:
-        with open(seeds_path, "r", encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("glulxe:"):
-                    parts = line.split(":")
-                    if len(parts) >= 2:
-                        return parts[1]
-    except OSError:
-        pass
-    return None
-
-
 def load_projects() -> list[ProjectInfo]:
     """Scan projects/ and return a list of ProjectInfo objects."""
     projects = []
@@ -142,11 +116,21 @@ def load_projects() -> list[ProjectInfo]:
         project_dir = os.path.join(PROJECTS_DIR, name)
         if not os.path.isdir(project_dir):
             continue
-        if not os.path.isfile(os.path.join(project_dir, "story.ni")):
+
+        # Detect engine and source file
+        conf_fields = config.parse_conf_fields(project_dir)
+        engine = config.detect_engine(project_dir, conf_fields)
+        source_file = config.detect_source_file(project_dir, engine, conf_fields)
+        engine_spec = config.get_engine_spec(engine)
+
+        # Skip truly empty directories (no source and no play.html)
+        has_play = os.path.isfile(os.path.join(project_dir, "play.html"))
+        if not source_file and not has_play:
             continue
 
-        conf_path = os.path.join(project_dir, "tests", "project.conf")
-        fields = parse_pipeline_fields(conf_path)
+        fields = config.parse_pipeline_fields(
+            os.path.join(project_dir, "tests", "project.conf")
+        )
 
         # Infer capabilities
         sound = fields.get("PIPELINE_SOUND", "").lower() == "true"
@@ -160,20 +144,28 @@ def load_projects() -> list[ProjectInfo]:
         has_walkthrough = os.path.isfile(
             os.path.join(project_dir, "tests", "inform7", "walkthrough.txt")
         )
-        has_regtest = bool(glob.glob(
-            os.path.join(project_dir, "tests", "*.regtest")
-        ))
+        has_regtest = bool(
+            list(Path(project_dir, "tests").glob("*.regtest"))
+            if Path(project_dir, "tests").is_dir() else []
+        )
+
+        # Only look up golden seed for engines with CLI tests
+        golden_seed = None
+        if engine_spec and engine_spec.has_cli_tests:
+            golden_seed = config.get_golden_seed(project_dir)
 
         projects.append(
             ProjectInfo(
                 name=name,
                 dir=project_dir,
+                engine=engine,
+                source_file=source_file,
                 sound=sound,
                 hub_id=hub_id,
                 tests=tests,
                 has_walkthrough=has_walkthrough,
                 has_regtest=has_regtest,
-                golden_seed=get_golden_seed(project_dir),
+                golden_seed=golden_seed,
             )
         )
     return projects
@@ -185,8 +177,12 @@ def load_projects() -> list[ProjectInfo]:
 
 
 def build_game_annotation(p: ProjectInfo) -> str:
-    """Build a tag string like '(sound, walkthrough+regtest, seed:2)'."""
+    """Build a tag string like '(Ink)' or '(sound, walkthrough+regtest, seed:2)'."""
     tags = []
+    # Show engine label for non-Inform 7 projects
+    if p.engine != "inform7":
+        spec = config.get_engine_spec(p.engine)
+        tags.append(spec.label if spec else p.engine)
     if p.sound:
         tags.append("sound")
     # Test types

@@ -102,8 +102,9 @@ C:\code\ifhub\
     ├── app.html           ← Split-pane player (game + source viewer)
     ├── play.html          ← Shared player page (standalone use)
     ├── importing.html     ← Guide for adding new games to the hub
-    ├── games.json         ← Game registry (titles, URLs, sound flags, sourceBrowser)
-    ├── cards.json         ← Card metadata for landing page
+    ├── games.json         ← Game registry (titles, URLs, engine, tags, sourceBrowser)
+    ├── cards.json         ← Card metadata for landing page (engine, tags, versions)
+    ├── hubs.json          ← Hub/collection definitions (filter by engine/tag)
     └── lib/parchment/     ← Hub's OWN Parchment copy (separate from tools/web/)
 ```
 
@@ -349,6 +350,32 @@ The hub at `ifhub/` serves games **in-place** — it iframes each game's own pla
 python tools/dev-server.py [--port 8000]
 # Maps /ifhub/* → ifhub/, /<game>/* → projects/<game>/
 # Open http://127.0.0.1:8000/ifhub/app.html
+```
+
+### Multi-Hub Collections
+
+The hub supports curated collections via query-param filtering. A game can belong to multiple collections. The default URL (no params) shows all games.
+
+**Files:**
+- `hubs.json` — Hub definitions with filter criteria (`engine` match, `tag` includes, or both for AND logic)
+- `cards.json` / `games.json` — Each entry has `engine` (string: `inform7`, `ink`, `basic`) and `tags` (string array)
+
+**How it works:**
+- `index.html` fetches `cards.json` + `hubs.json`, parses `?hub=X`, renders a hub bar, filters cards
+- `app.html` fetches `games.json` + `hubs.json`, filters the dropdown when `?hub=X` is present
+- Hub links are `<a href="?hub=X">` — statically shareable URLs
+- Play buttons pass `&hub=X` to `app.html` to maintain the filtered context
+
+**Adding a new hub:** Edit `hubs.json`:
+```json
+{ "id": "my-hub", "title": "My Collection", "description": "Description.", "filter": { "tag": "my-tag" } }
+```
+
+**Adding a game to a hub:** Add the matching `engine` or tag to the game's entry in `cards.json` and `games.json`.
+
+**Registration with engine/tags:**
+```bash
+python tools/register_game.py --name game-id --title "Title" --engine ink --tags "horror,classic"
 ```
 
 ### CSS Overlay Theming

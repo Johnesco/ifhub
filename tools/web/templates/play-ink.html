@@ -42,11 +42,6 @@ h1 {
   to { opacity: 1; }
 }
 
-#story .choice-echo {
-  color: #aa9966;
-  font-style: italic;
-}
-
 #choices {
   margin-top: 16px;
   padding-top: 12px;
@@ -111,11 +106,6 @@ function continueStory() {
       btn.className = 'choice';
       btn.textContent = (i + 1) + '. ' + choice.text;
       btn.onclick = function() {
-        var echo = document.createElement('p');
-        echo.className = 'choice-echo';
-        echo.textContent = '> ' + choice.text;
-        storyEl.appendChild(echo);
-
         choicesEl.innerHTML = '';
         story.ChooseChoiceIndex(i);
         continueStory();

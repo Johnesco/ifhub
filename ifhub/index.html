@@ -61,6 +61,34 @@ a:hover {
   border-bottom-color: #aa9966;
 }
 
+.hub-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.hub-bar a {
+  padding: 4px 14px;
+  font-size: 0.88em;
+  border: 1px solid #2a2418;
+  border-radius: 16px;
+  color: #aa9966;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.hub-bar a:hover {
+  background: #1a1610;
+  color: #e8d090;
+  border-color: #5a4a30;
+}
+
+.hub-bar a.active {
+  background: #e8d090;
+  color: #0a0a0a;
+  border-color: #e8d090;
+}
+
 .game-card {
   margin-bottom: 28px;
   padding: 20px 24px;
@@ -196,8 +224,8 @@ footer a {
 </head>
 <body>
 
-<h1>IF Hub</h1>
-<p class="subtitle">An Interactive Fiction Player &amp; Source Browser</p>
+<h1 id="hub-title">IF Hub</h1>
+<p class="subtitle" id="hub-subtitle">An Interactive Fiction Player &amp; Source Browser</p>
 
 <p>
   IF Hub plays text adventures in the browser. Pick a game, play it online, and
@@ -207,67 +235,113 @@ footer a {
 
 <h2>Games</h2>
 
+<div id="hub-bar" class="hub-bar"></div>
 <div id="games"></div>
 
 <script>
-fetch('cards.json')
-  .then(r => r.json())
-  .then(cards => {
-    const container = document.getElementById('games');
+Promise.all([
+  fetch('cards.json').then(function(r) { return r.json(); }),
+  fetch('hubs.json').then(function(r) { return r.json(); })
+]).then(function(results) {
+  var cards = results[0];
+  var hubs = results[1];
 
-    cards.forEach((card, cardIdx) => {
-      // Build options list: primary + versions
-      const options = [];
-      const soundTag = card.sound ? ' (sound)' : '';
-      const primaryLabel = card.primaryLabel || card.title;
-      options.push({ id: card.id, label: primaryLabel + soundTag, playUrl: card.playUrl });
+  var params = new URLSearchParams(window.location.search);
+  var hubParam = params.get('hub');
+  var activeHub = hubs[0]; // default: "all"
+  if (hubParam) {
+    for (var i = 0; i < hubs.length; i++) {
+      if (hubs[i].id === hubParam) { activeHub = hubs[i]; break; }
+    }
+  }
 
-      if (card.versions) {
-        card.versions.forEach(v => {
-          const vSound = v.sound ? ' (sound)' : '';
-          options.push({ id: v.id, label: v.label + vSound, playUrl: v.playUrl });
-        });
-      }
+  // Update title/subtitle when a hub filter is active
+  if (activeHub.id !== 'all') {
+    document.getElementById('hub-title').textContent = activeHub.title;
+    document.getElementById('hub-subtitle').textContent = activeHub.description;
+  }
 
-      // Build select options HTML
-      const optionsHtml = options.map(o =>
-        `<option value="${o.id}" data-play="${o.playUrl}">${o.label}</option>`
-      ).join('');
+  // Render hub bar
+  var hubBar = document.getElementById('hub-bar');
+  hubs.forEach(function(h) {
+    var a = document.createElement('a');
+    a.href = h.id === 'all' ? '.' : '?hub=' + h.id;
+    a.textContent = h.title;
+    a.className = h.id === activeHub.id ? 'active' : '';
+    hubBar.appendChild(a);
+  });
 
-      const cardHtml =
-        `<div class="game-card">
-          <h3><a href="${card.landingUrl}">${card.title}</a></h3>
-          <p class="game-meta">${card.meta}</p>
-          <p>${card.description}</p>
-          <div class="card-controls">
-            <select id="pick-${cardIdx}">${optionsHtml}</select>
-            <label><input type="checkbox" id="fs-${cardIdx}"> Fullscreen</label>
-            <button data-card="${cardIdx}">PLAY</button>
-          </div>
-          <div class="game-links">
-            <a href="/${card.base}/source.html">Source</a>
-            <a href="/${card.base}/walkthrough.html">Walkthrough</a>
-          </div>
-        </div>`;
+  // Filter cards by hub
+  function matchesHub(card, hub) {
+    if (!hub || !hub.filter) return true;
+    if (hub.filter.engine && card.engine !== hub.filter.engine) return false;
+    if (hub.filter.tag && (!card.tags || card.tags.indexOf(hub.filter.tag) === -1)) return false;
+    return true;
+  }
 
-      container.insertAdjacentHTML('beforeend', cardHtml);
+  var container = document.getElementById('games');
+  var filtered = cards.filter(function(card) { return matchesHub(card, activeHub); });
 
-      // Wire play button
-      container.querySelector(`button[data-card="${cardIdx}"]`).addEventListener('click', () => {
-        const select = document.getElementById('pick-' + cardIdx);
-        const selected = select.options[select.selectedIndex];
-        const id = selected.value;
-        const playUrl = selected.dataset.play;
-        const fullscreen = document.getElementById('fs-' + cardIdx).checked;
+  if (filtered.length === 0) {
+    container.innerHTML = '<p style="color:#605840;font-style:italic;">No games match this collection.</p>';
+    return;
+  }
 
-        if (fullscreen) {
-          window.location.href = playUrl;
-        } else {
-          window.location.href = 'app.html?game=' + id;
-        }
+  var hubQuery = activeHub.id !== 'all' ? '&hub=' + activeHub.id : '';
+
+  filtered.forEach(function(card, cardIdx) {
+    // Build options list: primary + versions
+    var options = [];
+    var soundTag = card.sound ? ' (sound)' : '';
+    var primaryLabel = card.primaryLabel || card.title;
+    options.push({ id: card.id, label: primaryLabel + soundTag, playUrl: card.playUrl });
+
+    if (card.versions) {
+      card.versions.forEach(function(v) {
+        var vSound = v.sound ? ' (sound)' : '';
+        options.push({ id: v.id, label: v.label + vSound, playUrl: v.playUrl });
       });
+    }
+
+    // Build select options HTML
+    var optionsHtml = options.map(function(o) {
+      return '<option value="' + o.id + '" data-play="' + o.playUrl + '">' + o.label + '</option>';
+    }).join('');
+
+    var cardHtml =
+      '<div class="game-card">' +
+        '<h3><a href="' + card.landingUrl + '">' + card.title + '</a></h3>' +
+        '<p class="game-meta">' + card.meta + '</p>' +
+        '<p>' + card.description + '</p>' +
+        '<div class="card-controls">' +
+          '<select id="pick-' + cardIdx + '">' + optionsHtml + '</select>' +
+          '<label><input type="checkbox" id="fs-' + cardIdx + '"> Fullscreen</label>' +
+          '<button data-card="' + cardIdx + '">PLAY</button>' +
+        '</div>' +
+        '<div class="game-links">' +
+          '<a href="/' + card.base + '/source.html">Source</a>' +
+          '<a href="/' + card.base + '/walkthrough.html">Walkthrough</a>' +
+        '</div>' +
+      '</div>';
+
+    container.insertAdjacentHTML('beforeend', cardHtml);
+
+    // Wire play button
+    container.querySelector('button[data-card="' + cardIdx + '"]').addEventListener('click', function() {
+      var select = document.getElementById('pick-' + cardIdx);
+      var selected = select.options[select.selectedIndex];
+      var id = selected.value;
+      var playUrl = selected.getAttribute('data-play');
+      var fullscreen = document.getElementById('fs-' + cardIdx).checked;
+
+      if (fullscreen) {
+        window.location.href = playUrl;
+      } else {
+        window.location.href = 'app.html?game=' + id + hubQuery;
+      }
     });
   });
+});
 </script>
 
 <h2>How It Works</h2>

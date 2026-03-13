@@ -22,7 +22,8 @@ def main():
     args = parser.parse_args()
 
     cwd = paths.I7_ROOT
-    git.add([paths.IFHUB_DIR / "games.json", paths.IFHUB_DIR / "cards.json"], cwd=cwd)
+    git.add([paths.IFHUB_DIR / "games.json", paths.IFHUB_DIR / "cards.json",
+             paths.IFHUB_DIR / "hubs.json"], cwd=cwd)
 
     if not git.diff_cached_quiet(cwd=cwd):
         print("No hub registry changes to push.")

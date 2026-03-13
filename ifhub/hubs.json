@@ -1,0 +1,9 @@
+[
+  { "id": "all", "title": "All Games", "description": "The complete IF Hub catalog.", "filter": null },
+  { "id": "inform7", "title": "Inform 7 Games", "description": "Games written in Inform 7.", "filter": { "engine": "inform7" } },
+  { "id": "ink", "title": "Ink Stories", "description": "Branching narratives built with Ink.", "filter": { "engine": "ink" } },
+  { "id": "basic", "title": "BASIC Classics", "description": "Type-in games from the 1980s BASIC era.", "filter": { "engine": "basic" } },
+  { "id": "sound", "title": "Sound-Enabled", "description": "Games with embedded audio.", "filter": { "tag": "sound" } },
+  { "id": "horror", "title": "Horror Collection", "description": "Dark adventures and haunted places.", "filter": { "tag": "horror" } },
+  { "id": "zork", "title": "Zork Series", "description": "All versions of Zork I.", "filter": { "tag": "zork" } }
+]

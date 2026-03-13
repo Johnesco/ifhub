@@ -398,6 +398,23 @@ body.resizing iframe {
   cursor: pointer;
 }
 
+/* --- Hub indicator --- */
+.hub-indicator {
+  font-size: 0.85em;
+  color: #aa9966;
+  border: 1px solid #2a2418;
+  border-bottom: 1px solid #2a2418;
+  border-radius: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+.hub-indicator:hover {
+  color: #e8d090;
+  border-color: #5a4a30;
+  border-bottom-color: #5a4a30;
+}
+
 /* --- Full Page button --- */
 .btn-fullpage {
   background: none;
@@ -442,6 +459,7 @@ body.resizing iframe {
 <div class="game-toolbar">
   <span style="color:#806050;">Load Game:</span>
   <select id="game-select"></select>
+  <a id="hub-indicator" class="hub-indicator" href="." style="display:none;"></a>
   <span class="spacer"></span>
   <span id="sound-controls" style="display:none;">
     <button id="mute-btn" title="Toggle sound">
@@ -520,21 +538,51 @@ var sourceCache = {};
    INIT
    ================================================================== */
 document.addEventListener('DOMContentLoaded', function() {
-  fetch('games.json')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      games = data;
-      games.forEach(function(g) { gameMap[g.id] = g; });
-      buildDropdown();
-      bindUI();
-      initSoundControls();
+  Promise.all([
+    fetch('games.json').then(function(r) { return r.json(); }),
+    fetch('hubs.json').then(function(r) { return r.json(); }).catch(function() { return []; })
+  ]).then(function(results) {
+    var data = results[0];
+    var hubs = results[1];
 
-      var params = new URLSearchParams(window.location.search);
-      var initGame = params.get('game') || games[0].id;
-      if (!gameMap[initGame]) initGame = games[0].id;
-      switchGame(initGame);
-      switchView('source');
-    });
+    var params = new URLSearchParams(window.location.search);
+    var hubParam = params.get('hub');
+    var activeHub = null;
+    if (hubParam) {
+      for (var i = 0; i < hubs.length; i++) {
+        if (hubs[i].id === hubParam) { activeHub = hubs[i]; break; }
+      }
+    }
+
+    // Filter games by hub
+    if (activeHub && activeHub.filter) {
+      data = data.filter(function(g) {
+        if (activeHub.filter.engine && g.engine !== activeHub.filter.engine) return false;
+        if (activeHub.filter.tag && (!g.tags || g.tags.indexOf(activeHub.filter.tag) === -1)) return false;
+        return true;
+      });
+    }
+
+    games = data;
+    games.forEach(function(g) { gameMap[g.id] = g; });
+    buildDropdown();
+    bindUI();
+    initSoundControls();
+
+    // Show hub indicator if filtering
+    if (activeHub && activeHub.id !== 'all') {
+      var indicator = document.getElementById('hub-indicator');
+      indicator.textContent = activeHub.title;
+      indicator.href = 'index.html?hub=' + activeHub.id;
+      indicator.title = 'Back to ' + activeHub.title;
+      indicator.style.display = '';
+    }
+
+    var initGame = params.get('game') || games[0].id;
+    if (!gameMap[initGame]) initGame = games[0].id;
+    switchGame(initGame);
+    switchView('source');
+  });
 });
 
 /* ==================================================================

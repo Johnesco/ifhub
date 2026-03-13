@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Unified build pipeline for Inform 7 projects.
+"""Unified build pipeline for IF Hub game projects.
 
 A thin orchestrator that calls existing scripts in order with error handling.
+Supports all engines registered in lib/config.ENGINE_REGISTRY.
 
 Usage:
     python tools/pipeline.py <game-name> [stages...] [flags]
 
 Stages (in pipeline order):
-    compile   — I7 -> I6 -> Glulx -> Blorb -> web player
-    test      — Walkthrough + regtest
+    compile   — Build game (engine-specific: I7, Ink, BASIC, etc.)
+    test      — Walkthrough + regtest (Inform 7 / Z-machine only)
     push      — Stage changes, show summary, prompt before commit/push
 
 Flags:
@@ -65,9 +66,23 @@ def resolve_bin_name(project_dir: Path, name: str) -> str:
     return name
 
 
-def find_binary(project_dir: Path, bin_name: str) -> Path | None:
-    for ext in (".gblorb", ".ulx"):
-        p = project_dir / f"{bin_name}{ext}"
+def find_binary(project_dir: Path, bin_name: str,
+                engine_spec: config.EngineSpec | None = None) -> Path | None:
+    # Check engine-specific binary extensions first
+    if engine_spec and engine_spec.binary_extensions:
+        for ext in engine_spec.binary_extensions:
+            p = project_dir / f"{bin_name}{ext}"
+            if p.exists():
+                return p
+    else:
+        # Default I7 extensions (backward compat)
+        for ext in (".gblorb", ".ulx"):
+            p = project_dir / f"{bin_name}{ext}"
+            if p.exists():
+                return p
+    # For web-only engines, play.html is the build artifact
+    if engine_spec and not engine_spec.binary_extensions:
+        p = project_dir / "play.html"
         if p.exists():
             return p
     return None
@@ -75,16 +90,62 @@ def find_binary(project_dir: Path, bin_name: str) -> Path | None:
 
 # --- Stage implementations ---
 
-def stage_compile(name: str, project_dir: Path, pipeline_sound: bool):
-    cmd = [sys.executable, str(paths.TOOLS_DIR / "compile.py"), name]
-    if pipeline_sound:
-        cmd.append("--sound")
+def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
+                  engine: str = "inform7", engine_spec: config.EngineSpec | None = None,
+                  source_file: str = "story.ni"):
+    if engine == "inform7" or not engine_spec:
+        # Original Inform 7 path
+        cmd = [sys.executable, str(paths.TOOLS_DIR / "compile.py"), name]
+        if pipeline_sound:
+            cmd.append("--sound")
+    elif engine_spec.build_tool == "setup_ink.py":
+        source_path = project_dir / source_file
+        title = name.replace("-", " ").replace("_", " ").title()
+        cmd = [
+            sys.executable, str(paths.WEB_DIR / "setup_ink.py"),
+            "--title", title,
+            "--ink", str(source_path),
+            "--out", str(project_dir),
+            "--force",
+        ]
+    elif engine_spec.build_tool == "setup_basic.py":
+        source_path = project_dir / source_file
+        title = name.replace("-", " ").replace("_", " ").title()
+        cmd = [
+            sys.executable, str(paths.WEB_DIR / "setup_basic.py"),
+            *engine_spec.build_tool_args,
+            "--title", title,
+            "--source", str(source_path),
+            "--out", str(project_dir),
+        ]
+    elif engine_spec.build_tool == "setup_web.py":
+        # Z-machine: find the binary and set up web player
+        title = name.replace("-", " ").replace("_", " ").title()
+        source_path = project_dir / source_file
+        cmd = [
+            sys.executable, str(paths.WEB_DIR / "setup_web.py"),
+            "--title", title,
+            "--ulx", str(source_path),
+            "--out", str(project_dir),
+        ]
+    elif not engine_spec.build_tool:
+        output.skip(f"No build tool for {engine_spec.label} — skipping compile")
+        return
+    else:
+        output.skip(f"Unknown build tool {engine_spec.build_tool!r} — skipping compile")
+        return
+
     r = process.run(cmd)
     if r.returncode != 0:
         raise RuntimeError(f"compile failed (exit {r.returncode})")
 
 
-def stage_test(name: str, project_dir: Path, cfg_pipeline):
+def stage_test(name: str, project_dir: Path, cfg_pipeline,
+               engine_spec: config.EngineSpec | None = None):
+    if engine_spec and not engine_spec.has_cli_tests:
+        output.skip(f"No CLI tests for {engine_spec.label}")
+        return
+
     has_tests = False
 
     # Walkthrough
@@ -233,6 +294,12 @@ def main():
     # Reorder to pipeline order
     stages = [s for s in PIPELINE_ORDER if s in stages]
 
+    # Detect engine early
+    conf_fields = config.parse_conf_fields(project_dir)
+    engine = config.detect_engine(project_dir, conf_fields)
+    engine_spec = config.get_engine_spec(engine)
+    source_file_name = config.detect_source_file(project_dir, engine, conf_fields)
+
     # Pipeline config from project.conf
     conf_file = project_dir / "tests" / "project.conf"
     pipeline_cfg = config.PipelineConfig()
@@ -270,7 +337,8 @@ def main():
         bin_name = pipeline_cfg.binary_name
 
     # Execution
-    print(output.bold(f"=== PIPELINE: {name} ==="))
+    engine_label = engine_spec.label if engine_spec else engine
+    print(output.bold(f"=== PIPELINE: {name} ({engine_label}) ==="))
     print(f"  Stages: {' '.join(stages)}")
     if args.dry_run:
         print(output.yellow("  Mode: DRY RUN"))
@@ -294,11 +362,12 @@ def main():
             state = load_state(state_file)
             skip = False
             if stage == "compile":
-                current = compute_hash(project_dir / "story.ni")
+                source_path = project_dir / source_file_name if source_file_name else project_dir / "story.ni"
+                current = compute_hash(source_path)
                 if state.get("STAGE_COMPILE_SOURCE_HASH") == current:
                     skip = True
             elif stage == "test":
-                binary = find_binary(project_dir, bin_name)
+                binary = find_binary(project_dir, bin_name, engine_spec)
                 if binary:
                     current = compute_hash(binary)
                     if state.get("STAGE_TEST_BINARY_HASH") == current:
@@ -311,9 +380,12 @@ def main():
         start = time.time()
         try:
             if stage == "compile":
-                stage_compile(name, project_dir, pipeline_cfg.sound)
+                stage_compile(name, project_dir, pipeline_cfg.sound,
+                              engine=engine, engine_spec=engine_spec,
+                              source_file=source_file_name)
             elif stage == "test":
-                stage_test(name, project_dir, pipeline_cfg)
+                stage_test(name, project_dir, pipeline_cfg,
+                           engine_spec=engine_spec)
             elif stage == "push":
                 stage_push(name, args.message or "")
 
@@ -322,13 +394,14 @@ def main():
 
             # Update staleness
             if stage == "compile":
+                source_path = project_dir / source_file_name if source_file_name else project_dir / "story.ni"
                 save_state(state_file, "STAGE_COMPILE_SOURCE_HASH",
-                           compute_hash(project_dir / "story.ni"))
-                binary = find_binary(project_dir, bin_name)
+                           compute_hash(source_path))
+                binary = find_binary(project_dir, bin_name, engine_spec)
                 if binary:
                     save_state(state_file, "STAGE_COMPILE_BINARY_HASH", compute_hash(binary))
             elif stage == "test":
-                binary = find_binary(project_dir, bin_name)
+                binary = find_binary(project_dir, bin_name, engine_spec)
                 if binary:
                     save_state(state_file, "STAGE_TEST_BINARY_HASH", compute_hash(binary))
 

@@ -8,7 +8,9 @@
     "playUrl": "/zork1/v0/play.html",
     "walkthroughUrl": "/zork1/v0/walkthrough.html",
     "sourceUrl": "/zork1/v0/source.html",
-    "landingUrl": "/zork1/"
+    "landingUrl": "/zork1/",
+    "engine": "inform7",
+    "tags": ["classic", "zork"]
   },
   {
     "id": "zork1-v1",
@@ -18,7 +20,9 @@
     "playUrl": "/zork1/v1/play.html",
     "walkthroughUrl": "/zork1/v1/walkthrough.html",
     "sourceUrl": "/zork1/v1/story.ni",
-    "landingUrl": "/zork1/"
+    "landingUrl": "/zork1/",
+    "engine": "inform7",
+    "tags": ["classic", "zork"]
   },
   {
     "id": "zork1-v2",
@@ -28,7 +32,9 @@
     "playUrl": "/zork1/v2/play.html",
     "walkthroughUrl": "/zork1/v2/walkthrough.html",
     "sourceUrl": "/zork1/v2/story.ni",
-    "landingUrl": "/zork1/"
+    "landingUrl": "/zork1/",
+    "engine": "inform7",
+    "tags": ["classic", "zork"]
   },
   {
     "id": "zork1-v3",
@@ -39,7 +45,9 @@
     "playUrl": "/zork1/v3/play.html",
     "walkthroughUrl": "/zork1/v3/walkthrough.html",
     "sourceUrl": "/zork1/v3/story.ni",
-    "landingUrl": "/zork1/"
+    "landingUrl": "/zork1/",
+    "engine": "inform7",
+    "tags": ["sound", "classic", "zork"]
   },
   {
     "id": "zork1",
@@ -50,7 +58,9 @@
     "playUrl": "/zork1/play.html",
     "walkthroughUrl": "/zork1/walkthrough.html",
     "sourceUrl": "/zork1/story.ni",
-    "landingUrl": "/zork1/"
+    "landingUrl": "/zork1/",
+    "engine": "inform7",
+    "tags": ["sound", "classic", "zork"]
   },
   {
     "id": "dracula-v0",
@@ -61,7 +71,9 @@
     "playUrl": "/dracula/v0/play.html",
     "walkthroughUrl": "/dracula/v0/walkthrough.html",
     "sourceUrl": "/dracula/v0/source.html",
-    "landingUrl": "/dracula/"
+    "landingUrl": "/dracula/",
+    "engine": "basic",
+    "tags": ["horror", "classic"]
   },
   {
     "id": "dracula",
@@ -71,7 +83,9 @@
     "playUrl": "/dracula/play.html",
     "walkthroughUrl": "/dracula/walkthrough.html",
     "sourceUrl": "/dracula/story.ni",
-    "landingUrl": "/dracula/"
+    "landingUrl": "/dracula/",
+    "engine": "inform7",
+    "tags": ["horror", "classic"]
   },
   {
     "id": "feverdream",
@@ -81,7 +95,9 @@
     "playUrl": "/feverdream/play.html",
     "walkthroughUrl": "/feverdream/walkthrough.html",
     "sourceUrl": "/feverdream/story.ni",
-    "landingUrl": "/feverdream/"
+    "landingUrl": "/feverdream/",
+    "engine": "inform7",
+    "tags": ["sound", "horror"]
   },
   {
     "id": "babel",
@@ -91,7 +107,9 @@
     "walkthroughUrl": "/babel/walkthrough.html",
     "landingUrl": "/babel/",
     "sourceBrowser": true,
-    "sourceUrl": "/babel/source.html"
+    "sourceUrl": "/babel/source.html",
+    "engine": "inform7",
+    "tags": ["classic", "puzzle"]
   },
   {
     "id": "disenchantment12",
@@ -101,7 +119,9 @@
     "walkthroughUrl": "/disenchantment12/walkthrough.html",
     "landingUrl": "/disenchantment12/",
     "sourceBrowser": true,
-    "sourceUrl": "/disenchantment12/source.html"
+    "sourceUrl": "/disenchantment12/source.html",
+    "engine": "inform7",
+    "tags": []
   },
   {
     "id": "larva",
@@ -111,7 +131,9 @@
     "walkthroughUrl": "/larva/walkthrough.html",
     "landingUrl": "/larva/",
     "sourceBrowser": true,
-    "sourceUrl": "/larva/source.html"
+    "sourceUrl": "/larva/source.html",
+    "engine": "inform7",
+    "tags": []
   },
   {
     "id": "sample",
@@ -121,7 +143,9 @@
     "walkthroughUrl": "/sample/walkthrough.html",
     "landingUrl": "/sample/",
     "sourceBrowser": true,
-    "sourceUrl": "/sample/source.html"
+    "sourceUrl": "/sample/source.html",
+    "engine": "inform7",
+    "tags": []
   },
   {
     "id": "if-pipeline-test3",
@@ -131,7 +155,9 @@
     "walkthroughUrl": "/if-pipeline-test3/walkthrough.html",
     "landingUrl": "/if-pipeline-test3/",
     "sourceBrowser": true,
-    "sourceUrl": "/if-pipeline-test3/source.html"
+    "sourceUrl": "/if-pipeline-test3/source.html",
+    "engine": "inform7",
+    "tags": []
   },
   {
     "id": "dracula2",
@@ -141,7 +167,9 @@
     "walkthroughUrl": "/dracula2/walkthrough.html",
     "landingUrl": "/dracula2/",
     "sourceBrowser": true,
-    "sourceUrl": "/dracula2/source.html"
+    "sourceUrl": "/dracula2/source.html",
+    "engine": "inform7",
+    "tags": ["horror"]
   },
   {
     "id": "cia-adventure",
@@ -151,7 +179,9 @@
     "walkthroughUrl": "/cia-adventure/walkthrough.html",
     "landingUrl": "/cia-adventure/",
     "sourceBrowser": true,
-    "sourceUrl": "/cia-adventure/source.html"
+    "sourceUrl": "/cia-adventure/source.html",
+    "engine": "basic",
+    "tags": ["classic"]
   },
   {
     "id": "haunted-house",
@@ -161,7 +191,9 @@
     "walkthroughUrl": "/haunted-house/walkthrough.html",
     "landingUrl": "/haunted-house/",
     "sourceBrowser": true,
-    "sourceUrl": "/haunted-house/source.html"
+    "sourceUrl": "/haunted-house/source.html",
+    "engine": "basic",
+    "tags": ["horror", "classic"]
   },
   {
     "id": "apple-adventure",
@@ -171,7 +203,9 @@
     "walkthroughUrl": "/apple-adventure/walkthrough.html",
     "landingUrl": "/apple-adventure/",
     "sourceBrowser": true,
-    "sourceUrl": "/apple-adventure/source.html"
+    "sourceUrl": "/apple-adventure/source.html",
+    "engine": "basic",
+    "tags": ["classic"]
   },
   {
     "id": "magic-realm",
@@ -181,7 +215,9 @@
     "walkthroughUrl": "/magic-realm/walkthrough.html",
     "landingUrl": "/magic-realm/",
     "sourceBrowser": true,
-    "sourceUrl": "/magic-realm/source.html"
+    "sourceUrl": "/magic-realm/source.html",
+    "engine": "basic",
+    "tags": ["classic"]
   },
   {
     "id": "seasons",
@@ -191,7 +227,9 @@
     "walkthroughUrl": "/seasons/walkthrough.html",
     "landingUrl": "/seasons/",
     "sourceBrowser": true,
-    "sourceUrl": "/seasons/source.html"
+    "sourceUrl": "/seasons/source.html",
+    "engine": "inform7",
+    "tags": []
   },
   {
     "id": "ink-story",
@@ -201,7 +239,9 @@
     "walkthroughUrl": "/ink-story/walkthrough.html",
     "landingUrl": "/ink-story/",
     "sourceBrowser": true,
-    "sourceUrl": "/ink-story/source.html"
+    "sourceUrl": "/ink-story/source.html",
+    "engine": "ink",
+    "tags": []
   },
   {
     "id": "lostinnewyork",
@@ -211,7 +251,9 @@
     "walkthroughUrl": "/lostinnewyork/walkthrough.html",
     "landingUrl": "/lostinnewyork/",
     "sourceBrowser": true,
-    "sourceUrl": "/lostinnewyork/source.html"
+    "sourceUrl": "/lostinnewyork/source.html",
+    "engine": "ink",
+    "tags": []
   },
   {
     "id": "adj",
@@ -221,6 +263,8 @@
     "walkthroughUrl": "/adj/walkthrough.html",
     "landingUrl": "/adj/",
     "sourceBrowser": true,
-    "sourceUrl": "/adj/source.html"
+    "sourceUrl": "/adj/source.html",
+    "engine": "inform7",
+    "tags": []
   }
 ]

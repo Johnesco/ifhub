@@ -15,6 +15,8 @@ Options:
     --description TEXT  Card description (default: "An interactive fiction game.")
     --source-browser    Use source.html iframe instead of raw .ni (default: true)
     --sound TYPE        Sound type: "blorb" or omit for no sound
+    --engine TYPE       Engine type: inform7, ink, basic (default: inform7)
+    --tags LIST         Comma-separated tags (e.g. 'horror,classic')
 """
 
 import argparse
@@ -35,6 +37,8 @@ def main():
     parser.add_argument("--source-browser", action="store_true", default=True,
                         help="Use source.html iframe")
     parser.add_argument("--sound", default="", help="Sound type: 'blorb' or empty")
+    parser.add_argument("--engine", default="inform7", help="Engine type: inform7, ink, basic")
+    parser.add_argument("--tags", default="", help="Comma-separated tags (e.g. 'horror,classic')")
     args = parser.parse_args()
 
     games_path = IFHUB_DIR / "games.json"
@@ -45,6 +49,7 @@ def main():
         sys.exit(1)
 
     name = args.name
+    tags = [t.strip() for t in args.tags.split(",") if t.strip()] if args.tags else []
 
     # --- games.json ---
     games = json.loads(games_path.read_text(encoding="utf-8"))
@@ -66,6 +71,8 @@ def main():
             entry["sourceUrl"] = f"/{name}/story.ni"
         if args.sound:
             entry["sound"] = args.sound
+        entry["engine"] = args.engine
+        entry["tags"] = tags
 
         games.append(entry)
         games_path.write_text(json.dumps(games, indent=2, ensure_ascii=False) + "\n",
@@ -88,6 +95,8 @@ def main():
         }
         if args.sound:
             card["sound"] = args.sound
+        card["engine"] = args.engine
+        card["tags"] = tags
 
         cards.append(card)
         cards_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n",

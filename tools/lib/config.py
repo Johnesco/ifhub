@@ -12,6 +12,180 @@ from pathlib import Path
 from . import paths
 
 
+# ---------------------------------------------------------------------------
+# Engine registry — shared by pipeline.py, run.py, dashboard.py
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class EngineSpec:
+    name: str                           # "inform7", "ink", "wwwbasic", etc.
+    label: str                          # "Inform 7", "Ink", "wwwBASIC"
+    source_extensions: tuple[str, ...]  # (".ni",), (".ink",), (".bas",)
+    build_tool: str                     # "compile.py", "setup_ink.py", ""
+    build_tool_args: tuple[str, ...] = ()
+    has_cli_tests: bool = False         # True for inform7, zmachine
+    binary_extensions: tuple[str, ...] = ()  # (".ulx", ".gblorb") or ()
+    is_basic: bool = False
+
+
+ENGINE_REGISTRY: dict[str, EngineSpec] = {
+    "inform7": EngineSpec(
+        name="inform7", label="Inform 7",
+        source_extensions=(".ni",),
+        build_tool="compile.py",
+        has_cli_tests=True,
+        binary_extensions=(".ulx", ".gblorb"),
+    ),
+    "zmachine": EngineSpec(
+        name="zmachine", label="Z-machine",
+        source_extensions=(".z3", ".z5", ".z8"),
+        build_tool="setup_web.py",
+        has_cli_tests=True,
+    ),
+    "ink": EngineSpec(
+        name="ink", label="Ink",
+        source_extensions=(".ink",),
+        build_tool="setup_ink.py",
+    ),
+    "wwwbasic": EngineSpec(
+        name="wwwbasic", label="wwwBASIC",
+        source_extensions=(".bas",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "wwwbasic"),
+        is_basic=True,
+    ),
+    "qbjc": EngineSpec(
+        name="qbjc", label="qbjc",
+        source_extensions=(".bas",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "qbjc"),
+        is_basic=True,
+    ),
+    "applesoft": EngineSpec(
+        name="applesoft", label="Applesoft BASIC",
+        source_extensions=(".bas",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "applesoft"),
+        is_basic=True,
+    ),
+    "bwbasic": EngineSpec(
+        name="bwbasic", label="bwBASIC",
+        source_extensions=(".bas",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "bwbasic"),
+        is_basic=True,
+    ),
+    "basic": EngineSpec(
+        name="basic", label="BASIC",
+        source_extensions=(".bas",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "wwwbasic"),
+        is_basic=True,
+    ),
+    "jsdos": EngineSpec(
+        name="jsdos", label="DOS (js-dos)",
+        source_extensions=(".jsdos",),
+        build_tool="setup_basic.py",
+        build_tool_args=("--engine", "jsdos"),
+    ),
+    "twine": EngineSpec(
+        name="twine", label="Twine",
+        source_extensions=(".tw", ".twee"),
+        build_tool="",
+    ),
+}
+
+
+def get_engine_spec(engine: str) -> EngineSpec | None:
+    """Look up an EngineSpec by engine name."""
+    return ENGINE_REGISTRY.get(engine)
+
+
+def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> str:
+    """Detect the engine type for a project.
+
+    Priority: explicit ENGINE= in project.conf > filesystem heuristics.
+    """
+    if conf_fields:
+        explicit = conf_fields.get("ENGINE", "").lower()
+        if explicit:
+            return explicit
+
+    project_dir = str(project_dir)
+
+    # Filesystem heuristics
+    if os.path.isfile(os.path.join(project_dir, "story.ni")):
+        return "inform7"
+
+    try:
+        files = os.listdir(project_dir)
+    except OSError:
+        return "unknown"
+
+    bas_files = [f for f in files if f.lower().endswith(".bas")]
+    if bas_files:
+        return "basic"
+    if any(f == "wwwbasic.js" for f in files):
+        return "wwwbasic"
+    if any(f.lower().endswith(".jsdos") for f in files):
+        return "jsdos"
+    if any(f.lower().endswith((".tw", ".twee")) for f in files):
+        return "twine"
+    if any(f.lower().endswith(".ink") for f in files):
+        return "ink"
+
+    return "unknown"
+
+
+def detect_source_file(project_dir: str | Path, engine: str,
+                       conf_fields: dict | None = None) -> str:
+    """Find the primary source file for a project."""
+    if conf_fields:
+        explicit = conf_fields.get("SOURCE", "")
+        if explicit:
+            return explicit
+
+    if engine == "inform7":
+        return "story.ni"
+
+    project_dir = str(project_dir)
+    try:
+        files = os.listdir(project_dir)
+    except OSError:
+        return ""
+
+    spec = get_engine_spec(engine)
+    if spec:
+        for ext in spec.source_extensions:
+            for f in sorted(files):
+                if f.lower().endswith(ext):
+                    return f
+
+    # Fallback: scan common extensions
+    for ext in (".bas", ".tw", ".twee", ".ink"):
+        for f in sorted(files):
+            if f.lower().endswith(ext):
+                return f
+
+    return ""
+
+
+def parse_conf_fields(project_dir: str | Path) -> dict[str, str]:
+    """Parse all KEY=VALUE fields from tests/project.conf.
+
+    A shared helper for tools that need raw config fields without
+    building a full ProjectConfig.
+    """
+    conf_path = Path(project_dir) / "tests" / "project.conf"
+    return _parse_kv(conf_path, Path(project_dir))
+
+
+# ---------------------------------------------------------------------------
+# Project configuration dataclasses
+# ---------------------------------------------------------------------------
+
+
 @dataclass
 class EngineConfig:
     name: str = ""

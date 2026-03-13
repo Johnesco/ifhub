@@ -50,6 +50,9 @@ SETUP_BASIC_PY = os.path.join(SCRIPT_DIR, "web", "setup_basic.py")
 SETUP_INK_PY = os.path.join(SCRIPT_DIR, "web", "setup_ink.py")
 TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
+sys.path.insert(0, SCRIPT_DIR)
+from lib import config as _libconfig  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -95,54 +98,6 @@ def load_registered_ids():
         return set()
 
 
-def _detect_engine(project_dir, conf_fields):
-    """Detect the engine type for a project.
-
-    Priority: explicit ENGINE= in project.conf > filesystem heuristics.
-    """
-    explicit = conf_fields.get("ENGINE", "").lower()
-    if explicit:
-        return explicit
-
-    # Filesystem heuristics
-    if os.path.isfile(os.path.join(project_dir, "story.ni")):
-        return "inform7"
-
-    files = os.listdir(project_dir)
-    bas_files = [f for f in files if f.lower().endswith(".bas")]
-    if bas_files:
-        return "basic"  # generic — project.conf should specify wwwbasic/qbjc/applesoft
-    if any(f == "wwwbasic.js" for f in files):
-        return "wwwbasic"
-    if any(f.lower().endswith(".jsdos") for f in files):
-        return "jsdos"
-    if any(f.lower().endswith((".tw", ".twee")) for f in files):
-        return "twine"
-    if any(f.lower().endswith(".ink") for f in files):
-        return "ink"
-
-    return "unknown"
-
-
-def _detect_source_file(project_dir, engine, conf_fields):
-    """Find the primary source file for a project."""
-    explicit = conf_fields.get("SOURCE", "")
-    if explicit:
-        return explicit
-
-    if engine == "inform7":
-        return "story.ni"
-
-    # Look for common source files
-    files = os.listdir(project_dir)
-    for ext in (".bas", ".tw", ".twee", ".ink"):
-        for f in sorted(files):
-            if f.lower().endswith(ext):
-                return f
-
-    return ""
-
-
 def load_projects():
     registered_ids = load_registered_ids()
     projects = []
@@ -151,22 +106,11 @@ def load_projects():
         if not os.path.isdir(project_dir):
             continue
 
-        # Parse config fields (both PIPELINE_* and general KEY=VALUE)
-        conf_path = os.path.join(project_dir, "tests", "project.conf")
-        fields = {}
-        try:
-            with open(conf_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    m = re.match(
-                        r'^(\w+)=["\']?(.*?)["\']?\s*$', line.strip()
-                    )
-                    if m:
-                        fields[m.group(1)] = m.group(2)
-        except OSError:
-            pass
+        # Parse config fields via shared library
+        fields = _libconfig.parse_conf_fields(project_dir)
 
-        engine = _detect_engine(project_dir, fields)
-        source_file = _detect_source_file(project_dir, engine, fields)
+        engine = _libconfig.detect_engine(project_dir, fields)
+        source_file = _libconfig.detect_source_file(project_dir, engine, fields)
         source_path = os.path.join(project_dir, source_file) if source_file else ""
         has_source = bool(source_file) and os.path.isfile(source_path)
         has_play = os.path.isfile(os.path.join(project_dir, "play.html"))
@@ -277,8 +221,11 @@ def pipeline_cmd(game, *stages):
     return py_cmd(PIPELINE_PY, game, *stages)
 
 
-def new_project_cmd(title, name):
-    return py_cmd(NEW_PROJECT_PY, title, name)
+def new_project_cmd(title, name, engine="inform7"):
+    cmd = py_cmd(NEW_PROJECT_PY, title, name)
+    if engine != "inform7":
+        cmd.extend(["--engine", engine])
+    return cmd
 
 
 def unregister_game_cmd(name):
@@ -523,6 +470,7 @@ def api_create():
     data = request.json
     name = data.get("name", "").strip()
     source = data.get("source", "").strip()
+    engine = data.get("engine", "inform7").strip()
 
     if not name:
         return jsonify({"error": "Game name is required"}), 400
@@ -532,36 +480,43 @@ def api_create():
         ), 400
 
     project_dir = os.path.join(PROJECTS_DIR, name)
-    story_path = os.path.join(project_dir, "story.ni")
 
-    if os.path.isfile(story_path):
+    if os.path.isdir(project_dir):
         return jsonify({"error": f"Project '{name}' already exists"}), 409
 
     # Extract title from source (or use the game name as fallback)
     title = name.replace("-", " ").replace("_", " ").title()
-    if source:
+    if source and engine == "inform7":
         first_line = source.split("\n")[0].strip()
         if not first_line.startswith('"'):
             return jsonify(
                 {"error": 'Source must start with "Title" by "Author"'}
             ), 400
-        # Extract title from "Title" by "Author"
         m = re.match(r'^"([^"]+)"', first_line)
         if m:
             title = m.group(1)
 
     # Scaffold project via new_project.py (creates tests, config, etc.)
     result = subprocess.run(
-        new_project_cmd(title, name),
+        new_project_cmd(title, name, engine),
         capture_output=True,
         text=True,
     )
     if result.returncode != 0:
         return jsonify({"error": f"new_project.py failed: {result.stderr}"}), 500
 
-    # If custom source was provided, overwrite the starter story.ni
+    # If custom source was provided, overwrite the starter source file
     if source:
-        with open(story_path, "w", encoding="utf-8") as f:
+        # Determine the source file name for this engine
+        spec = _libconfig.get_engine_spec(engine)
+        if engine == "inform7":
+            source_file = "story.ni"
+        elif spec:
+            source_file = name.replace("-", "_") + spec.source_extensions[0]
+        else:
+            source_file = "story.ni"
+        source_path = os.path.join(project_dir, source_file)
+        with open(source_path, "w", encoding="utf-8") as f:
             f.write(source if source.endswith("\n") else source + "\n")
 
     return jsonify({"name": name, "dir": project_dir})
@@ -1076,12 +1031,24 @@ button.primary:hover:not(:disabled) {
       </div>
       <div class="name-hint">Lowercase, alphanumeric, hyphens ok. Becomes the project folder and URL.</div>
 
+      <div class="form-grid" style="margin-top:10px">
+        <label for="c-engine">Engine</label>
+        <select id="c-engine" onchange="onEngineChange()">
+          <option value="inform7">Inform 7</option>
+          <option value="ink">Ink</option>
+          <option value="wwwbasic">wwwBASIC (GW-BASIC)</option>
+          <option value="qbjc">qbjc (QBasic)</option>
+          <option value="applesoft">Applesoft BASIC</option>
+          <option value="twine">Twine</option>
+        </select>
+      </div>
+
       <div class="source-area">
-        <label for="c-source">Source code (story.ni)</label>
+        <label for="c-source" id="c-source-label">Source code (story.ni)</label>
         <textarea id="c-source" placeholder='"My Game" by "Author Name"
 
 The Foyer is a room. "You stand in a grand foyer."'></textarea>
-        <div class="source-hint">
+        <div class="source-hint" id="c-source-hint">
           Paste your Inform 7 source here, or leave empty for a starter template.
         </div>
       </div>
@@ -1432,6 +1399,25 @@ function setSt(cls, text) {
   el.textContent = text;
 }
 
+const ENGINE_META = {
+  inform7:   { label: 'Inform 7',  file: 'story.ni',  hint: 'Paste your Inform 7 source here, or leave empty for a starter template.', placeholder: '"My Game" by "Author Name"\\n\\nThe Foyer is a room. "You stand in a grand foyer."' },
+  ink:       { label: 'Ink',       file: '.ink',       hint: 'Paste your Ink source here, or leave empty for a starter template.', placeholder: '=== start ===\\nYou stand at a crossroads.\\n\\n+ [Go north] -> north' },
+  wwwbasic:  { label: 'wwwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
+  qbjc:      { label: 'qbjc',      file: '.bas',       hint: 'Paste your QBasic source here, or leave empty for a starter template.', placeholder: 'PRINT "Hello, World!"\\nEND' },
+  applesoft: { label: 'Applesoft', file: '.bas',       hint: 'Paste your Applesoft BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "HELLO, WORLD!"\\n20 END' },
+  twine:     { label: 'Twine',     file: '.tw',        hint: 'Paste your Twee source here, or leave empty for a starter template.', placeholder: ':: Start\\nYou stand at a crossroads.\\n\\n[[Go north->North]]' },
+};
+
+function onEngineChange() {
+  const engine = document.getElementById('c-engine').value;
+  const meta = ENGINE_META[engine] || ENGINE_META.inform7;
+  const name = document.getElementById('c-name').value.trim();
+  const fileLabel = engine === 'inform7' ? meta.file : (name ? name.replace(/-/g,'_') + meta.file : '*' + meta.file);
+  document.getElementById('c-source-label').textContent = 'Source code (' + fileLabel + ')';
+  document.getElementById('c-source-hint').textContent = meta.hint;
+  document.getElementById('c-source').placeholder = meta.placeholder;
+}
+
 function showCreate() {
   sel = null;
   document.getElementById('welcome').style.display = 'none';
@@ -1439,9 +1425,11 @@ function showCreate() {
   document.getElementById('create-panel').style.display = 'block';
   document.getElementById('c-name').value = '';
   document.getElementById('c-source').value = '';
+  document.getElementById('c-engine').value = 'inform7';
   document.getElementById('create-term').textContent = '';
   document.getElementById('create-status').textContent = '';
   document.getElementById('create-status').className = '';
+  onEngineChange();
   renderList();
 }
 
@@ -1453,6 +1441,7 @@ function hideCreate() {
 async function createGame() {
   const name = document.getElementById('c-name').value.trim();
   const source = document.getElementById('c-source').value;
+  const engine = document.getElementById('c-engine').value;
   const cTerm = document.getElementById('create-term');
   const cSt = document.getElementById('create-status');
 
@@ -1462,12 +1451,13 @@ async function createGame() {
   cSt.className = 'st-run';
   cSt.textContent = 'Creating...';
 
-  cTerm.textContent += 'Creating projects/' + name + '/...\n';
+  const engineLabel = (ENGINE_META[engine] || {}).label || engine;
+  cTerm.textContent += 'Creating projects/' + name + '/ [' + engineLabel + ']...\n';
 
   const r = await fetch('/api/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, source }),
+    body: JSON.stringify({ name, source, engine }),
   });
   const data = await r.json();
 

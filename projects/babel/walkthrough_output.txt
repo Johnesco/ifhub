@@ -4,7 +4,7 @@
 
 Babel Fish Puzzle Permutation 2013 - An Homage To Adams and Meretzky
 An Interactive Fiction by Taupelink
-Release 1 / Serial number 260306 / Inform 7 v10.1.2 / D
+Release 1 / Serial number 260312 / Inform 7 v10.1.2 / D
 
 Vogon Hold
 A squalid room. Along one wall is a dispenser. A large fan, built in to the floor, intermittently blasts a jet of air up into the room. You have items in your inventory. An intercom repeats an unintelligible three-word phrase.
