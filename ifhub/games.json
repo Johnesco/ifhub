@@ -189,20 +189,6 @@
     "tags": []
   },
   {
-    "id": "dracula2",
-    "title": "Dracula's Castle",
-    "sourceLabel": "dracula2.ni",
-    "playUrl": "/dracula2/play.html",
-    "walkthroughUrl": "/dracula2/walkthrough.html",
-    "landingUrl": "/dracula2/",
-    "sourceBrowser": true,
-    "sourceUrl": "/dracula2/source.html",
-    "engine": "inform7",
-    "tags": [
-      "horror"
-    ]
-  },
-  {
     "id": "haunted-house",
     "title": "Haunted House",
     "sourceLabel": "HAUNTED.BAS",

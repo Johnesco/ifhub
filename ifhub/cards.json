@@ -135,19 +135,6 @@
     "tags": []
   },
   {
-    "id": "dracula2",
-    "base": "dracula2",
-    "title": "Dracula's Castle",
-    "meta": "An Interactive Adventure",
-    "description": "Explore Dracula's Castle and uncover its dark secret before midnight strikes.",
-    "playUrl": "/dracula2/play.html",
-    "landingUrl": "/dracula2/",
-    "engine": "inform7",
-    "tags": [
-      "horror"
-    ]
-  },
-  {
     "id": "haunted-house",
     "base": "haunted-house",
     "title": "Haunted House",
