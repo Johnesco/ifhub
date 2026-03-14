@@ -10,7 +10,11 @@
     "playUrl": "/zork1/play.html",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["sound", "classic", "zork"],
+    "tags": [
+      "sound",
+      "classic",
+      "zork"
+    ],
     "versions": [
       {
         "id": "zork1-v3",
@@ -45,7 +49,10 @@
     "playUrl": "/dracula/play.html",
     "landingUrl": "/dracula/",
     "engine": "inform7",
-    "tags": ["horror", "classic"],
+    "tags": [
+      "horror",
+      "classic"
+    ],
     "versions": [
       {
         "id": "dracula-v0",
@@ -64,7 +71,10 @@
     "playUrl": "/feverdream/play.html",
     "landingUrl": "/feverdream/",
     "engine": "inform7",
-    "tags": ["sound", "horror"]
+    "tags": [
+      "sound",
+      "horror"
+    ]
   },
   {
     "id": "babel",
@@ -75,7 +85,10 @@
     "playUrl": "/babel/play.html",
     "landingUrl": "/babel/",
     "engine": "inform7",
-    "tags": ["classic", "puzzle"]
+    "tags": [
+      "classic",
+      "puzzle"
+    ]
   },
   {
     "id": "disenchantment12",
@@ -130,18 +143,9 @@
     "playUrl": "/dracula2/play.html",
     "landingUrl": "/dracula2/",
     "engine": "inform7",
-    "tags": ["horror"]
-  },
-  {
-    "id": "cia-adventure",
-    "base": "cia-adventure",
-    "title": "C.I.A. Adventure",
-    "meta": "1980 Classic",
-    "description": "A classic 1980 text adventure game written in GW-BASIC.",
-    "playUrl": "/cia-adventure/play.html",
-    "landingUrl": "/cia-adventure/",
-    "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "horror"
+    ]
   },
   {
     "id": "haunted-house",
@@ -152,7 +156,10 @@
     "playUrl": "/haunted-house/play.html",
     "landingUrl": "/haunted-house/",
     "engine": "basic",
-    "tags": ["horror", "classic"]
+    "tags": [
+      "horror",
+      "classic"
+    ]
   },
   {
     "id": "apple-adventure",
@@ -163,7 +170,9 @@
     "playUrl": "/apple-adventure/play.html",
     "landingUrl": "/apple-adventure/",
     "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "classic"
+    ]
   },
   {
     "id": "magic-realm",
@@ -174,7 +183,9 @@
     "playUrl": "/magic-realm/play.html",
     "landingUrl": "/magic-realm/",
     "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "classic"
+    ]
   },
   {
     "id": "seasons",

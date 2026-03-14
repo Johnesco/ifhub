@@ -10,7 +10,10 @@
     "sourceUrl": "/zork1/v0/source.html",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["classic", "zork"]
+    "tags": [
+      "classic",
+      "zork"
+    ]
   },
   {
     "id": "zork1-v1",
@@ -22,7 +25,10 @@
     "sourceUrl": "/zork1/v1/story.ni",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["classic", "zork"]
+    "tags": [
+      "classic",
+      "zork"
+    ]
   },
   {
     "id": "zork1-v2",
@@ -34,7 +40,10 @@
     "sourceUrl": "/zork1/v2/story.ni",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["classic", "zork"]
+    "tags": [
+      "classic",
+      "zork"
+    ]
   },
   {
     "id": "zork1-v3",
@@ -47,7 +56,11 @@
     "sourceUrl": "/zork1/v3/story.ni",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["sound", "classic", "zork"]
+    "tags": [
+      "sound",
+      "classic",
+      "zork"
+    ]
   },
   {
     "id": "zork1",
@@ -60,7 +73,11 @@
     "sourceUrl": "/zork1/story.ni",
     "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": ["sound", "classic", "zork"]
+    "tags": [
+      "sound",
+      "classic",
+      "zork"
+    ]
   },
   {
     "id": "dracula-v0",
@@ -73,7 +90,10 @@
     "sourceUrl": "/dracula/v0/source.html",
     "landingUrl": "/dracula/",
     "engine": "basic",
-    "tags": ["horror", "classic"]
+    "tags": [
+      "horror",
+      "classic"
+    ]
   },
   {
     "id": "dracula",
@@ -85,7 +105,10 @@
     "sourceUrl": "/dracula/story.ni",
     "landingUrl": "/dracula/",
     "engine": "inform7",
-    "tags": ["horror", "classic"]
+    "tags": [
+      "horror",
+      "classic"
+    ]
   },
   {
     "id": "feverdream",
@@ -97,7 +120,10 @@
     "sourceUrl": "/feverdream/story.ni",
     "landingUrl": "/feverdream/",
     "engine": "inform7",
-    "tags": ["sound", "horror"]
+    "tags": [
+      "sound",
+      "horror"
+    ]
   },
   {
     "id": "babel",
@@ -109,7 +135,10 @@
     "sourceBrowser": true,
     "sourceUrl": "/babel/source.html",
     "engine": "inform7",
-    "tags": ["classic", "puzzle"]
+    "tags": [
+      "classic",
+      "puzzle"
+    ]
   },
   {
     "id": "disenchantment12",
@@ -169,19 +198,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/dracula2/source.html",
     "engine": "inform7",
-    "tags": ["horror"]
-  },
-  {
-    "id": "cia-adventure",
-    "title": "C.I.A. Adventure",
-    "sourceLabel": "CIA.BAS",
-    "playUrl": "/cia-adventure/play.html",
-    "walkthroughUrl": "/cia-adventure/walkthrough.html",
-    "landingUrl": "/cia-adventure/",
-    "sourceBrowser": true,
-    "sourceUrl": "/cia-adventure/source.html",
-    "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "horror"
+    ]
   },
   {
     "id": "haunted-house",
@@ -193,7 +212,10 @@
     "sourceBrowser": true,
     "sourceUrl": "/haunted-house/source.html",
     "engine": "basic",
-    "tags": ["horror", "classic"]
+    "tags": [
+      "horror",
+      "classic"
+    ]
   },
   {
     "id": "apple-adventure",
@@ -205,7 +227,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/apple-adventure/source.html",
     "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "classic"
+    ]
   },
   {
     "id": "magic-realm",
@@ -217,7 +241,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/magic-realm/source.html",
     "engine": "basic",
-    "tags": ["classic"]
+    "tags": [
+      "classic"
+    ]
   },
   {
     "id": "seasons",
