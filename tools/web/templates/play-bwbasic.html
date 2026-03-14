@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>__TITLE__</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 12px;
+  flex-shrink: 0;
+}
+.header h1 { font-size: 0.95em; color: #c4b48a; }
+.header .version { font-size: 0.75em; color: #887755; font-style: italic; }
+.header .back { font-size: 0.75em; color: #887755; text-decoration: none; margin-left: auto; }
+.header .back:hover { color: #c4b48a; }
+#terminal-container {
+  flex: 1;
+  min-height: 0;
+  padding: 4px;
+}
+.xterm { height: 100%; }
+#loadingpane {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 35%;
+  color: #887755;
+  font-size: 1.2em;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+#loadingpane em { animation: pulse 1.5s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>__TITLE__</h1>
+  <span class="version">__VERSION_LABEL__</span>
+  <a class="back" href="__BACK_HREF__">&larr; Back</a>
+</div>
+
+<div id="terminal-container"></div>
+<div id="loadingpane"><em>Loading...</em></div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.min.js"></script>
+<script>
+/**
+ * GW-BASIC preprocessor for bwBASIC compatibility.
+ *
+ * GW-BASIC allows FOR/IF/THEN/ELSE NEXT on a single line (a common search
+ * idiom). bwBASIC does not support inline statements in ELSE clauses, so
+ * this preprocessor splits those patterns into multi-line equivalents and
+ * renumbers the entire program. The original source in the HTML is unchanged.
+ */
+function preprocessBasic(source) {
+  var lines = source.trim().split(/\r?\n/).filter(function(l) { return l.trim().length > 0; });
+  var parsed = [];
+
+  for (var i = 0; i < lines.length; i++) {
+    var m = lines[i].match(/^\s*(\d+)\s?(.*)/);
+    if (m) parsed.push({ num: parseInt(m[1]), text: m[2].replace(/\r$/, '').trimEnd() });
+  }
+
+  // Check if any expansion is needed
+  var needsExpansion = false;
+  for (var i = 0; i < parsed.length; i++) {
+    if (/\bELSE\s+NEXT\b/i.test(parsed[i].text)) { needsExpansion = true; break; }
+  }
+  if (!needsExpansion) {
+    return source; // no changes needed
+  }
+
+  // Expand FOR/IF/ELSE NEXT patterns
+  var expanded = [];
+  for (var i = 0; i < parsed.length; i++) {
+    var nextNum = (i + 1 < parsed.length) ? parsed[i + 1].num : null;
+    var items = expandForNext(parsed[i].num, parsed[i].text, nextNum);
+    expanded = expanded.concat(items);
+  }
+
+  // Assign new line numbers
+  var base = 100, step = 10;
+  var oldToNew = {};
+  for (var i = 0; i < expanded.length; i++) {
+    expanded[i].newNum = base + i * step;
+    if (expanded[i].origNum !== undefined) {
+      oldToNew[expanded[i].origNum] = expanded[i].newNum;
+    }
+  }
+
+  // Resolve skip GOTOs (for FOR inside THEN clauses)
+  for (var i = 0; i < expanded.length; i++) {
+    if (expanded[i].skipTo !== undefined && oldToNew[expanded[i].skipTo] !== undefined) {
+      expanded[i].text += ' ELSE GOTO ' + oldToNew[expanded[i].skipTo];
+    }
+  }
+
+  // Replace line number references and emit
+  var output = [];
+  for (var i = 0; i < expanded.length; i++) {
+    output.push(expanded[i].newNum + ' ' + replaceLineRefs(expanded[i].text, oldToNew));
+  }
+
+  var result = output.join('\n');
+  console.log('bwBASIC preprocessor: expanded FOR/ELSE NEXT patterns, renumbered',
+              parsed.length, '->', expanded.length, 'lines');
+  return result;
+}
+
+function expandForNext(origNum, text, nextOrigNum) {
+  var upper = text.toUpperCase();
+  var match = upper.match(/\bELSE\s+NEXT\b/);
+  if (!match) return [{ origNum: origNum, text: text }];
+
+  var elseNextStart = match.index;
+
+  // Find last FOR before ELSE NEXT
+  var forIdx = -1;
+  var re = /\bFOR\s+/gi;
+  var m;
+  while ((m = re.exec(upper)) !== null && m.index < elseNextStart) forIdx = m.index;
+  if (forIdx === -1) return [{ origNum: origNum, text: text }];
+
+  // Find :IF after the FOR
+  var colonIfIdx = -1;
+  for (var k = forIdx; k < elseNextStart; k++) {
+    if (text[k] === ':' && /^\s*IF\b/i.test(upper.substring(k + 1))) {
+      colonIfIdx = k;
+      break;
+    }
+  }
+  if (colonIfIdx === -1) return [{ origNum: origNum, text: text }];
+
+  // Extract parts
+  var prefix = text.substring(0, forIdx).replace(/:$/, '').trim();
+  var forStmt = text.substring(forIdx, colonIfIdx).trim();
+  var ifBody = text.substring(colonIfIdx + 1, elseNextStart).trim();
+
+  // Get loop variable from FOR
+  var forVarMatch = forStmt.match(/\bFOR\s+(\w+)/i);
+  var forVar = forVarMatch ? forVarMatch[1] : '';
+
+  // Parse NEXT var and trailing after ELSE NEXT
+  var afterEN = text.substring(elseNextStart);
+  var nextMatch = afterEN.match(/^ELSE\s+NEXT\s*\w*\s*(:\s*(.*))?$/i);
+  var trailing = (nextMatch && nextMatch[2]) ? nextMatch[2].trim() : '';
+
+  // Check if FOR is inside a THEN clause (needs skip GOTO when IF is false)
+  var needsSkip = prefix.length > 0 && /\bTHEN\b/i.test(prefix);
+
+  var result = [];
+  if (prefix) {
+    var item = { origNum: origNum, text: prefix };
+    if (needsSkip && nextOrigNum !== null) item.skipTo = nextOrigNum;
+    result.push(item);
+    result.push({ text: forStmt });
+  } else {
+    result.push({ origNum: origNum, text: forStmt });
+  }
+  result.push({ text: ifBody });
+  result.push({ text: 'NEXT ' + forVar });
+  if (trailing) result.push({ text: trailing });
+
+  return result;
+}
+
+function replaceLineRefs(text, oldToNew) {
+  // Remove quoted strings temporarily to avoid replacing numbers in strings
+  var strings = [];
+  var cleaned = text.replace(/"[^"]*"/g, function(m) {
+    strings.push(m);
+    return '\x01S' + (strings.length - 1) + '\x01';
+  });
+
+  // GOTO/GOSUB/RUN + line number
+  cleaned = cleaned.replace(/\b(GOTO|GOSUB|RUN)\s*(\d+)/gi, function(m, kw, num) {
+    var n = parseInt(num);
+    return kw + ' ' + (oldToNew[n] !== undefined ? oldToNew[n] : n);
+  });
+
+  // THEN/ELSE/RESTORE/RESUME + line number
+  cleaned = cleaned.replace(/\b(THEN|ELSE|RESTORE|RESUME)\s+(\d+)/gi, function(m, kw, num) {
+    var n = parseInt(num);
+    return kw + ' ' + (oldToNew[n] !== undefined ? oldToNew[n] : n);
+  });
+
+  // ON expr GOTO/GOSUB comma-separated line numbers
+  cleaned = cleaned.replace(/\b(ON\s+[^:]*?\s+(?:GOTO|GOSUB))\s+([\d,\s]+)/gi, function(m, prefix, nums) {
+    var parts = nums.split(',');
+    var newParts = parts.map(function(p) {
+      var n = parseInt(p.trim());
+      if (isNaN(n)) return p;
+      return '' + (oldToNew[n] !== undefined ? oldToNew[n] : n);
+    });
+    return prefix + ' ' + newParts.join(',');
+  });
+
+  // Restore quoted strings
+  cleaned = cleaned.replace(/\x01S(\d+)\x01/g, function(m, idx) {
+    return strings[parseInt(idx)];
+  });
+
+  return cleaned;
+}
+</script>
+<script>
+(function() {
+  var term = new Terminal({
+    theme: {
+      background: '#111',
+      foreground: '#d4c5a9',
+      cursor: '#e8d090',
+      cursorAccent: '#111',
+      selectionBackground: '#3a3020',
+    },
+    fontFamily: '"SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace',
+    fontSize: 16,
+    lineHeight: 1.4,
+    cursorBlink: true,
+    convertEol: true,
+  });
+
+  var fitAddon = new FitAddon.FitAddon();
+  term.loadAddon(fitAddon);
+  term.open(document.getElementById('terminal-container'));
+  fitAddon.fit();
+  window.addEventListener('resize', function() { fitAddon.fit(); });
+
+  // Input handling: resolve a promise when user presses Enter
+  var inputResolve = null;
+  var inputBuffer = '';
+
+  term.onData(function(data) {
+    if (!inputResolve) return;
+
+    if (data === '\r' || data === '\n') {
+      term.write('\r\n');
+      var result = inputBuffer;
+      inputBuffer = '';
+      var resolve = inputResolve;
+      inputResolve = null;
+      resolve(result);
+    } else if (data === '\x7f' || data === '\b') {
+      if (inputBuffer.length > 0) {
+        inputBuffer = inputBuffer.slice(0, -1);
+        term.write('\b \b');
+      }
+    } else if (data >= ' ') {
+      inputBuffer += data;
+      term.write(data);
+    }
+  });
+
+  // Suppress Emscripten's synchronous prompt() fallback for stdin —
+  // all input goes through async readLine instead.
+  window.prompt = function() { return null; };
+
+  // Emscripten Module configuration
+  var Module = window.Module = {
+    print: function(text) {
+      term.write(text.replace(/\n/g, '\r\n') + '\r\n');
+    },
+    printErr: function(text) {
+      console.warn('bwBASIC stderr:', text);
+    },
+
+    readLine: function() {
+      return new Promise(function(resolve) {
+        inputResolve = resolve;
+      });
+    },
+
+    _bw_write: function(text) {
+      term.write(text.replace(/\n/g, '\r\n'));
+    },
+
+    preRun: [function() {
+      var sourceEl = document.getElementById('basic-source');
+      var source = sourceEl ? sourceEl.textContent : '10 PRINT "NO PROGRAM LOADED"\n20 END\n';
+      // Preprocess GW-BASIC idioms that bwBASIC doesn't support
+      source = preprocessBasic(source);
+      // Replace INKEY$ busy-wait loops with LINE INPUT (async-compatible)
+      // Pattern: DO: LOOP UNTIL INKEY$ <> ""  →  LINE INPUT "";_k$
+      source = source.replace(/DO\s*:\s*LOOP\s+UNTIL\s+INKEY\$\s*<>\s*""/gi,
+        'LINE INPUT zk$');
+      FS.writeFile('/program.bas', source);
+    }],
+
+    onRuntimeInitialized: function() {
+      document.getElementById('loadingpane').style.display = 'none';
+      term.focus();
+      Module.callMain(['/program.bas']);
+    },
+
+    noExitRuntime: true,
+  };
+
+  // Load bwbasic.js (Emscripten glue)
+  var script = document.createElement('script');
+  script.src = 'lib/bwbasic/bwbasic.js';
+  document.body.appendChild(script);
+})();
+</script>
+
+<!-- Embedded BASIC program (original, unmodified source) -->
+<script id="basic-source" type="text/plain">
+__BASIC_SOURCE__
+</script>
+
+</body>
+</html>

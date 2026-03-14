@@ -71,15 +71,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
   overflow: hidden;
 }
 
-/* Style the auto-generated jsbasic frame */
+/* Strip the Apple II bezel — just show the screen */
 #screen-container .jsb-frame {
-  max-width: 100%;
-  max-height: 100%;
   outline: none;
+  transform-origin: center center;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+#screen-container .jsb-frame > * {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 #loadingpane {
@@ -391,15 +402,33 @@ noscript {
 </div>
 
 <script>
-// Hide loading pane once jsbasic creates the display frame
+// Scale the jsbasic frame to fill the container
+function scaleFrame() {
+  var container = document.getElementById('screen-container');
+  var frame = container && container.querySelector('.jsb-frame');
+  if (!frame) return;
+  // Reset scale to measure natural size
+  frame.style.transform = 'none';
+  var cw = container.clientWidth - 12; // account for padding
+  var ch = container.clientHeight - 12;
+  var fw = frame.offsetWidth;
+  var fh = frame.offsetHeight;
+  if (fw > 0 && fh > 0) {
+    var scale = Math.min(cw / fw, ch / fh);
+    frame.style.transform = 'scale(' + scale + ')';
+  }
+}
+
 window.addEventListener('load', function() {
   var lp = document.getElementById('loadingpane');
   if (lp) lp.style.display = 'none';
 
-  // Auto-focus the Apple II screen for keyboard input
   var frame = document.querySelector('.jsb-frame');
   if (frame) frame.focus();
+
+  scaleFrame();
 });
+window.addEventListener('resize', scaleFrame);
 </script>
 
 </body>

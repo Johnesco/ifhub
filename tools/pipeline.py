@@ -111,13 +111,31 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
     elif engine_spec.build_tool == "setup_basic.py":
         source_path = project_dir / source_file
         title = name.replace("-", " ").replace("_", " ").title()
-        cmd = [
-            sys.executable, str(paths.WEB_DIR / "setup_basic.py"),
-            *engine_spec.build_tool_args,
-            "--title", title,
-            "--source", str(source_path),
-            "--out", str(project_dir),
-        ]
+        if engine == "qbjc":
+            # qbjc requires pre-compilation: .bas -> .js, then setup_basic.py
+            compiled_js = source_path.with_suffix(".js")
+            print(f"  Pre-compiling {source_file} with qbjc...")
+            qbjc_bin = shutil.which("qbjc")
+            if not qbjc_bin:
+                raise RuntimeError("qbjc not found. Install with: npm install -g qbjc")
+            r = process.run([qbjc_bin, str(source_path), "-o", str(compiled_js)])
+            if r.returncode != 0:
+                raise RuntimeError(f"qbjc compilation failed (exit {r.returncode})")
+            cmd = [
+                sys.executable, str(paths.WEB_DIR / "setup_basic.py"),
+                *engine_spec.build_tool_args,
+                "--title", title,
+                "--compiled", str(compiled_js),
+                "--out", str(project_dir),
+            ]
+        else:
+            cmd = [
+                sys.executable, str(paths.WEB_DIR / "setup_basic.py"),
+                *engine_spec.build_tool_args,
+                "--title", title,
+                "--source", str(source_path),
+                "--out", str(project_dir),
+            ]
     elif engine_spec.build_tool == "setup_web.py":
         # Z-machine: find the binary and set up web player
         title = name.replace("-", " ").replace("_", " ").title()

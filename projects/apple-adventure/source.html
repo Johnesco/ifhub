@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Source &mdash; Apple Adventure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+  overflow: hidden;
+}
+
+/* --- Layout --- */
+.container {
+  display: flex;
+  height: 100%;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #0e0e0c;
+  border-right: 1px solid #1e1a14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #1e1a14;
+}
+
+.sidebar-header h1 {
+  font-size: 0.95em;
+  color: #c4b48a;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.sidebar-header a {
+  font-size: 0.8em;
+  color: #887755;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.sidebar-header a:hover {
+  color: #aa9966;
+  border-bottom-color: #aa9966;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: #0e0e0c; }
+.nav::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 3px; }
+
+.nav-item {
+  display: block;
+  padding: 4px 16px;
+  font-size: 0.82em;
+  color: #998866;
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-item:hover {
+  background: #151510;
+  color: #c4b48a;
+}
+
+.nav-item.active {
+  background: #18160f;
+  color: #e8d090;
+  border-left-color: #e8d090;
+}
+
+.nav-section {
+  font-weight: bold;
+  color: #c4b48a;
+  padding-top: 10px;
+  font-size: 0.85em;
+}
+
+.nav-sub {
+  padding-left: 24px;
+  font-size: 0.78em;
+  color: #776644;
+}
+
+/* --- Main content --- */
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  padding: 8px 20px;
+  background: #0e0e0c;
+  border-bottom: 1px solid #1e1a14;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.85em;
+  color: #887755;
+}
+
+.toolbar .file-path {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  color: #aa9966;
+}
+
+.toolbar .line-count {
+  margin-left: auto;
+}
+
+.search-box {
+  background: #111;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #d4c5a9;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  width: 200px;
+  outline: none;
+}
+
+.search-box:focus {
+  border-color: #4a3a20;
+}
+
+.search-box::placeholder {
+  color: #554433;
+}
+
+.code-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 16px 0;
+}
+
+.code-wrap::-webkit-scrollbar { width: 8px; }
+.code-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
+.code-wrap::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 4px; }
+.code-wrap::-webkit-scrollbar-thumb:hover { background: #3a3020; }
+
+/* --- Code display --- */
+table.code {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+table.code td {
+  vertical-align: top;
+}
+
+td.ln {
+  min-width: 48px;
+  padding: 0 16px 0 20px;
+  text-align: right;
+  color: #3a3020;
+  user-select: none;
+  white-space: nowrap;
+}
+
+td.lc {
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding: 0 20px 0 0;
+}
+
+tr.heading-line td {
+  padding-top: 8px;
+}
+
+tr.heading-line td.lc {
+  font-weight: bold;
+  color: #e8d8b0;
+  font-size: 15px;
+}
+
+tr.heading-line td.ln {
+  color: #5a4a30;
+}
+
+tr:target td,
+tr.highlight td {
+  background: #1a1810;
+}
+
+tr:target td.ln,
+tr.highlight td.ln {
+  color: #887755;
+}
+
+/* --- BASIC syntax colors --- */
+.syn-rem   { color: #666050; font-style: italic; }
+.syn-str   { color: #8bab6e; }
+.syn-kw    { color: #c49060; }
+.syn-num   { color: #b08a70; }
+.syn-lnum  { color: #5a5040; }
+.syn-label { color: #e8d8b0; font-weight: bold; }
+.syn-fn    { color: #7ea8b0; }
+
+/* --- Loading / error --- */
+.loading {
+  text-align: center;
+  padding: 80px 40px;
+  color: #887755;
+  font-size: 1.1em;
+}
+
+.loading em {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.error-msg {
+  text-align: center;
+  padding: 80px 40px;
+  color: #aa6644;
+}
+
+/* --- Search highlights --- */
+.search-hit {
+  background: #5a4a10;
+  color: #ffe8a0;
+  border-radius: 2px;
+}
+
+.search-current {
+  background: #7a6a20;
+  outline: 1px solid #aa9930;
+}
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Apple Adventure: Source</h1>
+      <a href="./">&larr; Back to project</a>
+    </div>
+    <div class="nav" id="nav"></div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="file-path">HAUNTED.BAS</span>
+      <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
+      <span class="line-count" id="line-count"></span>
+    </div>
+    <div class="code-wrap" id="code-wrap">
+      <div class="loading"><em>Loading source...</em></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var RAW_URL = 'src/basic/ADVENTURE.BAS';
+
+/* ---- BASIC keywords ---- */
+var BASIC_KW = [
+  'PRINT','INPUT','IF','THEN','ELSE','FOR','TO','STEP','NEXT','GOTO','GOSUB',
+  'RETURN','ON','DIM','DATA','READ','LET','END','STOP','CLS','LOCATE','COLOR',
+  'AND','OR','NOT','WHILE','WEND','DO','LOOP','DEF','FN','SUB','FUNCTION',
+  'SELECT','CASE','SCREEN','KEY','BEEP','PLAY','SOUND','POKE','PEEK',
+  'RANDOMIZE','TIMER','SWAP','RESTORE'
+];
+var kwSet = {};
+BASIC_KW.forEach(function(k) { kwSet[k] = true; });
+
+/* ---- Built-in functions ---- */
+var BASIC_FN = [
+  'LEN','MID\\$','LEFT\\$','RIGHT\\$','CHR\\$','ASC','VAL','STR\\$','INT',
+  'RND','ABS','SGN','SQR','SIN','COS','TAN','ATN','LOG','EXP','TAB',
+  'SPC','INSTR','STRING\\$','SPACE\\$','USING','INKEY\\$'
+];
+var fnRe = new RegExp('\\b(' + BASIC_FN.join('|') + ')(?=\\(|\\b)', 'g');
+
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---- BASIC syntax highlighter ---- */
+function highlight(line) {
+  /* Extract line number prefix */
+  var m = line.match(/^(\d+)\s(.*)/);
+  if (!m) return esc(line);
+
+  var lnum = m[1];
+  var rest = m[2];
+
+  /* REM comment — entire rest of line */
+  if (/^REM(\s|$)/i.test(rest)) {
+    return '<span class="syn-lnum">' + lnum + '</span> <span class="syn-rem">' + esc(rest) + '</span>';
+  }
+
+  /* Process rest: strings, then keywords, then functions, then numbers */
+  var html = processLine(rest);
+  return '<span class="syn-lnum">' + lnum + '</span> ' + html;
+}
+
+function processLine(line) {
+  /* Split on string literals to avoid highlighting inside them */
+  var parts = [];
+  var i = 0;
+  var len = line.length;
+
+  while (i < len) {
+    var qIdx = line.indexOf('"', i);
+    if (qIdx === -1) {
+      parts.push({ text: line.slice(i), isStr: false });
+      break;
+    }
+    if (qIdx > i) {
+      parts.push({ text: line.slice(i, qIdx), isStr: false });
+    }
+    /* Find closing quote */
+    var end = line.indexOf('"', qIdx + 1);
+    if (end === -1) end = len - 1;
+    parts.push({ text: line.slice(qIdx, end + 1), isStr: true });
+    i = end + 1;
+  }
+
+  var out = '';
+  for (var p = 0; p < parts.length; p++) {
+    if (parts[p].isStr) {
+      out += '<span class="syn-str">' + esc(parts[p].text) + '</span>';
+    } else {
+      out += highlightCode(parts[p].text);
+    }
+  }
+  return out;
+}
+
+function highlightCode(text) {
+  var h = esc(text);
+
+  /* Highlight keywords — whole words only */
+  h = h.replace(/\b([A-Z]{2,})\b/g, function(match) {
+    if (kwSet[match]) return '<span class="syn-kw">' + match + '</span>';
+    return match;
+  });
+
+  /* Also handle DATA keyword at start of segment */
+  h = h.replace(/\bDATA\b/g, '<span class="syn-kw">DATA</span>');
+
+  /* Highlight built-in functions */
+  h = h.replace(fnRe, function(match) {
+    return '<span class="syn-fn">' + match + '</span>';
+  });
+
+  /* Highlight standalone numbers (not part of variable names) */
+  h = h.replace(/(?<![A-Za-z_])(\d+\.?\d*)(?![A-Za-z_$])/g, '<span class="syn-num">$1</span>');
+
+  return h;
+}
+
+/* ---- Detect REM section headers for navigation ---- */
+function isRemHeader(line) {
+  var m = line.match(/^\d+\s+REM\s+\*+\s*(.*?)\s*\**\s*$/i);
+  if (m && m[1].length > 0) return m[1];
+  /* Also catch REM headers without stars */
+  m = line.match(/^\d+\s+REM\s{2,}(.{4,})/i);
+  if (m && !/^\*+$/.test(m[1].trim())) return m[1].trim();
+  return null;
+}
+
+/* ---- Detect subroutine labels for nav ---- */
+function isSubroutineStart(line) {
+  /* Lines like "500 PRINT ..." after a RETURN, or specific GOSUB targets */
+  var m = line.match(/^(\d+)\s/);
+  return m ? parseInt(m[1]) : null;
+}
+
+/* ---- Build page ---- */
+async function init() {
+  var wrap = document.getElementById('code-wrap');
+  var nav = document.getElementById('nav');
+  var lineCountEl = document.getElementById('line-count');
+
+  var source;
+  try {
+    var res = await fetch(RAW_URL);
+    if (!res.ok) throw new Error(res.status);
+    source = await res.text();
+  } catch (e) {
+    wrap.innerHTML = '<div class="error-msg">Failed to load source. <a href="' + RAW_URL + '">View raw</a></div>';
+    return;
+  }
+
+  var lines = source.split('\n');
+  /* Remove trailing empty lines */
+  while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+  lineCountEl.textContent = lines.length + ' lines';
+
+  var navItems = [];
+  var rows = [];
+
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i];
+    var num = i + 1;
+
+    /* Check for REM section header */
+    var header = isRemHeader(raw);
+    var cls = '';
+    if (header) {
+      cls = ' class="heading-line"';
+      /* Skip purely decorative REM lines (just stars) */
+      if (!/^\*+$/.test(header)) {
+        navItems.push('<a class="nav-item nav-section" data-line="' + num + '" href="#L' + num + '">' + esc(header) + '</a>');
+      }
+    }
+
+    rows.push('<tr id="L' + num + '"' + cls + '><td class="ln">' + num + '</td><td class="lc">' + highlight(raw) + '</td></tr>');
+  }
+
+  wrap.innerHTML = '<table class="code">' + rows.join('') + '</table>';
+  nav.innerHTML = navItems.join('');
+
+  /* Nav click handler */
+  nav.addEventListener('click', function(e) {
+    var a = e.target.closest('.nav-item');
+    if (!a) return;
+    nav.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    a.classList.add('active');
+  });
+
+  /* Scroll to hash on load */
+  if (location.hash) {
+    var el = document.querySelector(location.hash);
+    if (el) el.scrollIntoView({ block: 'start' });
+  }
+
+  /* --- Search --- */
+  var searchInput = document.getElementById('search');
+  var searchHits = [];
+  var currentHit = -1;
+
+  function clearSearch() {
+    document.querySelectorAll('.search-hit').forEach(function(el) {
+      el.outerHTML = el.textContent;
+    });
+    searchHits = [];
+    currentHit = -1;
+  }
+
+  function doSearch(query) {
+    clearSearch();
+    if (!query || query.length < 2) return;
+
+    var lower = query.toLowerCase();
+    var cells = document.querySelectorAll('td.lc');
+
+    cells.forEach(function(td) {
+      var text = td.textContent;
+      if (text.toLowerCase().includes(lower)) {
+        highlightMatches(td, query);
+      }
+    });
+
+    searchHits = Array.from(document.querySelectorAll('.search-hit'));
+    if (searchHits.length > 0) {
+      currentHit = 0;
+      searchHits[0].classList.add('search-current');
+      searchHits[0].scrollIntoView({ block: 'center' });
+    }
+  }
+
+  function highlightMatches(el, query) {
+    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    var lower = query.toLowerCase();
+    var nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+
+    nodes.forEach(function(node) {
+      var text = node.textContent;
+      var idx = text.toLowerCase().indexOf(lower);
+      if (idx === -1) return;
+
+      var before = text.slice(0, idx);
+      var match = text.slice(idx, idx + query.length);
+      var after = text.slice(idx + query.length);
+
+      var span = document.createElement('span');
+      span.className = 'search-hit';
+      span.textContent = match;
+
+      var parent = node.parentNode;
+      if (before) parent.insertBefore(document.createTextNode(before), node);
+      parent.insertBefore(span, node);
+      if (after) parent.insertBefore(document.createTextNode(after), node);
+      parent.removeChild(node);
+
+      if (after.toLowerCase().includes(lower)) {
+        var afterNode = span.nextSibling;
+        if (afterNode && afterNode.nodeType === Node.TEXT_NODE) {
+          var temp = document.createElement('span');
+          temp.appendChild(afterNode.cloneNode(true));
+          parent.replaceChild(temp, afterNode);
+          highlightMatches(temp, query);
+          while (temp.firstChild) parent.insertBefore(temp.firstChild, temp);
+          parent.removeChild(temp);
+        }
+      }
+    });
+  }
+
+  function nextHit() {
+    if (searchHits.length === 0) return;
+    searchHits[currentHit].classList.remove('search-current');
+    currentHit = (currentHit + 1) % searchHits.length;
+    searchHits[currentHit].classList.add('search-current');
+    searchHits[currentHit].scrollIntoView({ block: 'center' });
+  }
+
+  function prevHit() {
+    if (searchHits.length === 0) return;
+    searchHits[currentHit].classList.remove('search-current');
+    currentHit = (currentHit - 1 + searchHits.length) % searchHits.length;
+    searchHits[currentHit].classList.add('search-current');
+    searchHits[currentHit].scrollIntoView({ block: 'center' });
+  }
+
+  var debounce;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounce);
+    var self = this;
+    debounce = setTimeout(function() { doSearch(self.value); }, 200);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) prevHit(); else nextHit();
+    }
+    if (e.key === 'Escape') {
+      clearSearch();
+      this.value = '';
+      this.blur();
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>

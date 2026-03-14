@@ -2,11 +2,15 @@
 """Set up a web player for a BASIC program.
 
 Generates a self-contained play.html from engine-specific templates.
-Supports wwwbasic, qbjc, applesoft, and jsdos engines.
+Supports wwwbasic, bwbasic, qbjc, applesoft, and jsdos engines.
 
 Usage:
     python tools/web/setup_basic.py \
         --engine wwwbasic --title "My Game" \
+        --source path/to/game.bas --out path/to/project
+
+    python tools/web/setup_basic.py \
+        --engine bwbasic --title "My Game" \
         --source path/to/game.bas --out path/to/project
 
     python tools/web/setup_basic.py \
@@ -26,15 +30,18 @@ from pathlib import Path
 # Engine → template file mapping
 ENGINE_TEMPLATES = {
     "wwwbasic": "play-wwwbasic.html",
+    "bwbasic": "play-bwbasic.html",
     "qbjc": "play-qbjc.html",
     "applesoft": "play-applesoft.html",
     "jsdos": "play-jsdos.html",
-    "bwbasic": "play-wwwbasic.html",  # bwbasic uses wwwbasic template
     "basic": "play-wwwbasic.html",    # generic basic defaults to wwwbasic
 }
 
 # Engines that inline .bas source into the template
-INLINE_SOURCE_ENGINES = {"wwwbasic", "applesoft", "bwbasic", "basic"}
+INLINE_SOURCE_ENGINES = {"wwwbasic", "bwbasic", "applesoft", "basic"}
+
+# Shared bwBASIC WASM runtime location
+BWBASIC_WASM_DIR = Path(__file__).resolve().parent.parent / "engines" / "bwbasic" / "wasm"
 
 
 def main():
@@ -66,14 +73,17 @@ def main():
     # --- Validate engine-specific inputs ---
     if engine in INLINE_SOURCE_ENGINES:
         if not args.source:
-            # Auto-detect: look for .bas file in --out directory
-            bas_files = list(out_dir.glob("*.bas"))
+            # Auto-detect: look for .bas file in --out directory or src/basic/
+            bas_files = list(out_dir.glob("*.bas")) + list(out_dir.glob("*.BAS"))
+            if not bas_files:
+                src_dir = out_dir / "src" / "basic"
+                bas_files = list(src_dir.glob("*.bas")) + list(src_dir.glob("*.BAS"))
             if not bas_files:
                 print("Error: no .bas file found. Specify --source.",
                       file=sys.stderr)
                 sys.exit(1)
             source_path = bas_files[0]
-            print(f"  Auto-detected source: {source_path.name}")
+            print(f"  Auto-detected source: {source_path}")
         else:
             source_path = Path(args.source)
         if not source_path.exists():
@@ -82,9 +92,8 @@ def main():
             sys.exit(1)
     elif engine == "qbjc":
         if not args.compiled:
-            # Auto-detect: look for .js file in --out directory
             js_files = [f for f in out_dir.glob("*.js")
-                        if f.name != "wwwbasic.js"]
+                        if f.name not in ("wwwbasic.js", "bwbasic.js")]
             if not js_files:
                 print("Error: no compiled .js file found. Specify --compiled.",
                       file=sys.stderr)
@@ -99,7 +108,6 @@ def main():
             sys.exit(1)
     elif engine == "jsdos":
         if not args.bundle:
-            # Auto-detect: look for .jsdos file in --out directory
             jsdos_files = list(out_dir.glob("*.jsdos"))
             if not jsdos_files:
                 print("Error: no .jsdos bundle found. Specify --bundle.",
@@ -129,11 +137,12 @@ def main():
     html = html.replace("__BACK_HREF__", args.back_href)
 
     if engine in INLINE_SOURCE_ENGINES:
-        basic_source = source_path.read_text(encoding="utf-8")
+        basic_source = source_path.read_text(encoding="utf-8",
+                                             errors="replace")
+        # Strip ^Z EOF markers (DOS artifact)
+        basic_source = basic_source.split("\x1a")[0]
         html = html.replace("__BASIC_SOURCE__", basic_source)
     elif engine == "qbjc":
-        # Use relative path if compiled file is in the output dir,
-        # otherwise use the filename and copy it there
         if compiled_path.parent.resolve() == out_dir.resolve():
             js_ref = compiled_path.name
         else:
@@ -144,8 +153,6 @@ def main():
                 print(f"  Copied {compiled_path.name} -> {dest}")
         html = html.replace("__COMPILED_JS__", js_ref)
     elif engine == "jsdos":
-        # Use relative path if bundle is in the output dir,
-        # otherwise copy it there
         if bundle_path.parent.resolve() == out_dir.resolve():
             bundle_ref = bundle_path.name
         else:
@@ -156,8 +163,19 @@ def main():
                 print(f"  Copied {bundle_path.name} -> {dest}")
         html = html.replace("__BUNDLE__", bundle_ref)
 
-    # --- Check wwwbasic.js for wwwbasic-family engines ---
-    if engine in INLINE_SOURCE_ENGINES:
+    # --- Copy engine runtime files ---
+    if engine == "bwbasic":
+        bw_dest = out_dir / "lib" / "bwbasic"
+        bw_dest.mkdir(parents=True, exist_ok=True)
+        for fname in ("bwbasic.js", "bwbasic.wasm"):
+            src = BWBASIC_WASM_DIR / fname
+            dst = bw_dest / fname
+            if src.exists() and (not dst.exists() or args.force):
+                shutil.copy2(src, dst)
+                print(f"  Copied {fname} -> {bw_dest}")
+            elif not src.exists():
+                print(f"  Warning: {src} not found — bwBASIC runtime missing")
+    elif engine in ("wwwbasic", "basic"):
         wwwbasic_js = out_dir / "wwwbasic.js"
         if not wwwbasic_js.exists():
             print(f"  Warning: wwwbasic.js not found in {out_dir}")
