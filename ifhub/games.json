@@ -240,17 +240,5 @@
     "sourceUrl": "/lostinnewyork/source.html",
     "engine": "ink",
     "tags": []
-  },
-  {
-    "id": "adj",
-    "title": "ADJ Rules",
-    "sourceLabel": "adj.ni",
-    "playUrl": "/adj/play.html",
-    "walkthroughUrl": "/adj/walkthrough.html",
-    "landingUrl": "/adj/",
-    "sourceBrowser": true,
-    "sourceUrl": "/adj/source.html",
-    "engine": "inform7",
-    "tags": []
   }
 ]

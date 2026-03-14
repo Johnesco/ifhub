@@ -182,16 +182,5 @@
     "landingUrl": "/lostinnewyork/",
     "engine": "ink",
     "tags": []
-  },
-  {
-    "id": "adj",
-    "base": "adj",
-    "title": "ADJ Rules",
-    "meta": "Listen to Lani.",
-    "description": "You'd better listen to her.",
-    "playUrl": "/adj/play.html",
-    "landingUrl": "/adj/",
-    "engine": "inform7",
-    "tags": []
   }
 ]
