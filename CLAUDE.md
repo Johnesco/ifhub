@@ -71,6 +71,7 @@ C:\code\ifhub\
 │       ├── landing-template.html ← Landing page template (ifhub:* meta tags + __PLACEHOLDER__ values)
 │       ├── source-template.html  ← Source browser template (syntax-highlighted viewer)
 │       ├── templates/          ← Play template library (one per engine)
+│       │   ├── play-mood.html       ← Mood-enabled Parchment template (palette transitions)
 │       │   ├── play-parchment.html  ← Inform 7 / Z-machine (Parchment)
 │       │   ├── play-wwwbasic.html   ← GW-BASIC (Google wwwBASIC)
 │       │   ├── play-qbjc.html       ← QBasic/GW-BASIC (qbjc + xterm.js)
@@ -88,7 +89,8 @@ C:\code\ifhub\
 │           ├── bocfel.js       ← Z-machine interpreter
 │           ├── resourcemap.js  ← Resource mapping (images/sounds)
 │           ├── zvm.js          ← Z-machine VM
-│           └── waiting.gif     ← Loading indicator
+│           ├── waiting.gif     ← Loading indicator
+│           └── mood-engine.js  ← Shared mood palette engine (copied to projects by --mood)
 ├── projects/              ← Game projects
 │   ├── dracula/           ← Dracula: Inform 7 Edition
 │   ├── feverdream/        ← Fever Dream
@@ -101,6 +103,7 @@ C:\code\ifhub\
     ├── index.html         ← Landing page (reads cards.json, renders cards with Source/Walkthrough links)
     ├── app.html           ← Split-pane player (game + source viewer)
     ├── play.html          ← Shared player page (standalone use)
+    ├── themes.js          ← Platform theme system (10 retro themes)
     ├── importing.html     ← Guide for adding new games to the hub
     ├── games.json         ← Game registry (titles, URLs, engine, tags, sourceBrowser)
     ├── cards.json         ← Card metadata for landing page (engine, tags, versions)
@@ -292,6 +295,13 @@ python /c/code/ifhub/tools/web/setup_web.py \
     --title "My Game" \
     --blorb /path/to/game.gblorb \
     --out /path/to/project
+
+# With mood palette system:
+python /c/code/ifhub/tools/web/setup_web.py \
+    --title "My Game" \
+    --ulx /path/to/game.ulx \
+    --out /path/to/project \
+    --mood
 ```
 
 This creates:
@@ -380,7 +390,15 @@ python tools/register_game.py --name game-id --title "Title" --engine ink --tags
 
 ### CSS Overlay Theming
 
-Each game's `play.html` layers custom CSS on top of Parchment's base styles. Three tiers: Parchment base → static overlay (all projects) → dynamic mood system (zork1 v3, feverdream). See `reference/css-overlay.md` for full architecture.
+Each game's `play.html` layers custom CSS on top of Parchment's base styles. Three tiers: Parchment base → static overlay (all projects) → dynamic mood system (zork1 v3, feverdream, seasons). The shared mood engine (`tools/web/parchment/mood-engine.js`) provides room detection, palette transitions, and hooks for game-specific effects. See `reference/css-overlay.md` for full authoring guide.
+
+**Platform theme override:** When a platform theme is selected in the hub's style dropdown, game `play.html` files receive `ifhub:applyTheme` via postMessage and inject override styles. Games with overlays add `body.platform-theme-active` to suppress visual effects while the mood engine continues running. The overlay can be restored at any time via `ifhub:restoreOverlay`. The `overlayLabel` field in `games.json` controls which games show an overlay option in the style dropdown.
+
+**Adding mood theming to a new project:**
+1. Copy `tools/web/templates/play-mood.html` → `projects/<game>/play-template.html`
+2. Add palettes, room zones, and CSS effects
+3. Add `MoodEngine.init({...})` in a `<script>` block
+4. Build: `python tools/compile.py <game> --force` (auto-detects mood-engine.js in template)
 
 ### Troubleshooting
 
@@ -615,6 +633,8 @@ Optional additions per project:
 
 All projects have `CLAUDE.md`, `project.conf`, and delegate to the shared testing framework. See `reference/css-overlay.md` for the play.html theming architecture.
 
+Games with `overlayLabel` in `games.json` (zork1 v3+, feverdream, seasons) show an overlay toggle in the hub's style dropdown.
+
 ## Key Rules for Generating story.ni Files
 
 ### File Format
@@ -698,6 +718,17 @@ See `reference/syntax-guide.md` for full reference. Quick hits:
 - Actions: `Instead of pushing the button: say "Click."`
 - Custom actions: `Requesting help is an action out of world applying to nothing.`
 - Understand: `Understand "help" as requesting help.`
+
+### Verb Help System
+
+A reusable source template at `tools/verb-help-template.ni` that reduces guess-the-verb frustration. Copy the Chapter into any `story.ni` to get:
+- **Enhanced parser errors** — actionable messages instead of cryptic defaults
+- **VERBS command** — categorized list of available verbs
+- **HELP command** — brief orientation for parser IF newcomers
+- **~35 synonym mappings** — covers the most common guess-the-verb failures (inspect→examine, grab→take, etc.)
+- **USE verb handler** — redirects the most common unrecognized verb to specific verbs
+
+See `reference/verb-help.md` for the full authoring guide. Piloted on `projects/sample/`.
 
 ### Testing
 - Inform 7 compiles to Glulx (.ulx) or Z-machine (.z8)

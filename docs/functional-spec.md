@@ -50,6 +50,11 @@ The hub entry point. Fetches `cards.json` and renders a card for each game.
 - Versioned games show additional version links below the main card links
 - Card metadata is maintained in `cards.json`
 
+**Theme picker:**
+- A `.title-row` flex container next to the h1 title holds a theme dropdown
+- Dropdown populated from `themes.js` with 10 platform themes
+- Theme selection persisted in `localStorage` key `ifhub-theme`
+
 **Static content sections:**
 - "What's Inside" — feature list (play, source, walkthroughs, audio, resizable layout)
 - "About" — project description and philosophy
@@ -69,7 +74,9 @@ The primary play interface. A two-pane layout with the game on the left and sour
 - Minimum pane width: 200px on each side
 
 **Toolbar (top, spans full width):**
+- Library link (always visible, returns to `index.html`; uses hub-filtered URL when `hub` param is active)
 - Game selector dropdown (populated from `games.json`)
+- Style dropdown (overlay-aware theme selector): for games with `overlayLabel`, shows the game's native overlay as the default first option, then a separator, then all platform themes; for games without overlays, shows only platform themes. Per-game style preference stored in `localStorage` key `ifhub-style-<gameId>`
 - Sound controls (mute button + volume slider) — hidden by default, shown when game iframe reports `ifhub:soundReady`
 - View tabs: "Source" and "Walkthrough"
 
@@ -144,6 +151,12 @@ When the binary path matches `zork1-v(\d+)` with version >= 3 (or unversioned cu
 **Page lifecycle:**
 - `pageshow` event handler: reloads on back/forward navigation (`e.persisted`) to prevent stale game state
 
+**Platform theme support:**
+- Loads `themes.js` and calls `initTheme('game')` to apply the current theme
+- Theme listener responds to `ifhub:applyTheme` and `ifhub:restoreOverlay` postMessage events
+- On `ifhub:applyTheme`: injects a `<style id="platform-theme-override">` element with `!important` rules for game colors
+- On `ifhub:restoreOverlay`: removes the `<style id="platform-theme-override">` element to restore the native appearance
+
 ### 2.4 Per-Game Pages (served in-place)
 
 Each game project owns its own pages (`play.html`, `source.html`, `walkthrough.html`, `index.html`) and deploys them via GitHub Pages. The hub references these pages by URL — no copying or generation needed.
@@ -161,6 +174,10 @@ Each game has 4 standard pages at its root (or version directory):
 - `index.html` — landing page with Play, Source, and Walkthrough links
 
 **Landing page link pattern:** Each game's `index.html` provides direct links to Play, Source, and Walkthrough. The hub's landing page (`cards.json`) also links to `/<base>/source.html` and `/<base>/walkthrough.html` on each card.
+
+**Theme listener:**
+- All Parchment-based game `play.html` files include a theme listener script that handles `ifhub:applyTheme` and `ifhub:restoreOverlay` postMessage events
+- Games with CSS overlays additionally include suppression CSS for `body.platform-theme-active` — the body class hides game-specific visual effects (particles, scanlines, vignettes, pseudo-elements, animations) while the mood engine continues running in the background so that restoring the overlay gives correct room-state colors immediately
 
 ---
 
@@ -184,6 +201,7 @@ Each entry is an object with these fields:
 | `landingUrl` | string | No | Absolute URL path to game's landing page (e.g., `"/zork1/"`) |
 | `sound` | string | No | Sound mode: `"blorb"` for native Glk sound, absent for no sound |
 | `versionLabel` | string | No | Label shown in version lists (e.g., `"v2 — Bug Fixes"`) |
+| `overlayLabel` | string | No | Display label for the game's native CSS overlay (e.g., `"Fever Dream Overlay"`). When present, the style dropdown shows this as the default option. |
 
 ### 3.2 Card Metadata (`cards.json`)
 
@@ -290,6 +308,10 @@ The split-pane player provides centralized sound controls in the toolbar:
 | `ifhub:soundReady` | iframe → parent | `type` | Game has sound capability; show controls |
 | `ifhub:setMute` | parent → iframe | `type`, `muted` (boolean) | Toggle mute |
 | `ifhub:setVolume` | parent → iframe | `type`, `volume` (0.0-1.0) | Set volume |
+
+| `ifhub:applyTheme` | parent → iframe | `type`, `game` (object with colors/fonts), `scrollbar` (object) | Apply platform theme colors, suppress overlay |
+| `ifhub:restoreOverlay` | parent → iframe | `type` | Remove platform theme, restore native overlay |
+| `ifhub:themeChange` | parent → iframe | `type`, `themeId` (string) | Live theme switch (hub's play.html only) |
 
 Controls are hidden until `ifhub:soundReady` is received. On receipt, the parent pushes the current mute/volume state to the iframe.
 
@@ -426,6 +448,29 @@ Dark theme throughout:
 - **Code:** SF Mono, Fira Code, Cascadia Code, Consolas, Courier New, monospace
 - **Code font size:** 13px with 1.55 line-height
 - **Buffer text:** 16px with 1.6 line-height (19px in Zork I v3+ enhanced mode)
+
+### 8.3 Platform Themes
+
+The hub supports 10 retro platform themes modeled after systems Infocom shipped Z-machine games on. Themes are defined in `themes.js` and each contains three property groups:
+
+- **`chrome`** — Hub UI colors (page background, text, cards, toolbar, borders, buttons, input fields, font family)
+- **`game`** — Game iframe colors (buffer/grid backgrounds, text colors, input, font sizes, font families)
+- **`scrollbar`** — Scrollbar thumb, track, and hover colors
+
+Theme selection persists in `localStorage` key `ifhub-theme`. The landing page and app page both apply themes by setting CSS custom properties on `document.documentElement`.
+
+**Available themes:** Classic (default), MS-DOS, Apple II, Commodore 64, Amiga, Macintosh, Atari ST, CP/M (Kaypro), Atari 800, TRS-80
+
+### 8.4 Overlay Selector
+
+Games with CSS overlays (mood palettes, atmospheric effects) have their overlay listed as a selectable style option alongside platform themes. The style dropdown in `app.html` shows:
+
+- For games WITH `overlayLabel`: the overlay as the default first option, then a separator, then all platform themes
+- For games WITHOUT `overlayLabel`: only platform themes (default from localStorage)
+
+When a platform theme is selected, the hub sends `ifhub:applyTheme` to the game iframe with the theme's game colors. The game's play.html adds `body.platform-theme-active` which suppresses overlay visual effects via CSS rules. The mood engine keeps running in the background so that restoring the overlay gives correct room-state colors immediately.
+
+Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId>`.
 
 ---
 
@@ -847,3 +892,74 @@ For projects created with `new_project.py`, the test infrastructure is ready imm
 3. **Write RegTest scenarios** — A `.regtest` file with `* test-name` blocks testing specific mechanics.
 4. **Discover a golden seed** — Run `find_seeds.py` and update `seeds.conf`.
 5. **Verify** — Run all three test types and confirm pass results.
+
+---
+
+## 12. Verb Help System
+
+A reusable Inform 7 source template (`tools/verb-help-template.ni`) that mitigates guess-the-verb frustration — the #1 pain point in parser-based interactive fiction. Pure in-game solution that works in every interpreter (web, native, testing). No external services or JS overlay.
+
+### 12.1 Architecture
+
+The template is a self-contained Chapter that authors copy into their `story.ni`. It has four independent sections — authors can include all or cherry-pick.
+
+| Section | Purpose |
+|---|---|
+| Enhanced Parser Errors | Replaces cryptic default parser errors with actionable messages |
+| Help and Verbs Commands | VERBS (categorized verb list) and HELP (orientation for new players) |
+| Common Synonyms | ~35 verb synonym mappings for common guess-the-verb failures |
+| USE Verb Handler | Dedicated handler for the most common unrecognized verb |
+
+### 12.2 Enhanced Parser Errors
+
+Overrides five parser error messages via `Rule for printing a parser error`:
+
+| Parser Error | Replacement |
+|---|---|
+| Not a verb I recognise | Points to VERBS command and suggests VERB NOUN phrasing |
+| Didn't understand | Suggests VERB NOUN pattern with examples |
+| Can't see any such thing | Suggests LOOK and INVENTORY |
+| Said too little | Asks for more detail with examples |
+| Only understood as far as | Suggests rephrasing |
+
+### 12.3 VERBS and HELP Commands
+
+Two out-of-world actions:
+
+- **VERBS** (also: COMMANDS) — lists available verbs by category: Movement, Looking, Taking, Using, Talking, Self, Meta
+- **HELP** (also: HINT, HINTS) — brief orientation for players unfamiliar with parser IF
+
+### 12.4 Common Synonyms
+
+~35 `Understand the command` redirects covering the most frequent missing verbs. Only adds genuinely missing synonyms — does not duplicate what Inform 7's Standard Rules already handle.
+
+Key mappings: inspect/study/view/peruse → examine, grab/collect/acquire/snag/fetch/obtain/steal/nab/lift → take, strike/stab/slash/kick → attack, peek/peer/gaze → look, proceed/head → go, pry/force → open, toss → drop, place → put, shove/prod → push, yank → pull, consume/devour → eat.
+
+Communication patterns: `talk to / speak to / chat with [someone] about [text]` → asking it about.
+
+### 12.5 USE Verb Handler
+
+Dedicated handler for `USE`, the most common unrecognized verb across all parser IF:
+
+- **USE thing** — "How do you want to use that? Try a specific verb: OPEN, PUSH, PULL, TURN, EAT, WEAR, etc."
+- **USE thing ON/WITH thing** — attempts `unlock` if the target is lockable; otherwise suggests specific commands
+
+### 12.6 Usage
+
+```bash
+# Template is at:
+tools/verb-help-template.ni
+
+# Copy the Chapter into your story.ni, then compile:
+python tools/compile.py <game>
+```
+
+See `reference/verb-help.md` for the full authoring guide covering customization, game-specific extensions, and testing patterns.
+
+### 12.7 Design Decisions
+
+**Why a source template, not an Extension?** Extensions require installation into the Extensions directory and have specific formatting. A source template pasted into `story.ni` is simpler, visible in the source browser, and avoids Windows extension-path issues.
+
+**Why handle USE specifically?** Players from point-and-click adventure games instinctively type USE. A dedicated handler that redirects to specific verbs teaches parser literacy.
+
+**Why not fuzzy matching?** Inform 7's parser uses fixed grammar tables at the I6 level. Explicit synonym mappings achieve most of the benefit with zero engine hacking.
