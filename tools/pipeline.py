@@ -128,6 +128,16 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
                 "--compiled", str(compiled_js),
                 "--out", str(project_dir),
             ]
+        elif engine == "jsdos":
+            # jsdos uses --bundle for the .jsdos file
+            bundle_path = project_dir / source_file
+            cmd = [
+                sys.executable, str(paths.WEB_DIR / "setup_basic.py"),
+                *engine_spec.build_tool_args,
+                "--title", title,
+                "--bundle", str(bundle_path),
+                "--out", str(project_dir),
+            ]
         else:
             cmd = [
                 sys.executable, str(paths.WEB_DIR / "setup_basic.py"),

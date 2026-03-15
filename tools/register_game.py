@@ -25,7 +25,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR
+from lib.paths import IFHUB_DIR, PROJECTS_DIR
+from lib.config import get_engine_spec
 
 
 def main():
@@ -56,14 +57,26 @@ def main():
     if any(g["id"] == name for g in games):
         print(f"  games.json: '{name}' already exists, skipping")
     else:
+        # Derive source label from engine type
+        spec = get_engine_spec(args.engine)
+        if spec:
+            source_label = spec.source_label(name)
+        else:
+            source_label = f"{name}.ni"
+
         entry: dict = {
             "id": name,
             "title": args.title,
-            "sourceLabel": f"{name}.ni",
+            "sourceLabel": source_label,
             "playUrl": f"/{name}/play.html",
-            "walkthroughUrl": f"/{name}/walkthrough.html",
             "landingUrl": f"/{name}/",
         }
+        # Only add walkthroughUrl if a walkthrough exists
+        project_dir = PROJECTS_DIR / name
+        walkthrough_file = project_dir / "tests" / "inform7" / "walkthrough.txt"
+        walkthrough_html = project_dir / "walkthrough.html"
+        if walkthrough_file.exists() or walkthrough_html.exists():
+            entry["walkthroughUrl"] = f"/{name}/walkthrough.html"
         if args.source_browser:
             entry["sourceBrowser"] = True
             entry["sourceUrl"] = f"/{name}/source.html"

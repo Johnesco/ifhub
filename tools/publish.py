@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import git, paths, process
+from lib import config, git, paths, process
 
 WORKFLOW_CONTENT = """\
 name: Deploy to GitHub Pages
@@ -101,7 +101,11 @@ def main():
         git.init(cwd=project_dir)
 
         print("  Creating GitHub repo...")
-        git.gh_repo_create(args.game, f"{args.game} -- An Inform 7 Game", cwd=project_dir)
+        conf_fields = config.parse_conf_fields(project_dir)
+        engine = config.detect_engine(project_dir, conf_fields)
+        engine_spec = config.get_engine_spec(engine)
+        repo_desc = engine_spec.repo_description(args.game) if engine_spec else f"{args.game} -- An Interactive Fiction"
+        git.gh_repo_create(args.game, repo_desc, cwd=project_dir)
 
         ensure_workflow(project_dir)
 

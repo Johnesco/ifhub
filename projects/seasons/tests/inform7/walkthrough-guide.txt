@@ -1,0 +1,46 @@
+# Auto-generated walkthrough guide
+
+## Winter
+
+> look
+
+# Dark and skeletal against the white sky, creaking softly in the wind.
+> examine branches
+# Pristine and endless, glittering faintly where light touches it.
+> examine snow
+
+## Spring
+
+> south
+> look
+
+# Purple and white, fragile but stubborn - the first to arrive, every year.
+> examine crocuses
+# You can't see the birds, but their song is everywhere - layered and
+#   intricate, as though the whole canopy were singing.
+> examine birdsong
+
+## Summer
+
+> south
+> look
+
+# It sways at waist height, seed-heavy and golden at the tips.
+> examine grass
+# It falls in bright columns through the leaf canopy, thick and almost
+#   tangible.
+> examine sunlight
+
+## Fall
+
+> south
+> look
+
+# They spin slowly as they descend - oak, maple, birch - each one catching the
+#   light before it settles.
+> examine leaves
+
+## Winter
+
+> south
+> look

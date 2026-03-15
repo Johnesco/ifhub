@@ -1,0 +1,79 @@
+
+
+
+
+Seasons
+A Cycle Without End by Anonymous
+Release 1 / Serial number 260314 / Inform 7 v10.1.2 / D
+A meditation in four movements.
+
+Winter
+Bare branches scratch against a pale sky. Snow blankets everything in heavy silence, muffling your footsteps.
+
+A path leads south toward warmth, or north into falling leaves.
+
+>Winter
+Bare branches scratch against a pale sky. Snow blankets everything in heavy silence, muffling your footsteps.
+
+A path leads south toward warmth, or north into falling leaves.
+
+>Dark and skeletal against the white sky, creaking softly in the wind.
+
+>Pristine and endless, glittering faintly where light touches it.
+
+>
+Spring
+Crocuses push through thawing earth. A breeze carries the scent of wet soil and new blossoms. Birdsong threads through the canopy above.
+
+The path continues south toward brighter light, or north toward the cold.
+
+>Spring
+Crocuses push through thawing earth. A breeze carries the scent of wet soil and new blossoms. Birdsong threads through the canopy above.
+
+The path continues south toward brighter light, or north toward the cold.
+
+>Purple and white, fragile but stubborn - the first to arrive, every year.
+
+>You can't see the birds, but their song is everywhere - layered and intricate, as though the whole canopy were singing.
+
+>
+Summer
+Sunlight pours through a cathedral of green leaves. The air hums with warmth and the drowsy buzz of insects. Tall grass ripples in slow waves.
+
+South, the light turns golden. North, it softens.
+
+>Summer
+Sunlight pours through a cathedral of green leaves. The air hums with warmth and the drowsy buzz of insects. Tall grass ripples in slow waves.
+
+South, the light turns golden. North, it softens.
+
+>It sways at waist height, seed-heavy and golden at the tips.
+
+>It falls in bright columns through the leaf canopy, thick and almost tangible.
+
+>
+Fall
+Leaves drift in spirals of amber and crimson. The light is golden and low, casting long shadows through thinning trees.
+
+The path continues south toward the cold, or north toward the warmth.
+
+>Fall
+Leaves drift in spirals of amber and crimson. The light is golden and low, casting long shadows through thinning trees.
+
+The path continues south toward the cold, or north toward the warmth.
+
+>They spin slowly as they descend - oak, maple, birch - each one catching the light before it settles.
+
+>
+Winter
+Bare branches scratch against a pale sky. Snow blankets everything in heavy silence, muffling your footsteps.
+
+A path leads south toward warmth, or north into falling leaves.
+
+>Winter
+Bare branches scratch against a pale sky. Snow blankets everything in heavy silence, muffling your footsteps.
+
+A path leads south toward warmth, or north into falling leaves.
+
+>
+<end of input>

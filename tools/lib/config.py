@@ -28,6 +28,17 @@ class EngineSpec:
     binary_extensions: tuple[str, ...] = ()  # (".ulx", ".gblorb") or ()
     is_basic: bool = False
 
+    def source_label(self, project_name: str) -> str:
+        """Derive the display label for the source file (e.g. 'story.ni', 'game.bas')."""
+        if self.name == "inform7":
+            return "story.ni"
+        ext = self.source_extensions[0] if self.source_extensions else ""
+        return f"{project_name}{ext}"
+
+    def repo_description(self, project_name: str) -> str:
+        """Human-readable repo description for GitHub."""
+        return f"{project_name} -- {self.label} Game"
+
 
 ENGINE_REGISTRY: dict[str, EngineSpec] = {
     "inform7": EngineSpec(

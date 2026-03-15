@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--meta", default="An Interactive Fiction", help="Subtitle")
     parser.add_argument("--description", default="An interactive fiction game.", help="Description")
     parser.add_argument("--out", required=True, help="Output directory")
+    parser.add_argument("--source-file", default="story.ni", help="Source filename (e.g. story.ni, game.bas)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing files")
     args = parser.parse_args()
 
@@ -56,7 +57,10 @@ def main():
     source_out = out_dir / "source.html"
     if not source_out.exists() or args.force:
         print("Generating source.html...")
-        substitute_template(source_template, source_out, {"__TITLE__": args.title})
+        substitute_template(source_template, source_out, {
+            "__TITLE__": args.title,
+            "__SOURCE_FILE__": args.source_file,
+        })
         generated += 1
     else:
         print("  source.html already exists (use --force to overwrite)")

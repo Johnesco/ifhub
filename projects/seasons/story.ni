@@ -1,4 +1,4 @@
-"Seasons" by "John Escobedo"
+"Seasons" by "Anonymous"
 
 The story headline is "A Cycle Without End".
 The story genre is "Fiction".
@@ -44,7 +44,11 @@ Fall is south of Summer. South of Fall is Winter. "Leaves drift in spirals of am
 The falling leaves are scenery in Fall. The description is "They spin slowly as they descend — oak, maple, birch — each one catching the light before it settles."
 Understand "leaf" as the falling leaves.
 
-Part 2 - Presentation
+Part 2 - Testing
+
+Test me with "look / examine branches / examine snow / south / look / examine crocuses / examine birdsong / south / look / examine grass / examine sunlight / south / look / examine leaves / south / look".
+
+Part 3 - Presentation
 
 After printing the banner text:
 	say "A meditation in four movements.[paragraph break]".

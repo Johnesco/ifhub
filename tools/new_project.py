@@ -19,7 +19,7 @@ from lib.paths import PROJECTS_DIR, I7_ROOT
 from lib.config import ENGINE_REGISTRY, get_engine_spec
 
 # Engines available for project creation (subset of ENGINE_REGISTRY)
-CREATABLE_ENGINES = ["inform7", "ink", "wwwbasic", "qbjc", "applesoft", "twine"]
+CREATABLE_ENGINES = ["inform7", "ink", "wwwbasic", "qbjc", "applesoft", "bwbasic", "jsdos", "twine"]
 
 
 # ---------------------------------------------------------------------------
@@ -540,6 +540,60 @@ def scaffold_twine(project_dir, title, name):
     return source_name
 
 
+def scaffold_jsdos(project_dir, title, name):
+    """Create a DOS (js-dos) project scaffold."""
+    (project_dir / "tests").mkdir(parents=True, exist_ok=True)
+
+    # Placeholder — user must provide their own .jsdos bundle
+    source_name = name.replace("-", "_") + ".jsdos"
+
+    # tests/project.conf
+    (project_dir / "tests" / "project.conf").write_text(textwrap.dedent(f"""\
+        # {title} -- project configuration
+        PROJECT_NAME="{title}"
+        ENGINE=jsdos
+        SOURCE={source_name}
+        PIPELINE_SOUND=false
+        PIPELINE_VERSIONED=false
+        PIPELINE_HUB_ID="{name}"
+        PIPELINE_TESTS=""
+    """), encoding="utf-8")
+
+    # CLAUDE.md
+    (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
+        # {title} -- A DOS Game (js-dos)
+
+        ## Project Structure
+
+        ```
+        C:\\code\\ifhub\\projects\\{name}\\
+        ├── CLAUDE.md              <- You are here
+        ├── {source_name}          <- .jsdos bundle (DOSBox package)
+        ├── play.html              <- Browser-playable game (js-dos player)
+        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
+        └── tests/
+            └── project.conf       <- Project configuration
+        ```
+
+        ## Build & Deploy
+
+        ```bash
+        # Generate web player from .jsdos bundle
+        python /c/code/ifhub/tools/pipeline.py {name}
+
+        # Publish to GitHub Pages
+        python /c/code/ifhub/tools/publish.py {name}
+        ```
+
+        ## Key Rules
+
+        - `{source_name}` is the .jsdos bundle (created with js-dos tools)
+        - For hub documentation, see `C:\\code\\ifhub\\CLAUDE.md`
+    """), encoding="utf-8")
+
+    return source_name
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -578,8 +632,10 @@ def main():
         source_file = scaffold_inform7(project_dir, title, name)
     elif engine == "ink":
         source_file = scaffold_ink(project_dir, title, name)
-    elif engine in ("wwwbasic", "qbjc", "applesoft"):
+    elif engine in ("wwwbasic", "qbjc", "applesoft", "bwbasic"):
         source_file = scaffold_basic(project_dir, title, name, engine)
+    elif engine == "jsdos":
+        source_file = scaffold_jsdos(project_dir, title, name)
     elif engine == "twine":
         source_file = scaffold_twine(project_dir, title, name)
     else:

@@ -192,21 +192,27 @@ def extract_commands_cmd(source_path, output_path):
     return py_cmd(EXTRACT_COMMANDS_PY, "--from-source", source_path, "-o", output_path)
 
 
-def generate_pages_cmd(title, meta, description, out_dir, force=False):
+def generate_pages_cmd(title, meta, description, out_dir, force=False, source_file=""):
     cmd = py_cmd(GENERATE_PAGES_PY,
                  "--title", title, "--meta", meta,
                  "--description", description, "--out", out_dir)
+    if source_file:
+        cmd.extend(["--source-file", source_file])
     if force:
         cmd.append("--force")
     return cmd
 
 
-def register_game_cmd(name, title, meta, description, sound=""):
+def register_game_cmd(name, title, meta, description, sound="", engine="", tags=""):
     cmd = py_cmd(REGISTER_GAME_PY,
                  "--name", name, "--title", title,
                  "--meta", meta, "--description", description)
     if sound:
         cmd.extend(["--sound", sound])
+    if engine:
+        cmd.extend(["--engine", engine])
+    if tags:
+        cmd.extend(["--tags", tags])
     return cmd
 
 
@@ -309,7 +315,7 @@ def run_job(job_id, commands):
 PIPELINE_STEPS = ["build", "test", "package", "register", "publish"]
 
 
-def _basic_compile_cmd(project):
+def _basic_compile_cmd(project, force=False):
     """Build a setup_basic.py command for a BASIC engine project."""
     engine = project.engine
     if engine == "basic":
@@ -320,7 +326,12 @@ def _basic_compile_cmd(project):
     if project.source_file:
         source_path = os.path.join(project.dir, project.source_file)
         if os.path.isfile(source_path):
-            cmd.extend(["--source", source_path])
+            if engine == "jsdos":
+                cmd.extend(["--bundle", source_path])
+            else:
+                cmd.extend(["--source", source_path])
+    if force:
+        cmd.append("--force")
     return cmd
 
 
@@ -329,7 +340,8 @@ def _step_commands(step, project, data):
     game = project.name
     engine = project.engine
     is_i7 = engine == "inform7"
-    is_basic = engine in ("wwwbasic", "qbjc", "applesoft", "basic")
+    engine_spec = _libconfig.get_engine_spec(engine)
+    is_basic = engine_spec.is_basic if engine_spec else False
     force = data.get("force", False)
     title = data.get("title", game.replace("-", " ").replace("_", " ").title())
     meta = data.get("meta", "An Interactive Fiction")
@@ -350,8 +362,8 @@ def _step_commands(step, project, data):
                 ))
             cmds.append(compile_cmd(game, data.get("sound", project.sound), force=force))
             return cmds
-        if is_basic:
-            return [_basic_compile_cmd(project)]
+        if is_basic or engine == "jsdos":
+            return [_basic_compile_cmd(project, force=force)]
         if is_ink:
             cmd = py_cmd(SETUP_INK_PY, "--title", title, "--out", project.dir)
             if project.source_file:
@@ -362,7 +374,7 @@ def _step_commands(step, project, data):
         return []
 
     if step == "test":
-        if not is_i7:
+        if not (engine_spec and engine_spec.has_cli_tests):
             return []
         cmds = []
         conf = os.path.join(project.dir, "tests", "project.conf")
@@ -373,11 +385,12 @@ def _step_commands(step, project, data):
         return cmds
 
     if step == "package":
-        return [generate_pages_cmd(title, meta, desc, project.dir, force=force)]
+        return [generate_pages_cmd(title, meta, desc, project.dir, force=force,
+                                   source_file=project.source_file)]
 
     if step == "register":
         sound_type = "blorb" if data.get("sound", project.sound) else ""
-        return [register_game_cmd(game, title, meta, desc, sound_type), push_hub_cmd(game)]
+        return [register_game_cmd(game, title, meta, desc, sound_type, engine=engine), push_hub_cmd(game)]
 
     if step == "publish":
         message = data.get("message", "")
@@ -1039,6 +1052,8 @@ button.primary:hover:not(:disabled) {
           <option value="wwwbasic">wwwBASIC (GW-BASIC)</option>
           <option value="qbjc">qbjc (QBasic)</option>
           <option value="applesoft">Applesoft BASIC</option>
+          <option value="bwbasic">bwBASIC (GW-BASIC)</option>
+          <option value="jsdos">DOS (js-dos)</option>
           <option value="twine">Twine</option>
         </select>
       </div>
@@ -1133,12 +1148,12 @@ let evtSrc = null;
 
 const ENGINE_LABELS = {
   inform7: 'Inform 7', wwwbasic: 'wwwBASIC', qbjc: 'QBasic',
-  applesoft: 'Applesoft', jsdos: 'DOS', basic: 'BASIC',
+  applesoft: 'Applesoft', bwbasic: 'bwBASIC', jsdos: 'DOS', basic: 'BASIC',
   twine: 'Twine', ink: 'Ink', unknown: 'Unknown',
 };
 
-const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'basic'];
-const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'basic', 'ink'];
+const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic'];
+const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic', 'ink', 'jsdos'];
 
 const STEPS = [
   {
@@ -1149,7 +1164,9 @@ const STEPS = [
         ? 'Compile .ink \u2192 JSON + web player'
         : BASIC_ENGINES.includes(p.engine)
           ? 'Generate web player from source'
-          : 'Compile source',
+          : p.engine === 'jsdos'
+            ? 'Generate web player from .jsdos bundle'
+            : 'Compile source',
     status: p => [
       { ok: p.hasBinary, t: p.hasBinary ? 'binary' : 'no binary' },
       { ok: p.hasPlayHtml, t: p.hasPlayHtml ? 'play.html' : 'no play.html' },
@@ -1166,7 +1183,7 @@ const STEPS = [
       if (!s.length) s.push({ ok: false, t: 'no tests configured' });
       return s;
     },
-    enabled: p => p.engine === 'inform7' && (p.hasWalkthrough || p.hasRegtest),
+    enabled: p => (p.engine === 'inform7' || p.engine === 'zmachine') && (p.hasWalkthrough || p.hasRegtest),
   },
   {
     id: 'package', name: 'Package',
@@ -1405,6 +1422,8 @@ const ENGINE_META = {
   wwwbasic:  { label: 'wwwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
   qbjc:      { label: 'qbjc',      file: '.bas',       hint: 'Paste your QBasic source here, or leave empty for a starter template.', placeholder: 'PRINT "Hello, World!"\\nEND' },
   applesoft: { label: 'Applesoft', file: '.bas',       hint: 'Paste your Applesoft BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "HELLO, WORLD!"\\n20 END' },
+  bwbasic:   { label: 'bwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
+  jsdos:     { label: 'DOS',      file: '.jsdos',     hint: 'A .jsdos bundle is required. Create one with js-dos tools.', placeholder: '' },
   twine:     { label: 'Twine',     file: '.tw',        hint: 'Paste your Twee source here, or leave empty for a starter template.', placeholder: ':: Start\\nYou stand at a crossroads.\\n\\n[[Go north->North]]' },
 };
 
