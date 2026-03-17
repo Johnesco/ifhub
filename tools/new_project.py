@@ -224,65 +224,11 @@ def scaffold_inform7(project_dir, title, name):
 
     # CLAUDE.md
     (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
-        # {title} -- An Inform 7 Game
+        # {title}
 
-        ## Project Structure
+        An Inform 7 interactive fiction.
 
-        ```
-        C:\\code\\ifhub\\projects\\{name}\\
-        ├── CLAUDE.md              <- You are here
-        ├── story.ni               <- Source of truth (Inform 7 source)
-        ├── {name}.ulx              <- Compiled Glulx binary (build output)
-        ├── play.html              <- Browser-playable game (Parchment player)
-        ├── lib/parchment/         <- Parchment JS libraries + {name}.ulx.js
-        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
-        └── tests/
-            ├── project.conf       <- Test configuration
-            ├── seeds.conf         <- Golden seeds
-            ├── {name}.regtest      <- Regression tests
-            └── inform7/
-                ├── walkthrough.txt        <- Walkthrough commands
-                └── walkthrough_output.txt <- Generated transcript
-        ```
-
-        ## Shared Resources
-
-        - **Inform 7 hub**: `C:\\code\\ifhub\\CLAUDE.md`
-        - **Syntax reference**: `C:\\code\\ifhub\\reference\\syntax-guide.md`
-        - **Text formatting**: `C:\\code\\ifhub\\reference\\text-formatting.md`
-        - **Testing framework**: `C:\\code\\ifhub\\tools\\testing\\`
-        - **Web player setup**: `C:\\code\\ifhub\\tools\\web\\`
-
-        ## Build & Deploy
-
-        ```bash
-        # Compile + set up web player
-        python /c/code/ifhub/tools/compile.py {name}
-
-        # Publish to GitHub Pages (first time creates repo)
-        python /c/code/ifhub/tools/publish.py {name}
-        ```
-
-        ## Testing
-
-        ```bash
-        python /c/code/ifhub/tools/testing/run_walkthrough.py --config tests/project.conf --no-seed --no-save
-        python /c/code/ifhub/tools/testing/run_tests.py --config tests/project.conf
-        python /c/code/ifhub/tools/testing/find_seeds.py --config tests/project.conf
-        ```
-
-        ## Play Locally
-
-        ```bash
-        python -m http.server 8000
-        # Then open http://localhost:8000/play.html
-        ```
-
-        ## Key Rules
-
-        - `story.ni` is the single source of truth
-        - Do NOT create `.inform/` IDE bundles
-        - For Inform 7 syntax and conventions, see `C:\\code\\ifhub\\CLAUDE.md`
+        For build, test, and publish workflows, see `C:\\code\\ifhub\\reference\\project-guide.md`.
     """), encoding="utf-8")
 
     return "story.ni"
@@ -329,49 +275,17 @@ def scaffold_ink(project_dir, title, name):
         ENGINE=ink
         SOURCE={source_name}
         PIPELINE_SOUND=false
-        PIPELINE_VERSIONED=false
         PIPELINE_HUB_ID="{name}"
         PIPELINE_TESTS=""
     """), encoding="utf-8")
 
     # CLAUDE.md
     (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
-        # {title} -- An Ink Story
+        # {title}
 
-        ## Project Structure
+        An Ink interactive fiction.
 
-        ```
-        C:\\code\\ifhub\\projects\\{name}\\
-        ├── CLAUDE.md              <- You are here
-        ├── {source_name}          <- Source of truth (Ink source)
-        ├── {name.replace("-", "_")}.json    <- Compiled story (JSON)
-        ├── play.html              <- Browser-playable game (ink.js player)
-        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
-        └── tests/
-            └── project.conf       <- Project configuration
-        ```
-
-        ## Build & Deploy
-
-        ```bash
-        # Compile + set up web player
-        python /c/code/ifhub/tools/pipeline.py {name}
-
-        # Publish to GitHub Pages
-        python /c/code/ifhub/tools/publish.py {name}
-        ```
-
-        ## Play Locally
-
-        ```bash
-        python -m http.server 8000
-        # Then open http://localhost:8000/play.html
-        ```
-
-        ## Key Rules
-
-        - `{source_name}` is the single source of truth
-        - For hub documentation, see `C:\\code\\ifhub\\CLAUDE.md`
+        For build, test, and publish workflows, see `C:\\code\\ifhub\\reference\\project-guide.md`.
     """), encoding="utf-8")
 
     return source_name
@@ -408,48 +322,17 @@ def scaffold_basic(project_dir, title, name, engine):
         ENGINE={engine}
         SOURCE={source_name}
         PIPELINE_SOUND=false
-        PIPELINE_VERSIONED=false
         PIPELINE_HUB_ID="{name}"
         PIPELINE_TESTS=""
     """), encoding="utf-8")
 
     # CLAUDE.md
     (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
-        # {title} -- A {label} Game
+        # {title}
 
-        ## Project Structure
+        A {label} interactive fiction.
 
-        ```
-        C:\\code\\ifhub\\projects\\{name}\\
-        ├── CLAUDE.md              <- You are here
-        ├── {source_name}          <- Source of truth ({label} source)
-        ├── play.html              <- Browser-playable game ({label} player)
-        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
-        └── tests/
-            └── project.conf       <- Project configuration
-        ```
-
-        ## Build & Deploy
-
-        ```bash
-        # Compile + set up web player
-        python /c/code/ifhub/tools/pipeline.py {name}
-
-        # Publish to GitHub Pages
-        python /c/code/ifhub/tools/publish.py {name}
-        ```
-
-        ## Play Locally
-
-        ```bash
-        python -m http.server 8000
-        # Then open http://localhost:8000/play.html
-        ```
-
-        ## Key Rules
-
-        - `{source_name}` is the single source of truth
-        - For hub documentation, see `C:\\code\\ifhub\\CLAUDE.md`
+        For build, test, and publish workflows, see `C:\\code\\ifhub\\reference\\project-guide.md`.
     """), encoding="utf-8")
 
     return source_name
@@ -501,40 +384,17 @@ def scaffold_twine(project_dir, title, name):
         ENGINE=twine
         SOURCE={source_name}
         PIPELINE_SOUND=false
-        PIPELINE_VERSIONED=false
         PIPELINE_HUB_ID="{name}"
         PIPELINE_TESTS=""
     """), encoding="utf-8")
 
     # CLAUDE.md
     (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
-        # {title} -- A Twine Story
+        # {title}
 
-        ## Project Structure
+        A Twine interactive fiction.
 
-        ```
-        C:\\code\\ifhub\\projects\\{name}\\
-        ├── CLAUDE.md              <- You are here
-        ├── {source_name}          <- Source of truth (Twee source)
-        ├── play.html              <- Browser-playable game (self-contained)
-        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
-        └── tests/
-            └── project.conf       <- Project configuration
-        ```
-
-        ## Build & Deploy
-
-        Twine games are self-contained HTML. Export from the Twine editor,
-        save as play.html, then publish:
-
-        ```bash
-        python /c/code/ifhub/tools/publish.py {name}
-        ```
-
-        ## Key Rules
-
-        - `{source_name}` is the source of truth
-        - For hub documentation, see `C:\\code\\ifhub\\CLAUDE.md`
+        For build, test, and publish workflows, see `C:\\code\\ifhub\\reference\\project-guide.md`.
     """), encoding="utf-8")
 
     return source_name
@@ -554,41 +414,17 @@ def scaffold_jsdos(project_dir, title, name):
         ENGINE=jsdos
         SOURCE={source_name}
         PIPELINE_SOUND=false
-        PIPELINE_VERSIONED=false
         PIPELINE_HUB_ID="{name}"
         PIPELINE_TESTS=""
     """), encoding="utf-8")
 
     # CLAUDE.md
     (project_dir / "CLAUDE.md").write_text(textwrap.dedent(f"""\
-        # {title} -- A DOS Game (js-dos)
+        # {title}
 
-        ## Project Structure
+        A DOS game (js-dos).
 
-        ```
-        C:\\code\\ifhub\\projects\\{name}\\
-        ├── CLAUDE.md              <- You are here
-        ├── {source_name}          <- .jsdos bundle (DOSBox package)
-        ├── play.html              <- Browser-playable game (js-dos player)
-        ├── .github/workflows/     <- GitHub Actions workflow for Pages deployment
-        └── tests/
-            └── project.conf       <- Project configuration
-        ```
-
-        ## Build & Deploy
-
-        ```bash
-        # Generate web player from .jsdos bundle
-        python /c/code/ifhub/tools/pipeline.py {name}
-
-        # Publish to GitHub Pages
-        python /c/code/ifhub/tools/publish.py {name}
-        ```
-
-        ## Key Rules
-
-        - `{source_name}` is the .jsdos bundle (created with js-dos tools)
-        - For hub documentation, see `C:\\code\\ifhub\\CLAUDE.md`
+        For build, test, and publish workflows, see `C:\\code\\ifhub\\reference\\project-guide.md`.
     """), encoding="utf-8")
 
     return source_name
