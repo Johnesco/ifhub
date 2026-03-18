@@ -182,5 +182,16 @@
     "landingUrl": "/lostinnewyork/",
     "engine": "ink",
     "tags": []
+  },
+  {
+    "id": "guess_the_verb",
+    "base": "guess_the_verb",
+    "title": "Guess The Verb",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/guess_the_verb/play.html",
+    "landingUrl": "/guess_the_verb/",
+    "engine": "inform7",
+    "tags": []
   }
 ]

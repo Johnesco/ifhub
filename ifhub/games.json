@@ -243,5 +243,17 @@
     "sourceUrl": "/lostinnewyork/source.html",
     "engine": "ink",
     "tags": []
+  },
+  {
+    "id": "guess_the_verb",
+    "title": "Guess The Verb",
+    "sourceLabel": "story.ni",
+    "playUrl": "/guess_the_verb/play.html",
+    "landingUrl": "/guess_the_verb/",
+    "walkthroughUrl": "/guess_the_verb/walkthrough.html",
+    "sourceBrowser": true,
+    "sourceUrl": "/guess_the_verb/source.html",
+    "engine": "inform7",
+    "tags": []
   }
 ]
