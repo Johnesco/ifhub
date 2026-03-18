@@ -5,7 +5,7 @@
 (function() {
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Pixelify+Sans&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
     document.head.appendChild(link);
 })();
 
@@ -75,7 +75,7 @@ var THEMES = [
             badgeBg: '#0a1a00', badgeFg: '#22aa00',
             codeBg: '#0a1a00', codeFg: '#33ff00',
             footerFg: '#1a8800', linkFg: '#33ff00',
-            fontFamily: '"Silkscreen", "Courier New", monospace'
+            fontFamily: '"DotGothic16", "Courier New", monospace'
         },
         game: {
             bodyBg: '#000', bufferBg: '#000', bufferFg: '#33ff00',
@@ -83,8 +83,8 @@ var THEMES = [
             inputFg: '#66ff33', emphFg: '#66ff33', headerFg: '#88ff66',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Silkscreen", "Courier New", monospace',
-            propFamily: '"Silkscreen", "Courier New", monospace'
+            monoFamily: '"DotGothic16", "Courier New", monospace',
+            propFamily: '"DotGothic16", "Courier New", monospace'
         },
         scrollbar: { thumb: '#1a5500', track: '#000', thumbHover: '#2a7700' }
     },
@@ -153,7 +153,7 @@ var THEMES = [
             badgeBg: '#e8e8e8', badgeFg: '#555',
             codeBg: '#e8e8e8', codeFg: '#000',
             footerFg: '#777', linkFg: '#333',
-            fontFamily: '"Pixelify Sans", "Geneva", "Lucida Grande", Helvetica, sans-serif'
+            fontFamily: '"DotGothic16", "Geneva", "Lucida Grande", Helvetica, sans-serif'
         },
         game: {
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
@@ -161,8 +161,8 @@ var THEMES = [
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
             bufferSize: '16px', bufferLineHeight: '1.5',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Pixelify Sans", Monaco, "Courier New", monospace',
-            propFamily: '"Pixelify Sans", "Geneva", "Lucida Grande", Helvetica, sans-serif'
+            monoFamily: '"DotGothic16", Monaco, "Courier New", monospace',
+            propFamily: '"DotGothic16", "Geneva", "Lucida Grande", Helvetica, sans-serif'
         },
         scrollbar: { thumb: '#999', track: '#e8e8e8', thumbHover: '#777' }
     },
@@ -179,7 +179,7 @@ var THEMES = [
             badgeBg: '#e8e8e8', badgeFg: '#555',
             codeBg: '#e8e8e8', codeFg: '#008800',
             footerFg: '#777', linkFg: '#006600',
-            fontFamily: 'Tahoma, Helvetica, Arial, sans-serif'
+            fontFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
         game: {
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
@@ -187,8 +187,8 @@ var THEMES = [
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
             bufferSize: '15px', bufferLineHeight: '1.35',
             gridSize: '15px', gridLineHeight: '19px',
-            monoFamily: '"Courier New", Consolas, monospace',
-            propFamily: 'Tahoma, Helvetica, Arial, sans-serif'
+            monoFamily: '"Silkscreen", "Courier New", Consolas, monospace',
+            propFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
         scrollbar: { thumb: '#999', track: '#e8e8e8', thumbHover: '#777' }
     },
