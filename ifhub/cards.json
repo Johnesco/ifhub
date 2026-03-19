@@ -186,7 +186,7 @@
   {
     "id": "guess_the_verb",
     "base": "guess_the_verb",
-    "title": "Guess The Verb",
+    "title": "Guess The Verb (Inform 7)",
     "meta": "An Interactive Fiction",
     "description": "An interactive fiction game.",
     "playUrl": "/guess_the_verb/play.html",
@@ -197,7 +197,7 @@
   {
     "id": "cloak-sharpee",
     "base": "cloak-sharpee",
-    "title": "Cloak of Darkness",
+    "title": "Cloak of Darkness (Sharpee)",
     "meta": "A Sharpee Game",
     "description": "The classic IF test game implemented in the Sharpee TypeScript engine.",
     "playUrl": "/cloak-sharpee/play.html",
@@ -208,7 +208,7 @@
   {
     "id": "cloak-inform7",
     "base": "cloak-inform7",
-    "title": "Cloak of Darkness",
+    "title": "Cloak of Darkness (Inform 7)",
     "meta": "An Interactive Fiction",
     "description": "An interactive fiction game.",
     "playUrl": "/cloak-inform7/play.html",
@@ -230,7 +230,7 @@
   {
     "id": "cloak-ink",
     "base": "cloak-ink",
-    "title": "Cloak of Darkness",
+    "title": "Cloak of Darkness (Ink)",
     "meta": "An Interactive Fiction",
     "description": "An interactive fiction game.",
     "playUrl": "/cloak-ink/play.html",

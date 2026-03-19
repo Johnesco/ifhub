@@ -246,7 +246,7 @@
   },
   {
     "id": "guess_the_verb",
-    "title": "Guess The Verb",
+    "title": "Guess The Verb (Inform 7)",
     "sourceLabel": "story.ni",
     "playUrl": "/guess_the_verb/play.html",
     "landingUrl": "/guess_the_verb/",
@@ -269,7 +269,7 @@
   },
   {
     "id": "cloak-inform7",
-    "title": "Cloak of Darkness",
+    "title": "Cloak of Darkness (Inform 7)",
     "sourceLabel": "story.ni",
     "playUrl": "/cloak-inform7/play.html",
     "landingUrl": "/cloak-inform7/",
@@ -292,7 +292,7 @@
   },
   {
     "id": "cloak-ink",
-    "title": "Cloak of Darkness",
+    "title": "Cloak of Darkness (Ink)",
     "sourceLabel": "cloak-ink.ink",
     "playUrl": "/cloak-ink/play.html",
     "landingUrl": "/cloak-ink/",
