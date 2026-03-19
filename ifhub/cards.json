@@ -193,5 +193,27 @@
     "landingUrl": "/guess_the_verb/",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "cloak-sharpee",
+    "base": "cloak-sharpee",
+    "title": "Cloak of Darkness",
+    "meta": "A Sharpee Game",
+    "description": "The classic IF test game implemented in the Sharpee TypeScript engine.",
+    "playUrl": "/cloak-sharpee/play.html",
+    "landingUrl": "/cloak-sharpee/",
+    "engine": "sharpee",
+    "tags": []
+  },
+  {
+    "id": "cloak-inform7",
+    "base": "cloak-inform7",
+    "title": "Cloak of Darkness",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/cloak-inform7/play.html",
+    "landingUrl": "/cloak-inform7/",
+    "engine": "inform7",
+    "tags": []
   }
 ]

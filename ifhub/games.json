@@ -255,5 +255,28 @@
     "sourceUrl": "/guess_the_verb/source.html",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "cloak-sharpee",
+    "title": "Cloak of Darkness (Sharpee)",
+    "sourceLabel": "game-source.ts",
+    "playUrl": "/cloak-sharpee/play.html",
+    "landingUrl": "/cloak-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/cloak-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": []
+  },
+  {
+    "id": "cloak-inform7",
+    "title": "Cloak of Darkness",
+    "sourceLabel": "story.ni",
+    "playUrl": "/cloak-inform7/play.html",
+    "landingUrl": "/cloak-inform7/",
+    "walkthroughUrl": "/cloak-inform7/walkthrough.html",
+    "sourceBrowser": true,
+    "sourceUrl": "/cloak-inform7/source.html",
+    "engine": "inform7",
+    "tags": []
   }
 ]
