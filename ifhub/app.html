@@ -297,6 +297,21 @@ body.resizing iframe {
 
 .game-toolbar .spacer { flex: 1; min-width: 0; }
 
+.toolbar-selectors {
+  display: flex;
+  align-items: center;
+  gap: 4px 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  color: var(--dim, #5a4a30);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
 /* --- Game Selector --- */
 #game-select {
   background: var(--input-bg, #110a08);
@@ -397,22 +412,25 @@ body.resizing iframe {
   border-color: var(--muted, #6a5a40);
 }
 
-/* --- Hub indicator --- */
-.hub-indicator {
-  font-size: 0.85em;
-  color: var(--link-fg, #aa9966);
-  text-decoration: none;
+/* --- Hub selector --- */
+#hub-select {
+  background: var(--input-bg, #110a08);
   border: 1px solid var(--border, #2a2418);
-  border-bottom: 1px solid var(--border, #2a2418);
-  border-radius: 12px;
-  padding: 2px 10px;
-  white-space: nowrap;
+  border-radius: 4px;
+  color: var(--link-fg, #aa9966);
+  font-family: inherit;
+  font-size: 0.85em;
+  padding: 3px 8px;
+  cursor: pointer;
 }
 
-.hub-indicator:hover {
-  color: var(--accent, #e8d090);
+#hub-select:focus {
   border-color: var(--border-hover, #5a4a30);
-  border-bottom-color: var(--border-hover, #5a4a30);
+}
+
+#hub-select option {
+  background: var(--input-bg, #110a08);
+  color: var(--accent, #e8d090);
 }
 
 /* --- Hamburger menu --- */
@@ -479,6 +497,12 @@ body.resizing iframe {
   }
 
   .game-toolbar .spacer { display: none; }
+  .toolbar-label { display: none; }
+
+  .toolbar-selectors {
+    width: 100%;
+    gap: 4px 6px;
+  }
 
   #game-select {
     min-width: 0;
@@ -497,7 +521,7 @@ body.resizing iframe {
 
   #game-select { max-width: 55vw; font-size: 0.85em; }
 
-  .hub-indicator { font-size: 0.8em; padding: 2px 8px; }
+  #hub-select { font-size: 0.85em; }
 
   .sidebar-header .line-count { display: none; }
 }
@@ -509,8 +533,22 @@ body.resizing iframe {
 
 <!-- ===== TOP TOOLBAR ===== -->
 <div class="game-toolbar">
-  <select id="game-select"></select>
-  <div id="theme-picker"></div>
+  <div class="toolbar-selectors">
+    <label for="hub-select" class="toolbar-label">Hub</label>
+    <select id="hub-select"></select>
+    <label for="game-select" class="toolbar-label">Game</label>
+    <select id="game-select"></select>
+    <label for="view-select" class="toolbar-label">View</label>
+    <select id="view-select" title="Layout">
+      <option value="game+source">Game + Source</option>
+      <option value="game+walkthrough">Game + Walkthrough</option>
+      <option value="game">Game Only</option>
+      <option value="source">Source Only</option>
+      <option value="walkthrough">Walkthrough Only</option>
+    </select>
+    <label class="toolbar-label" id="theme-label">Theme</label>
+    <div id="theme-picker"></div>
+  </div>
   <span id="sound-controls" style="display:none;">
     <button id="mute-btn" title="Toggle sound">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -528,14 +566,6 @@ body.resizing iframe {
     <input type="range" id="volume-slider" min="0" max="100" value="70" title="Volume">
   </span>
   <span class="spacer"></span>
-  <select id="view-select" title="Layout">
-    <option value="game+source">Game + Source</option>
-    <option value="game+walkthrough">Game + Walkthrough</option>
-    <option value="game">Game Only</option>
-    <option value="source">Source Only</option>
-    <option value="walkthrough">Walkthrough Only</option>
-  </select>
-  <a id="hub-indicator" class="hub-indicator" href="." style="display:none;"></a>
   <div class="hamburger-wrap">
     <button class="tb-icon-btn" id="hamburger-btn" title="Menu">&#x2630;</button>
     <div class="hamburger-menu" id="hamburger-menu">
@@ -625,13 +655,22 @@ document.addEventListener('DOMContentLoaded', function() {
     bindUI();
     initSoundControls();
 
-    // Show hub indicator if filtering; update Library link
+    // Build hub selector dropdown
+    var hubSelect = document.getElementById('hub-select');
+    hubs.forEach(function(h) {
+      var opt = document.createElement('option');
+      opt.value = h.id;
+      opt.textContent = h.title;
+      hubSelect.appendChild(opt);
+    });
+    hubSelect.value = activeHub ? activeHub.id : 'all';
+    hubSelect.addEventListener('change', function() {
+      var v = hubSelect.value;
+      var url = 'app.html' + (v && v !== 'all' ? '?hub=' + v : '');
+      window.location.href = url;
+    });
+    // Update Library link to match hub
     if (activeHub && activeHub.id !== 'all') {
-      var indicator = document.getElementById('hub-indicator');
-      indicator.textContent = activeHub.title;
-      indicator.href = 'index.html?hub=' + activeHub.id;
-      indicator.title = 'Back to ' + activeHub.title;
-      indicator.style.display = '';
       document.getElementById('library-link').href = 'index.html?hub=' + activeHub.id;
     }
 

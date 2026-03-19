@@ -2,6 +2,7 @@
   { "id": "all", "title": "All Games", "description": "The complete IF Hub catalog.", "filter": null },
   { "id": "inform7", "title": "Inform 7 Games", "description": "Games written in Inform 7.", "filter": { "engine": "inform7" } },
   { "id": "ink", "title": "Ink Stories", "description": "Branching narratives built with Ink.", "filter": { "engine": "ink" } },
+  { "id": "sharpee", "title": "Sharpee Games", "description": "Parser IF built with the Sharpee TypeScript engine.", "filter": { "engine": "sharpee" } },
   { "id": "basic", "title": "BASIC Games", "description": "Type-in games from the 1980s BASIC era.", "filter": { "tag": "basic" } },
   { "id": "sound", "title": "Sound-Enabled", "description": "Games with embedded audio.", "filter": { "tag": "sound" } },
   { "id": "cloak", "title": "Cloak of Darkness", "description": "The classic IF engine test, implemented across multiple engines.", "filter": { "tag": "cloak" } },
