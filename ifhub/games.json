@@ -278,5 +278,30 @@
     "sourceUrl": "/cloak-inform7/source.html",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "guess_the_verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "sourceLabel": "game-source.ts",
+    "playUrl": "/guess_the_verb-sharpee/play.html",
+    "landingUrl": "/guess_the_verb-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/guess_the_verb-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": []
+  },
+  {
+    "id": "cloak-ink",
+    "title": "Cloak of Darkness",
+    "sourceLabel": "cloak-ink.ink",
+    "playUrl": "/cloak-ink/play.html",
+    "landingUrl": "/cloak-ink/",
+    "sourceBrowser": true,
+    "sourceUrl": "/cloak-ink/source.html",
+    "engine": "ink",
+    "tags": [
+      "demo",
+      "classic"
+    ]
   }
 ]

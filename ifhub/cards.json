@@ -215,5 +215,30 @@
     "landingUrl": "/cloak-inform7/",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "guess_the_verb-sharpee",
+    "base": "guess_the_verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "meta": "A Sharpee Game",
+    "description": "A Parser Puzzle Laboratory -- explore your grandmother's old house and find the family heirloom she left behind.",
+    "playUrl": "/guess_the_verb-sharpee/play.html",
+    "landingUrl": "/guess_the_verb-sharpee/",
+    "engine": "sharpee",
+    "tags": []
+  },
+  {
+    "id": "cloak-ink",
+    "base": "cloak-ink",
+    "title": "Cloak of Darkness",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/cloak-ink/play.html",
+    "landingUrl": "/cloak-ink/",
+    "engine": "ink",
+    "tags": [
+      "demo",
+      "classic"
+    ]
   }
 ]

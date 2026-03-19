@@ -461,6 +461,23 @@ python tools/push_hub.py <id>
 | Is Apple II Applesoft BASIC | `applesoft` | Authentic green-screen look |
 | Won't run in any JS interpreter | `jsdos` | Runs real DOS + real BASIC interpreter |
 | Is Inform 7 / Z-machine | `parchment` | Use `setup_web.py` (not `setup_basic.py`) |
+| Is a Sharpee game | `sharpee` | TypeScript IF engine, CSS variable theming |
+
+### Sharpee Games (`tools/web/setup_sharpee.py`)
+
+[Sharpee](https://sharpee.net/) is a TypeScript-based parser IF engine. Games build to a `dist/web/` directory containing `index.html` + `styles.css` + `{game}.js`. The hub integrates via CSS custom property injection — Sharpee already uses `--theme-*` variables.
+
+```bash
+# From a Sharpee build output:
+python /c/code/ifhub/tools/web/setup_sharpee.py \
+    --title "My Game" --dist path/to/dist/web/game/ --out path/to/project
+
+# Register and publish:
+python tools/register_game.py --name game-id --title "My Game" --engine sharpee
+python tools/publish.py game-id
+```
+
+The setup script copies the dist files, renames `index.html` → `play.html`, and injects the IF Hub theme listener (maps hub themes to Sharpee's `--theme-*` CSS variables).
 
 ### Other Formats (No Engine Needed)
 

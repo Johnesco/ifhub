@@ -49,6 +49,7 @@ NEW_PROJECT_PY = os.path.join(SCRIPT_DIR, "new_project.py")
 PUSH_HUB_PY = os.path.join(SCRIPT_DIR, "push_hub.py")
 SETUP_BASIC_PY = os.path.join(SCRIPT_DIR, "web", "setup_basic.py")
 SETUP_INK_PY = os.path.join(SCRIPT_DIR, "web", "setup_ink.py")
+SETUP_SHARPEE_PY = os.path.join(SCRIPT_DIR, "web", "setup_sharpee.py")
 TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
 
 sys.path.insert(0, SCRIPT_DIR)
@@ -506,6 +507,11 @@ def _step_commands(step, project, data):
             cmd = py_cmd(SETUP_INK_PY, "--title", title, "--out", project.dir)
             if project.source_file:
                 cmd.extend(["--ink", os.path.join(project.dir, project.source_file)])
+            if force:
+                cmd.append("--force")
+            return [cmd]
+        if engine == "sharpee":
+            cmd = py_cmd(SETUP_SHARPEE_PY, "--title", title, "--out", project.dir)
             if force:
                 cmd.append("--force")
             return [cmd]
@@ -1281,6 +1287,7 @@ button.primary:hover:not(:disabled) {
           <option value="bwbasic">bwBASIC (GW-BASIC)</option>
           <option value="jsdos">DOS (js-dos)</option>
           <option value="twine">Twine</option>
+          <option value="sharpee">Sharpee</option>
         </select>
       </div>
 
@@ -1372,11 +1379,11 @@ let evtSrc = null;
 const ENGINE_LABELS = {
   inform7: 'Inform 7', wwwbasic: 'wwwBASIC', qbjc: 'QBasic',
   applesoft: 'Applesoft', bwbasic: 'bwBASIC', jsdos: 'DOS', basic: 'BASIC',
-  twine: 'Twine', ink: 'Ink', unknown: 'Unknown',
+  twine: 'Twine', ink: 'Ink', sharpee: 'Sharpee', unknown: 'Unknown',
 };
 
 const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic'];
-const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic', 'ink', 'jsdos'];
+const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic', 'ink', 'jsdos', 'sharpee'];
 
 const STEPS = [
   {
@@ -1758,6 +1765,7 @@ const ENGINE_META = {
   bwbasic:   { label: 'bwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
   jsdos:     { label: 'DOS',      file: '.jsdos',     hint: 'A .jsdos bundle is required. Create one with js-dos tools.', placeholder: '' },
   twine:     { label: 'Twine',     file: '.tw',        hint: 'Paste your Twee source here, or leave empty for a starter template.', placeholder: ':: Start\\nYou stand at a crossroads.\\n\\n[[Go north->North]]' },
+  sharpee:   { label: 'Sharpee',  file: '.ts',        hint: 'Sharpee games are built from a TypeScript monorepo. Place the dist/web/ output here.', placeholder: '' },
 };
 
 function onEngineChange() {

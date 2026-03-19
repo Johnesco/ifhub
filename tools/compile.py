@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import output, paths, process, web
+from lib import config, output, paths, process, web
 
 
 def main():
@@ -186,6 +186,20 @@ def main():
                 shutil.copy2(str(walk_cmds), str(project_dir))
                 if walk_guide.exists():
                     shutil.copy2(str(walk_guide), str(project_dir))
+
+        # Auto-generate index.html + source.html if missing
+        if not (project_dir / "index.html").exists() or not (project_dir / "source.html").exists():
+            print()
+            print("Generating landing pages...")
+            meta = config.extract_story_metadata(project_dir)
+            gen_cmd = [
+                sys.executable, str(paths.WEB_DIR / "generate_pages.py"),
+                "--title", meta["title"],
+                "--meta", meta["meta"],
+                "--description", meta["description"],
+                "--out", str(project_dir),
+            ]
+            process.run(gen_cmd)
 
         # Validate
         print()

@@ -153,7 +153,7 @@ var THEMES = [
             badgeBg: '#e8e8e8', badgeFg: '#555',
             codeBg: '#e8e8e8', codeFg: '#000',
             footerFg: '#777', linkFg: '#333',
-            fontFamily: '"DotGothic16", "Geneva", "Lucida Grande", Helvetica, sans-serif'
+            fontFamily: '"Geneva", "Lucida Grande", Helvetica, sans-serif'
         },
         game: {
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
@@ -161,8 +161,8 @@ var THEMES = [
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
             bufferSize: '16px', bufferLineHeight: '1.5',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"DotGothic16", Monaco, "Courier New", monospace',
-            propFamily: '"DotGothic16", "Geneva", "Lucida Grande", Helvetica, sans-serif'
+            monoFamily: 'Monaco, "Courier New", monospace',
+            propFamily: '"Geneva", "Lucida Grande", Helvetica, sans-serif'
         },
         scrollbar: { thumb: '#999', track: '#e8e8e8', thumbHover: '#777' }
     },
@@ -376,6 +376,32 @@ var THEMES = [
             propFamily: 'Georgia, "Times New Roman", serif'
         },
         scrollbar: { thumb: '#2e2644', track: '#1a1625', thumbHover: '#443860' }
+    },
+    {
+        id: 'sharpee', name: 'Sharpee',
+        chrome: {
+            pageBg: '#0000aa', pageFg: '#ffffff', headingFg: '#ffffff',
+            accentFg: '#00aaaa', mutedFg: '#aaaaaa', dimFg: '#888888',
+            cardBg: '#000088', cardBorder: '#00aaaa', toolbarBg: '#000077',
+            border: '#00aaaa', borderHover: '#55dddd', surfaceBg: '#000088',
+            btnBg: '#00aaaa', btnFg: '#000000', btnHoverBg: '#55dddd',
+            inputBg: '#000088', inputFg: '#00aaaa',
+            activeTabBg: '#00aaaa', activeTabFg: '#000000',
+            badgeBg: '#000088', badgeFg: '#aaaaaa',
+            codeBg: '#000088', codeFg: '#00aaaa',
+            footerFg: '#888888', linkFg: '#00aaaa',
+            fontFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace'
+        },
+        game: {
+            bodyBg: '#0000aa', bufferBg: '#0000aa', bufferFg: '#ffffff',
+            gridBg: '#00aaaa', gridFg: '#000000',
+            inputFg: '#00aaaa', emphFg: '#aaaaaa', headerFg: '#ffffff',
+            bufferSize: '16px', bufferLineHeight: '1.4',
+            gridSize: '16px', gridLineHeight: '22px',
+            monoFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace',
+            propFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace'
+        },
+        scrollbar: { thumb: '#00aaaa', track: '#000088', thumbHover: '#55dddd' }
     },
     {
         id: 'solarized', name: 'Solarized',

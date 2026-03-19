@@ -105,6 +105,11 @@ ENGINE_REGISTRY: dict[str, EngineSpec] = {
         source_extensions=(".tw", ".twee"),
         build_tool="",
     ),
+    "sharpee": EngineSpec(
+        name="sharpee", label="Sharpee",
+        source_extensions=(".ts",),
+        build_tool="setup_sharpee.py",
+    ),
 }
 
 
@@ -145,6 +150,8 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
         return "twine"
     if any(f.lower().endswith(".ink") for f in files):
         return "ink"
+    if any(f.lower().endswith(".sharpee") for f in files):
+        return "sharpee"
 
     return "unknown"
 
