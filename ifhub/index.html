@@ -368,103 +368,69 @@ Promise.all([
 <h2>How It Works</h2>
 
 <p>
-  Every game runs entirely in your browser.
-  <a href="https://github.com/curiousdannii/parchment">Parchment</a> is a JavaScript
-  interpreter that executes the same virtual machine formats that powered Infocom&rsquo;s
-  games in the 1980s. The games here span three eras of interactive fiction:
-</p>
-
-<div class="tech-grid">
-  <div class="tech-card">
-    <strong>ZIL &rarr; Z-machine</strong>
-    <p>
-      Infocom&rsquo;s original language. Zork I v0 plays the unmodified 1980s source,
-      compiled with <a href="https://foss.heptapod.net/zilf/zilf">ZILF</a> to a .z3
-      binary and run via Parchment&rsquo;s Z-machine interpreter.
-    </p>
-  </div>
-  <div class="tech-card">
-    <strong>BASIC &rarr; Inform 7</strong>
-    <p>
-      Dracula&rsquo;s Castle started as a type-in BASIC listing from the early 1980s.
-      The original source is preserved with annotations; the playable version is a
-      faithful translation to Inform 7.
-    </p>
-  </div>
-  <div class="tech-card">
-    <strong>Inform 7 &rarr; Glulx</strong>
-    <p>
-      Most games here are written in <a href="http://inform7.com/">Inform 7</a>,
-      a language that reads like English prose. Source compiles to Glulx and runs
-      via Parchment&rsquo;s WASM engine.
-    </p>
-  </div>
-  <div class="tech-card">
-    <strong>Sound &rarr; Blorb</strong>
-    <p>
-      Games with audio embed .ogg files directly in the game binary as a
-      <a href="https://www.eblong.com/zarf/blorb/">Blorb</a> package. Parchment
-      plays them through the Web Audio API &mdash; no external files.
-    </p>
-  </div>
-</div>
-
-<h2>Source Viewers</h2>
-
-<p>
-  Every game has a source browser. The Inform 7 viewer provides syntax highlighting,
-  a navigable outline from Part/Chapter/Section headings, and search.
-  Zork I v0 has a dedicated ZIL source browser covering all ten original Infocom
-  source files with annotations explaining the game engine. Dracula includes both
-  the original annotated BASIC listing and the Inform 7 translation side by side.
-</p>
-
-<h2>Platform Themes</h2>
-
-<p>
-  Play in the style of classic home computers. The theme selector offers
-  10 retro platform looks &mdash; MS-DOS, Apple II, Commodore 64, Amiga,
-  Macintosh, Atari ST, CP/M (Kaypro), Atari 800, and TRS-80 &mdash; each
-  styling the full interface from toolbar to game text. Games with
-  atmospheric CSS effects can toggle between their native overlay and any
-  platform theme.
-</p>
-
-<h2>Testing &amp; Toolchain</h2>
-
-<p>
-  The games are tested with a deterministic walkthrough system. Each game has a
-  walkthrough &mdash; a sequence of commands that completes the game. A golden RNG seed
-  ensures combat, NPC behavior, and other random events produce the same outcome
-  every run. The walkthrough runner pipes commands through native CLI interpreters
-  (<a href="https://github.com/erkyrath/glulxe">glulxe</a> for Glulx,
-  <a href="https://gitlab.com/DavidGriffith/frotz">frotz</a> for Z-machine)
-  built from source, captures the transcript, and checks the final score.
+  Every game runs entirely in your browser. Source code is compiled to a
+  virtual machine binary, wrapped in JavaScript, and played through an
+  in-browser interpreter. No downloads, no server, no plugins.
 </p>
 
 <p>
-  The entire toolchain &mdash; compilation, blorb packaging, web player generation,
-  testing, and deployment &mdash; runs from the command line. There is no IDE
-  dependency. Inform 7 source compiles to Inform 6, then to a Glulx binary,
-  optionally packaged with sound into a Blorb, base64-encoded into a JavaScript
-  wrapper, and served as a static page. Each game is its own
-  <a href="https://pages.github.com/">GitHub Pages</a> site; the hub iframes
-  them directly.
+  Each game is its own static site hosted on
+  <a href="https://pages.github.com/">GitHub Pages</a>.
+  The hub loads them in an iframe &mdash; one page per game,
+  nothing shared between them.
 </p>
 
-<h2>About</h2>
-
 <p>
-  IF Hub is a static site &mdash; no server, no accounts, no tracking. All
-  source code is visible. The games, the player, the toolchain, and this site
-  are open. If you want to see how any of it works, open the source tab while
-  you play.
+  Every game has a source browser so you can read the code while you play.
+  10 retro platform themes let you restyle the whole interface to look
+  like classic home computers.
 </p>
 
 <p>
   Built with <a href="https://claude.ai/">Claude</a> by
   <a href="https://www.anthropic.com/">Anthropic</a>.
 </p>
+
+<h2>Thank You</h2>
+
+<p>
+  IF Hub is built on the work of many open-source projects and communities:
+</p>
+
+<div class="tech-grid">
+  <div class="tech-card">
+    <strong><a href="http://inform7.com/">Inform 7</a></strong>
+    <p>Natural-language IF authoring system by Graham Nelson</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://github.com/curiousdannii/parchment">Parchment</a></strong>
+    <p>Browser-based IF interpreter by Dannii Willis</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://www.inklestudios.com/ink/">Ink</a></strong>
+    <p>Narrative scripting language by Inkle Studios</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://sharpee.net/">Sharpee</a></strong>
+    <p>TypeScript parser IF engine</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://github.com/nickg/nern/tree/master/glulxe">Glulxe</a> &amp; <a href="https://gitlab.com/DavidGriffith/frotz">Frotz</a></strong>
+    <p>CLI interpreters for Glulx and Z-machine</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://foss.heptapod.net/zilf/zilf">ZILF</a></strong>
+    <p>Modern compiler for Infocom&rsquo;s ZIL language</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://www.eblong.com/zarf/blorb/">Blorb</a></strong>
+    <p>IF resource packaging format by Andrew Plotkin</p>
+  </div>
+  <div class="tech-card">
+    <strong><a href="https://pages.github.com/">GitHub Pages</a></strong>
+    <p>Free static hosting for every game</p>
+  </div>
+</div>
 
 <footer>
   <p>
