@@ -1,0 +1,25 @@
+# Cloak of Darkness (Rez) — Walkthrough Guide
+# A choice-based adaptation of the standard IF benchmark.
+# Two paths: win (2/2) or lose (1/2). Choices listed by button label.
+
+## Victory -- Best Ending (2/2)
+# Hang your cloak before entering the bar. Read the undisturbed message.
+> Enter the foyer
+> Go west to the cloakroom
+> Hang your cloak on the hook
+> Return to the foyer
+> Go south to the bar
+> Read the message
+
+## Defeat -- Bad Ending (1/2)
+# Enter the bar while still wearing the cloak. Stumble in the dark.
+> Enter the foyer
+> Go south to the bar
+> Fumble around in the dark
+> Fumble around in the dark
+> Go back north to the foyer
+> Go west to the cloakroom
+> Hang your cloak on the hook
+> Return to the foyer
+> Go south to the bar
+> Read the message

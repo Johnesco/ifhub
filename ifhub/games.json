@@ -284,13 +284,13 @@
     "tags": ["cloak", "demo"]
   },
   {
-    "id": "guess_the_verb-sharpee",
+    "id": "guess-the-verb-sharpee",
     "title": "Guess the Verb (Sharpee)",
     "sourceLabel": "game-source.ts",
-    "playUrl": "/guess_the_verb-sharpee/play.html",
-    "landingUrl": "/guess_the_verb-sharpee/",
+    "playUrl": "/guess-the-verb-sharpee/play.html",
+    "landingUrl": "/guess-the-verb-sharpee/",
     "sourceBrowser": true,
-    "sourceUrl": "/guess_the_verb-sharpee/source.html",
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
     "engine": "sharpee",
     "tags": []
   },
@@ -304,5 +304,16 @@
     "sourceUrl": "/cloak-ink/source.html",
     "engine": "ink",
     "tags": ["cloak", "demo", "classic"]
+  },
+  {
+    "id": "cloak-rez",
+    "title": "Cloak of Darkness (Rez)",
+    "sourceLabel": "cloak_of_darkness.rez",
+    "playUrl": "/cloak-rez/play.html",
+    "walkthroughUrl": "/cloak-rez/walkthrough.html",
+    "landingUrl": "/cloak-rez/",
+    "sourceUrl": "/cloak-rez/src/cloak_of_darkness.rez",
+    "engine": "rez",
+    "tags": ["cloak", "demo"]
   }
 ]

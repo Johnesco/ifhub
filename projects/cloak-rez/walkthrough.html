@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Walkthrough &mdash; Cloak of Darkness (Rez)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+  overflow: hidden;
+}
+
+.container { display: flex; height: 100%; }
+
+.sidebar {
+  width: 280px;
+  min-width: 280px;
+  background: #0e0e0c;
+  border-right: 1px solid #1e1a14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #1e1a14;
+}
+
+.sidebar-header h1 {
+  font-size: 0.95em;
+  color: #c4b48a;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.sidebar-header a {
+  font-size: 0.8em;
+  color: #887755;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.sidebar-header a:hover {
+  color: #aa9966;
+  border-bottom-color: #aa9966;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: #0e0e0c; }
+.nav::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 3px; }
+
+.nav-item {
+  display: block;
+  padding: 6px 16px;
+  font-size: 0.85em;
+  color: #998866;
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-item:hover { background: #151510; color: #c4b48a; }
+
+.nav-item.active {
+  background: #18160f;
+  color: #e8d090;
+  border-left-color: #e8d090;
+}
+
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  padding: 8px 20px;
+  background: #0e0e0c;
+  border-bottom: 1px solid #1e1a14;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85em;
+  color: #887755;
+  flex-wrap: wrap;
+}
+
+.toolbar .file-path {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  color: #aa9966;
+}
+
+.toolbar .step-count { margin-left: auto; }
+
+.search-box {
+  background: #111;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #d4c5a9;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  width: 180px;
+  outline: none;
+}
+
+.search-box:focus { border-color: #4a3a20; }
+.search-box::placeholder { color: #554433; }
+
+.dl-link {
+  color: #887755;
+  text-decoration: none;
+  font-size: 0.9em;
+  border-bottom: 1px solid transparent;
+}
+
+.dl-link:hover { color: #aa9966; border-bottom-color: #aa9966; }
+
+.content-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 40px 40px;
+}
+
+.content-wrap::-webkit-scrollbar { width: 8px; }
+.content-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
+.content-wrap::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 4px; }
+.content-wrap::-webkit-scrollbar-thumb:hover { background: #3a3020; }
+
+.spoiler-notice {
+  background: #1a1510;
+  border: 1px solid #3a3020;
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin-bottom: 32px;
+  font-size: 0.9em;
+  color: #aa9966;
+  line-height: 1.6;
+}
+
+.spoiler-notice strong { color: #c4b48a; }
+
+.section-header {
+  font-size: 1.15em;
+  font-weight: bold;
+  color: #e8d8b0;
+  margin: 36px 0 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #2a2418;
+}
+
+.section-header:first-of-type { margin-top: 0; }
+
+.section-subtitle {
+  font-size: 0.85em;
+  color: #776655;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.note-line {
+  font-size: 0.88em;
+  color: #887755;
+  font-style: italic;
+  margin: 4px 0 2px 48px;
+}
+
+.command-line {
+  display: flex;
+  align-items: baseline;
+  margin: 3px 0;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+}
+
+.command-num {
+  min-width: 36px;
+  text-align: right;
+  padding-right: 12px;
+  color: #4a3a20;
+  user-select: none;
+  font-size: 0.85em;
+}
+
+.command-text { color: #8bab6e; }
+.command-prompt { color: #5a4a30; margin-right: 6px; user-select: none; }
+
+.search-hit { background: #5a4a10; color: #ffe8a0; border-radius: 2px; }
+.search-current { background: #7a6a20; outline: 1px solid #aa9930; }
+
+.loading {
+  text-align: center;
+  padding: 80px 40px;
+  color: #887755;
+  font-size: 1.1em;
+}
+
+.loading em { animation: pulse 1.5s ease-in-out infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.error-msg {
+  text-align: center;
+  padding: 80px 40px;
+  color: #aa6644;
+}
+
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .content-wrap { padding: 16px 20px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>Walkthrough</h1>
+    </div>
+    <div class="nav" id="nav"></div>
+  </div>
+  <div class="main">
+    <div class="toolbar">
+      <span class="file-path">Choice Guide</span>
+      <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
+      <a class="dl-link" href="walkthrough-guide.txt" download>Download</a>
+      <span class="step-count" id="step-count"></span>
+    </div>
+    <div class="content-wrap" id="content-wrap">
+      <div class="loading"><em>Loading walkthrough...</em></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var GUIDE_URL = 'walkthrough-guide.txt';
+
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function parseGuide(text) {
+  var lines = text.split('\n');
+  var sections = [];
+  var currentSection = null;
+  var commandNum = 0;
+
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+
+    if (line.match(/^## /)) {
+      var headerText = line.slice(3);
+      var parts = headerText.split(' -- ');
+      var title = parts[0].trim();
+      var subtitle = parts.length > 1 ? parts[1].trim() : '';
+      currentSection = {
+        title: title, subtitle: subtitle,
+        id: 'section-' + sections.length,
+        items: [], firstCommand: commandNum + 1
+      };
+      sections.push(currentSection);
+      continue;
+    }
+
+    if (!currentSection) {
+      currentSection = { title: 'Introduction', subtitle: '', id: 'section-0', items: [], firstCommand: 1 };
+      sections.push(currentSection);
+    }
+
+    if (line.match(/^# /)) {
+      currentSection.items.push({ type: 'note', text: line.slice(2) });
+    } else if (line.match(/^> /)) {
+      commandNum++;
+      currentSection.items.push({ type: 'command', text: line.slice(2), num: commandNum });
+    } else if (line.trim() === '') {
+      currentSection.items.push({ type: 'blank' });
+    }
+  }
+
+  return { sections: sections, totalCommands: commandNum };
+}
+
+function render(guideData) {
+  var html = '';
+  html += '<div class="spoiler-notice"><strong>Spoiler Warning:</strong> This guide reveals both endings and the choices needed to reach each one. Each path is independent — start a new playthrough for each.</div>';
+
+  for (var s = 0; s < guideData.sections.length; s++) {
+    var sec = guideData.sections[s];
+    html += '<div class="section-header" id="' + sec.id + '">' + esc(sec.title);
+    if (sec.subtitle) html += '<span class="section-subtitle">' + esc(sec.subtitle) + '</span>';
+    html += '</div>';
+
+    for (var j = 0; j < sec.items.length; j++) {
+      var item = sec.items[j];
+      if (item.type === 'command') {
+        html += '<div class="command-line"><span class="command-num">' + item.num + '</span><span class="command-prompt">&gt;</span><span class="command-text">' + esc(item.text) + '</span></div>';
+      } else if (item.type === 'note') {
+        html += '<div class="note-line">' + esc(item.text) + '</div>';
+      }
+    }
+  }
+
+  return html;
+}
+
+function buildNav(sections) {
+  var nav = document.getElementById('nav');
+  var html = '';
+  for (var s = 0; s < sections.length; s++) {
+    var sec = sections[s];
+    html += '<a class="nav-item" data-section="' + sec.id + '">' + esc(sec.title) + '</a>';
+  }
+  nav.innerHTML = html;
+
+  nav.addEventListener('click', function(e) {
+    var a = e.target.closest('.nav-item');
+    if (!a) return;
+    e.preventDefault();
+    nav.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    a.classList.add('active');
+    var target = document.getElementById(a.getAttribute('data-section'));
+    if (target) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  });
+}
+
+/* Search */
+var searchHits = [];
+var currentHit = -1;
+
+function clearSearch() {
+  document.querySelectorAll('.search-hit').forEach(function(el) { el.outerHTML = el.textContent; });
+  searchHits = [];
+  currentHit = -1;
+}
+
+function highlightMatches(el, query) {
+  var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  var lower = query.toLowerCase();
+  var nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(function(node) {
+    var text = node.textContent;
+    var idx = text.toLowerCase().indexOf(lower);
+    if (idx === -1) return;
+    var before = text.slice(0, idx);
+    var match = text.slice(idx, idx + query.length);
+    var after = text.slice(idx + query.length);
+    var span = document.createElement('span');
+    span.className = 'search-hit';
+    span.textContent = match;
+    var parent = node.parentNode;
+    if (before) parent.insertBefore(document.createTextNode(before), node);
+    parent.insertBefore(span, node);
+    if (after) parent.insertBefore(document.createTextNode(after), node);
+    parent.removeChild(node);
+  });
+}
+
+function doSearch(query) {
+  clearSearch();
+  if (!query || query.length < 2) return;
+  var wrap = document.getElementById('content-wrap');
+  var els = wrap.querySelectorAll('.command-text, .note-line, .section-header');
+  els.forEach(function(el) {
+    if (el.textContent.toLowerCase().includes(query.toLowerCase())) highlightMatches(el, query);
+  });
+  searchHits = Array.from(document.querySelectorAll('.search-hit'));
+  if (searchHits.length > 0) {
+    currentHit = 0;
+    searchHits[0].classList.add('search-current');
+    searchHits[0].scrollIntoView({ block: 'center' });
+  }
+}
+
+function nextHit() {
+  if (!searchHits.length) return;
+  searchHits[currentHit].classList.remove('search-current');
+  currentHit = (currentHit + 1) % searchHits.length;
+  searchHits[currentHit].classList.add('search-current');
+  searchHits[currentHit].scrollIntoView({ block: 'center' });
+}
+
+function prevHit() {
+  if (!searchHits.length) return;
+  searchHits[currentHit].classList.remove('search-current');
+  currentHit = (currentHit - 1 + searchHits.length) % searchHits.length;
+  searchHits[currentHit].classList.add('search-current');
+  searchHits[currentHit].scrollIntoView({ block: 'center' });
+}
+
+/* Scroll spy */
+function setupScrollSpy() {
+  var wrap = document.getElementById('content-wrap');
+  wrap.addEventListener('scroll', function() {
+    var headers = wrap.querySelectorAll('.section-header');
+    var active = null;
+    for (var i = 0; i < headers.length; i++) {
+      if (headers[i].getBoundingClientRect().top <= 120) active = headers[i].id;
+    }
+    if (active) {
+      document.querySelectorAll('.nav-item').forEach(function(el) {
+        el.classList.toggle('active', el.getAttribute('data-section') === active);
+      });
+    }
+  });
+}
+
+async function init() {
+  var wrap = document.getElementById('content-wrap');
+  try {
+    var res = await fetch(GUIDE_URL);
+    if (!res.ok) throw new Error(res.status);
+    var text = await res.text();
+    var data = parseGuide(text);
+
+    wrap.innerHTML = render(data);
+    document.getElementById('step-count').textContent = data.totalCommands + ' choices across ' + data.sections.length + ' paths';
+    buildNav(data.sections);
+    setupScrollSpy();
+  } catch (e) {
+    wrap.innerHTML = '<div class="error-msg">Failed to load walkthrough. <a href="' + GUIDE_URL + '">View raw</a></div>';
+    return;
+  }
+
+  var searchInput = document.getElementById('search');
+  var debounce;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounce);
+    var self = this;
+    debounce = setTimeout(function() { doSearch(self.value); }, 200);
+  });
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); if (e.shiftKey) prevHit(); else nextHit(); }
+    if (e.key === 'Escape') { clearSearch(); this.value = ''; this.blur(); }
+  });
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); searchInput.focus(); searchInput.select(); }
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>
