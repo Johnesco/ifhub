@@ -70,17 +70,6 @@
       </div>
     </div>
   </div>
-  <script>
-  window.onerror = function(msg, src, line, col, err) {
-    var d = document.getElementById('text-content');
-    if (d) d.innerHTML += '<p style="color:red">[ERROR] ' + msg + ' (line ' + line + ')</p>';
-    return false;
-  };
-  window.addEventListener('unhandledrejection', function(e) {
-    var d = document.getElementById('text-content');
-    if (d) d.innerHTML += '<p style="color:red">[PROMISE ERROR] ' + (e.reason || e) + '</p>';
-  });
-  </script>
   <script src="guess-the-verb.js"></script>
 
 <script src="theme-listener.js"></script>
