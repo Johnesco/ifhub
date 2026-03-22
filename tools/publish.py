@@ -49,12 +49,15 @@ jobs:
           mkdir -p _site
           [ -d web ] && cp -r web/* _site/ || true
           [ -d lib ] && cp -r lib _site/ || true
+          [ -d assets ] && cp -r assets _site/ || true
           cp *.html _site/ 2>/dev/null || true
           cp *.txt _site/ 2>/dev/null || true
           cp *.ni _site/ 2>/dev/null || true
           cp *.ink _site/ 2>/dev/null || true
           cp *.json _site/ 2>/dev/null || true
           cp *.bas _site/ 2>/dev/null || true
+          cp *.js _site/ 2>/dev/null || true
+          cp *.css _site/ 2>/dev/null || true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
