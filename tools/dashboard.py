@@ -56,6 +56,8 @@ PUSH_HUB_PY = str(paths.TOOLS_DIR / "push_hub.py")
 SETUP_BASIC_PY = str(paths.WEB_DIR / "setup_basic.py")
 SETUP_INK_PY = str(paths.WEB_DIR / "setup_ink.py")
 SETUP_SHARPEE_PY = str(paths.WEB_DIR / "setup_sharpee.py")
+COMPILE_REZ_PY = str(paths.TOOLS_DIR / "compile_rez.py")
+COMPILE_SHARPEE_PY = str(paths.TOOLS_DIR / "compile_sharpee.py")
 TESTING_DIR = str(paths.TESTING_DIR)
 
 # ---------------------------------------------------------------------------
@@ -222,8 +224,6 @@ PIPELINE_STEPS = ["build", "test", "package", "register", "publish"]
 def _basic_compile_cmd(project, force=False):
     """Build a setup_basic.py command for a BASIC engine project."""
     engine = project.engine
-    if engine == "basic":
-        engine = "wwwbasic"  # default BASIC engine
     title = project.name.replace("-", " ").replace("_", " ").title()
     cmd = py_cmd(SETUP_BASIC_PY, "--engine", engine, "--title", title,
                  "--out", project.dir)
@@ -276,7 +276,12 @@ def _step_commands(step, project, data):
                 cmd.append("--force")
             return [cmd]
         if engine == "sharpee":
-            cmd = py_cmd(SETUP_SHARPEE_PY, "--title", title, "--out", project.dir)
+            cmd = py_cmd(COMPILE_SHARPEE_PY, project.name)
+            if force:
+                cmd.append("--force")
+            return [cmd]
+        if engine == "rez":
+            cmd = py_cmd(COMPILE_REZ_PY, project.name)
             if force:
                 cmd.append("--force")
             return [cmd]
@@ -1147,8 +1152,8 @@ const ENGINE_LABELS = {
   twine: 'Twine', ink: 'Ink', sharpee: 'Sharpee', unknown: 'Unknown',
 };
 
-const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic'];
-const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'basic', 'ink', 'jsdos', 'sharpee'];
+const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'bwbasic'];
+const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'ink', 'jsdos', 'sharpee', 'rez'];
 
 const STEPS = [
   {

@@ -86,7 +86,11 @@ def load_projects(
     *,
     enrich_pipeline: bool = False,
 ) -> list[ProjectInfo]:
-    """Scan projects/ and return a list of ProjectInfo objects.
+    """Discover games from registry + projects/ and return ProjectInfo objects.
+
+    Discovery merges games from games-registry.json / games-local.json with
+    any additional projects found in the projects/ directory.  Registry entries
+    take priority when a game appears in both places.
 
     Args:
         enrich_pipeline: If True, read .pipeline-state files and compute
@@ -94,12 +98,26 @@ def load_projects(
             status.  The dashboard sets this to True; the CLI runner leaves
             it False for speed.
     """
-    projects_dir = str(paths.PROJECTS_DIR)
     registered_ids = _load_registered_ids() if enrich_pipeline else set()
     projects: list[ProjectInfo] = []
 
-    for name in sorted(os.listdir(projects_dir)):
-        project_dir = os.path.join(projects_dir, name)
+    # Build name -> dir mapping: registry first, then projects/ for any extras
+    game_dirs: dict[str, str] = {}
+
+    # From registry (local overrides defaults)
+    for name, resolved_path in paths.registered_games().items():
+        game_dirs[name] = str(resolved_path)
+
+    # From projects/ directory (adds any not already in registry)
+    projects_dir = str(paths.PROJECTS_DIR)
+    if os.path.isdir(projects_dir):
+        for name in os.listdir(projects_dir):
+            pdir = os.path.join(projects_dir, name)
+            if os.path.isdir(pdir) and name not in game_dirs:
+                game_dirs[name] = pdir
+
+    for name in sorted(game_dirs):
+        project_dir = game_dirs[name]
         if not os.path.isdir(project_dir):
             continue
 

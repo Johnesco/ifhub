@@ -159,7 +159,26 @@
       "Bash(powershell -Command \"Set-ItemProperty -Path 'HKCU:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\User Shell Folders' -Name 'Desktop' -Value 'C:\\\\Users\\\\letme\\\\Music\\\\Desktop' -Type ExpandString; Set-ItemProperty -Path 'HKCU:\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Explorer\\\\Shell Folders' -Name 'Desktop' -Value 'C:\\\\Users\\\\letme\\\\Music\\\\Desktop'; Write-Host 'Reverted to Music\\\\Desktop'; [Environment]::GetFolderPath\\('Desktop'\\)\")",
       "Bash(powershell -Command \"Get-Process -Id \\(Get-NetTCPConnection -LocalPort 5001 -ErrorAction SilentlyContinue\\).OwningProcess -ErrorAction SilentlyContinue | Stop-Process -Force\")",
       "Bash(powershell -Command \"Get-NetTCPConnection -LocalPort 9000,5001 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force; Write-Host \\('Killed PID ' + $_.OwningProcess + ' on port ' + $_.LocalPort\\) }\" 2>&1)",
-      "Bash(powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 9000,5001 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { $p = $_.OwningProcess; $port = $_.LocalPort; Stop-Process -Id $p -Force; Write-Host \"Killed PID $p on port $port\" }')"
+      "Bash(powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 9000,5001 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { $p = $_.OwningProcess; $port = $_.LocalPort; Stop-Process -Id $p -Force; Write-Host \"Killed PID $p on port $port\" }')",
+      "Bash(npx @sharpee/sharpee --version)",
+      "Bash(tr ';' '\\\\n')",
+      "Bash(npx esbuild:*)",
+      "Bash(do printf:*)",
+      "Bash(find /c/code/text-games -maxdepth 2 -type f \\\\\\(-name *findings* -o -name *gaps* -o -name *parser* -o -name *verb* -o -name *analysis* -o -name *research* \\\\\\))",
+      "Bash(1:*)",
+      "Bash(npx tsx:*)",
+      "Read(//c/original/guess-the-verb//**)",
+      "Read(//c/original/**)",
+      "Bash(/c/code/ifhub/tools/interpreters/glulxe.exe /c/code/text-games/guess-the-verb-inform7/guess-the-verb-inform7.ulx)",
+      "Bash(npm run:*)",
+      "Read(//c/code/fork/sharpee/stories/$game/**)",
+      "Bash(pnpm --version)",
+      "Bash(for f:*)",
+      "Bash(do grep:*)",
+      "Bash(node dist/cli/sharpee.js stories/dungeo --play 2)",
+      "Bash(python3 -c \"print\\(''ok''\\)\")",
+      "Skill(claude-api)",
+      "Bash(node dist/cli/sharpee.js stories/cloak-of-darkness --play 2)"
     ]
   }
 }

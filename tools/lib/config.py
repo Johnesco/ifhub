@@ -87,13 +87,8 @@ ENGINE_REGISTRY: dict[str, EngineSpec] = {
         build_tool_args=("--engine", "bwbasic"),
         is_basic=True,
     ),
-    "basic": EngineSpec(
-        name="basic", label="BASIC",
-        source_extensions=(".bas",),
-        build_tool="setup_basic.py",
-        build_tool_args=("--engine", "wwwbasic"),
-        is_basic=True,
-    ),
+    # "basic" removed — each BASIC dialect must specify its engine explicitly
+    # (wwwbasic, qbjc, applesoft, bwbasic) since each may need a different runtime.
     "jsdos": EngineSpec(
         name="jsdos", label="DOS (js-dos)",
         source_extensions=(".jsdos",),
@@ -144,9 +139,9 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
     except OSError:
         return "unknown"
 
-    bas_files = [f for f in files if f.lower().endswith(".bas")]
-    if bas_files:
-        return "basic"
+    # BASIC dialect detection — explicit ENGINE= in project.conf is preferred;
+    # wwwbasic.js presence is a secondary heuristic. Bare .bas files alone are
+    # not enough since each dialect needs a different runtime.
     if any(f == "wwwbasic.js" for f in files):
         return "wwwbasic"
     if any(f.lower().endswith(".jsdos") for f in files):
@@ -181,17 +176,14 @@ def detect_source_file(project_dir: str | Path, engine: str,
         return ""
 
     spec = get_engine_spec(engine)
-    if spec:
-        for ext in spec.source_extensions:
-            for f in sorted(files):
-                if f.lower().endswith(ext):
-                    return f
+    exts = spec.source_extensions if spec else ()
+    if not exts:
+        exts = (".bas", ".tw", ".twee", ".ink")
 
-    # Fallback: scan common extensions
-    for ext in (".bas", ".tw", ".twee", ".ink"):
-        for f in sorted(files):
-            if f.lower().endswith(ext):
-                return f
+    # Collect candidates, prefer shortest name (avoids annotated/debug copies)
+    candidates = [f for f in files if any(f.lower().endswith(e) for e in exts)]
+    if candidates:
+        return min(candidates, key=len)
 
     return ""
 

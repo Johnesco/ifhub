@@ -8,7 +8,7 @@ from pathlib import Path
 
 from . import output, paths
 
-# The 12 Parchment library files that every project needs
+# The 13 Parchment library files that every project needs
 PARCHMENT_FILES = [
     "jquery.min.js",
     "main.js",
@@ -22,6 +22,7 @@ PARCHMENT_FILES = [
     "resourcemap.js",
     "zvm.js",
     "waiting.gif",
+    "theme-listener.js",
 ]
 
 # Mood engine library file

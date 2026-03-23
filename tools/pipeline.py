@@ -112,8 +112,9 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
             "--title", title,
             "--ink", str(source_path),
             "--out", str(project_dir),
-            "--force",
         ]
+        if force:
+            cmd.append("--force")
     elif engine_spec.build_tool == "setup_basic.py":
         source_path = project_dir / source_file
         title = name.replace("-", " ").replace("_", " ").title()
@@ -152,6 +153,8 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
                 "--source", str(source_path),
                 "--out", str(project_dir),
             ]
+        if force:
+            cmd.append("--force")
     elif engine_spec.build_tool == "setup_web.py":
         # Z-machine: find the binary and set up web player
         title = name.replace("-", " ").replace("_", " ").title()
@@ -162,6 +165,18 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
             "--ulx", str(source_path),
             "--out", str(project_dir),
         ]
+        if force:
+            cmd.append("--force")
+    elif engine_spec.build_tool == "setup_rez.py":
+        # Delegate to compile_rez.py (handles external dir + rez compile + import)
+        cmd = [sys.executable, str(paths.TOOLS_DIR / "compile_rez.py"), name]
+        if force:
+            cmd.append("--force")
+    elif engine_spec.build_tool == "setup_sharpee.py":
+        # Delegate to compile_sharpee.py (handles external npm build + import)
+        cmd = [sys.executable, str(paths.TOOLS_DIR / "compile_sharpee.py"), name]
+        if force:
+            cmd.append("--force")
     elif not engine_spec.build_tool:
         output.skip(f"No build tool for {engine_spec.label} — skipping compile")
         return

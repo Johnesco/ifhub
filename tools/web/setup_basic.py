@@ -122,12 +122,17 @@ def main():
                   file=sys.stderr)
             sys.exit(1)
 
-    # --- Load template ---
-    template_name = ENGINE_TEMPLATES[engine]
-    template_path = script_dir / "templates" / template_name
-    if not template_path.exists():
-        print(f"Error: template not found: {template_path}", file=sys.stderr)
-        sys.exit(1)
+    # --- Load template (project-local overrides generic) ---
+    local_template = out_dir / "play-template.html"
+    if local_template.exists():
+        template_path = local_template
+        print(f"  Using project template: {local_template}")
+    else:
+        template_name = ENGINE_TEMPLATES[engine]
+        template_path = script_dir / "templates" / template_name
+        if not template_path.exists():
+            print(f"Error: template not found: {template_path}", file=sys.stderr)
+            sys.exit(1)
 
     template = template_path.read_text(encoding="utf-8")
 

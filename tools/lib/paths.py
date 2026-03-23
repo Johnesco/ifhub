@@ -4,6 +4,7 @@ Consolidates duplicated path logic from run.py, dashboard.py, and explore.py
 into a single source of truth.
 """
 
+import json
 import os
 import re
 import sys
@@ -17,6 +18,10 @@ PROJECTS_DIR = I7_ROOT / "projects"
 IFHUB_DIR = I7_ROOT / "ifhub"
 TESTING_DIR = TOOLS_DIR / "testing"
 WEB_DIR = TOOLS_DIR / "web"
+
+# Game registry files
+GAMES_REGISTRY = I7_ROOT / "games-registry.json"
+GAMES_LOCAL = I7_ROOT / "games-local.json"
 
 # Compiler paths — override with INFORM7_HOME env var if installed elsewhere
 _I7_HOME = Path(os.environ.get("INFORM7_HOME", r"C:\Program Files\Inform7IDE"))
@@ -33,8 +38,96 @@ NATIVE_GLULXE = TOOLS_DIR / "interpreters" / "glulxe.exe"
 NATIVE_DFROTZ = TOOLS_DIR / "interpreters" / "dfrotz.exe"
 
 
+# --- Game registry ---
+
+_registry_cache: dict | None = None
+
+
+def _load_registry() -> dict:
+    """Load the merged game registry (local overrides defaults).
+
+    Returns dict mapping game name -> {"path": str, "repo": str, ...}.
+    """
+    global _registry_cache
+    if _registry_cache is not None:
+        return _registry_cache
+
+    registry = {}
+
+    # Layer 1: committed defaults
+    if GAMES_REGISTRY.exists():
+        try:
+            registry.update(json.loads(GAMES_REGISTRY.read_text(encoding="utf-8")))
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Layer 2: local overrides (merge per-game, not full replace)
+    if GAMES_LOCAL.exists():
+        try:
+            local = json.loads(GAMES_LOCAL.read_text(encoding="utf-8"))
+            for name, entry in local.items():
+                if name in registry:
+                    registry[name].update(entry)
+                else:
+                    registry[name] = entry
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    _registry_cache = registry
+    return registry
+
+
+def _resolve_game_path(entry: dict) -> Path:
+    """Resolve a registry entry's path to an absolute Path.
+
+    Relative paths are resolved from the ifhub root (I7_ROOT).
+    POSIX paths (/c/code/...) are converted to Windows.
+    """
+    raw = entry.get("path", "")
+    if not raw:
+        return Path()
+    # Convert POSIX paths to Windows if needed
+    if raw.startswith("/") and len(raw) > 2 and raw[2] == "/":
+        raw = to_windows(raw)
+    p = Path(raw)
+    if not p.is_absolute():
+        p = (I7_ROOT / p).resolve()
+    return p
+
+
+def registered_games() -> dict[str, Path]:
+    """Return dict mapping game name -> resolved absolute path for all registered games."""
+    registry = _load_registry()
+    result = {}
+    for name, entry in registry.items():
+        resolved = _resolve_game_path(entry)
+        if resolved != Path() and resolved.is_dir():
+            result[name] = resolved
+    return result
+
+
+def game_repo(name: str) -> str:
+    """Return the GitHub repo (e.g., 'Johnesco/zork1') for a registered game, or ''."""
+    registry = _load_registry()
+    entry = registry.get(name, {})
+    return entry.get("repo", "")
+
+
 def project_dir(name: str) -> Path:
-    """Return absolute path to projects/<name>/."""
+    """Return absolute path to a game's project directory.
+
+    Resolution order:
+    1. games-local.json (per-developer overrides)
+    2. games-registry.json (committed defaults)
+    3. projects/<name>/ (legacy fallback)
+    """
+    registry = _load_registry()
+    entry = registry.get(name)
+    if entry:
+        resolved = _resolve_game_path(entry)
+        if resolved != Path():
+            return resolved
+    # Legacy fallback
     return PROJECTS_DIR / name
 
 

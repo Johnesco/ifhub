@@ -1,7 +1,8 @@
-# Inform 7 Central Hub
+# IF Hub — Tools, Hub UI & Game Registry
 
-This folder is the single home for all Inform 7 authoring, compilation, and testing.
-Any project under `C:\code\` that needs to generate, edit, or build Inform 7 source references this location.
+IF Hub is the shared tooling, web hub, and game registry for interactive fiction projects.
+Game projects live **outside** this repo at `/c/code/text-games/<game>/`, each with its own git repo.
+IF Hub provides the build pipeline, dashboard, web player setup, and the hub web UI that aggregates all games.
 
 ## Directory Structure
 
@@ -99,15 +100,9 @@ C:\code\ifhub\
 │           ├── resourcemap.js  ← Resource mapping (images/sounds)
 │           ├── zvm.js          ← Z-machine VM
 │           ├── waiting.gif     ← Loading indicator
+│           ├── theme-listener.js ← Hub theme integration (postMessage listener)
 │           └── mood-engine.js  ← Shared mood palette engine (copied to projects by --mood)
-├── projects/              ← Game projects
-│   ├── dracula/           ← Dracula: Inform 7 Edition
-│   ├── feverdream/        ← Fever Dream
-│   ├── sample/            ← Sample practice game
-│   └── zork1/             ← Zork I: Inform 7 Edition
-│       ├── v0/, v1/, ...  ← Frozen version snapshots (legacy, zork1 only)
-│       ├── lib/parchment/ ← Parchment engine + latest game binary
-│       └── index.html     ← Landing page (+ play.html, source.html, etc.)
+├── games-registry.json    ← Game path registry (committed — maps game names to local paths + repos)
 └── ifhub/                 ← IF Hub web player
     ├── index.html         ← Landing page (reads cards.json, renders cards with Source/Walkthrough links)
     ├── app.html           ← Split-pane player (game + source viewer)
@@ -142,6 +137,52 @@ python /c/code/ifhub/tools/compile.py <game-name> --source <path/to/story.ni> --
 ```
 
 For manual compilation steps, see `reference/build-pipeline.md`. Do NOT create `.inform/` IDE project bundles — the `-source` and `-o` flags let us compile without them.
+
+## Game Projects (External)
+
+Game projects live **outside** this repo at `/c/code/text-games/<game>/`. Each game is its own git repo with its own GitHub Pages deployment. IF Hub discovers games via the **game registry**.
+
+### Game Registry
+
+Two files control game discovery (resolution: local overrides defaults):
+
+- **`games-registry.json`** (committed) — default paths + GitHub repo references
+- **`games-local.json`** (gitignored) — per-developer path overrides
+
+```json
+// games-registry.json
+{ "zork1": { "path": "../text-games/zork1", "repo": "Johnesco/zork1" } }
+
+// games-local.json (optional overrides)
+{ "zork1": { "path": "/d/projects/zork1" } }
+```
+
+Tools resolve game names via `paths.project_dir(name)` which checks: local → defaults → legacy `projects/` fallback.
+
+### Source Location Patterns
+
+Source lives where the engine's toolchain naturally expects it. Web deliverables land in the game's own directory.
+
+| Engine | Source location | Config pointer | Compile wrapper |
+|--------|----------------|----------------|-----------------|
+| I7 | `<game>/story.ni` | — (in-project) | `compile.py` |
+| Rez | `<game>/src/*.rez` | Optional `REZ_DIR` for external | `compile_rez.py` |
+| wwwbasic | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
+| applesoft | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
+| Ink | `<game>/*.ink` | `SOURCE=<file>` in project.conf | `setup_ink.py` (via pipeline) |
+| Sharpee | External npm project | `SHARPEE_DIR=/c/code/sharpee/<game>` | `compile_sharpee.py` |
+
+Each BASIC dialect (wwwbasic, qbjc, applesoft, bwbasic) must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
+
+All engines are buildable from the pipeline (`pipeline.py <game> compile`) and dashboard (Build button). The dispatch is engine-agnostic: `project.conf` declares `ENGINE=<type>`, and the pipeline/dashboard routes to the correct compile script automatically.
+
+### Project-Local Play Templates
+
+Games with custom `play.html` requirements (xterm.js terminal, custom CSS, engine-specific rendering) can provide a `play-template.html` in their project root. The build scripts check for it before falling back to the generic template. This makes `--force` rebuilds safe — custom rendering is preserved.
+
+Placeholders substituted: `__TITLE__`, `__BASIC_SOURCE__` (BASIC engines), `__STORY_FILE__`/`__STORY_PATH__` (I7).
+
+Projects using this pattern: `haunted-house` (xterm.js), `apple-adventure` (jsbasic), I7 mood games (zork1 v3, feverdream).
 
 ## Testing
 
@@ -185,7 +226,7 @@ Config files are parsed by `tools/lib/config.py` which extracts key=value pairs 
 
 #### Adding Testing to a New Project
 
-1. Create `<name>/tests/project.conf` (see `projects/zork1/tests/project.conf` as a template)
+1. Create `<name>/tests/project.conf` (see `/c/code/text-games/zork1/tests/project.conf` as a template)
 2. Add walkthrough data files (`tests/inform7/walkthrough.txt`), seeds.conf, and regtest files as needed
 3. Run tests using the framework directly with `--config`:
 
@@ -274,11 +315,11 @@ The pipeline's test stage keeps them in sync automatically:
 ```bash
 # After running walkthrough test:
 python tools/testing/generate-guide.py \
-    --walkthrough projects/<game>/tests/inform7/walkthrough.txt \
-    --transcript projects/<game>/tests/inform7/walkthrough_output.txt \
-    -o projects/<game>/tests/inform7/walkthrough-guide.txt
-cp projects/<game>/tests/inform7/walkthrough_output.txt projects/<game>/
-cp projects/<game>/tests/inform7/walkthrough-guide.txt projects/<game>/
+    --walkthrough <game>/tests/inform7/walkthrough.txt \
+    --transcript <game>/tests/inform7/walkthrough_output.txt \
+    -o <game>/tests/inform7/walkthrough-guide.txt
+cp <game>/tests/inform7/walkthrough_output.txt projects/<game>/
+cp <game>/tests/inform7/walkthrough-guide.txt projects/<game>/
 ```
 
 ### Staleness Detection
@@ -371,7 +412,7 @@ Use Portman (`C:\code\portman\portman.py`) for all local serving. It's a single-
 ```bash
 # Register ifhub + all game projects (one-time, persists in ~/.portman/config.json):
 python /c/code/portman/portman.py add ifhub "C:\code\ifhub\ifhub"
-for dir in /c/code/ifhub/projects/*/; do
+for dir in /c/code/text-games/*/; do
     python /c/code/portman/portman.py add "$(basename $dir)" "$dir"
 done
 
@@ -426,7 +467,7 @@ Each game's `play.html` layers custom CSS on top of Parchment's base styles. Thr
 **Platform theme override:** When a platform theme is selected in the hub's style dropdown, `app.html` directly injects `<style id="ifhub-theme-override">` into all same-origin iframes (game, source, walkthrough) via `contentDocument`. Engine-specific CSS builders (`buildParchmentCSS`, `buildInkCSS`, `buildBasicCSS`, `buildChromeCSS`) target the correct selectors for each page type. Games with `overlayLabel` in `games.json` are exempt from direct injection — they receive `ifhub:applyTheme` / `ifhub:restoreOverlay` via postMessage so their own listener can coordinate `body.platform-theme-active` to suppress visual effects while the mood engine continues running. Non-overlay game `play.html` files do not need a theme listener script.
 
 **Adding mood theming to a new project:**
-1. Copy `tools/web/templates/play-mood.html` → `projects/<game>/play-template.html`
+1. Copy `tools/web/templates/play-mood.html` → `<game>/play-template.html`
 2. Add palettes, room zones, and CSS effects
 3. Add `MoodEngine.init({...})` in a `<script>` block
 4. Build: `python tools/compile.py <game> --force` (auto-detects mood-engine.js in template)
@@ -518,7 +559,7 @@ python tools/publish.py <id>
 
 `compile_sharpee.py` reads `tests/project.conf` in the ifhub project to find the external source:
 ```bash
-# projects/<game>/tests/project.conf
+# <game>/tests/project.conf
 ENGINE=sharpee
 SHARPEE_DIR=/c/code/sharpee/<npm-project>
 TITLE="Game Title"
@@ -601,24 +642,23 @@ No colons in game titles (Windows filename limitation — use dashes instead).
 
 ## Projects
 
-Each Inform 7 project lives under `C:\code\ifhub\projects\`.
+Each game project lives at `/c/code/text-games/<game>/` as its own git repo. IF Hub discovers them via `games-registry.json`.
 
-- Each project gets its own subfolder (e.g., `projects/zork1/`, `projects/sample/`)
 - Do NOT create `.inform` bundles — compile directly using `-source` and `-o` flags
-- The `story.ni` in each project subfolder is the **single source of truth** for that project
-- Other repos (like `C:\code\resume\writing\`) may contain **read-only snapshots** of source for display — those are NOT for compilation or editing
-- When a project compiles, the output (.ulx, .ulx.js) is used by the project's own web player
+- The `story.ni` (I7) or equivalent source file is the **single source of truth** for that project
+- When a project compiles, the output stays in the game's own directory
+- Build with: `python tools/pipeline.py <game> compile [--force]`
 
 ### Versioning (Legacy — zork1 only)
 
-The `vN/` directory model (frozen snapshots with `snapshot.py` and `build_site.py`) is deployed legacy for zork1 and dracula. New projects should not use versioning — flat layout with a single `story.ni` is the standard. See `projects/zork1/CLAUDE.md` for the versioning workflow if maintaining those projects.
+The `vN/` directory model (frozen snapshots with `snapshot.py` and `build_site.py`) is deployed legacy for zork1 and dracula. New projects should not use versioning — flat layout with a single source file is the standard.
 
 ### Standard Project Layout
 
 Every project follows this baseline structure. Each has a `CLAUDE.md` that references `reference/project-guide.md` for shared workflows.
 
 ```
-projects/<game>/
+/c/code/text-games/<game>/
 ├── CLAUDE.md              ← Project guide (points to hub for shared docs)
 ├── story.ni               ← Source of truth (Inform 7 source)
 ├── <game>.ulx             ← Compiled Glulx binary (gitignored)
@@ -648,16 +688,22 @@ Optional additions per project:
 
 ### Known Projects
 
-| Project | Engine | Sound | CSS Effects | Tests |
+| Project | Engine | Sound | Custom Template | Tests |
 |---|---|---|---|---|
-| zork1 | inform7 | blorb (v3+) | Mood palettes, CRT, tree, egg, sword (v3) | walkthrough, regtest, scenarios |
+| zork1 | inform7 | blorb (v3+) | Mood palettes (play-template.html) | walkthrough, regtest, scenarios |
 | dracula | inform7 | No | Static dark theme | walkthrough |
-| feverdream | inform7 | blorb | Mood palettes, monitor, glass, fungus, spray | walkthrough (scoreless) |
-| sample | inform7 | No | Static dark theme | walkthrough, regtest |
+| dracula-v0 | wwwbasic | No | No (uses patched dracula-wwwbasic.bas) | None |
+| feverdream | inform7 | blorb | Mood palettes (play-template.html) | walkthrough (scoreless) |
+| sample | inform7 | No | No | walkthrough, regtest |
+| guess-the-verb-inform7 | inform7 | No | No | walkthrough |
 | guess-the-verb-sharpee | sharpee | No | Theme listener | transcript tests (via Sharpee) |
+| haunted-house | wwwbasic | No | xterm.js (play-template.html) | None |
+| apple-adventure | applesoft | No | jsbasic (play-template.html) | None |
+| cloak-inform7 | inform7 | No | No | None |
 | cloak-rez | rez | No | Theme listener | None (choice-based) |
+| ink-story | ink | No | No | None |
 
-All projects have `CLAUDE.md` referencing `reference/project-guide.md`, plus `project.conf` for the shared testing framework. See `reference/css-overlay.md` for the play.html theming architecture.
+All projects live at `/c/code/text-games/<game>/` with their own git repos. Each has `project.conf` for the shared testing framework. See `reference/css-overlay.md` for the play.html theming architecture.
 
 Games with `overlayLabel` in `games.json` (zork1 v3+, feverdream, seasons) show an overlay toggle in the hub's style dropdown.
 
@@ -754,7 +800,7 @@ A reusable source template at `tools/verb-help-template.ni` that reduces guess-t
 - **~35 synonym mappings** — covers the most common guess-the-verb failures (inspect→examine, grab→take, etc.)
 - **USE verb handler** — redirects the most common unrecognized verb to specific verbs
 
-See `reference/verb-help.md` for the full authoring guide. Piloted on `projects/sample/`.
+See `reference/verb-help.md` for the full authoring guide. Piloted on `text-games/sample/`.
 
 ### Testing
 - Inform 7 compiles to Glulx (.ulx) or Z-machine (.z8)
