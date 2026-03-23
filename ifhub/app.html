@@ -570,6 +570,7 @@ body.resizing iframe {
     <button class="tb-icon-btn" id="hamburger-btn" title="Menu">&#x2630;</button>
     <div class="hamburger-menu" id="hamburger-menu">
       <a id="library-link" href=".">Library</a>
+      <a id="game-landing-link" href="#" style="display:none">Game Page</a>
       <a id="btn-fullpage" href="#">Full Page</a>
     </div>
   </div>
@@ -1533,6 +1534,16 @@ function switchGame(gameId) {
 
   // Update page title
   document.title = g.title + ' \u2014 Source & Game';
+
+  // Update hamburger landing page link
+  var landingLink = document.getElementById('game-landing-link');
+  if (g.landingUrl) {
+    landingLink.href = g.landingUrl;
+    landingLink.textContent = g.title + ' Page';
+    landingLink.style.display = '';
+  } else {
+    landingLink.style.display = 'none';
+  }
 
   // Rebuild style dropdown for this game
   buildStyleDropdown(gameId);
