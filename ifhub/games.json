@@ -343,6 +343,8 @@
     "description": "A faithful Sharpee port of the 1981 Mainframe Zork. 172 rooms, 716 max score. By Anderson, Blank, Daniels, and Lebling. Ported by David Cornelson.",
     "playUrl": "/dungeo/play.html",
     "landingUrl": "/dungeo/",
+    "sourceBrowser": true,
+    "sourceUrl": "/dungeo/source.html",
     "engine": "sharpee",
     "tags": [
       "classic",
