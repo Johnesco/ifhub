@@ -206,7 +206,10 @@
     "playUrl": "/cloak-sharpee/play.html",
     "landingUrl": "/cloak-sharpee/",
     "engine": "sharpee",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
   },
   {
     "id": "cloak-inform7",
@@ -217,7 +220,10 @@
     "playUrl": "/cloak-inform7/play.html",
     "landingUrl": "/cloak-inform7/",
     "engine": "inform7",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
   },
   {
     "id": "guess-the-verb-sharpee",
@@ -228,7 +234,10 @@
     "playUrl": "/guess-the-verb-sharpee/play.html",
     "landingUrl": "/guess-the-verb-sharpee/",
     "engine": "sharpee",
-    "tags": ["parser-lab", "disambiguation"]
+    "tags": [
+      "parser-lab",
+      "disambiguation"
+    ]
   },
   {
     "id": "cloak-ink",
@@ -239,7 +248,11 @@
     "playUrl": "/cloak-ink/play.html",
     "landingUrl": "/cloak-ink/",
     "engine": "ink",
-    "tags": ["cloak", "demo", "classic"]
+    "tags": [
+      "cloak",
+      "demo",
+      "classic"
+    ]
   },
   {
     "id": "cloak-rez",
@@ -250,6 +263,24 @@
     "playUrl": "/cloak-rez/play.html",
     "landingUrl": "/cloak-rez/",
     "engine": "rez",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
+  },
+  {
+    "id": "dungeo",
+    "base": "dungeo",
+    "title": "DUNGEON",
+    "meta": "Mainframe Zork (1981)",
+    "description": "A faithful Sharpee port of the 1981 Mainframe Zork. 172 rooms, 716 max score.",
+    "playUrl": "/dungeo/play.html",
+    "landingUrl": "/dungeo/",
+    "engine": "sharpee",
+    "tags": [
+      "classic",
+      "zork",
+      "sharpee"
+    ]
   }
 ]

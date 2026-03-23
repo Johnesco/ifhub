@@ -269,7 +269,10 @@
     "sourceBrowser": true,
     "sourceUrl": "/cloak-sharpee/source.html",
     "engine": "sharpee",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
   },
   {
     "id": "cloak-inform7",
@@ -281,7 +284,10 @@
     "sourceBrowser": true,
     "sourceUrl": "/cloak-inform7/source.html",
     "engine": "inform7",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
   },
   {
     "id": "guess-the-verb-sharpee",
@@ -295,7 +301,10 @@
     "sourceBrowser": true,
     "sourceUrl": "/guess-the-verb-sharpee/source.html",
     "engine": "sharpee",
-    "tags": ["parser-lab", "disambiguation"]
+    "tags": [
+      "parser-lab",
+      "disambiguation"
+    ]
   },
   {
     "id": "cloak-ink",
@@ -306,7 +315,11 @@
     "sourceBrowser": true,
     "sourceUrl": "/cloak-ink/source.html",
     "engine": "ink",
-    "tags": ["cloak", "demo", "classic"]
+    "tags": [
+      "cloak",
+      "demo",
+      "classic"
+    ]
   },
   {
     "id": "cloak-rez",
@@ -317,6 +330,24 @@
     "landingUrl": "/cloak-rez/",
     "sourceUrl": "/cloak-rez/src/cloak_of_darkness.rez",
     "engine": "rez",
-    "tags": ["cloak", "demo"]
+    "tags": [
+      "cloak",
+      "demo"
+    ]
+  },
+  {
+    "id": "dungeo",
+    "base": "dungeo",
+    "title": "DUNGEON",
+    "meta": "Mainframe Zork (1981)",
+    "description": "A faithful Sharpee port of the 1981 Mainframe Zork. 172 rooms, 716 max score. By Anderson, Blank, Daniels, and Lebling. Ported by David Cornelson.",
+    "playUrl": "/dungeo/play.html",
+    "landingUrl": "/dungeo/",
+    "engine": "sharpee",
+    "tags": [
+      "classic",
+      "zork",
+      "sharpee"
+    ]
   }
 ]
