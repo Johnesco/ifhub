@@ -132,7 +132,7 @@
     "description": "A classic 1983 Usborne text adventure with 64 rooms and a candle timer.",
     "playUrl": "/haunted-house/play.html",
     "landingUrl": "/haunted-house/",
-    "engine": "basic",
+    "engine": "wwwbasic",
     "tags": [
       "horror",
       "classic",
@@ -147,7 +147,7 @@
     "description": "A text adventure game written in Apple II Applesoft BASIC.",
     "playUrl": "/apple-adventure/play.html",
     "landingUrl": "/apple-adventure/",
-    "engine": "basic",
+    "engine": "applesoft",
     "tags": [
       "classic",
       "basic"
@@ -187,13 +187,13 @@
     "tags": []
   },
   {
-    "id": "guess_the_verb",
-    "base": "guess_the_verb",
+    "id": "guess-the-verb-inform7",
+    "base": "guess-the-verb-inform7",
     "title": "Guess The Verb (Inform 7)",
     "meta": "An Interactive Fiction",
     "description": "An interactive fiction game.",
-    "playUrl": "/guess_the_verb/play.html",
-    "landingUrl": "/guess_the_verb/",
+    "playUrl": "/guess-the-verb-inform7/play.html",
+    "landingUrl": "/guess-the-verb-inform7/",
     "engine": "inform7",
     "tags": []
   },
@@ -223,12 +223,12 @@
     "id": "guess-the-verb-sharpee",
     "base": "guess-the-verb-sharpee",
     "title": "Guess the Verb (Sharpee)",
-    "meta": "A Sharpee Game",
-    "description": "A Parser Puzzle Laboratory -- explore your grandmother's old house and find the family heirloom she left behind.",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Every layer of the command pipeline works harder so you don't have to.",
     "playUrl": "/guess-the-verb-sharpee/play.html",
     "landingUrl": "/guess-the-verb-sharpee/",
     "engine": "sharpee",
-    "tags": []
+    "tags": ["parser-lab", "disambiguation"]
   },
   {
     "id": "cloak-ink",

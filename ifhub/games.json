@@ -91,7 +91,7 @@
     "walkthroughUrl": "/dracula-v0/walkthrough.html",
     "sourceUrl": "/dracula-v0/source.html",
     "landingUrl": "/dracula-v0/",
-    "engine": "basic",
+    "engine": "wwwbasic",
     "tags": [
       "horror",
       "classic",
@@ -190,7 +190,7 @@
     "landingUrl": "/haunted-house/",
     "sourceBrowser": true,
     "sourceUrl": "/haunted-house/source.html",
-    "engine": "basic",
+    "engine": "wwwbasic",
     "tags": [
       "horror",
       "basic",
@@ -206,7 +206,7 @@
     "landingUrl": "/apple-adventure/",
     "sourceBrowser": true,
     "sourceUrl": "/apple-adventure/source.html",
-    "engine": "basic",
+    "engine": "applesoft",
     "tags": [
       "classic",
       "basic"
@@ -249,14 +249,14 @@
     "tags": []
   },
   {
-    "id": "guess_the_verb",
+    "id": "guess-the-verb-inform7",
     "title": "Guess The Verb (Inform 7)",
     "sourceLabel": "story.ni",
-    "playUrl": "/guess_the_verb/play.html",
-    "landingUrl": "/guess_the_verb/",
-    "walkthroughUrl": "/guess_the_verb/walkthrough.html",
+    "playUrl": "/guess-the-verb-inform7/play.html",
+    "landingUrl": "/guess-the-verb-inform7/",
+    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.html",
     "sourceBrowser": true,
-    "sourceUrl": "/guess_the_verb/source.html",
+    "sourceUrl": "/guess-the-verb-inform7/source.html",
     "engine": "inform7",
     "tags": []
   },
@@ -285,14 +285,17 @@
   },
   {
     "id": "guess-the-verb-sharpee",
+    "base": "guess-the-verb-sharpee",
     "title": "Guess the Verb (Sharpee)",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language -- the engine works harder so you don't have to.",
     "sourceLabel": "game-source.ts",
     "playUrl": "/guess-the-verb-sharpee/play.html",
     "landingUrl": "/guess-the-verb-sharpee/",
     "sourceBrowser": true,
     "sourceUrl": "/guess-the-verb-sharpee/source.html",
     "engine": "sharpee",
-    "tags": []
+    "tags": ["parser-lab", "disambiguation"]
   },
   {
     "id": "cloak-ink",
