@@ -22,6 +22,7 @@ def main():
     parser.add_argument("--title", required=True, help="Game title")
     parser.add_argument("--meta", default="An Interactive Fiction", help="Subtitle")
     parser.add_argument("--description", default="An interactive fiction game.", help="Description")
+    parser.add_argument("--id", default="", help="Game ID (for IF Hub links; defaults to output dir name)")
     parser.add_argument("--out", required=True, help="Output directory")
     parser.add_argument("--source-file", default="story.ni", help="Source filename (e.g. story.ni, game.bas)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing files")
@@ -40,9 +41,10 @@ def main():
     index_out = out_dir / "index.html"
     if not index_out.exists() or args.force:
         print("Generating index.html...")
+        game_id = args.id or Path(args.out).name
         substitute_template(
             landing_template, index_out,
-            {"__TITLE__": args.title, "__META__": args.meta, "__DESCRIPTION__": args.description},
+            {"__TITLE__": args.title, "__META__": args.meta, "__DESCRIPTION__": args.description, "__ID__": game_id},
         )
         generated += 1
     else:
