@@ -4,6 +4,23 @@ IF Hub is the shared tooling, web hub, and game registry for interactive fiction
 Game projects live **outside** this repo at `/c/code/text-games/<game>/`, each with its own git repo.
 IF Hub provides the build pipeline, dashboard, web player setup, and the hub web UI that aggregates all games.
 
+## Pipeline First
+
+**All building, registering, and publishing MUST go through the pipeline.** Never run individual scripts manually (compile.py, register_game.py, publish.py, setup_web.py, etc.) — use the pipeline instead:
+
+```bash
+python tools/pipeline.py <game> compile          # compile only
+python tools/pipeline.py <game> compile test      # compile + test
+python tools/pipeline.py <game> --ship            # compile + test + register + publish + push hub
+```
+
+The pipeline auto-detects the engine from `project.conf`, chains all steps in order, handles staleness checks, and ensures nothing is missed. If a step is missing from the pipeline, **fix the pipeline** — don't work around it with manual commands.
+
+**Known gaps:**
+- `games-registry.json` must still be edited manually to add a new game's path. Should be automated in `register_game.py`.
+- `compile_sharpee.py` does not validate the built game actually runs (blank-screen failures go undetected). Should run a smoke test after build.
+- Syncing fork packages to `/c/code/sharpee/*/node_modules/` is manual. Need a script to copy built fork packages to all Sharpee projects when the fork is updated.
+
 ## Directory Structure
 
 ```
@@ -328,66 +345,9 @@ Pipeline writes `.pipeline-state` (gitignored) after each stage. Source/binary h
 
 ## Web Player (`tools/web/`)
 
-Parchment 2025.1 is a browser-based Glulx interpreter that plays `.ulx` and `.gblorb` games in any modern browser. The shared library files (12 files) live in `tools/web/parchment/` — each project gets its own copy.
+Parchment 2025.1 is a browser-based Glulx interpreter. The pipeline handles all web player setup automatically — do not run `setup_web.py` or encode binaries manually. Use `python tools/pipeline.py <game> compile` instead.
 
-### Adding a Web Player to a New Project
-
-Use the setup script:
-```bash
-# Standard (no sound embedded):
-python /c/code/ifhub/tools/web/setup_web.py \
-    --title "My Game" \
-    --ulx /path/to/game.ulx \
-    --out /path/to/project
-
-# With native blorb sound:
-python /c/code/ifhub/tools/web/setup_web.py \
-    --title "My Game" \
-    --blorb /path/to/game.gblorb \
-    --out /path/to/project
-
-# With mood palette system:
-python /c/code/ifhub/tools/web/setup_web.py \
-    --title "My Game" \
-    --ulx /path/to/game.ulx \
-    --out /path/to/project \
-    --mood
-```
-
-This creates:
-```
-project/
-├── play.html                  ← Ready-to-serve player page
-└── lib/parchment/
-    ├── jquery.min.js          ← jQuery
-    ├── main.js                ← Parchment loader
-    ├── main.css               ← Layout styling
-    ├── parchment.js           ← Parchment engine
-    ├── parchment.css          ← Engine styling
-    ├── quixe.js               ← Quixe interpreter (JS Glulx)
-    ├── glulxe.js              ← Glulxe interpreter (WASM)
-    ├── ie.js                  ← IE compatibility (nomodule)
-    ├── bocfel.js              ← Z-machine interpreter
-    ├── resourcemap.js         ← Resource mapping
-    ├── zvm.js                 ← Z-machine VM
-    ├── waiting.gif            ← Loading indicator
-    └── game.ulx.js            ← Base64-encoded game binary (or .gblorb.js)
-```
-
-To serve locally:
-```bash
-python -m http.server 8000 --directory project
-# then open http://localhost:8000/play.html
-```
-
-After recompiling the game, update the web binary:
-```bash
-B64=$(base64 -w 0 game.ulx) && echo "processBase64Zcode('${B64}')" > web/lib/parchment/game.ulx.js
-```
-
-### Sound
-
-Compile with `--sound` to embed `.ogg` audio in a `.gblorb` binary. See `reference/sound.md` for full architecture and gotchas.
+For sound, compile with `--sound` to embed `.ogg` audio in a `.gblorb` binary. See `reference/sound.md`.
 
 ### IF Hub — Serve-in-Place Architecture
 
@@ -399,11 +359,7 @@ The hub at `ifhub/` serves games **in-place** — it iframes each game's own pla
 - Source viewer fetches `game.sourceUrl` (same origin on GitHub Pages = works)
 - All games deploy to `johnesco.github.io/<game>/`, so same-origin iframes and fetch work freely
 
-**Adding a new game:**
-1. **Enable GitHub Pages** on the game repo — `publish.py` does this automatically (workflow deployment via GitHub Actions)
-2. Add an entry to `games.json` with `id`, `title`, and URL fields
-3. Add card metadata to `cards.json`
-4. Verify `johnesco.github.io/<game>/play.html` loads before adding to the hub
+**Adding a new game:** Use the pipeline: `python tools/pipeline.py <game> --ship`. This handles registration, publishing, and hub updates automatically. See "New Game Publish Flow" below.
 
 **Local development (Portman):**
 
@@ -476,141 +432,26 @@ Each game's `play.html` layers custom CSS on top of Parchment's base styles. Thr
 
 For Parchment errors ("Error loading story 200", "Error loading engine: 404"), sound gotchas, `.ulx.js` format issues, and MutationObserver quirks, see `reference/parchment-troubleshooting.md`.
 
-## Multi-Engine BASIC Support (`tools/web/setup_basic.py`)
+## Supported Engines
 
-The hub is engine-agnostic — any game that can produce a self-contained `play.html` works in the iframe player. A template library at `tools/web/templates/` provides ready-made player pages for multiple engines:
+The hub is engine-agnostic — any game that produces a `play.html` works. The pipeline handles all engines automatically via `ENGINE=` in `project.conf`.
 
-| Template | Engine | Dialect | Status |
-|---|---|---|---|
-| `play-parchment.html` | Parchment 2025.1 | Inform 7 / Z-machine | Production |
-| `play-wwwbasic.html` | Google wwwBASIC | GW-BASIC (INPUT-based only) | Production |
-| `play-qbjc.html` | qbjc + xterm.js | QBasic + GW-BASIC (GOTO, INKEY$) | Template ready |
-| `play-applesoft.html` | jsbasic | Apple II Applesoft BASIC | Template ready |
-| `play-jsdos.html` | js-dos (DOSBox) | Any DOS program | Template ready |
+| Engine | Source | Pipeline handles |
+|--------|--------|-----------------|
+| `inform7` | `story.ni` | Compile I7→I6→Glulx→web player |
+| `sharpee` | `src/index.ts` (npm project at `/c/code/sharpee/<game>/`) | `npx sharpee build-browser` + import |
+| `wwwbasic` | `.bas` file | Embed source in play template |
+| `qbjc` | `.bas` → `.js` | Pre-compile + template |
+| `applesoft` | `.bas` file | jsbasic template |
+| `jsdos` | `.jsdos` bundle | DOSBox template |
+| `ink` | `.ink` file | ink.js runtime |
+| `rez` | `.rez` files | Rez compiler |
 
-### Adding a BASIC Game
+**Sharpee workspace:** Games authored at `/c/code/sharpee/<game>/` (npm projects, `@sharpee/sharpee` from npm). Engine fork at `/c/code/fork/sharpee/` (for engine contributions only — never modify during game dev). See `reference/sharpee-author-guide.md` for the complete Sharpee authoring reference.
 
-```bash
-# GW-BASIC via wwwBASIC (embed .bas source inline):
-python /c/code/ifhub/tools/web/setup_basic.py \
-    --engine wwwbasic --title "My Game" \
-    --source path/to/game.bas --out path/to/project
+**Sharpee testing:** `npx transcript-test . walkthroughs/*.transcript` — see `reference/sharpee-author-guide.md` for transcript format.
 
-# QBasic via qbjc (pre-compile .bas -> .js first):
-# Step 1: npm install -g qbjc && qbjc game.bas -o game.js
-# Step 2:
-python /c/code/ifhub/tools/web/setup_basic.py \
-    --engine qbjc --title "My Game" \
-    --compiled path/to/game.js --out path/to/project
-
-# DOS via js-dos (create .jsdos bundle first):
-python /c/code/ifhub/tools/web/setup_basic.py \
-    --engine jsdos --title "My Game" \
-    --bundle path/to/game.jsdos --out path/to/project
-```
-
-Options: `--version-label "v0 — Original BASIC"`, `--back-href "./"`, `--force`.
-
-After generating `play.html`, register and publish like any other game:
-```bash
-python tools/register_game.py --name <id> --title "Game Title"
-python tools/publish.py <id>
-python tools/push_hub.py <id>
-```
-
-### Engine Selection Guide
-
-| If the game... | Use engine | Why |
-|---|---|---|
-| Uses INPUT/LINE INPUT only | `wwwbasic` | Simplest, already proven (dracula v0) |
-| Uses INKEY$, SCREEN, or structured QBasic | `qbjc` | Compiles to JS, handles real-time I/O |
-| Is Apple II Applesoft BASIC | `applesoft` | Authentic green-screen look |
-| Won't run in any JS interpreter | `jsdos` | Runs real DOS + real BASIC interpreter |
-| Is Inform 7 / Z-machine | `parchment` | Use `setup_web.py` (not `setup_basic.py`) |
-| Is a Sharpee game | `sharpee` | TypeScript IF engine, CSS variable theming |
-
-### Sharpee Games (`tools/compile_sharpee.py`)
-
-[Sharpee](https://sharpee.net/) is a TypeScript-based parser IF engine. Sharpee games are authored as npm projects in an external workspace (`/c/code/sharpee/<game>/`) and imported into IF Hub after building.
-
-**Workspace layout:**
-```
-/c/code/sharpee/              ← Sharpee authoring workspace (npm projects)
-    └── guess-the-verb/       ← Game project (npm init via @sharpee/sharpee)
-        ├── src/index.ts      ← Game source (imports from @sharpee/sharpee)
-        ├── src/browser-entry.ts ← Browser UI wiring
-        ├── browser/           ← Custom HTML + CSS templates
-        ├── package.json       ← Depends on @sharpee/sharpee from npm
-        └── dist/web/          ← Build output (guess-the-verb.js + index.html + styles.css)
-
-/c/code/fork/sharpee/         ← Engine fork (for contributions, not for authoring)
-```
-
-**One-command build + import:**
-```bash
-# Build in Sharpee workspace and import into IF Hub:
-python /c/code/ifhub/tools/compile_sharpee.py <game-name>
-python /c/code/ifhub/tools/compile_sharpee.py <game-name> --force  # overwrite play.html
-
-# Then register and publish like any other game:
-python tools/register_game.py --name <id> --title "Title" --engine sharpee
-python tools/publish.py <id>
-```
-
-`compile_sharpee.py` reads `tests/project.conf` in the ifhub project to find the external source:
-```bash
-# <game>/tests/project.conf
-ENGINE=sharpee
-SHARPEE_DIR=/c/code/sharpee/<npm-project>
-TITLE="Game Title"
-PIPELINE_HUB_ID=<game_id>
-```
-
-**What it does:**
-1. Runs `npm install` if `node_modules/` is missing
-2. Runs `npx sharpee build-browser` in the Sharpee source dir
-3. Imports `dist/web/` into the ifhub project via `setup_sharpee.py`
-
-**Manual setup** (alternative to `compile_sharpee.py`):
-```bash
-python /c/code/ifhub/tools/web/setup_sharpee.py \
-    --title "My Game" --dist path/to/dist/web/ --out path/to/project
-```
-
-The setup script copies dist files, renames `index.html` → `play.html`, and injects the IF Hub theme listener (maps hub themes to Sharpee's `--theme-*` CSS variables).
-
-**Scaffolding a new Sharpee game:**
-```bash
-cd /c/code/sharpee
-npx @sharpee/sharpee init <game-name> -y
-cd <game-name>
-npx @sharpee/sharpee init-browser
-npm install
-```
-
-**Testing Sharpee games:** Sharpee has its own transcript-based testing system (`@sharpee/transcript-tester`). See `/c/code/fork/sharpee/docs/testing/README.md` for the full format spec. Quick reference:
-```bash
-# Build + run all transcript tests:
-cd /c/code/sharpee/<game>
-npx sharpee build --test
-
-# Interactive play (REPL):
-npx sharpee build
-npx transcript-test --play
-
-# Run specific transcript test:
-npx transcript-test walkthroughs/wt-01.transcript
-```
-
-Transcript files (`.transcript`) use YAML headers + `> command` / `[OK: contains "text"]` assertions. Walkthroughs chain state between files; unit tests run isolated.
-
-### Other Formats (No Engine Needed)
-
-Games in these formats are already self-contained HTML — just create `play.html` manually and register:
-- **Twine** — Export as single HTML file
-- **Ink/Inkle** — ink.js runtime + JSON story
-- **ChoiceScript** — Build to HTML
-- **Custom JS / static HTML fiction** — Already browser-native
+**Other formats** (Twine, ChoiceScript, custom HTML) are already self-contained — just create `play.html` and register.
 
 ## New Game Publish Flow
 
@@ -707,105 +548,11 @@ All projects live at `/c/code/text-games/<game>/` with their own git repos. Each
 
 Games with `overlayLabel` in `games.json` (zork1 v3+, feverdream, seasons) show an overlay toggle in the hub's style dropdown.
 
-## Key Rules for Generating story.ni Files
+## Inform 7 Authoring Rules
 
-### File Format
-- Inform 7 source files are plain text with a `.ni` extension
-- The file is traditionally named `story.ni`
-- First line must be the title and author: `"Title" by "Author Name"`
-- Use natural English syntax — Inform 7 reads like prose, not code
+See `reference/syntax-guide.md` for full I7 syntax reference. See `reference/text-formatting.md` for text substitutions. See `reference/verb-help.md` for the verb help system template.
 
-### Organization
-- Use `Part`, `Chapter`, `Section` headings to organize (in that hierarchy order)
-- Parts are top-level, Chapters nest inside Parts, Sections inside Chapters
-
-### Special Characters in Text
-Inform 7 does NOT allow literal special characters in `say` strings. Use substitutions:
-- `[apostrophe]` for `'` inside strings
-- `[quotation mark]` for `"` inside strings
-- `[bracket]` and `[close bracket]` for `[` and `]`
-- Never use curly quotes or smart quotes
-
-### Text Output Formatting
-See `reference/text-formatting.md` for complete list. Key ones:
-- `[paragraph break]` — blank line between paragraphs
-- `[line break]` — newline without blank line
-- `[bold type]` / `[roman type]` — toggle bold on/off
-- `[italic type]` / `[roman type]` — toggle italic on/off
-- `[fixed letter spacing]` / `[variable letter spacing]` — monospace on/off
-
-### Long Text Pattern
-For long passages, break `say` statements into multiple sequential `say` calls within a `To say` phrase:
-```inform7
-To say my-long-text:
-    say "First paragraph.[paragraph break]";
-    say "Second paragraph.[paragraph break]";
-    say "Third paragraph."
-```
-Then invoke with `say "[my-long-text]"` — note the name is hyphenated, not spaced.
-
-### IF Banner Convention
-
-The startup banner uniquely identifies every build. The compiler auto-generates:
-```
-Title
-Subtitle by Author
-Release N / Serial number YYMMDD / Inform 7 v10.1.2 / D
-```
-
-**A. Required bibliographic fields:**
-```inform7
-"Title" by "Author"
-
-The story headline is "A Subtitle".
-The story genre is "Genre".
-The release number is N.
-The story creation year is YYYY.
-The story description is "Brief description."
-```
-
-**B. Release number = version number:**
-- Versioned projects: v1→1, v2→2, v3→3
-- Non-versioned: sequential (1, 2, 3...)
-- Never encode dates or other data in the release number
-
-**C. Serial number = build fingerprint:**
-- Auto-generated by compiler (YYMMDD compilation date) — never hardcode
-- "Release 3 / Serial number 260308" = v3, compiled March 8, 2026
-
-**D. Custom attribution uses `After printing the banner text`:**
-```inform7
-After printing the banner text:
-    say "Custom lines here[paragraph break]".
-```
-Never use `When play begins: say "banner..."` — it creates a double header.
-
-**E. Build tracing:** Title + Release + Serial uniquely identifies any binary's source and build date.
-
-### Common Patterns
-See `reference/syntax-guide.md` for full reference. Quick hits:
-- Kinds: `A widget is a kind of thing.`
-- Properties: `A widget has text called the label.`
-- Rooms: `The Kitchen is a room. "Description here."`
-- Actions: `Instead of pushing the button: say "Click."`
-- Custom actions: `Requesting help is an action out of world applying to nothing.`
-- Understand: `Understand "help" as requesting help.`
-
-### Verb Help System
-
-A reusable source template at `tools/verb-help-template.ni` that reduces guess-the-verb frustration. Copy the Chapter into any `story.ni` to get:
-- **Enhanced parser errors** — actionable messages instead of cryptic defaults
-- **VERBS command** — categorized list of available verbs
-- **HELP command** — brief orientation for parser IF newcomers
-- **~35 synonym mappings** — covers the most common guess-the-verb failures (inspect→examine, grab→take, etc.)
-- **USE verb handler** — redirects the most common unrecognized verb to specific verbs
-
-See `reference/verb-help.md` for the full authoring guide. Piloted on `text-games/sample/`.
-
-### Testing
-- Inform 7 compiles to Glulx (.ulx) or Z-machine (.z8)
-- Web playable via Quixe (Glulx interpreter in JS)
-- Always test: rooms are reachable, actions respond, text renders properly
+Key rules: first line must be `"Title" by "Author"`. Use `[apostrophe]` not `'` in strings. Use `After printing the banner text` for custom attribution (never `When play begins`). No colons in game titles (Windows filename limitation).
 
 ## Windows Notes
 

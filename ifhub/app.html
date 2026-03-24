@@ -285,6 +285,7 @@ body.resizing iframe {
 .game-toolbar {
   grid-column: 1 / -1;
   padding: 4px 10px;
+  padding-right: 40px; /* room for pinned hamburger */
   background: var(--toolbar-bg, #0e0a08);
   border-bottom: 1px solid var(--border, #2a2418);
   display: flex;
@@ -293,6 +294,7 @@ body.resizing iframe {
   gap: 4px 8px;
   font-size: 13px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
 }
 
 .game-toolbar .spacer { flex: 1; min-width: 0; }
@@ -435,7 +437,10 @@ body.resizing iframe {
 
 /* --- Hamburger menu --- */
 .hamburger-wrap {
-  position: relative;
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 10;
 }
 
 .hamburger-menu {
@@ -472,6 +477,7 @@ body.resizing iframe {
   border-top: 1px solid var(--border, #2a2418);
 }
 
+
 /* --- Responsive --- */
 @media (max-width: 1024px) {
   .sidebar { display: none; }
@@ -493,10 +499,10 @@ body.resizing iframe {
   .game-toolbar {
     gap: 4px 8px;
     padding: 6px 8px;
+    padding-right: 40px;
     font-size: 12px;
   }
 
-  .game-toolbar .spacer { display: none; }
   .toolbar-label { display: none; }
 
   .toolbar-selectors {
@@ -565,7 +571,6 @@ body.resizing iframe {
     </button>
     <input type="range" id="volume-slider" min="0" max="100" value="70" title="Volume">
   </span>
-  <span class="spacer"></span>
   <div class="hamburger-wrap">
     <button class="tb-icon-btn" id="hamburger-btn" title="Menu">&#x2630;</button>
     <div class="hamburger-menu" id="hamburger-menu">
@@ -652,6 +657,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     games = data;
+    games.sort(function(a, b) { return a.title.localeCompare(b.title); });
     games.forEach(function(g) { gameMap[g.id] = g; });
     buildDropdown();
     bindUI();
@@ -682,7 +688,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var initGame = params.get('game') || (games.length ? games[0].id : '');
     if (!gameMap[initGame] && games.length) initGame = games[0].id;
     if (initGame) switchGame(initGame);
-    applyView('game+source');
+    var savedView = null;
+    try { savedView = sessionStorage.getItem('ifhub-view'); } catch(e) {}
+    applyView(savedView || 'game+source');
+    document.getElementById('view-select').value = savedView || 'game+source';
   });
 });
 
@@ -706,6 +715,7 @@ function bindUI() {
   // View layout select
   document.getElementById('view-select').addEventListener('change', function() {
     applyView(this.value);
+    try { sessionStorage.setItem('ifhub-view', this.value); } catch(e) {}
   });
 
   // Ctrl+F shortcut
@@ -1303,14 +1313,14 @@ function sendGameMessage(msg) {
 /* ==================================================================
    STYLE DROPDOWN (overlay-aware theme selector)
    ================================================================== */
-function getStylePref(gameId) {
-  try { return localStorage.getItem('ifhub-style-' + gameId); }
+function getStylePref() {
+  try { return sessionStorage.getItem('ifhub-style'); }
   catch (e) { return null; }
 }
 
 function setStylePref(gameId, val) {
-  try { localStorage.setItem('ifhub-style-' + gameId, val); }
-  catch (e) { /* localStorage unavailable */ }
+  try { sessionStorage.setItem('ifhub-style', val); }
+  catch (e) { /* storage unavailable */ }
 }
 
 function buildStyleDropdown(gameId) {
@@ -1344,7 +1354,7 @@ function buildStyleDropdown(gameId) {
   populateThemeOptions(select);
 
   // Determine current selection
-  var stored = gameId ? getStylePref(gameId) : null;
+  var stored = getStylePref();
   if (stored) {
     select.value = stored;
   } else if (hasOverlay) {
@@ -1520,6 +1530,11 @@ function switchGame(gameId) {
 
   currentGame = gameId;
 
+  // Update URL so refresh keeps the same game
+  var params = new URLSearchParams(window.location.search);
+  params.set('game', gameId);
+  history.replaceState(null, '', '?' + params.toString());
+
   // Hide sound controls until iframe reports ready
   soundReady = false;
   document.getElementById('sound-controls').style.display = 'none';
@@ -1553,7 +1568,6 @@ function switchGame(gameId) {
     var sel = document.getElementById('style-select');
     if (sel && sel.value !== 'overlay' && sel.value !== 'classic') {
       if (g && g.overlayLabel) {
-        // Overlay games — use postMessage for their own listener
         var theme = getTheme(sel.value);
         sendGameMessage({
           type: 'ifhub:applyTheme',
@@ -1561,7 +1575,6 @@ function switchGame(gameId) {
           scrollbar: theme.scrollbar
         });
       } else {
-        // Non-overlay games — inject directly
         themeGameIframe();
       }
     }
@@ -1571,6 +1584,8 @@ function switchGame(gameId) {
   loadSourceForGame(gameId);
   loadWalkthroughForGame(gameId);
 }
+
+
 </script>
 
 </body>

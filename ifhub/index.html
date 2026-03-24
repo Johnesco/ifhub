@@ -286,6 +286,7 @@ Promise.all([
 
   var container = document.getElementById('games');
   var filtered = cards.filter(function(card) { return matchesHub(card, activeHub); });
+  filtered.sort(function(a, b) { return a.title.localeCompare(b.title); });
 
   if (filtered.length === 0) {
     container.innerHTML = '<p style="color:#605840;font-style:italic;">No games match this collection.</p>';

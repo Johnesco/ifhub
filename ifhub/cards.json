@@ -95,34 +95,40 @@
     "id": "disenchantment12",
     "base": "disenchantment12",
     "title": "Disenchantment12",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "meta": "An Inform 7 Tutorial",
+    "description": "An Inform 7 tutorial game.",
     "playUrl": "/disenchantment12/play.html",
     "landingUrl": "/disenchantment12/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "larva",
     "base": "larva",
     "title": "Larva",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "meta": "An Inform 7 Tutorial",
+    "description": "An Inform 7 tutorial game.",
     "playUrl": "/larva/play.html",
     "landingUrl": "/larva/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "sample",
     "base": "sample",
     "title": "Sample",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "meta": "An Inform 7 Demo",
+    "description": "A sample Inform 7 game.",
     "playUrl": "/sample/play.html",
     "landingUrl": "/sample/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "haunted-house",
@@ -157,12 +163,14 @@
     "id": "seasons",
     "base": "seasons",
     "title": "Seasons",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "meta": "An Inform 7 Demo",
+    "description": "A mood-palette demo with seasonal CSS effects.",
     "playUrl": "/seasons/play.html",
     "landingUrl": "/seasons/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "ink-story",
@@ -173,7 +181,9 @@
     "playUrl": "/ink-story/play.html",
     "landingUrl": "/ink-story/",
     "engine": "ink",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "lostinnewyork",
@@ -184,18 +194,24 @@
     "playUrl": "/lostinnewyork/play.html",
     "landingUrl": "/lostinnewyork/",
     "engine": "ink",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "guess-the-verb-inform7",
     "base": "guess-the-verb-inform7",
     "title": "Guess The Verb (Inform 7)",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A parser disambiguation lab. Every room tests a different verb pattern.",
     "playUrl": "/guess-the-verb-inform7/play.html",
     "landingUrl": "/guess-the-verb-inform7/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "guess-the-verb",
+      "parser-lab",
+      "disambiguation"
+    ]
   },
   {
     "id": "cloak-sharpee",
@@ -235,6 +251,7 @@
     "landingUrl": "/guess-the-verb-sharpee/",
     "engine": "sharpee",
     "tags": [
+      "guess-the-verb",
       "parser-lab",
       "disambiguation"
     ]
@@ -279,8 +296,20 @@
     "engine": "sharpee",
     "tags": [
       "classic",
-      "zork",
-      "sharpee"
+      "zork"
+    ]
+  },
+  {
+    "id": "familyzoo",
+    "base": "familyzoo",
+    "title": "Family Zoo",
+    "meta": "Sharpee Tutorial (V16)",
+    "description": "A progressive Sharpee tutorial — explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
+    "playUrl": "/familyzoo/play.html",
+    "landingUrl": "/familyzoo/",
+    "engine": "sharpee",
+    "tags": [
+      "demo"
     ]
   }
 ]

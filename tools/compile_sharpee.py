@@ -27,6 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description="Build a Sharpee game and import into IF Hub.")
     parser.add_argument("game", help="Game name (ifhub project directory under projects/)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing play.html")
+    parser.add_argument("--no-test", action="store_true", help="Skip post-build validation")
     args = parser.parse_args()
 
     project_dir = paths.project_dir(args.game)
@@ -110,6 +111,71 @@ def main():
 
     for line in result.stdout.strip().splitlines():
         print(f"  {line}")
+
+    # --- Step 4: Validate build ---
+    print(f"\n=== Validating build ===")
+
+    # 4a: Check bundle exists and has required markers
+    bundle_files = [f for f in project_dir.glob("*.js") if f.name != "theme-listener.js"]
+    if bundle_files:
+        bundle = max(bundle_files, key=lambda p: p.stat().st_size)
+        size_kb = bundle.stat().st_size / 1024
+        text = bundle.read_text(encoding="utf-8", errors="replace")
+        markers = ["initializeWorld", "GameEngine"]
+        found = [m for m in markers if m in text]
+        if not found:
+            print(f"  WARNING: Bundle {bundle.name} ({size_kb:.0f} KB) missing expected markers", file=sys.stderr)
+        elif size_kb < 10:
+            print(f"  WARNING: Bundle {bundle.name} suspiciously small ({size_kb:.0f} KB)", file=sys.stderr)
+        else:
+            print(f"  Bundle: {bundle.name} ({size_kb:.0f} KB) — OK")
+    else:
+        print(f"  WARNING: No JS bundle found in {project_dir}", file=sys.stderr)
+
+    # 4b: Check play.html references a bundle that exists
+    play_html = project_dir / "play.html"
+    if play_html.exists():
+        import re as _re
+        html = play_html.read_text(encoding="utf-8", errors="replace")
+        script_refs = _re.findall(r'<script src="([^"]+\.js)"', html)
+        missing = [s for s in script_refs if s != "theme-listener.js" and not (project_dir / s).exists()]
+        if missing:
+            print(f"  ERROR: play.html references missing bundle: {missing}", file=sys.stderr)
+            sys.exit(1)
+        elif script_refs:
+            print(f"  play.html: OK (loads {', '.join(s for s in script_refs if s != 'theme-listener.js')})")
+        else:
+            print(f"  WARNING: play.html has no script references", file=sys.stderr)
+    else:
+        print(f"  WARNING: play.html not found", file=sys.stderr)
+
+    # 4c: Run transcript tests if available
+    if not args.no_test:
+        wt_dir = sharpee_dir / "walkthroughs"
+        transcripts = list(wt_dir.glob("*.transcript")) if wt_dir.is_dir() else []
+        if transcripts:
+            print(f"  Running {len(transcripts)} transcript test(s)...")
+            result = subprocess.run(
+                ["npx", "transcript-test", ".", *[str(t) for t in transcripts]],
+                cwd=str(sharpee_dir),
+                capture_output=True, text=True,
+                timeout=60,
+            )
+            if result.returncode != 0:
+                # Show last few lines of output
+                lines = (result.stdout + result.stderr).strip().splitlines()
+                for line in lines[-5:]:
+                    print(f"    {line}")
+                print(f"  WARNING: Transcript tests failed", file=sys.stderr)
+            else:
+                # Extract summary line
+                for line in result.stdout.strip().splitlines():
+                    if "passed" in line or "failed" in line:
+                        print(f"    {line.strip()}")
+                        break
+                print(f"  Transcript tests: OK")
+        else:
+            print(f"  No transcript tests found, skipping")
 
     print(f"\n=== Done ===")
     print(f"  Project: {project_dir}")

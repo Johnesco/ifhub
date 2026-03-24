@@ -83,7 +83,7 @@
   },
   {
     "id": "dracula-v0",
-    "title": "Dracula's Castle (v0 — Original BASIC)",
+    "title": "Dracula (v0 BASIC)",
     "versionLabel": "v0 — Original BASIC",
     "sourceLabel": "BASIC Source",
     "sourceBrowser": true,
@@ -155,7 +155,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/disenchantment12/source.html",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "larva",
@@ -167,7 +169,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/larva/source.html",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "sample",
@@ -179,7 +183,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/sample/source.html",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "haunted-house",
@@ -223,7 +229,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/seasons/source.html",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "ink-story",
@@ -235,7 +243,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/ink-story/source.html",
     "engine": "ink",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "lostinnewyork",
@@ -246,7 +256,9 @@
     "sourceBrowser": true,
     "sourceUrl": "/lostinnewyork/source.html",
     "engine": "ink",
-    "tags": []
+    "tags": [
+      "demo"
+    ]
   },
   {
     "id": "guess-the-verb-inform7",
@@ -258,7 +270,11 @@
     "sourceBrowser": true,
     "sourceUrl": "/guess-the-verb-inform7/source.html",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "guess-the-verb",
+      "parser-lab",
+      "disambiguation"
+    ]
   },
   {
     "id": "cloak-sharpee",
@@ -303,7 +319,8 @@
     "engine": "sharpee",
     "tags": [
       "parser-lab",
-      "disambiguation"
+      "disambiguation",
+      "guess-the-verb"
     ]
   },
   {
@@ -348,8 +365,23 @@
     "engine": "sharpee",
     "tags": [
       "classic",
-      "zork",
-      "sharpee"
+      "zork"
+    ]
+  },
+  {
+    "id": "familyzoo",
+    "title": "Family Zoo",
+    "meta": "Sharpee Tutorial (V16)",
+    "description": "A progressive Sharpee tutorial — explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
+    "sourceLabel": "game-source.ts",
+    "playUrl": "/familyzoo/play.html",
+    "walkthroughUrl": "/familyzoo/walkthrough.html",
+    "landingUrl": "/familyzoo/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "demo"
     ]
   }
 ]

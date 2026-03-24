@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR, PROJECTS_DIR
+from lib.paths import IFHUB_DIR, PROJECTS_DIR, GAMES_REGISTRY, GH_ORG
 from lib.config import get_engine_spec
 
 
@@ -40,6 +40,7 @@ def main():
     parser.add_argument("--sound", default="", help="Sound type: 'blorb' or empty")
     parser.add_argument("--engine", default="inform7", help="Engine type: inform7, ink, basic")
     parser.add_argument("--tags", default="", help="Comma-separated tags (e.g. 'horror,classic')")
+    parser.add_argument("--repo", default="", help="GitHub repo (default: {GH_ORG}/{name})")
     args = parser.parse_args()
 
     games_path = IFHUB_DIR / "games.json"
@@ -115,6 +116,23 @@ def main():
         cards_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n",
                               encoding="utf-8")
         print(f"  cards.json: added '{name}'")
+
+    # --- games-registry.json ---
+    if GAMES_REGISTRY.exists():
+        registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
+    else:
+        registry = {}
+
+    if name in registry:
+        print(f"  games-registry.json: '{name}' already exists, skipping")
+    else:
+        entry = {"path": f"../text-games/{name}"}
+        repo = args.repo or f"{GH_ORG}/{name}"
+        entry["repo"] = repo
+        registry[name] = entry
+        GAMES_REGISTRY.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n",
+                                  encoding="utf-8")
+        print(f"  games-registry.json: added '{name}' (path: ../text-games/{name})")
 
     print(f"\nDone. Next: publish to GitHub Pages with:")
     print(f"  python tools/publish.py {name}")

@@ -70,7 +70,8 @@ html, body {
 .nav-item {
   display: block;
   padding: 6px 16px;
-  font-size: 0.85em;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.75em;
   color: #998866;
   text-decoration: none;
   cursor: pointer;
@@ -132,7 +133,7 @@ html, body {
 }
 
 .search-box:focus {
-  border-color: #4a3a20;
+  border-color: #7a6a50;
 }
 
 .search-box::placeholder {
@@ -155,7 +156,7 @@ html, body {
 .toggle-btn:hover {
   background: #2a2010;
   color: #c4b48a;
-  border-color: #4a3a20;
+  border-color: #7a6a50;
 }
 
 .toggle-btn.active {
@@ -237,7 +238,7 @@ html, body {
   min-width: 36px;
   text-align: right;
   padding-right: 12px;
-  color: #4a3a20;
+  color: #7a6a50;
   user-select: none;
   font-size: 0.85em;
 }
@@ -273,7 +274,7 @@ html, body {
   min-width: 36px;
   text-align: right;
   padding-right: 12px;
-  color: #4a3a20;
+  color: #7a6a50;
   user-select: none;
   font-size: 0.85em;
   flex-shrink: 0;
@@ -346,7 +347,7 @@ html, body {
 .replay-controls button:hover {
   background: #2a2010;
   color: #c4b48a;
-  border-color: #4a3a20;
+  border-color: #7a6a50;
 }
 
 .replay-controls button.active {
@@ -1219,6 +1220,13 @@ async function init() {
     } else {
       wrap.innerHTML = '<div class="error-msg">Failed to load walkthrough files.</div>';
       return;
+    }
+
+    // Hide sidebar and guide download if no guide data
+    if (!guideData) {
+      document.querySelector('.sidebar').style.display = 'none';
+      var guideLink = document.querySelector('a[href="walkthrough-guide.txt"]');
+      if (guideLink) guideLink.style.display = 'none';
     }
 
     // Disable transcript/replay buttons if no transcript
