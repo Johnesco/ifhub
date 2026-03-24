@@ -688,8 +688,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var initGame = params.get('game') || (games.length ? games[0].id : '');
     if (!gameMap[initGame] && games.length) initGame = games[0].id;
     if (initGame) switchGame(initGame);
-    var savedView = null;
-    try { savedView = sessionStorage.getItem('ifhub-view'); } catch(e) {}
+    var savedView = params.get('view');
     applyView(savedView || 'game+source');
     document.getElementById('view-select').value = savedView || 'game+source';
   });
@@ -715,7 +714,13 @@ function bindUI() {
   // View layout select
   document.getElementById('view-select').addEventListener('change', function() {
     applyView(this.value);
-    try { sessionStorage.setItem('ifhub-view', this.value); } catch(e) {}
+    var params = new URLSearchParams(window.location.search);
+    if (this.value !== 'game+source') {
+      params.set('view', this.value);
+    } else {
+      params.delete('view');
+    }
+    history.replaceState(null, '', '?' + params.toString());
   });
 
   // Ctrl+F shortcut
@@ -1314,13 +1319,18 @@ function sendGameMessage(msg) {
    STYLE DROPDOWN (overlay-aware theme selector)
    ================================================================== */
 function getStylePref() {
-  try { return sessionStorage.getItem('ifhub-style'); }
-  catch (e) { return null; }
+  var params = new URLSearchParams(window.location.search);
+  return params.get('theme') || null;
 }
 
 function setStylePref(gameId, val) {
-  try { sessionStorage.setItem('ifhub-style', val); }
-  catch (e) { /* storage unavailable */ }
+  var params = new URLSearchParams(window.location.search);
+  if (val && val !== 'classic') {
+    params.set('theme', val);
+  } else {
+    params.delete('theme');
+  }
+  history.replaceState(null, '', '?' + params.toString());
 }
 
 function buildStyleDropdown(gameId) {
@@ -1353,12 +1363,15 @@ function buildStyleDropdown(gameId) {
   // Platform themes
   populateThemeOptions(select);
 
-  // Determine current selection
+  // Determine current selection:
+  // Overlay games always default to their own overlay — URL theme is ignored for them
+  // but kept in URL so switching to a non-overlay game applies it.
   var stored = getStylePref();
-  if (stored) {
-    select.value = stored;
-  } else if (hasOverlay) {
+  if (hasOverlay) {
+    // Overlay games: always use overlay unless user explicitly picked a theme for this game
     select.value = 'overlay';
+  } else if (stored) {
+    select.value = stored;
   } else {
     select.value = getThemeId();
   }
