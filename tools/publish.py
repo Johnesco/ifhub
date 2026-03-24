@@ -58,6 +58,8 @@ jobs:
           cp *.bas _site/ 2>/dev/null || true
           cp *.js _site/ 2>/dev/null || true
           cp *.css _site/ 2>/dev/null || true
+          cp *.ts _site/ 2>/dev/null || true
+          cp *.rez _site/ 2>/dev/null || true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
