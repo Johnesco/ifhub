@@ -17,9 +17,7 @@ python tools/pipeline.py <game> --ship            # compile + test + register + 
 The pipeline auto-detects the engine from `project.conf`, chains all steps in order, handles staleness checks, and ensures nothing is missed. If a step is missing from the pipeline, **fix the pipeline** — don't work around it with manual commands.
 
 **Known gaps:**
-- `games-registry.json` must still be edited manually to add a new game's path. Should be automated in `register_game.py`.
-- `compile_sharpee.py` does not validate the built game actually runs (blank-screen failures go undetected). Should run a smoke test after build.
-- Syncing fork packages to `/c/code/sharpee/*/node_modules/` is manual. Need a script to copy built fork packages to all Sharpee projects when the fork is updated.
+- Syncing fork packages to `/c/code/sharpee/*/node_modules/` requires `python tools/sync_fork.py` — not yet integrated into the pipeline stages.
 
 ## Directory Structure
 

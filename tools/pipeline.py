@@ -307,6 +307,14 @@ def stage_register(name: str, project_dir: Path, engine: str,
     if r.returncode != 0:
         raise RuntimeError(f"register failed (exit {r.returncode})")
 
+    # Warn if game isn't published yet — URLs in games.json will 404
+    git_dir = project_dir / ".git"
+    if not git_dir.is_dir():
+        output.warn(
+            f"'{hub_id}' registered but NOT published — URLs will 404 online.\n"
+            f"  Run: python tools/pipeline.py {name} publish"
+        )
+
 
 def stage_publish(name: str, commit_msg: str):
     """Publish the project to its own GitHub Pages repo."""
