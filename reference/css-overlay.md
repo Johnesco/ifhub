@@ -308,6 +308,12 @@ The `--mood` flag:
 
 Seasons uses the shared `mood-engine.js`. Zork1 and feverdream still use inline mood engines (future migration).
 
+## Platform Theme Override
+
+When a platform theme is selected in the hub's style dropdown, `app.html` directly injects `<style id="ifhub-theme-override">` into all same-origin iframes (game, source, walkthrough) via `contentDocument`. Engine-specific CSS builders (`buildParchmentCSS`, `buildInkCSS`, `buildBasicCSS`, `buildChromeCSS`) target the correct selectors for each page type.
+
+Games with `overlayLabel` in `games.json` are exempt from direct injection — they receive `ifhub:applyTheme` / `ifhub:restoreOverlay` via postMessage so their own listener can coordinate `body.platform-theme-active` to suppress visual effects while the mood engine continues running. Non-overlay game `play.html` files do not need a theme listener script.
+
 ## Troubleshooting
 
 ### GlkOte timing
