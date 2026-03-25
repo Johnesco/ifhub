@@ -311,5 +311,16 @@
     "tags": [
       "demo"
     ]
+  },
+  {
+    "id": "adj",
+    "base": "adj",
+    "title": "Adj",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/adj/play.html",
+    "landingUrl": "/adj/",
+    "engine": "ink",
+    "tags": []
   }
 ]

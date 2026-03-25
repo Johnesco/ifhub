@@ -383,5 +383,16 @@
     "tags": [
       "demo"
     ]
+  },
+  {
+    "id": "adj",
+    "title": "Adj",
+    "sourceLabel": "adj.ink",
+    "playUrl": "/adj/play.html",
+    "landingUrl": "/adj/",
+    "sourceBrowser": true,
+    "sourceUrl": "/adj/source.html",
+    "engine": "ink",
+    "tags": []
   }
 ]
