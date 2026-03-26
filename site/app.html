@@ -79,13 +79,6 @@ body.game-collapsed #resize-handle {
   margin-left: auto;
 }
 
-.source-main-wrap {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-}
 
 .sidebar .search-box {
   display: block;
@@ -640,23 +633,21 @@ body.resizing iframe {
 
 <!-- ===== SOURCE PANE ===== -->
 <div id="source-pane">
+  <div class="source-toolbar" id="source-toolbar">
+    <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9664;</button>
+    <span class="file-path" id="source-filepath">story.ni</span>
+    <span class="line-count" id="line-count"></span>
+    <span class="walkthrough-context" id="walkthrough-context">
+      <span class="wt-status" id="wt-status"></span>
+    </span>
+  </div>
   <div class="source-with-nav">
     <div class="sidebar" id="nav-sidebar">
       <input type="text" class="search-box" id="search-source" placeholder="Search source...">
       <div class="nav" id="nav"></div>
     </div>
-    <div class="source-main-wrap">
-      <div class="source-toolbar" id="source-toolbar">
-        <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9664;</button>
-        <span class="file-path" id="source-filepath">story.ni</span>
-        <span class="line-count" id="line-count"></span>
-        <span class="walkthrough-context" id="walkthrough-context">
-          <span class="wt-status" id="wt-status"></span>
-        </span>
-      </div>
-      <div class="source-main" id="source-main">
-        <!-- code table rendered by JS -->
-      </div>
+    <div class="source-main" id="source-main">
+      <!-- code table rendered by JS -->
     </div>
   </div>
   <iframe id="source-browser-frame" src="about:blank" title="Source Browser" style="display:none; flex:1; width:100%; border:none; background:#0a0a0a;"></iframe>
