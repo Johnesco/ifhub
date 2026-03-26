@@ -19,13 +19,16 @@ Start Portman to serve ifhub and all game projects locally. Default port 9000.
 
 2. **Register ifhub sites** (idempotent — safe to re-run):
    ```bash
-   python /c/code/portman/portman.py add ifhub "C:\code\ifhub\ifhub"
+   python /c/code/portman/portman.py add ifhub "C:\code\ifhub\site"
    ```
-   Then register each game project:
+   Then register each game project (organized by engine under text-games/):
    ```bash
-   for dir in /c/code/ifhub/projects/*/; do
-       name=$(basename "$dir")
-       python /c/code/portman/portman.py add "$name" "$dir"
+   for engine_dir in /c/code/text-games/*/; do
+       for game_dir in "$engine_dir"*/; do
+           [ -f "$game_dir/play.html" ] || continue
+           name=$(basename "$game_dir")
+           python /c/code/portman/portman.py add "$name" "$game_dir"
+       done
    done
    ```
 

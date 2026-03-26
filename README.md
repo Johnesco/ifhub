@@ -66,7 +66,7 @@ ifhub/
 │   ├── feverdream/
 │   ├── sample/
 │   └── zork1/
-└── ifhub/                 ← IF Hub web player (see ifhub/README.md)
+└── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
     ├── index.html         ← Landing page
     ├── app.html           ← Split-pane player (game + source viewer)
     ├── themes.js          ← Platform theme system (10 retro themes)

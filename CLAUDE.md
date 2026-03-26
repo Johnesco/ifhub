@@ -41,7 +41,7 @@ C:\code\ifhub\
 │   ├── rez/               ← Rez compiler (pre-built binary — gitignored)
 │   └── web/               ← Web player setup, templates (per engine), Parchment 2025.1 library
 ├── games-registry.json    ← Game path registry (maps game names to local paths + repos)
-└── ifhub/                 ← IF Hub web UI
+└── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
     ├── index.html         ← Landing page (renders cards from cards.json)
     ├── app.html           ← Split-pane player (game + source viewer)
     ├── games.json          ← Game registry (titles, URLs, engine, tags)
@@ -122,7 +122,7 @@ See `reference/project-guide.md` for detailed steps, individual scripts, and pip
 
 ## Testing
 
-Tests use the shared framework at `tools/testing/`. See `reference/project-guide.md` § Testing for commands, interpreter setup, and Sharpee testing.
+Testing tools live per-engine at `/c/code/text-games/<engine>/tools/` (e.g., `i7/tools/run_walkthrough.py`). See `reference/engine-testing.md` for per-engine test capabilities.
 
 Key points:
 - All test scripts take `--config PATH` pointing to a project's `tests/project.conf`

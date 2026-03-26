@@ -9,7 +9,7 @@
 IF Hub is a development hub and web player for Inform 7 interactive fiction. It provides:
 
 - **A shared toolchain** — compilation, testing, web player setup, and project scaffolding
-- **A multi-game web player** — the `ifhub/` static site where users play games, read source code, and follow walkthroughs (serves games in-place from their own repos)
+- **A multi-game web player** — the `site/` static site where users play games, read source code, and follow walkthroughs (serves games in-place from their own repos)
 - **Inform 7 reference documentation** — syntax guides, formatting, world model, and more
 
 Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment), a JavaScript interpreter for the Glulx and Z-machine virtual machines. Sound-enabled games embed audio in native blorb format.
@@ -340,7 +340,7 @@ All repos deploy under `johnesco.github.io/*`, making everything same-origin. Th
 | `tools/deploy/generate-play-pages.py` | Gone |
 | `tools/deploy/copy-assets.py` | Gone |
 | `tools/deploy/extract-cards.py` + card extraction | Gone (cards.json maintained manually) |
-| `ifhub/games/` directory (15+ files per game) | Gone |
+| `site/games/` directory (15+ files per game) | Gone |
 | Pipeline `deploy` stage | Gone |
 | `deploy` object in games.json entries | Replaced by URL fields |
 
@@ -357,7 +357,7 @@ All repos deploy under `johnesco.github.io/*`, making everything same-origin. Th
 A multi-root Python HTTP server that maps URL prefixes to local directories, providing production-equivalent URLs for development:
 
 ```
-/ifhub/*      → ifhub/
+/ifhub/*      → site/
 /zork1/*      → projects/zork1/
 /dracula/*    → projects/dracula/
 /feverdream/* → projects/feverdream/
@@ -422,7 +422,7 @@ Each deployment needs 12 files in `lib/parchment/`:
 | `zvm.js` | Z-machine VM |
 | `waiting.gif` | Loading indicator |
 
-IF Hub maintains its own copy at `ifhub/lib/parchment/` separate from the shared tooling copy at `tools/web/parchment/`.
+IF Hub maintains its own copy at `site/lib/parchment/` separate from the shared tooling copy at `tools/web/parchment/`.
 
 ---
 
@@ -591,7 +591,7 @@ python /c/code/ifhub/tools/register_game.py \
     --name <id> --title <title> [--meta <sub>] [--description <text>] [--sound blorb]
 ```
 
-Adds entries to `ifhub/games.json` and `ifhub/cards.json` via JSON manipulation. Skips if the game ID already exists. Prints a reminder to run `publish.py`.
+Adds entries to `site/games.json` and `site/cards.json` via JSON manipulation. Skips if the game ID already exists. Prints a reminder to run `publish.py`.
 
 ### 10.3d Hub Push (`push_hub.py`)
 

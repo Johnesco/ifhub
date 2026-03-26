@@ -11,13 +11,32 @@ import sys
 from pathlib import Path
 
 # Resolved once at import time, relative to this file:
-#   tools/lib/paths.py -> tools/ -> ifhub/
+#   tools/lib/paths.py -> tools/ -> repo root
 TOOLS_DIR = Path(__file__).resolve().parent.parent
 I7_ROOT = TOOLS_DIR.parent
 PROJECTS_DIR = I7_ROOT / "projects"
-IFHUB_DIR = I7_ROOT / "ifhub"
-TESTING_DIR = TOOLS_DIR / "testing"
+IFHUB_DIR = I7_ROOT / "site"
+TESTING_DIR = TOOLS_DIR / "testing"  # legacy — I7 tools now at text-games/i7/tools/
 WEB_DIR = TOOLS_DIR / "web"
+
+# Per-engine tools directories (outside ifhub, alongside games)
+TEXT_GAMES_DIR = I7_ROOT.parent / "text-games"
+ENGINE_DIR_KEYS = {"inform7": "i7", "zmachine": "i7"}  # engines that map to a different dir name
+
+
+def engine_dir_key(engine: str) -> str:
+    """Return the folder name for an engine (e.g., 'inform7' -> 'i7')."""
+    return ENGINE_DIR_KEYS.get(engine, engine)
+
+
+def engine_tools_dir(engine: str) -> Path:
+    """Return the per-engine tools directory at text-games/<engine>/tools/."""
+    return TEXT_GAMES_DIR / engine_dir_key(engine) / "tools"
+
+
+def new_project_dir(engine: str, name: str) -> Path:
+    """Return the directory for a new project: text-games/<engine>/<name>/."""
+    return TEXT_GAMES_DIR / engine_dir_key(engine) / name
 
 # Game registry files
 GAMES_REGISTRY = I7_ROOT / "games-registry.json"

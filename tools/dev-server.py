@@ -36,7 +36,7 @@ mimetypes.add_type("application/javascript", ".js")
 
 def discover_routes():
     """Build route table from available directories."""
-    hub_dir = IFHUB_ROOT / "ifhub"
+    hub_dir = IFHUB_ROOT / "site"
     if hub_dir.is_dir():
         ROUTES["/ifhub"] = hub_dir
 

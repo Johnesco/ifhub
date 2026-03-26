@@ -1,6 +1,6 @@
 # Web Player Debug (Parchment Troubleshooting)
 
-globs: ["**/play.html", "**/play-template.html", "**/*.ulx.js", "**/*.gblorb.js", "**/parchment/**", "ifhub/**", "tools/web/**"]
+globs: ["**/play.html", "**/play-template.html", "**/*.ulx.js", "**/*.gblorb.js", "**/parchment/**", "site/**", "tools/web/**"]
 
 ## Quick Checklist
 

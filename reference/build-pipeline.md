@@ -263,7 +263,7 @@ Add game-specific content (prose, version history, community links, etc.) to the
 
 ### 6b: Register the Game
 
-Add an entry to `ifhub/games.json`:
+Add an entry to `site/games.json`:
 
 ```json
 {
@@ -290,7 +290,7 @@ Set `"sound": "blorb"` for games with native Glk sound. Omit `walkthroughDir` if
 python /c/code/ifhub/tools/publish.py <game-name>
 ```
 
-This publishes the game to GitHub Pages. The hub serves games in-place from each project's own GitHub Pages URL — no file copying into `ifhub/games/` is needed.
+This publishes the game to GitHub Pages. The hub serves games in-place from each project's own GitHub Pages URL — no file copying into `site/games/` is needed.
 
 ### 6d: Test the Hub Locally
 
@@ -380,11 +380,11 @@ Edit values directly in `sound-config.js`. Volume is 0.0-1.0, multiplied by mast
 | Web validator | `tools/validate_web.py` | Post-build validation (7 checks) |
 | Deploy scripts | `tools/deploy/*.py` | Asset copying + page generation (Python) |
 | Publisher | `tools/publish.py` | Deploys game to GitHub Pages |
-| Game registry | `ifhub/games.json` | Game metadata, deploy paths, hub UI config |
+| Game registry | `site/games.json` | Game metadata, deploy paths, hub UI config |
 | Sound editing guide | `reference/sound.md` | Trigger modes, architecture, editing |
 
 ## Related Documentation
 
 - `CLAUDE.md` — Project conventions, compiler details, Parchment troubleshooting
 - `reference/sound.md` — Sound architecture, trigger editing guide, decision record
-- `ifhub/README.md` — IF Hub deployment details, games.json schema, sound wiring
+- `site/README.md` — IF Hub deployment details, games.json schema, sound wiring
