@@ -1543,15 +1543,18 @@ function switchGame(gameId) {
 
   currentGame = gameId;
 
-  // Reset view to "game only" when switching games
-  applyView('game');
+  // Keep current view when switching games — re-apply it after loading
   var viewSelect = document.getElementById('view-select');
-  viewSelect.value = 'game';
+  var currentViewMode = viewSelect.value;
 
-  // Update URL so refresh keeps the same game
+  // Update URL so refresh keeps the same game + view
   var params = new URLSearchParams(window.location.search);
   params.set('game', gameId);
-  params.delete('view');
+  if (currentViewMode !== 'game') {
+    params.set('view', currentViewMode);
+  } else {
+    params.delete('view');
+  }
   history.replaceState(null, '', '?' + params.toString());
 
   // Hide sound controls until iframe reports ready
@@ -1599,9 +1602,10 @@ function switchGame(gameId) {
     }
   };
 
-  // Load source and walkthrough
+  // Load source and walkthrough, then re-apply the current view
   loadSourceForGame(gameId);
   loadWalkthroughForGame(gameId);
+  applyView(currentViewMode);
 }
 
 
