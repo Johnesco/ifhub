@@ -96,18 +96,18 @@
   },
   "zork1-v1": {
     "path": "../text-games/i7/zork1-v1",
-    "repo": ""
+    "repo": "Johnesco/zork1-v1"
   },
   "zork1-v2": {
     "path": "../text-games/i7/zork1-v2",
-    "repo": ""
+    "repo": "Johnesco/zork1-v2"
   },
   "zork1-v3": {
     "path": "../text-games/i7/zork1-v3",
-    "repo": ""
+    "repo": "Johnesco/zork1-v3"
   },
   "zork1-v0": {
     "path": "../text-games/zmachine/zork1-v0",
-    "repo": ""
+    "repo": "Johnesco/zork1-v0"
   }
 }

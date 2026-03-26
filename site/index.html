@@ -30,13 +30,6 @@ h1 {
   margin-bottom: 6px;
 }
 
-.title-row {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
 .subtitle {
   font-style: italic;
   color: var(--muted, #aa9966);
@@ -68,32 +61,39 @@ a:hover {
   border-bottom-color: var(--muted, #aa9966);
 }
 
-.hub-bar {
+.filter-bar {
   display: flex;
+  align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  background: var(--card-bg, #111);
+  border: 1px solid var(--card-border, #1e1a14);
+  border-radius: 6px;
 }
 
-.hub-bar a {
-  padding: 4px 14px;
+.filter-bar label {
   font-size: 0.88em;
-  border: 1px solid var(--border, #2a2418);
-  border-radius: 16px;
   color: var(--muted, #aa9966);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
-.hub-bar a:hover {
+.filter-bar select {
+  padding: 6px 10px;
+  font-size: 0.9em;
+  font-family: var(--font-family, Georgia, "Times New Roman", serif);
   background: var(--surface-bg, #1a1610);
-  color: var(--accent, #e8d090);
-  border-color: var(--border-hover, #5a4a30);
+  color: var(--page-fg, #d4c5a9);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.hub-bar a.active {
-  background: var(--accent, #e8d090);
-  color: var(--page-bg, #0a0a0a);
-  border-color: var(--accent, #e8d090);
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .game-card {
@@ -230,8 +230,8 @@ footer a {
   .card-controls select { min-width: 0; flex-basis: 100%; }
   .card-controls button { width: 100%; }
   .game-card { padding: 16px; }
-  .hub-bar { gap: 6px; }
-  .hub-bar a { font-size: 0.8em; padding: 4px 10px; }
+  .filter-bar { gap: 10px; padding: 12px 14px; }
+  .filter-group { flex-basis: 100%; }
 }
 </style>
 <script src="themes.js"></script>
@@ -239,10 +239,7 @@ footer a {
 </head>
 <body>
 
-<div class="title-row">
-  <h1 id="hub-title">IF Hub</h1>
-  <div id="theme-picker"></div>
-</div>
+<h1 id="hub-title">IF Hub</h1>
 <p class="subtitle" id="hub-subtitle">An Interactive Fiction Player &amp; Source Browser</p>
 
 <p>
@@ -252,9 +249,16 @@ footer a {
   No downloads, no plugins.
 </p>
 
-<h2>Games</h2>
-
-<div id="hub-bar" class="hub-bar"></div>
+<div class="filter-bar">
+  <div class="filter-group">
+    <label for="collection-select">Collection:</label>
+    <select id="collection-select"></select>
+  </div>
+  <div class="filter-group">
+    <label for="theme-select">Theme:</label>
+    <select id="theme-select"></select>
+  </div>
+</div>
 <div id="games"></div>
 
 <script>
@@ -268,20 +272,36 @@ Promise.all([
   var hubResult = resolveHub(hubs);
   var activeHub = hubResult.activeHub || hubs[0]; // default: first hub ("all")
 
+  // Populate collection dropdown
+  var collectionSelect = document.getElementById('collection-select');
+  hubs.forEach(function(h) {
+    var opt = document.createElement('option');
+    opt.value = h.id;
+    opt.textContent = h.title;
+    if (h.id === activeHub.id) opt.selected = true;
+    collectionSelect.appendChild(opt);
+  });
+
+  // Collection change navigates to filtered view
+  collectionSelect.addEventListener('change', function() {
+    var id = this.value;
+    window.location.href = id === 'all' ? '.' : '?hub=' + id;
+  });
+
   // Update title/subtitle when a hub filter is active
   if (activeHub.id !== 'all') {
     document.getElementById('hub-title').textContent = activeHub.title;
     document.getElementById('hub-subtitle').textContent = activeHub.description;
   }
 
-  // Render hub bar
-  var hubBar = document.getElementById('hub-bar');
-  hubs.forEach(function(h) {
-    var a = document.createElement('a');
-    a.href = h.id === 'all' ? '.' : '?hub=' + h.id;
-    a.textContent = h.title;
-    a.className = h.id === activeHub.id ? 'active' : '';
-    hubBar.appendChild(a);
+  // Wire up theme dropdown (element already exists in HTML)
+  var themeSelect = document.getElementById('theme-select');
+  populateThemeOptions(themeSelect);
+  themeSelect.value = getThemeId();
+  themeSelect.addEventListener('change', function() {
+    var id = this.value;
+    setThemeId(id);
+    applyChrome(getTheme(id));
   });
 
   var container = document.getElementById('games');
@@ -292,8 +312,6 @@ Promise.all([
     container.innerHTML = '<p style="color:#605840;font-style:italic;">No games match this collection.</p>';
     return;
   }
-
-  createThemeDropdown('theme-picker');
 
   var hubQuery = activeHub.id !== 'all' ? '&hub=' + activeHub.id : '';
 

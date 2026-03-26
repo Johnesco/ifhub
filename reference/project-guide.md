@@ -66,7 +66,7 @@ cd <game-name> && npx @sharpee/sharpee init-browser && npm install
 
 Then create the ifhub project dir and config:
 ```bash
-mkdir -p projects/<name>/tests
+mkdir -p ../text-games/sharpee/<name>/tests
 # Create tests/project.conf with SHARPEE_DIR pointing to the npm project
 python tools/compile_sharpee.py <name> --force
 python tools/register_game.py --name <id> --title "Title" --engine sharpee
@@ -216,15 +216,15 @@ Three methods to create `tests/inform7/walkthrough.txt`:
 2. Play through to completion
 3. Extract commands:
 ```bash
-mkdir -p projects/<name>/tests/inform7
+mkdir -p ../text-games/i7/<name>/tests/inform7
 python /c/code/ifhub/tools/extract_commands.py transcript.txt \
-    -o projects/<name>/tests/inform7/walkthrough.txt
+    -o ../text-games/i7/<name>/tests/inform7/walkthrough.txt
 ```
 
 **B. From `Test me` in source** (for games with built-in test commands):
 ```bash
-python /c/code/ifhub/tools/extract_commands.py --from-source projects/<name>/story.ni \
-    -o projects/<name>/tests/inform7/walkthrough.txt
+python /c/code/ifhub/tools/extract_commands.py --from-source ../text-games/i7/<name>/story.ni \
+    -o ../text-games/i7/<name>/tests/inform7/walkthrough.txt
 ```
 
 **C. Manual** (for short games): Write commands directly into the file, one per line.
@@ -238,7 +238,7 @@ python /c/code/ifhub/tools/web/generate_pages.py \
     --title "Game Title" \
     --meta "Subtitle" \
     --description "Game description" \
-    --out projects/<name>
+    --out ../text-games/i7/<name>
 ```
 
 Generates `index.html` (landing page with Play/Source/Walkthrough links) and `source.html` (syntax-highlighted source browser).
@@ -279,7 +279,7 @@ python /c/code/ifhub/tools/dev-server.py [--port 8000]
 # Open http://127.0.0.1:8000/<name>/play.html
 
 # Or simple server from project directory
-python -m http.server 8000 --directory projects/<name>
+python -m http.server 8000 --directory ../text-games/i7/<name>
 # Open http://localhost:8000/play.html
 ```
 

@@ -20,22 +20,22 @@
         "id": "zork1-v3",
         "label": "v3 — Multimedia",
         "sound": "blorb",
-        "playUrl": "/zork1/v3/play.html"
+        "playUrl": "/zork1-v3/play.html"
       },
       {
         "id": "zork1-v2",
         "label": "v2 — Bug Fixes",
-        "playUrl": "/zork1/v2/play.html"
+        "playUrl": "/zork1-v2/play.html"
       },
       {
         "id": "zork1-v1",
         "label": "v1 — The Port",
-        "playUrl": "/zork1/v1/play.html"
+        "playUrl": "/zork1-v1/play.html"
       },
       {
         "id": "zork1-v0",
         "label": "v0 — Original ZIL",
-        "playUrl": "/zork1/v0/play.html"
+        "playUrl": "/zork1-v0/play.html"
       }
     ]
   },

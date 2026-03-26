@@ -18,7 +18,7 @@ Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment)
 - Pure static site — no server, no accounts, no tracking
 - All game binaries and assets are committed to the repo
 - Deployed to GitHub Pages from the repo directly
-- Projects are separate repositories — IF Hub provides tools, projects consume them. The `projects/` directory is gitignored; each project is checked out locally for development
+- Projects are separate repositories at `/c/code/text-games/<engine>/<game>/` — IF Hub provides tools, projects consume them via the game registry (`games-registry.json`)
 
 **Section map:**
 - Sections 2–9: The web player application (pages, registry, source viewer, sound, binary format, visual design, hosting)
@@ -195,8 +195,8 @@ Each entry is an object with these fields:
 | `title` | string | Yes | Display title shown in dropdown and page titles |
 | `sourceLabel` | string | No | Label shown in source pane toolbar (e.g., `"zork1-v3.ni"`) |
 | `sourceBrowser` | boolean | No | If true, source is loaded in an iframe instead of the code viewer |
-| `playUrl` | string | Yes | Absolute URL path to game's play page (e.g., `"/zork1/v3/play.html"`) |
-| `sourceUrl` | string | Yes | Absolute URL path to source file or source browser (e.g., `"/zork1/v3/story.ni"`) |
+| `playUrl` | string | Yes | Absolute URL path to game's play page (e.g., `"/zork1-v3/play.html"`) |
+| `sourceUrl` | string | Yes | Absolute URL path to source file or source browser (e.g., `"/zork1-v3/source.html"`) |
 | `walkthroughUrl` | string | No | Absolute URL path to walkthrough HTML page |
 | `landingUrl` | string | No | Absolute URL path to game's landing page (e.g., `"/zork1/"`) |
 | `sound` | string | No | Sound mode: `"blorb"` for native Glk sound, absent for no sound |
@@ -223,16 +223,16 @@ Card metadata for the hub homepage is maintained in `cards.json`. Each card repr
 
 | ID | Title | Sound | Play URL | Notes |
 |----|-------|-------|----------|-------|
-| `zork1-v0` | Zork I (v0 — Original ZIL) | No | `/zork1/v0/play.html` | `sourceBrowser: true` |
-| `zork1-v1` | Zork I (v1) | No | `/zork1/v1/play.html` | |
-| `zork1-v2` | Zork I (v2) | No | `/zork1/v2/play.html` | |
-| `zork1-v3` | Zork I (v3 — Multimedia) | Blorb | `/zork1/v3/play.html` | |
+| `zork1-v0` | Zork I (v0 — Original ZIL) | No | `/zork1-v0/play.html` | `sourceBrowser: true`, engine: zmachine |
+| `zork1-v1` | Zork I (v1) | No | `/zork1-v1/play.html` | |
+| `zork1-v2` | Zork I (v2) | No | `/zork1-v2/play.html` | |
+| `zork1-v3` | Zork I (v3 — Multimedia) | Blorb | `/zork1-v3/play.html` | |
 | `zork1` | Zork I (Current) | Blorb | `/zork1/play.html` | Working copy |
-| `dracula-v0` | Dracula's Castle (v0 — Original BASIC) | No | `/dracula/v0/play.html` | `sourceBrowser: true` |
+| `dracula-v0` | Dracula's Castle (v0 — Original BASIC) | No | `/dracula-v0/play.html` | `sourceBrowser: true` |
 | `dracula` | Dracula's Castle (Current) | No | `/dracula/play.html` | |
 | `feverdream` | Fever Dream | Blorb | `/feverdream/play.html` | |
 | `sample` | Sample | No | `/sample/play.html` | `sourceBrowser: true` |
-| `guess_the_verb-sharpee` | Guess the Verb (Sharpee) | No | `/guess_the_verb-sharpee/play.html` | Engine: Sharpee |
+| `guess-the-verb-sharpee` | Guess the Verb (Sharpee) | No | `/guess-the-verb-sharpee/play.html` | Engine: Sharpee |
 
 ---
 
@@ -358,10 +358,7 @@ A multi-root Python HTTP server that maps URL prefixes to local directories, pro
 
 ```
 /ifhub/*      → site/
-/zork1/*      → projects/zork1/
-/dracula/*    → projects/dracula/
-/feverdream/* → projects/feverdream/
-/sample/*     → projects/sample/
+/<game>/*     → ../text-games/<engine>/<game>/   (auto-discovered from games-registry.json)
 ```
 
 ```bash
@@ -369,7 +366,7 @@ python tools/dev_server.py [--port 8000]
 # Open http://127.0.0.1:8000/ifhub/app.html
 ```
 
-The server auto-discovers games from the `projects/` directory. It binds to `127.0.0.1` (not `""`) to avoid IPv6 issues on Windows.
+The server auto-discovers games from `games-registry.json`. It binds to `127.0.0.1` (not `""`) to avoid IPv6 issues on Windows.
 
 ### 6.5 Post-Build Validation (`tools/validate_web.py`)
 
@@ -487,7 +484,7 @@ Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId
 
 ## 10. Compilation Pipeline
 
-IF Hub provides shared tools for compiling, packaging, and publishing Inform 7 projects. All tools live in `tools/` and operate on projects under `projects/<name>/`.
+IF Hub provides shared tools for compiling, packaging, and publishing interactive fiction projects. All tools live in `tools/` and operate on external game projects resolved via `games-registry.json` (typically at `../text-games/<engine>/<game>/`).
 
 ### 10.1 Compilation (`compile.py`)
 
@@ -533,7 +530,7 @@ Compiles a project's `story.ni` (or an alternate source via `--source`) to a pla
 - `play.html` — Ready-to-serve Parchment player page (unless `--compile-only`)
 - `lib/parchment/` — Parchment library + base64-encoded game binary (unless `--compile-only`)
 
-**Note on `--source`:** When using `--source`, the compiled output (`.ulx`, `.gblorb`) is still written to the project root (`projects/<name>/`), not alongside the source file. The `Sounds/` directory is also resolved relative to the project root, so sound assets are shared across all versions.
+**Note on `--source`:** When using `--source`, the compiled output (`.ulx`, `.gblorb`) is still written to the project root, not alongside the source file. The `Sounds/` directory is also resolved relative to the project root, so sound assets are shared across all versions.
 
 ### 10.2 Sound Manifest (`generate_blurb.py`)
 
@@ -615,7 +612,7 @@ Bridges the external Sharpee authoring workspace and the IF Hub project director
 3. Runs `npx sharpee build-browser` in the Sharpee source directory
 4. Calls `setup_sharpee.py` to import `dist/web/` into the ifhub project (renames `index.html` → `play.html`, injects hub theme listener)
 
-**Configuration** (`projects/<game>/tests/project.conf`):
+**Configuration** (`<game>/tests/project.conf`):
 ```
 ENGINE=sharpee
 SHARPEE_DIR=/c/code/sharpee/<npm-project>
@@ -635,7 +632,7 @@ PIPELINE_HUB_ID=<game_id>
 python /c/code/ifhub/tools/new_project.py "Game Title" game-name
 ```
 
-Creates a complete project skeleton at `projects/<game-name>/`:
+Creates a complete project skeleton at `../text-games/<engine>/<game-name>/`:
 
 | File | Purpose |
 |------|---------|
@@ -657,7 +654,7 @@ python /c/code/ifhub/tools/snapshot.py <game-name> <version>
 python /c/code/ifhub/tools/snapshot.py <game-name> <version> --update
 ```
 
-Manages frozen version snapshots in `projects/<name>/<version>/`.
+Manages frozen version snapshots. Each version now lives in its own repository (e.g., `zork1-v1`, `zork1-v2`).
 
 **New version** (no `--update`):
 - Creates the version directory
@@ -714,7 +711,7 @@ All three scripts in `tools/testing/` require `--config PATH` pointing to a proj
 
 Invocation:
 ```bash
-python tools/testing/run_walkthrough.py --config projects/zork1/tests/project.conf --seed 3
+python tools/testing/run_walkthrough.py --config ../text-games/i7/zork1/tests/project.conf --seed 3
 ```
 
 ### 11.2 Test Types
