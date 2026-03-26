@@ -57,6 +57,30 @@ html, body {
   border-bottom-color: #aa9966;
 }
 
+.tree-controls {
+  display: flex;
+  gap: 8px;
+  padding: 6px 16px;
+  border-bottom: 1px solid #1e1a14;
+}
+
+.tree-controls button {
+  background: none;
+  border: 1px solid #2a2418;
+  border-radius: 3px;
+  color: #776644;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.7em;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tree-controls button:hover {
+  color: #c4b48a;
+  border-color: #5a4a30;
+}
+
 .nav {
   flex: 1;
   overflow-y: auto;
@@ -105,6 +129,47 @@ html, body {
   padding-left: 36px;
   font-size: 0.78em;
   color: #776644;
+}
+
+/* --- File tree --- */
+.file-tree { padding: 8px 0; }
+
+.file-tree-dir {
+  display: block;
+  padding: 3px 16px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.78em;
+  color: #887755;
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-tree-dir:hover { color: #c4b48a; }
+.file-tree-dir::before { content: "\25BE "; color: #554433; font-size: 1.3em; vertical-align: -1px; }
+.file-tree-dir.collapsed::before { content: "\25B8 "; }
+.file-tree-dir.collapsed + .file-tree-children { display: none; }
+
+.file-tree-file {
+  display: block;
+  padding: 3px 16px 3px 28px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.75em;
+  color: #998866;
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.file-tree-file:hover { background: #151510; color: #c4b48a; }
+.file-tree-file.active { background: #18160f; color: #e8d090; border-left-color: #e8d090; }
+
+.file-tree-children { padding-left: 12px; }
+
+.nav-separator {
+  height: 1px;
+  background: #1e1a14;
+  margin: 8px 16px;
 }
 
 /* --- Main content --- */
@@ -303,6 +368,10 @@ tr.highlight td.ln {
     <div class="sidebar-header">
       <h1>__TITLE__: Source</h1>
     </div>
+    <div class="tree-controls" id="tree-controls" style="display:none">
+      <button id="collapse-all">Collapse all</button>
+      <button id="expand-all">Expand all</button>
+    </div>
     <div class="nav" id="nav"></div>
   </div>
   <div class="main">
@@ -319,7 +388,9 @@ tr.highlight td.ln {
 </div>
 
 <script>
-const RAW_URL = '__SOURCE_FILE__';
+// Source manifest: single file string or JSON array of files
+var SOURCE_MANIFEST = __SOURCE_MANIFEST__;
+var RAW_URL = typeof SOURCE_MANIFEST === 'string' ? SOURCE_MANIFEST : SOURCE_MANIFEST[0];
 const headingRe = /^(Volume|Book|Part|Chapter|Section)\s+(.+)/;
 // TS/JS section comments: "// ==== SECTION NAME ====" or "// ---- SECTION NAME ----"
 const tsHeadingRe = /^\/\/\s*[=]{3,}\s*$/;
@@ -483,81 +554,215 @@ function esc(s) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/* ---- Build page ---- */
-async function init() {
-  const wrap = document.getElementById('code-wrap');
-  const nav = document.getElementById('nav');
-  const lineCountEl = document.getElementById('line-count');
+/* ---- File tree builder ---- */
+function buildFileTree(files) {
+  // Build nested tree from flat paths: { name: subtree | fullpath }
+  var root = {};
+  files.forEach(function(f) {
+    var parts = f.replace(/\\/g, '/').split('/');
+    var node = root;
+    for (var i = 0; i < parts.length - 1; i++) {
+      var dir = parts[i];
+      if (!node[dir] || typeof node[dir] === 'string') node[dir] = {};
+      node = node[dir];
+    }
+    node[parts[parts.length - 1]] = f; // leaf stores full path
+  });
 
-  let source;
+  // Collapse single-child directories: src/actions/ → src/actions/ (not src/ > actions/)
+  function collapse(obj) {
+    var keys = Object.keys(obj);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (typeof obj[k] === 'object') {
+        obj[k] = collapse(obj[k]);
+        // If this dir has exactly one child and it's also a dir, merge
+        var subKeys = Object.keys(obj[k]);
+        if (subKeys.length === 1 && typeof obj[k][subKeys[0]] === 'object') {
+          var merged = k + '/' + subKeys[0];
+          obj[merged] = obj[k][subKeys[0]];
+          delete obj[k];
+        }
+      }
+    }
+    return obj;
+  }
+  root = collapse(root);
+
+  function render(obj) {
+    var html = '';
+    var keys = Object.keys(obj).sort(function(a, b) {
+      var aDir = typeof obj[a] === 'object';
+      var bDir = typeof obj[b] === 'object';
+      if (aDir !== bDir) return aDir ? -1 : 1;
+      return a.localeCompare(b);
+    });
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (typeof obj[k] === 'string') {
+        html += '<a class="file-tree-file" data-file="' + esc(obj[k]) + '">' + esc(k) + '</a>';
+      } else {
+        var childCount = Object.keys(obj[k]).length;
+        html += '<span class="file-tree-dir" title="' + childCount + ' items">' + esc(k + '/') + '</span>';
+        html += '<div class="file-tree-children">' + render(obj[k]) + '</div>';
+      }
+    }
+    return html;
+  }
+
+  return '<div class="file-tree">' + render(root) + '</div>';
+}
+
+/* ---- Load and display a file ---- */
+async function loadFile(url) {
+  var wrap = document.getElementById('code-wrap');
+  var nav = document.getElementById('nav');
+  var lineCountEl = document.getElementById('line-count');
+  var filePathEl = document.querySelector('.file-path');
+
+  // Update current file display
+  RAW_URL = url;
+  isTS = url.endsWith('.ts') || url.endsWith('.js');
+  if (filePathEl) filePathEl.textContent = url;
+
+  var source;
   try {
-    const res = await fetch(RAW_URL);
+    var res = await fetch(url);
     if (!res.ok) throw new Error(res.status);
     source = await res.text();
   } catch (e) {
-    wrap.innerHTML = '<div class="error-msg">Failed to load source. <a href="' + RAW_URL + '">View raw</a></div>';
+    wrap.innerHTML = '<div class="error-msg">Failed to load source. <a href="' + url + '">View raw</a></div>';
     return;
   }
 
-  const lines = source.split('\n');
+  var lines = source.split('\n');
   lineCountEl.textContent = lines.length + ' lines';
 
-  // Build code table and nav
-  const navItems = [];
-  const rows = [];
+  // Build code table and heading nav items
+  var headingItems = [];
+  var rows = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const num = i + 1;
-    const hm = raw.match(headingRe);
-    let isHeading = !!hm;
-    let headingText = '';
-    let headingLevel = '';
+  for (var i = 0; i < lines.length; i++) {
+    var raw = lines[i];
+    var num = i + 1;
+    var hm = raw.match(headingRe);
+    var isHeading = !!hm;
+    var headingText = '';
+    var headingLevel = '';
 
     if (isHeading) {
       headingText = raw;
       headingLevel = hm[1].toLowerCase();
     } else if (isTS && i > 0 && tsHeadingRe.test(lines[i - 1])) {
-      // TS: line after a "// ====..." separator that contains text
       var sm = raw.match(tsSectionRe);
       if (sm && !tsHeadingRe.test(raw)) {
         isHeading = true;
         headingText = sm[1];
-        // Indented sections (inside class) are subsections
         headingLevel = raw.startsWith('    ') ? 'section' : 'part';
       }
     }
+    // Also detect TS export declarations as nav items
+    if (!isHeading && isTS) {
+      var em = raw.match(/^export\s+(class|function|const|interface|enum|type)\s+(\w+)/);
+      if (em) {
+        isHeading = true;
+        headingText = em[1] + ' ' + em[2];
+        headingLevel = em[1] === 'class' ? 'part' : 'section';
+      }
+    }
 
-    let cls = '';
+    var cls = '';
     if (isHeading) {
       cls = ' class="heading-line"';
-      let navCls;
+      var navCls;
       if (headingLevel === 'volume' || headingLevel === 'book' || headingLevel === 'part') navCls = 'nav-item nav-part';
       else if (headingLevel === 'chapter') navCls = 'nav-item nav-chapter';
       else navCls = 'nav-item nav-section';
-
-      navItems.push('<a class="' + navCls + '" data-line="' + num + '" href="#L' + num + '">' + esc(headingText) + '</a>');
+      headingItems.push('<a class="' + navCls + '" data-line="' + num + '" href="#L' + num + '">' + esc(headingText) + '</a>');
     }
 
     rows.push('<tr id="L' + num + '"' + cls + '><td class="ln">' + num + '</td><td class="lc">' + highlight(raw) + '</td></tr>');
   }
 
   wrap.innerHTML = '<table class="code">' + rows.join('') + '</table>';
-  nav.innerHTML = navItems.join('');
 
-  // Sidebar visibility: hide entirely if no sections, show toggle if sections exist
-  const sidebar = document.querySelector('.sidebar');
-  const toggleBtn = document.getElementById('sidebar-toggle');
+  // Update heading nav (below file tree if multi-file)
+  var headingNav = document.getElementById('heading-nav');
+  if (headingNav) {
+    headingNav.innerHTML = headingItems.join('');
+  } else if (!isMultiFile) {
+    nav.innerHTML = headingItems.join('');
+  }
 
-  if (navItems.length === 0) {
-    sidebar.classList.add('collapsed');
-  } else {
+  // Highlight active file in tree
+  document.querySelectorAll('.file-tree-file').forEach(function(el) {
+    el.classList.toggle('active', el.getAttribute('data-file') === url);
+  });
+}
+
+/* ---- Build page ---- */
+var isMultiFile = Array.isArray(SOURCE_MANIFEST) && SOURCE_MANIFEST.length > 1;
+
+async function init() {
+  var wrap = document.getElementById('code-wrap');
+  var nav = document.getElementById('nav');
+  var lineCountEl = document.getElementById('line-count');
+
+  var sidebar = document.querySelector('.sidebar');
+  var toggleBtn = document.getElementById('sidebar-toggle');
+
+  if (isMultiFile) {
+    // Multi-file: build file tree + heading section
+    nav.innerHTML = buildFileTree(SOURCE_MANIFEST) +
+      '<div class="nav-separator"></div>' +
+      '<div id="heading-nav"></div>';
+
+    // Show tree controls
+    document.getElementById('tree-controls').style.display = '';
+
+    // Wire file tree clicks
+    nav.addEventListener('click', function(e) {
+      var fileEl = e.target.closest('.file-tree-file');
+      if (fileEl) {
+        loadFile(fileEl.getAttribute('data-file'));
+        return;
+      }
+      var dirEl = e.target.closest('.file-tree-dir');
+      if (dirEl) {
+        dirEl.classList.toggle('collapsed');
+      }
+    });
+
+    // Collapse/expand all
+    document.getElementById('collapse-all').addEventListener('click', function() {
+      nav.querySelectorAll('.file-tree-dir').forEach(function(el) { el.classList.add('collapsed'); });
+    });
+    document.getElementById('expand-all').addEventListener('click', function() {
+      nav.querySelectorAll('.file-tree-dir').forEach(function(el) { el.classList.remove('collapsed'); });
+    });
+
+    // Always show sidebar for multi-file
     toggleBtn.classList.add('visible');
     toggleBtn.addEventListener('click', function() {
-      const collapsed = sidebar.classList.toggle('collapsed');
+      var collapsed = sidebar.classList.toggle('collapsed');
       toggleBtn.innerHTML = collapsed ? '&#9654;' : '&#9664;';
-      toggleBtn.title = collapsed ? 'Show outline' : 'Hide outline';
     });
+
+    // Load first file
+    await loadFile(SOURCE_MANIFEST[0]);
+  } else {
+    // Single-file: load and build heading nav
+    await loadFile(RAW_URL);
+
+    if (nav.children.length === 0) {
+      sidebar.classList.add('collapsed');
+    } else {
+      toggleBtn.classList.add('visible');
+      toggleBtn.addEventListener('click', function() {
+        var collapsed = sidebar.classList.toggle('collapsed');
+        toggleBtn.innerHTML = collapsed ? '&#9654;' : '&#9664;';
+      });
+    }
   }
 
   // Nav click handler — highlight active

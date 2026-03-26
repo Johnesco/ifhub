@@ -12,7 +12,8 @@
     "repo": "Johnesco/feverdream"
   },
   "sample": {
-    "path": "../text-games/i7/sample",
+    "deploy": "text-games\\sample",
+    "source": "C:\\code\\text-games\\i7\\sample",
     "repo": "Johnesco/sample"
   },
   "seasons": {
@@ -52,7 +53,8 @@
     "repo": "Johnesco/cloak-rez"
   },
   "guess-the-verb-sharpee": {
-    "path": "../text-games/sharpee/guess-the-verb-sharpee",
+    "deploy": "text-games/guess-the-verb-sharpee",
+    "source": "C:/code/npmsharpee/games/guess-the-verb",
     "repo": "Johnesco/guess-the-verb-sharpee"
   },
   "haunted-house": {
@@ -84,15 +86,19 @@
     "repo": "Johnesco/cloak-ink"
   },
   "cloak-sharpee": {
-    "path": "../text-games/sharpee/cloak-sharpee",
+    "deploy": "text-games/cloak-sharpee",
+    "source": "C:/code/npmsharpee/games/cloak-of-darkness",
     "repo": "Johnesco/cloak-sharpee"
   },
   "dungeo": {
-    "path": "../text-games/sharpee/dungeo",
+    "deploy": "text-games/dungeo",
+    "source": "C:/code/npmsharpee/games/dungeo",
     "repo": "Johnesco/dungeo"
   },
   "familyzoo": {
-    "path": "../text-games/sharpee/familyzoo"
+    "deploy": "text-games/familyzoo",
+    "source": "C:/code/npmsharpee/games/familyzoo",
+    "repo": ""
   },
   "zork1-v1": {
     "path": "../text-games/i7/zork1-v1",

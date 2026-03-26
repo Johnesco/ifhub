@@ -589,16 +589,20 @@ function parseTranscript(transcriptText, commandsText) {
     if (cmdIdx >= commands.length) break;
 
     var promptLine = lines[promptIndices[p]];
-    var immediateText = promptLine.slice(1); // text after >
+    var immediateText = promptLine.slice(1).trim(); // text after >
 
     // Response = lines between this > and the next >
     var startLine = promptIndices[p] + 1;
     var endLine = (p + 1 < promptIndices.length) ? promptIndices[p + 1] : lines.length;
     var responseLines = lines.slice(startLine, endLine);
 
-    // Combine immediate text with subsequent lines
+    // Build response — skip immediateText if it matches the command
+    // (Sharpee transcripts embed command on the > line: ">north")
     var fullResponse = [];
-    if (immediateText.trim()) fullResponse.push(immediateText);
+    var cmd = (commands[cmdIdx] || '').trim();
+    if (immediateText && immediateText.toLowerCase() !== cmd.toLowerCase()) {
+      fullResponse.push(immediateText);
+    }
     for (var r = 0; r < responseLines.length; r++) {
       fullResponse.push(responseLines[r]);
     }

@@ -176,16 +176,16 @@
   {
     "id": "sample",
     "title": "Sample",
-    "sourceLabel": "sample.ni",
     "playUrl": "/sample/play.html",
-    "walkthroughUrl": "/sample/walkthrough.html",
     "landingUrl": "/sample/",
     "sourceBrowser": true,
     "sourceUrl": "/sample/source.html",
     "engine": "inform7",
     "tags": [
       "demo"
-    ]
+    ],
+    "walkthroughUrl": "/sample/walkthrough.html",
+    "sourceLabel": "story.ni"
   },
   {
     "id": "haunted-house",
@@ -279,7 +279,6 @@
   {
     "id": "cloak-sharpee",
     "title": "Cloak of Darkness (Sharpee)",
-    "sourceLabel": "game-source.ts",
     "playUrl": "/cloak-sharpee/play.html",
     "landingUrl": "/cloak-sharpee/",
     "sourceBrowser": true,
@@ -288,7 +287,9 @@
     "tags": [
       "cloak",
       "demo"
-    ]
+    ],
+    "walkthroughUrl": "/cloak-sharpee/walkthrough.html",
+    "sourceLabel": "src/index.ts"
   },
   {
     "id": "cloak-inform7",
@@ -307,11 +308,7 @@
   },
   {
     "id": "guess-the-verb-sharpee",
-    "base": "guess-the-verb-sharpee",
     "title": "Guess the Verb (Sharpee)",
-    "meta": "A Parser Puzzle Laboratory",
-    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language -- the engine works harder so you don't have to.",
-    "sourceLabel": "game-source.ts",
     "playUrl": "/guess-the-verb-sharpee/play.html",
     "landingUrl": "/guess-the-verb-sharpee/",
     "sourceBrowser": true,
@@ -321,7 +318,9 @@
       "parser-lab",
       "disambiguation",
       "guess-the-verb"
-    ]
+    ],
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
+    "sourceLabel": "src/index.ts"
   },
   {
     "id": "cloak-ink",
@@ -354,10 +353,7 @@
   },
   {
     "id": "dungeo",
-    "base": "dungeo",
     "title": "DUNGEON",
-    "meta": "Mainframe Zork (1981)",
-    "description": "A faithful Sharpee port of the 1981 Mainframe Zork. 172 rooms, 716 max score. By Anderson, Blank, Daniels, and Lebling. Ported by David Cornelson.",
     "playUrl": "/dungeo/play.html",
     "landingUrl": "/dungeo/",
     "sourceBrowser": true,
@@ -366,23 +362,23 @@
     "tags": [
       "classic",
       "zork"
-    ]
+    ],
+    "walkthroughUrl": "/dungeo/walkthrough.html",
+    "sourceLabel": "src/index.ts"
   },
   {
     "id": "familyzoo",
     "title": "Family Zoo",
-    "meta": "Sharpee Tutorial (V16)",
-    "description": "A progressive Sharpee tutorial — explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
-    "sourceLabel": "game-source.ts",
     "playUrl": "/familyzoo/play.html",
-    "walkthroughUrl": "/familyzoo/walkthrough.html",
     "landingUrl": "/familyzoo/",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/source.html",
     "engine": "sharpee",
     "tags": [
       "demo"
-    ]
+    ],
+    "walkthroughUrl": "/familyzoo/walkthrough.html",
+    "sourceLabel": "src/index.ts"
   },
   {
     "id": "adj",

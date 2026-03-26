@@ -246,14 +246,14 @@
     "base": "guess-the-verb-sharpee",
     "title": "Guess the Verb (Sharpee)",
     "meta": "A Parser Puzzle Laboratory",
-    "description": "A Sharpee game about reducing guess-the-verb frustration. Every layer of the command pipeline works harder so you don't have to.",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language.",
     "playUrl": "/guess-the-verb-sharpee/play.html",
     "landingUrl": "/guess-the-verb-sharpee/",
     "engine": "sharpee",
     "tags": [
-      "guess-the-verb",
       "parser-lab",
-      "disambiguation"
+      "disambiguation",
+      "guess-the-verb"
     ]
   },
   {
@@ -303,8 +303,8 @@
     "id": "familyzoo",
     "base": "familyzoo",
     "title": "Family Zoo",
-    "meta": "Sharpee Tutorial (V16)",
-    "description": "A progressive Sharpee tutorial — explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
+    "meta": "Sharpee Tutorial (V17)",
+    "description": "A progressive Sharpee tutorial - explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
     "playUrl": "/familyzoo/play.html",
     "landingUrl": "/familyzoo/",
     "engine": "sharpee",

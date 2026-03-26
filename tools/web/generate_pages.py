@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--id", default="", help="Game ID (for IF Hub links; defaults to output dir name)")
     parser.add_argument("--out", required=True, help="Output directory")
     parser.add_argument("--source-file", default="story.ni", help="Source filename (e.g. story.ni, game.bas)")
+    parser.add_argument("--source-files", default="", help="Comma-separated list of source files (for multi-file projects)")
     parser.add_argument("--force", action="store_true", help="Overwrite existing files")
     args = parser.parse_args()
 
@@ -58,10 +59,18 @@ def main():
 
     source_out = out_dir / "source.html"
     if not source_out.exists() or args.force:
+        import json
         print("Generating source.html...")
+        # Build source manifest: multi-file list or single file
+        if args.source_files:
+            files = [f.strip() for f in args.source_files.split(",") if f.strip()]
+            manifest = json.dumps(files)
+        else:
+            manifest = json.dumps(args.source_file)
         substitute_template(source_template, source_out, {
             "__TITLE__": args.title,
             "__SOURCE_FILE__": args.source_file,
+            "__SOURCE_MANIFEST__": manifest,
         })
         generated += 1
     else:

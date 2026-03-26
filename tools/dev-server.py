@@ -35,17 +35,25 @@ mimetypes.add_type("application/javascript", ".js")
 
 
 def discover_routes():
-    """Build route table from available directories."""
+    """Build route table from games-registry.json."""
+    import json
+
     hub_dir = IFHUB_ROOT / "site"
     if hub_dir.is_dir():
         ROUTES["/ifhub"] = hub_dir
 
-    # Games from projects/
-    projects_dir = IFHUB_ROOT / "projects"
-    if projects_dir.is_dir():
-        for entry in sorted(projects_dir.iterdir()):
-            if entry.is_dir() and not entry.name.startswith("."):
-                ROUTES[f"/{entry.name}"] = entry
+    # Load games from registry
+    registry_path = IFHUB_ROOT / "games-registry.json"
+    if registry_path.exists():
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        for name, info in registry.items():
+            # Support both new 'deploy' and old 'path' fields
+            rel = info.get("deploy") or info.get("path", "")
+            if not rel:
+                continue
+            game_dir = (IFHUB_ROOT / rel).resolve()
+            if game_dir.is_dir():
+                ROUTES[f"/{name}"] = game_dir
 
     print("Route table:")
     for prefix, path in sorted(ROUTES.items()):
