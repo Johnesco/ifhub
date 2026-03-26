@@ -50,6 +50,25 @@ body.game-collapsed #resize-handle {
   background: var(--page-bg, #0a0a0a);
 }
 
+/* Source pane modes — driven by data-source-mode attribute */
+#source-pane .source-with-nav,
+#source-pane #source-browser-frame,
+#source-pane #walkthrough-content { display: none; }
+
+#source-pane[data-source-mode="inline"] .source-with-nav { display: flex; }
+#source-pane[data-source-mode="inline"] .sidebar-toggle { display: flex; }
+#source-pane[data-source-mode="browser"] #source-browser-frame { display: flex; }
+#source-pane[data-source-mode="browser"] .sidebar-toggle { display: none; }
+#source-pane[data-source-mode="walkthrough"] #walkthrough-content { display: flex; }
+#source-pane[data-source-mode="walkthrough"] .sidebar-toggle { display: none; }
+
+#source-browser-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--page-bg, #0a0a0a);
+}
+
 /* --- Source toolbar (above code area, always visible) --- */
 .source-toolbar {
   padding: 6px 12px;
@@ -130,7 +149,7 @@ body.game-collapsed #resize-handle {
   width: 26px;
   height: 26px;
   cursor: pointer;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -632,7 +651,7 @@ body.resizing iframe {
 <div id="resize-handle"></div>
 
 <!-- ===== SOURCE PANE ===== -->
-<div id="source-pane">
+<div id="source-pane" data-source-mode="inline">
   <div class="source-toolbar" id="source-toolbar">
     <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9664;</button>
     <span class="file-path" id="source-filepath">story.ni</span>
@@ -650,8 +669,8 @@ body.resizing iframe {
       <!-- code table rendered by JS -->
     </div>
   </div>
-  <iframe id="source-browser-frame" src="about:blank" title="Source Browser" style="display:none; flex:1; width:100%; border:none; background:#0a0a0a;"></iframe>
-  <div id="walkthrough-content" style="display:none;">
+  <iframe id="source-browser-frame" src="about:blank" title="Source Browser"></iframe>
+  <div id="walkthrough-content">
     <iframe id="walkthrough-frame" src="about:blank" title="Walkthrough"></iframe>
     <div id="walkthrough-unavailable">
       Walkthrough not yet available for this game.
@@ -1235,35 +1254,33 @@ function updateSidebarToggle() {
 })();
 
 /* ==================================================================
+   SOURCE PANE MODE — single function drives all visibility via CSS
+   ================================================================== */
+function setSourcePaneMode(mode) {
+  // mode: "inline", "browser", "walkthrough"
+  document.getElementById('source-pane').dataset.sourceMode = mode;
+}
+
+/* ==================================================================
    LOAD SOURCE FOR GAME — fetch with cache
    ================================================================== */
 function loadSourceForGame(gameId) {
   var g = gameMap[gameId];
   if (!g) return;
 
-  var sourceNav = document.querySelector('.source-with-nav');
   var browserFrame = document.getElementById('source-browser-frame');
-
   document.getElementById('source-filepath').textContent = g.sourceLabel || g.id + '.ni';
 
-  var toggleBtn = document.getElementById('sidebar-toggle');
-
   if (g.sourceBrowser) {
-    // ZIL source browser — load in iframe, hide sidebar toggle (sidebar is in iframe)
-    sourceNav.style.display = 'none';
+    setSourcePaneMode('browser');
     browserFrame.src = g.sourceUrl;
-    browserFrame.style.display = '';
     browserFrame.onload = function() { themeIframe(browserFrame); };
     document.getElementById('line-count').textContent = '';
-    toggleBtn.style.display = 'none';
     return;
   }
 
-  // Normal I7 source — hide iframe, show code viewer
+  setSourcePaneMode('inline');
   browserFrame.src = 'about:blank';
-  browserFrame.style.display = 'none';
-  sourceNav.style.display = '';
-  toggleBtn.style.display = '';
 
   if (sourceCache[gameId]) {
     displaySource(sourceCache[gameId], g.engine);
@@ -1301,20 +1318,14 @@ function applyView(mode) {
   body.classList.toggle('source-collapsed', !showSide);
   body.classList.toggle('game-collapsed', !showGame);
 
-  // Update currentView for source content switching
   currentView = isSource ? 'source' : 'walkthrough';
 
-  var g = gameMap[currentGame];
-  var isBrowser = g && g.sourceBrowser;
-  var browserFrame = document.getElementById('source-browser-frame');
-
-  document.querySelector('.source-with-nav').style.display = (isSource && !isBrowser) ? '' : 'none';
-  browserFrame.style.display = (isSource && isBrowser) ? '' : 'none';
-  document.getElementById('walkthrough-content').style.display = isSource ? 'none' : 'flex';
-
-  // Show/hide sidebar elements based on source vs walkthrough
-  var sidebar = document.getElementById('nav-sidebar');
-  if (sidebar) sidebar.style.display = isSource ? '' : 'none';
+  if (!isSource) {
+    setSourcePaneMode('walkthrough');
+  } else {
+    var g = gameMap[currentGame];
+    setSourcePaneMode(g && g.sourceBrowser ? 'browser' : 'inline');
+  }
 }
 
 /* ==================================================================
