@@ -50,19 +50,20 @@ body.game-collapsed #resize-handle {
   background: var(--page-bg, #0a0a0a);
 }
 
-/* --- Sidebar header (file path, line count) --- */
-.sidebar-header {
-  padding: 8px 12px 4px;
-  border-bottom: 1px solid var(--card-border, #1a1810);
+/* --- Source toolbar (above code area, always visible) --- */
+.source-toolbar {
+  padding: 6px 12px;
+  background: var(--toolbar-bg, #0e0e0c);
+  border-bottom: 1px solid var(--card-border, #1e1a14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: 0.82em;
   color: var(--muted, #806050);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
+  flex-shrink: 0;
 }
 
-.sidebar-header .file-path {
+.source-toolbar .file-path {
   font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
   font-size: 0.95em;
   color: var(--muted, #a08060);
@@ -72,10 +73,18 @@ body.game-collapsed #resize-handle {
   min-width: 0;
 }
 
-.sidebar-header .line-count {
-  white-space: nowrap;
-  color: var(--dim, #4a3a28);
+.source-toolbar .line-count {
   font-size: 0.9em;
+  color: var(--dim, #605040);
+  margin-left: auto;
+}
+
+.source-main-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .sidebar .search-box {
@@ -128,7 +137,7 @@ body.game-collapsed #resize-handle {
   width: 26px;
   height: 26px;
   cursor: pointer;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -142,8 +151,6 @@ body.game-collapsed #resize-handle {
   color: var(--heading-fg, #c4b48a);
   border-color: var(--border-hover, #5a4a30);
 }
-
-.sidebar-toggle.visible { display: flex; }
 
 .nav {
   flex: 1;
@@ -512,7 +519,6 @@ body.resizing iframe {
 /* --- Responsive --- */
 @media (max-width: 1024px) {
   .sidebar { display: none; }
-  .sidebar-toggle { display: flex; }  /* always show toggle on narrow screens */
 
   /* Overlay sidebar when toggled open on narrow screens */
   .sidebar.sidebar-open {
@@ -636,19 +642,21 @@ body.resizing iframe {
 <div id="source-pane">
   <div class="source-with-nav">
     <div class="sidebar" id="nav-sidebar">
-      <div class="sidebar-header">
+      <input type="text" class="search-box" id="search-source" placeholder="Search source...">
+      <div class="nav" id="nav"></div>
+    </div>
+    <div class="source-main-wrap">
+      <div class="source-toolbar" id="source-toolbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9664;</button>
         <span class="file-path" id="source-filepath">story.ni</span>
         <span class="line-count" id="line-count"></span>
         <span class="walkthrough-context" id="walkthrough-context">
           <span class="wt-status" id="wt-status"></span>
         </span>
       </div>
-      <input type="text" class="search-box" id="search-source" placeholder="Search source...">
-      <div class="nav" id="nav"></div>
-    </div>
-    <div class="source-main" id="source-main">
-      <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9654;</button>
-      <!-- code table rendered by JS -->
+      <div class="source-main" id="source-main">
+        <!-- code table rendered by JS -->
+      </div>
     </div>
   </div>
   <iframe id="source-browser-frame" src="about:blank" title="Source Browser" style="display:none; flex:1; width:100%; border:none; background:#0a0a0a;"></iframe>
@@ -1212,16 +1220,12 @@ function displaySource(text, engine) {
    SIDEBAR TOGGLE — show/hide outline panel
    ================================================================== */
 function updateSidebarToggle() {
-  var nav = document.getElementById('nav');
-  var toggleBtn = document.getElementById('sidebar-toggle');
   var sidebar = document.getElementById('nav-sidebar');
-  var hasNav = nav && nav.children.length > 0;
-  toggleBtn.classList.toggle('visible', hasNav);
+  var toggleBtn = document.getElementById('sidebar-toggle');
   // Reset sidebar state when switching games
   sidebar.classList.remove('collapsed', 'sidebar-open');
   var isNarrow = window.matchMedia('(max-width: 1024px)').matches;
-  // On narrow screens sidebar starts hidden, so arrow points right (open)
-  toggleBtn.innerHTML = (isNarrow || !hasNav) ? '&#9654;' : '&#9664;';
+  toggleBtn.innerHTML = isNarrow ? '&#9654;' : '&#9664;';
 }
 
 (function() {
@@ -1230,11 +1234,9 @@ function updateSidebarToggle() {
     var sidebar = document.getElementById('nav-sidebar');
     var isNarrow = window.matchMedia('(max-width: 1024px)').matches;
     if (isNarrow) {
-      // On narrow screens, toggle overlay open/close
       var open = sidebar.classList.toggle('sidebar-open');
       toggleBtn.innerHTML = open ? '&#9664;' : '&#9654;';
     } else {
-      // On wide screens, toggle collapsed
       var collapsed = sidebar.classList.toggle('collapsed');
       toggleBtn.innerHTML = collapsed ? '&#9654;' : '&#9664;';
     }
