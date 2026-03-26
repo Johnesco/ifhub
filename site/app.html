@@ -1246,13 +1246,16 @@ function loadSourceForGame(gameId) {
 
   document.getElementById('source-filepath').textContent = g.sourceLabel || g.id + '.ni';
 
+  var toggleBtn = document.getElementById('sidebar-toggle');
+
   if (g.sourceBrowser) {
-    // ZIL source browser — load in iframe
+    // ZIL source browser — load in iframe, hide sidebar toggle (sidebar is in iframe)
     sourceNav.style.display = 'none';
     browserFrame.src = g.sourceUrl;
     browserFrame.style.display = '';
     browserFrame.onload = function() { themeIframe(browserFrame); };
     document.getElementById('line-count').textContent = '';
+    toggleBtn.style.display = 'none';
     return;
   }
 
@@ -1260,6 +1263,7 @@ function loadSourceForGame(gameId) {
   browserFrame.src = 'about:blank';
   browserFrame.style.display = 'none';
   sourceNav.style.display = '';
+  toggleBtn.style.display = '';
 
   if (sourceCache[gameId]) {
     displaySource(sourceCache[gameId], g.engine);
