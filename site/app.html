@@ -102,6 +102,7 @@ body.game-collapsed #resize-handle {
   display: flex;
   overflow: hidden;
   min-height: 0;
+  position: relative;
 }
 
 .sidebar {
@@ -113,6 +114,36 @@ body.game-collapsed #resize-handle {
   flex-direction: column;
   overflow: hidden;
 }
+
+.sidebar.collapsed { display: none; }
+.sidebar.sidebar-open { display: flex; }
+
+/* --- Sidebar toggle --- */
+.sidebar-toggle {
+  background: none;
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  color: var(--muted, #887755);
+  font-size: 1em;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+  padding: 0;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.sidebar-toggle:hover {
+  color: var(--heading-fg, #c4b48a);
+  border-color: var(--border-hover, #5a4a30);
+}
+
+.sidebar-toggle.visible { display: flex; }
 
 .nav {
   flex: 1;
@@ -481,6 +512,18 @@ body.resizing iframe {
 /* --- Responsive --- */
 @media (max-width: 1024px) {
   .sidebar { display: none; }
+  .sidebar-toggle { display: flex; }  /* always show toggle on narrow screens */
+
+  /* Overlay sidebar when toggled open on narrow screens */
+  .sidebar.sidebar-open {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 15;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.5);
+  }
 }
 
 @media (max-width: 800px) {
@@ -604,6 +647,7 @@ body.resizing iframe {
       <div class="nav" id="nav"></div>
     </div>
     <div class="source-main" id="source-main">
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle outline">&#9654;</button>
       <!-- code table rendered by JS -->
     </div>
   </div>
@@ -1161,7 +1205,41 @@ function displaySource(text, engine) {
   initSearch();
   document.getElementById('line-count').textContent = lines.length + ' lines';
   document.getElementById('search-source').value = '';
+  updateSidebarToggle();
 }
+
+/* ==================================================================
+   SIDEBAR TOGGLE — show/hide outline panel
+   ================================================================== */
+function updateSidebarToggle() {
+  var nav = document.getElementById('nav');
+  var toggleBtn = document.getElementById('sidebar-toggle');
+  var sidebar = document.getElementById('nav-sidebar');
+  var hasNav = nav && nav.children.length > 0;
+  toggleBtn.classList.toggle('visible', hasNav);
+  // Reset sidebar state when switching games
+  sidebar.classList.remove('collapsed', 'sidebar-open');
+  var isNarrow = window.matchMedia('(max-width: 1024px)').matches;
+  // On narrow screens sidebar starts hidden, so arrow points right (open)
+  toggleBtn.innerHTML = (isNarrow || !hasNav) ? '&#9654;' : '&#9664;';
+}
+
+(function() {
+  var toggleBtn = document.getElementById('sidebar-toggle');
+  toggleBtn.addEventListener('click', function() {
+    var sidebar = document.getElementById('nav-sidebar');
+    var isNarrow = window.matchMedia('(max-width: 1024px)').matches;
+    if (isNarrow) {
+      // On narrow screens, toggle overlay open/close
+      var open = sidebar.classList.toggle('sidebar-open');
+      toggleBtn.innerHTML = open ? '&#9664;' : '&#9654;';
+    } else {
+      // On wide screens, toggle collapsed
+      var collapsed = sidebar.classList.toggle('collapsed');
+      toggleBtn.innerHTML = collapsed ? '&#9654;' : '&#9664;';
+    }
+  });
+})();
 
 /* ==================================================================
    LOAD SOURCE FOR GAME — fetch with cache
