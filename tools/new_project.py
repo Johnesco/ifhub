@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import PROJECTS_DIR, I7_ROOT
+from lib.paths import PROJECTS_DIR, I7_ROOT, new_project_dir
 from lib.config import ENGINE_REGISTRY, get_engine_spec
 
 # Engines available for project creation (subset of ENGINE_REGISTRY)
@@ -127,6 +127,7 @@ def write_deploy_workflow(project_dir):
 def scaffold_inform7(project_dir, title, name):
     """Create an Inform 7 project scaffold."""
     (project_dir / "tests" / "inform7").mkdir(parents=True, exist_ok=True)
+    _write_starter_walkthrough(project_dir)
 
     year = datetime.now().year
 
@@ -234,9 +235,17 @@ def scaffold_inform7(project_dir, title, name):
     return "story.ni"
 
 
+def _write_starter_walkthrough(project_dir):
+    """Write a starter walkthrough.txt for any engine."""
+    wt_path = project_dir / "tests" / "walkthrough.txt"
+    if not wt_path.exists():
+        wt_path.write_text("look\n", encoding="utf-8")
+
+
 def scaffold_ink(project_dir, title, name):
     """Create an Ink project scaffold."""
     (project_dir / "tests").mkdir(parents=True, exist_ok=True)
+    _write_starter_walkthrough(project_dir)
 
     # Source .ink file
     source_name = name.replace("-", "_") + ".ink"
@@ -294,6 +303,7 @@ def scaffold_ink(project_dir, title, name):
 def scaffold_basic(project_dir, title, name, engine):
     """Create a BASIC project scaffold (wwwbasic, qbjc, applesoft)."""
     (project_dir / "tests").mkdir(parents=True, exist_ok=True)
+    _write_starter_walkthrough(project_dir)
 
     spec = get_engine_spec(engine)
     label = spec.label if spec else engine
@@ -341,6 +351,7 @@ def scaffold_basic(project_dir, title, name, engine):
 def scaffold_twine(project_dir, title, name):
     """Create a Twine project scaffold."""
     (project_dir / "tests").mkdir(parents=True, exist_ok=True)
+    _write_starter_walkthrough(project_dir)
 
     # Source .tw file (Twee notation)
     source_name = name.replace("-", "_") + ".tw"
@@ -447,7 +458,7 @@ def main():
     title = args.title
     name = args.name
     engine = args.engine
-    project_dir = PROJECTS_DIR / name
+    project_dir = new_project_dir(engine, name)
 
     if project_dir.is_dir():
         print(f"ERROR: Directory already exists: {project_dir}", file=sys.stderr)
@@ -482,8 +493,22 @@ def main():
     write_gitignore(project_dir, engine)
     write_deploy_workflow(project_dir)
 
+    # Add to games-registry.json so the dashboard can find it
+    from lib.paths import GAMES_REGISTRY, GH_ORG, engine_dir_key
+    import json
+    try:
+        registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        registry = {}
+    registry[name] = {
+        "path": f"../text-games/{engine_dir_key(engine)}/{name}",
+        "repo": f"{GH_ORG}/{name}",
+    }
+    GAMES_REGISTRY.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+
     print()
     print(f"Project created at: {project_dir}")
+    print(f"  Added to games-registry.json")
     print()
     print("Next steps:")
     print(f"  1. Edit {project_dir / source_file}")

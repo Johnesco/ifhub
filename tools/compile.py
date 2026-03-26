@@ -178,7 +178,7 @@ def main():
 
                 # Generate guide
                 guide_r = process.run([
-                    sys.executable, str(paths.TESTING_DIR / "generate-guide.py"),
+                    sys.executable, str(paths.engine_tools_dir("inform7") / "generate-guide.py"),
                     "--walkthrough", str(walk_cmds),
                     "--transcript", str(walk_out),
                     "-o", str(walk_guide),

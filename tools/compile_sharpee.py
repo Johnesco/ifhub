@@ -15,6 +15,7 @@ The game's tests/project.conf must define:
 """
 
 import argparse
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -57,25 +58,61 @@ def main():
         print(f"ERROR: No package.json in {sharpee_dir} — not a valid npm project", file=sys.stderr)
         sys.exit(1)
 
-    # --- Step 1: npm install (if needed) ---
-    node_modules = sharpee_dir / "node_modules"
-    if not node_modules.is_dir():
-        print("=== Installing dependencies ===")
-        result = subprocess.run(
-            ["npm", "install"],
-            cwd=str(sharpee_dir),
-            capture_output=True, text=True,
-        )
-        if result.returncode != 0:
-            print(f"ERROR: npm install failed:\n{result.stderr}", file=sys.stderr)
+    # --- Step 1: Install dependencies (if needed) ---
+    # Detect workspace project (pnpm monorepo) vs standalone (npm)
+    pkg_json = (sharpee_dir / "package.json").read_text(encoding="utf-8")
+    is_workspace = "workspace:" in pkg_json
+
+    if is_workspace:
+        # Workspace project — install from monorepo root via pnpm
+        workspace_root = sharpee_dir
+        while workspace_root.parent != workspace_root:
+            if (workspace_root / "pnpm-workspace.yaml").exists():
+                break
+            workspace_root = workspace_root.parent
+        else:
+            print("ERROR: workspace:* deps found but no pnpm-workspace.yaml in any parent", file=sys.stderr)
             sys.exit(1)
-        print("  Dependencies installed.")
+
+        node_modules = sharpee_dir / "node_modules"
+        if not node_modules.is_dir():
+            print(f"=== Installing dependencies (pnpm workspace at {workspace_root.name}/) ===")
+            result = subprocess.run(
+                ["pnpm", "install"],
+                cwd=str(workspace_root),
+                capture_output=True, text=True,
+            )
+            if result.returncode != 0:
+                print(f"ERROR: pnpm install failed:\n{result.stderr}", file=sys.stderr)
+                sys.exit(1)
+            print("  Dependencies installed.")
+    else:
+        # Standalone project — npm install in the story dir
+        node_modules = sharpee_dir / "node_modules"
+        if not node_modules.is_dir():
+            print("=== Installing dependencies ===")
+            result = subprocess.run(
+                ["npm", "install"],
+                cwd=str(sharpee_dir),
+                capture_output=True, text=True,
+            )
+            if result.returncode != 0:
+                print(f"ERROR: npm install failed:\n{result.stderr}", file=sys.stderr)
+                sys.exit(1)
+            print("  Dependencies installed.")
 
     # --- Step 2: Build ---
     print(f"=== Building {title} ===")
     print(f"  Source: {sharpee_dir}")
+    print(f"  Output: {project_dir}")
+    if is_workspace:
+        # Workspace: invoke CLI directly via node from the story dir
+        cli_path = workspace_root / "packages" / "sharpee" / "dist" / "cli" / "index.js"
+        build_cmd = ["node", str(cli_path), "build-browser"]
+    else:
+        build_cmd = ["npx", "sharpee", "build-browser"]
     result = subprocess.run(
-        ["npx", "sharpee", "build-browser"],
+        build_cmd,
         cwd=str(sharpee_dir),
         capture_output=True, text=True,
     )
@@ -111,6 +148,12 @@ def main():
 
     for line in result.stdout.strip().splitlines():
         print(f"  {line}")
+
+    # Clean up dist from source dir (keep fork clean)
+    dist_parent = sharpee_dir / "dist"
+    if dist_parent.is_dir():
+        shutil.rmtree(str(dist_parent))
+        print(f"  Cleaned dist/ from {sharpee_dir.name}/")
 
     # --- Step 4: Validate build ---
     print(f"\n=== Validating build ===")

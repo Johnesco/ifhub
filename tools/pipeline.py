@@ -216,7 +216,7 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
             print("  Running walkthrough...")
             has_tests = True
             wt_cmd = [
-                sys.executable, str(paths.TESTING_DIR / "run_walkthrough.py"),
+                sys.executable, str(paths.engine_tools_dir("inform7") / "run_walkthrough.py"),
                 "--config", str(conf_file),
             ]
             if seed:
@@ -241,7 +241,7 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
                 print("  Regenerating walkthrough guide...")
                 guide_out = wt_src_dir / "walkthrough-guide.txt"
                 process.run([
-                    sys.executable, str(paths.TESTING_DIR / "generate-guide.py"),
+                    sys.executable, str(paths.engine_tools_dir("inform7") / "generate-guide.py"),
                     "--walkthrough", str(wt_commands),
                     "--transcript", str(wt_output),
                     "-o", str(guide_out),
@@ -259,7 +259,7 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
             print("  Running regtests...")
             has_tests = True
             r = process.run([
-                sys.executable, str(paths.TESTING_DIR / "run_tests.py"),
+                sys.executable, str(paths.engine_tools_dir("inform7") / "run_tests.py"),
                 "--config", str(conf_file),
             ])
             if r.returncode != 0:

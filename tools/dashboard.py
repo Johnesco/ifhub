@@ -6,7 +6,7 @@ Usage:
     python tools/dashboard.py [--port 5000]
 
 Opens a browser-based dashboard for managing IF Hub game projects.
-Matches the IF Hub dark-gold theme.
+Matrix table view with artifact-based state model and converging DAG detail.
 """
 
 import json
@@ -37,28 +37,24 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from lib import config as _libconfig  # noqa: E402
 from lib import paths  # noqa: E402
-from lib.projects import ProjectInfo, load_projects as _load_projects  # noqa: E402
+from lib.projects import ProjectInfo, ArtifactStatus, load_projects  # noqa: E402
+from lib.config import extract_story_metadata  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Path constants (from lib.paths + script-relative tools)
+# Path constants
 # ---------------------------------------------------------------------------
 
-PROJECTS_DIR = str(paths.PROJECTS_DIR)
-COMPILE_PY = str(paths.TOOLS_DIR / "compile.py")
-EXTRACT_COMMANDS_PY = str(paths.TOOLS_DIR / "extract_commands.py")
-GENERATE_PAGES_PY = str(paths.WEB_DIR / "generate_pages.py")
+PIPELINE_PY = str(paths.TOOLS_DIR / "pipeline.py")
+PUBLISH_PY = str(paths.TOOLS_DIR / "publish.py")
 REGISTER_GAME_PY = str(paths.TOOLS_DIR / "register_game.py")
 UNREGISTER_GAME_PY = str(paths.TOOLS_DIR / "unregister_game.py")
-PUBLISH_PY = str(paths.TOOLS_DIR / "publish.py")
-PIPELINE_PY = str(paths.TOOLS_DIR / "pipeline.py")
-NEW_PROJECT_PY = str(paths.TOOLS_DIR / "new_project.py")
 PUSH_HUB_PY = str(paths.TOOLS_DIR / "push_hub.py")
+NEW_PROJECT_PY = str(paths.TOOLS_DIR / "new_project.py")
+GENERATE_PAGES_PY = str(paths.WEB_DIR / "generate_pages.py")
+COMPILE_SHARPEE_PY = str(paths.TOOLS_DIR / "compile_sharpee.py")
+COMPILE_REZ_PY = str(paths.TOOLS_DIR / "compile_rez.py")
 SETUP_BASIC_PY = str(paths.WEB_DIR / "setup_basic.py")
 SETUP_INK_PY = str(paths.WEB_DIR / "setup_ink.py")
-SETUP_SHARPEE_PY = str(paths.WEB_DIR / "setup_sharpee.py")
-COMPILE_REZ_PY = str(paths.TOOLS_DIR / "compile_rez.py")
-COMPILE_SHARPEE_PY = str(paths.TOOLS_DIR / "compile_sharpee.py")
-TESTING_DIR = str(paths.TESTING_DIR)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -68,84 +64,6 @@ TESTING_DIR = str(paths.TESTING_DIR)
 def py_cmd(*args):
     """Build a Python subprocess command list."""
     return [sys.executable, *args]
-
-
-# ---------------------------------------------------------------------------
-# Project Discovery — delegates to lib.projects
-# ---------------------------------------------------------------------------
-
-
-def load_projects():
-    """Load projects with full pipeline state enrichment for the dashboard."""
-    return _load_projects(enrich_pipeline=True)
-
-
-# ---------------------------------------------------------------------------
-# Command Builders
-# ---------------------------------------------------------------------------
-
-
-def compile_cmd(game, sound=False, force=False):
-    cmd = py_cmd(COMPILE_PY, game)
-    if sound:
-        cmd.append("--sound")
-    if force:
-        cmd.append("--force")
-    return cmd
-
-
-def extract_commands_cmd(source_path, output_path):
-    return py_cmd(EXTRACT_COMMANDS_PY, "--from-source", source_path, "-o", output_path)
-
-
-def generate_pages_cmd(title, meta, description, out_dir, force=False, source_file=""):
-    cmd = py_cmd(GENERATE_PAGES_PY,
-                 "--title", title, "--meta", meta,
-                 "--description", description, "--out", out_dir)
-    if source_file:
-        cmd.extend(["--source-file", source_file])
-    if force:
-        cmd.append("--force")
-    return cmd
-
-
-def register_game_cmd(name, title, meta, description, sound="", engine="", tags=""):
-    cmd = py_cmd(REGISTER_GAME_PY,
-                 "--name", name, "--title", title,
-                 "--meta", meta, "--description", description)
-    if sound:
-        cmd.extend(["--sound", sound])
-    if engine:
-        cmd.extend(["--engine", engine])
-    if tags:
-        cmd.extend(["--tags", tags])
-    return cmd
-
-
-def publish_cmd(game, message=""):
-    cmd = py_cmd(PUBLISH_PY, game)
-    if message:
-        cmd.append(message)
-    return cmd
-
-
-def pipeline_cmd(game, *stages):
-    return py_cmd(PIPELINE_PY, game, *stages)
-
-
-def new_project_cmd(title, name, engine="inform7"):
-    cmd = py_cmd(NEW_PROJECT_PY, title, name)
-    if engine != "inform7":
-        cmd.extend(["--engine", engine])
-    return cmd
-
-
-def unregister_game_cmd(name):
-    return py_cmd(UNREGISTER_GAME_PY, name)
-
-
-def push_hub_cmd(game):
-    return py_cmd(PUSH_HUB_PY, game)
 
 
 # ---------------------------------------------------------------------------
@@ -167,7 +85,6 @@ jobs: dict[str, Job] = {}
 
 
 def fmt_cmd(cmd):
-    """Format a command list as a readable string for display."""
     if isinstance(cmd, list):
         return " ".join(cmd)
     return cmd
@@ -218,133 +135,120 @@ def run_job(job_id, commands):
         job.status = "done"
 
 
-PIPELINE_STEPS = ["build", "test", "package", "register", "publish"]
+# ---------------------------------------------------------------------------
+# Action command builders
+# ---------------------------------------------------------------------------
+
+# Pipeline steps: compile → publish → register
+PIPELINE_ORDER = ["compile", "publish", "register"]
+STEP_TO_ARTIFACT = {"compile": "compile", "publish": "published", "register": "registered"}
 
 
-def _basic_compile_cmd(project, force=False):
-    """Build a setup_basic.py command for a BASIC engine project."""
-    engine = project.engine
-    title = project.name.replace("-", " ").replace("_", " ").title()
-    cmd = py_cmd(SETUP_BASIC_PY, "--engine", engine, "--title", title,
-                 "--out", project.dir)
-    if project.source_file:
-        source_path = os.path.join(project.dir, project.source_file)
-        if os.path.isfile(source_path):
-            if engine == "jsdos":
-                cmd.extend(["--bundle", source_path])
-            else:
-                cmd.extend(["--source", source_path])
+def _compile_commands(project, data):
+    """Compile step: engine-specific build."""
+    game = project.name
+    force = data.get("force", False)
+    cmd = py_cmd(PIPELINE_PY, game, "compile")
     if force:
         cmd.append("--force")
-    return cmd
+    return [cmd]
 
 
-def _step_commands(step, project, data):
-    """Return commands for a single pipeline step, or [] if not applicable."""
-    game = project.name
-    engine = project.engine
-    is_i7 = engine == "inform7"
-    engine_spec = _libconfig.get_engine_spec(engine)
-    is_basic = engine_spec.is_basic if engine_spec else False
-    force = data.get("force", False)
-    title = data.get("title", game.replace("-", " ").replace("_", " ").title())
+def _publish_commands(project, data):
+    """Publish step: push to GitHub Pages."""
+    message = data.get("message", "")
+    cmd = py_cmd(PUBLISH_PY, project.name)
+    if message:
+        cmd.append(message)
+    return [cmd]
+
+
+def _register_commands(project, data):
+    """Build commands for the 'register' action."""
+    title = data.get("title", project.name.replace("-", " ").replace("_", " ").title())
     meta = data.get("meta", "An Interactive Fiction")
     desc = data.get("description", "An interactive fiction game.")
+    sound_type = "blorb" if data.get("sound", project.sound) else ""
+    engine = project.engine
 
-    is_ink = engine == "ink"
+    reg_cmd = py_cmd(REGISTER_GAME_PY,
+                     "--name", project.name, "--title", title,
+                     "--meta", meta, "--description", desc)
+    if sound_type:
+        reg_cmd.extend(["--sound", sound_type])
+    if engine and engine != "unknown":
+        reg_cmd.extend(["--engine", engine])
 
-    if step == "build":
-        if is_i7:
-            cmds = []
-            # Auto-extract walkthrough from Test me blocks if none exists yet
-            if project.has_test_me and not project.has_walkthrough:
-                walk_dir = os.path.join(project.dir, "tests", "inform7")
-                walk_file = os.path.join(walk_dir, "walkthrough.txt")
-                os.makedirs(walk_dir, exist_ok=True)
-                cmds.append(extract_commands_cmd(
-                    os.path.join(project.dir, "story.ni"), walk_file
-                ))
-            cmds.append(compile_cmd(game, data.get("sound", project.sound), force=force))
-            return cmds
-        if is_basic or engine == "jsdos":
-            return [_basic_compile_cmd(project, force=force)]
-        if is_ink:
-            cmd = py_cmd(SETUP_INK_PY, "--title", title, "--out", project.dir)
-            if project.source_file:
-                cmd.extend(["--ink", os.path.join(project.dir, project.source_file)])
-            if force:
-                cmd.append("--force")
-            return [cmd]
-        if engine == "sharpee":
-            cmd = py_cmd(COMPILE_SHARPEE_PY, project.name)
-            if force:
-                cmd.append("--force")
-            return [cmd]
-        if engine == "rez":
-            cmd = py_cmd(COMPILE_REZ_PY, project.name)
-            if force:
-                cmd.append("--force")
-            return [cmd]
-        return []
+    return [reg_cmd, py_cmd(PUSH_HUB_PY, project.name)]
 
-    if step == "test":
-        if not (engine_spec and engine_spec.has_cli_tests):
-            return []
-        cmds = []
-        conf = os.path.join(project.dir, "tests", "project.conf")
-        if project.has_walkthrough:
-            cmds.append(py_cmd(os.path.join(TESTING_DIR, "run_walkthrough.py"), "--config", conf))
-        if project.has_regtest:
-            cmds.append(py_cmd(os.path.join(TESTING_DIR, "run_tests.py"), "--config", conf))
-        return cmds
 
-    if step == "package":
-        return [generate_pages_cmd(title, meta, desc, project.dir, force=force,
-                                   source_file=project.source_file)]
+STEP_HANDLERS = {
+    "compile": _compile_commands,
+    "publish": _publish_commands,
+    "register": _register_commands,
+}
 
-    if step == "register":
-        sound_type = "blorb" if data.get("sound", project.sound) else ""
-        return [register_game_cmd(game, title, meta, desc, sound_type, engine=engine), push_hub_cmd(game)]
 
-    if step == "publish":
-        message = data.get("message", "")
-        if not message:
-            message = f"Publish {game}"
-        return [publish_cmd(game, message)]
+def _run_to_commands(project, data):
+    """Run all pipeline steps up to and including target, skipping what's current."""
+    target = data.get("target", "register")
+    force = data.get("force", False)
 
-    return []
+    if target not in PIPELINE_ORDER:
+        return f"Unknown target step: {target}"
+
+    idx = PIPELINE_ORDER.index(target)
+    steps = PIPELINE_ORDER[:idx + 1]
+
+    cmds = []
+    for step in steps:
+        art_key = STEP_TO_ARTIFACT[step]
+        art = project.artifacts.get(art_key)
+
+        if art and art.status == ArtifactStatus.NA:
+            continue
+        if not force and art and art.status == ArtifactStatus.PRESENT:
+            continue
+
+        handler = STEP_HANDLERS.get(step)
+        if handler:
+            step_cmds = handler(project, data)
+            if step_cmds:
+                cmds.extend(step_cmds)
+
+    return cmds or None
+
+
+def _ship_all_commands(project, data):
+    """Ship-all runs publish + register only (no compile/test)."""
+    data = dict(data, target="register")
+    return _run_to_commands(project, data)
+
+
+def _unregister_commands(project, data):
+    """Build commands for the 'unregister' action."""
+    return [py_cmd(UNREGISTER_GAME_PY, project.name), py_cmd(PUSH_HUB_PY, project.name)]
+
+
+ACTION_HANDLERS = {
+    **STEP_HANDLERS,
+    "run-to": _run_to_commands,
+    "ship-all": _ship_all_commands,
+    "unregister": _unregister_commands,
+}
 
 
 def build_commands(task, project, data):
-    """Build command list for a task. Returns list or error string."""
-    # Individual pipeline steps
-    if task in PIPELINE_STEPS:
-        cmds = _step_commands(task, project, data)
-        if not cmds:
-            return f"Step '{task}' not applicable for engine: {project.engine}"
-        return cmds
-
-    # Chain: run from a step through to the end
-    if task == "run-from":
-        from_step = data.get("from", "build")
-        try:
-            idx = PIPELINE_STEPS.index(from_step)
-        except ValueError:
-            return f"Unknown step: {from_step}"
-        cmds = []
-        for step in PIPELINE_STEPS[idx:]:
-            cmds.extend(_step_commands(step, project, data))
-        return cmds if cmds else f"No applicable steps from '{from_step}'"
-
-    # Special tasks (not pipeline steps)
-    if task == "publish-update":
-        message = data.get("message", "")
-        return [publish_cmd(project.name, message)]
-
-    if task == "unregister":
-        return [unregister_game_cmd(project.name), push_hub_cmd(project.name)]
-
-    return f"Unknown task: {task}"
+    """Build command list for a task. Returns list, None, or error string."""
+    handler = ACTION_HANDLERS.get(task)
+    if not handler:
+        return f"Unknown task: {task}"
+    result = handler(project, data)
+    if result is None:
+        return "Nothing to do — all artifacts are current."
+    if not result:
+        return f"Action '{task}' not applicable for engine: {project.engine}"
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -367,41 +271,95 @@ def favicon():
 @app.route("/api/projects")
 def api_projects():
     projects = load_projects()
-    return jsonify(
-        [
-            {
-                "name": p.name,
-                "engine": p.engine,
-                "sourceFile": p.source_file,
-                "sound": p.sound,
-                "hubId": p.hub_id,
-                "hasSource": p.has_source,
-                "hasWalkthrough": p.has_walkthrough,
-                "hasRegtest": p.has_regtest,
-                "hasTestMe": p.has_test_me,
-                "hasPlayHtml": p.has_play_html,
-                "hasBinary": p.has_binary,
-                "hasIndex": p.has_index,
-                "hasSourceHtml": p.has_source_html,
-                "hasGit": p.has_git,
-                "registered": p.registered,
-                "binaryName": p.binary_name,
-                "binarySize": p.binary_size,
-                "binaryMtime": p.binary_mtime,
-                "sourceMtime": p.source_mtime,
-                "compileStale": p.compile_stale,
-                "testStale": p.test_stale,
-                "failedStage": p.failed_stage,
-                "stageStatus": p.stage_status,
+    result = []
+    for p in projects:
+        arts = {}
+        for key, a in p.artifacts.items():
+            arts[key] = {
+                "status": a.status.value,
+                "path": a.path,
+                "size": a.size,
+                "mtime": a.mtime,
+                "detail": a.detail,
             }
-            for p in projects
-        ]
-    )
+        # Extract story metadata for form pre-fill
+        meta = extract_story_metadata(p.dir)
+        result.append({
+            "name": p.name,
+            "dir": p.dir,
+            "engine": p.engine,
+            "sourceFile": p.source_file,
+            "sound": p.sound,
+            "hubId": p.hub_id,
+            "overallStatus": p.overall_status,
+            "artifacts": arts,
+            "title": meta.get("title", ""),
+            "meta": meta.get("meta", "An Interactive Fiction"),
+            "description": meta.get("description", "An interactive fiction game."),
+            "compileScripts": p.compile_scripts,
+        })
+    return jsonify(result)
+
+
+def _resolve_file_path(game, filetype):
+    """Resolve a file path for a game + filetype. Returns (path, error)."""
+    from lib.projects import walkthrough_path as _wt_path
+    projects = load_projects()
+    project = next((p for p in projects if p.name == game), None)
+    if not project:
+        return None, f"Project not found: {game}"
+
+    if filetype == "source":
+        if not project.source_file:
+            return None, "No source file detected"
+        return os.path.join(project.dir, project.source_file), None
+    elif filetype == "walkthrough":
+        return _wt_path(project.dir), None
+    else:
+        return None, f"Unknown file type: {filetype}"
+
+
+@app.route("/api/file/<game>/<filetype>")
+def api_file_read(game, filetype):
+    """Read a project file. Types: source, walkthrough."""
+    path, err = _resolve_file_path(game, filetype)
+    if err:
+        return jsonify({"error": err}), 400
+
+    content = ""
+    exists = os.path.isfile(path)
+    if exists:
+        try:
+            content = open(path, "r", encoding="utf-8").read()
+        except OSError as e:
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"content": content, "path": path, "exists": exists})
+
+
+@app.route("/api/file/<game>/<filetype>", methods=["POST"])
+def api_file_write(game, filetype):
+    """Write a project file before running a step."""
+    data = request.json
+    content = data.get("content", "")
+
+    path, err = _resolve_file_path(game, filetype)
+    if err:
+        return jsonify({"error": err}), 400
+
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(content if content.endswith("\n") else content + "\n")
+    except OSError as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"path": path, "written": True})
 
 
 @app.route("/api/create", methods=["POST"])
 def api_create():
-    """Create a new project by calling new_project.py, optionally with custom source."""
+    """Create a new project."""
     data = request.json
     name = data.get("name", "").strip()
     source = data.get("source", "").strip()
@@ -410,39 +368,28 @@ def api_create():
     if not name:
         return jsonify({"error": "Game name is required"}), 400
     if not re.match(r"^[a-z0-9]([a-z0-9_-]*[a-z0-9])?$", name):
-        return jsonify(
-            {"error": "Name must be lowercase alphanumeric (hyphens/underscores ok)"}
-        ), 400
-
-    project_dir = os.path.join(PROJECTS_DIR, name)
-
-    if os.path.isdir(project_dir):
-        return jsonify({"error": f"Project '{name}' already exists"}), 409
+        return jsonify({"error": "Name must be lowercase alphanumeric (hyphens/underscores ok)"}), 400
 
     # Extract title from source (or use the game name as fallback)
     title = name.replace("-", " ").replace("_", " ").title()
     if source and engine == "inform7":
         first_line = source.split("\n")[0].strip()
         if not first_line.startswith('"'):
-            return jsonify(
-                {"error": 'Source must start with "Title" by "Author"'}
-            ), 400
+            return jsonify({"error": 'Source must start with "Title" by "Author"'}), 400
         m = re.match(r'^"([^"]+)"', first_line)
         if m:
             title = m.group(1)
 
-    # Scaffold project via new_project.py (creates tests, config, etc.)
-    result = subprocess.run(
-        new_project_cmd(title, name, engine),
-        capture_output=True,
-        text=True,
-    )
+    cmd = py_cmd(NEW_PROJECT_PY, title, name)
+    if engine != "inform7":
+        cmd.extend(["--engine", engine])
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         return jsonify({"error": f"new_project.py failed: {result.stderr}"}), 500
 
     # If custom source was provided, overwrite the starter source file
     if source:
-        # Determine the source file name for this engine
         spec = _libconfig.get_engine_spec(engine)
         if engine == "inform7":
             source_file = "story.ni"
@@ -450,11 +397,13 @@ def api_create():
             source_file = name.replace("-", "_") + spec.source_extensions[0]
         else:
             source_file = "story.ni"
+
+        project_dir = str(paths.new_project_dir(engine, name))
         source_path = os.path.join(project_dir, source_file)
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(source if source.endswith("\n") else source + "\n")
 
-    return jsonify({"name": name, "dir": project_dir})
+    return jsonify({"name": name})
 
 
 @app.route("/api/run", methods=["POST"])
@@ -476,9 +425,7 @@ def api_run():
     job = Job(id=job_id, commands=commands)
     jobs[job_id] = job
 
-    thread = threading.Thread(
-        target=run_job, args=(job_id, commands), daemon=True
-    )
+    thread = threading.Thread(target=run_job, args=(job_id, commands), daemon=True)
     thread.start()
 
     return jsonify({"jobId": job_id, "commands": [fmt_cmd(c) for c in commands]})
@@ -494,18 +441,15 @@ def api_stream(job_id):
         pos = 0
         try:
             while True:
-                # Yield any new log lines
                 while pos < len(job.log):
                     yield f"data: {json.dumps({'line': job.log[pos]})}\n\n"
                     pos += 1
-
                 if job.status != "running":
                     yield (
                         f"event: done\n"
                         f"data: {json.dumps({'status': job.status, 'exitCode': job.exit_code})}\n\n"
                     )
                     return
-
                 time.sleep(0.05)
         except GeneratorExit:
             pass
@@ -531,1088 +475,473 @@ def api_stop(job_id):
 
 
 # ---------------------------------------------------------------------------
-# HTML
+# HTML — Preact SPA (no build step, CDN imports via htm tagged templates)
 # ---------------------------------------------------------------------------
 
-HTML_PAGE = r"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>IF Hub Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-  --bg: #0a0908;
-  --bg-sidebar: #0d0b09;
-  --bg-card: #111;
-  --bg-selected: #1a1610;
-  --border: #1e1a14;
-  --border-accent: #3a3020;
-  --text: #d4c5a9;
-  --text-muted: #aa9966;
-  --text-dim: #665a40;
-  --accent: #e8d090;
-  --accent-hover: #ffe8a0;
-  --heading: #c4b48a;
-  --terminal-bg: #050403;
-  --green: #6a9f55;
-  --red: #c44;
-  --yellow: #c4a32e;
-}
-
-html, body { height: 100%; }
-
-body {
-  font-family: Georgia, "Times New Roman", serif;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-}
-
-/* --- Sidebar --- */
-
-.sidebar {
-  width: 260px;
-  background: var(--bg-sidebar);
-  border-right: 1px solid var(--border);
-  padding: 20px 14px;
-  flex-shrink: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar h1 {
-  color: var(--accent);
-  font-size: 1.3em;
-  letter-spacing: 1px;
-}
-
-.sidebar-sub {
-  color: var(--text-muted);
-  font-size: 0.85em;
-  font-style: italic;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-.proj-item {
-  padding: 9px 11px;
-  margin-bottom: 3px;
-  border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: background 0.1s;
-}
-
-.proj-item:hover { background: var(--bg-selected); }
-
-.proj-item.sel {
-  background: var(--bg-selected);
-  border-color: var(--accent);
-}
-
-.proj-name {
-  font-weight: bold;
-  font-size: 0.92em;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.dot {
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot-g { background: var(--green); }
-.dot-y { background: var(--yellow); }
-.dot-r { background: var(--red); }
-
-.proj-tags {
-  font-size: 0.75em;
-  color: var(--text-dim);
-  margin-top: 2px;
-  padding-left: 14px;
-}
-
-/* --- Main --- */
-
-main {
-  flex: 1;
-  padding: 24px 32px;
-  overflow-y: auto;
-}
-
-.welcome {
-  color: var(--text-dim);
-  padding-top: 80px;
-  text-align: center;
-}
-
-.welcome h2 { color: var(--heading); margin-bottom: 8px; }
-
-#panel { display: none; }
-
-.panel-head h2 {
-  color: var(--accent);
-  font-size: 1.25em;
-  margin-bottom: 3px;
-}
-
-.panel-tags {
-  color: var(--text-muted);
-  font-size: 0.85em;
-  margin-bottom: 22px;
-}
-
-/* --- Sections --- */
-
-section { margin-bottom: 18px; }
-
-section h3 {
-  color: var(--heading);
-  font-size: 0.95em;
-  margin-bottom: 10px;
-}
-
-details summary {
-  cursor: pointer;
-  list-style: none;
-  user-select: none;
-}
-
-details summary::-webkit-details-marker { display: none; }
-
-details summary h3::before {
-  content: "\25B6\00a0";
-  font-size: 0.7em;
-  vertical-align: 1px;
-}
-
-details[open] summary h3::before {
-  content: "\25BC\00a0";
-}
-
-details[open] summary { margin-bottom: 12px; }
-
-/* --- Buttons --- */
-
-.btn-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-button {
-  padding: 7px 16px;
-  font-family: Georgia, serif;
-  font-size: 0.88em;
-  border: 1px solid var(--border-accent);
-  background: var(--bg-selected);
-  color: var(--text);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.12s, border-color 0.12s;
-}
-
-button:hover:not(:disabled) {
-  background: #2a2418;
-  border-color: var(--text-muted);
-}
-
-button:disabled { opacity: 0.35; cursor: default; }
-
-button.primary {
-  background: var(--accent);
-  color: var(--bg);
-  border-color: var(--accent);
-  font-weight: bold;
-}
-
-button.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-}
-
-/* --- Form --- */
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 8px 12px;
-  align-items: center;
-  margin-bottom: 14px;
-  max-width: 480px;
-}
-
-.form-grid label {
-  color: var(--text-muted);
-  font-size: 0.85em;
-  text-align: right;
-}
-
-.form-grid input[type="text"] {
-  width: 100%;
-  padding: 7px 10px;
-  background: var(--bg-selected);
-  border: 1px solid var(--border-accent);
-  color: var(--text);
-  font-family: Georgia, serif;
-  font-size: 0.88em;
-  border-radius: 4px;
-}
-
-.form-grid input[type="text"]:focus {
-  outline: none;
-  border-color: var(--text-muted);
-}
-
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.form-check input { accent-color: var(--accent); }
-.form-check span { color: var(--text-muted); font-size: 0.85em; }
-
-/* --- Output --- */
-
-.output-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.output-bar h3 { margin-bottom: 0; }
-
-#job-status {
-  font-size: 0.82em;
-  flex: 1;
-}
-
-.st-run { color: var(--yellow); }
-.st-done { color: var(--green); }
-.st-err { color: var(--red); }
-
-.output-btns { display: flex; gap: 6px; }
-
-#term {
-  background: var(--terminal-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 12px 14px;
-  font-family: Consolas, Monaco, "Courier New", monospace;
-  font-size: 12.5px;
-  line-height: 1.5;
-  height: 420px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-  color: #b0a080;
-}
-
-#term::-webkit-scrollbar { width: 8px; }
-#term::-webkit-scrollbar-track { background: var(--terminal-bg); }
-#term::-webkit-scrollbar-thumb { background: var(--border-accent); border-radius: 4px; }
-
-/* --- Pipeline Steps --- */
-
-.step {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--text-dim);
-  border-radius: 4px;
-  padding: 10px 14px;
-  margin-bottom: 0;
-}
-
-.step-off { opacity: 0.35; }
-
-.step-border-done { border-left-color: var(--green); }
-.step-border-stale { border-left-color: var(--yellow); }
-.step-border-failed { border-left-color: var(--red); }
-.step-border-blocked { border-left-color: var(--red); opacity: 0.6; }
-.step-border-notrun { border-left-color: var(--text-dim); }
-.step-border-na { border-left-color: var(--border); }
-
-.step-force-active { border-color: var(--yellow); border-left-color: var(--yellow); }
-
-.step-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.step-num {
-  color: var(--text-dim);
-  font-size: 0.85em;
-  min-width: 16px;
-  padding-top: 1px;
-}
-
-.step-info { flex: 1; }
-
-.step-name {
-  font-weight: bold;
-  font-size: 0.9em;
-}
-
-.step-desc {
-  color: var(--text-dim);
-  font-size: 0.78em;
-  margin-top: 1px;
-}
-
-.step-artifact {
-  color: var(--text-muted);
-  font-size: 0.76em;
-  margin-top: 4px;
-}
-
-.step-artifact-warn {
-  color: var(--yellow);
-  font-size: 0.76em;
-  margin-top: 4px;
-}
-
-.step-skip-hint {
-  color: var(--text-dim);
-  font-size: 0.74em;
-  font-style: italic;
-  margin-top: 3px;
-}
-
-.badge {
-  font-size: 0.72em;
-  font-weight: bold;
-  padding: 1px 7px;
-  border-radius: 3px;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.badge-done { background: var(--green); color: #111; }
-.badge-stale { background: var(--yellow); color: #111; }
-.badge-failed { background: var(--red); color: #fff; }
-.badge-notrun { background: var(--border-accent); color: var(--text-dim); }
-.badge-na { background: var(--border); color: var(--text-dim); }
-.badge-blocked { background: #522; color: #c88; }
-
-.step-status {
-  font-size: 0.78em;
-  white-space: nowrap;
-  padding-top: 2px;
-}
-
-.step-sep { color: var(--text-dim); }
-.ck { color: var(--green); }
-.xk { color: var(--text-dim); }
-
-.step-connector {
-  text-align: center;
-  color: var(--text-dim);
-  font-size: 0.7em;
-  line-height: 1;
-  margin: 2px 0;
-}
-
-.step-connector-done { color: var(--green); }
-
-.step-btns {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-  padding-left: 26px;
-  align-items: center;
-}
-
-.step-btns-spacer { flex: 1; }
-
-.force-label {
-  font-size: 0.76em;
-  color: var(--text-dim);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
-
-.force-label input { cursor: pointer; }
-
-.btn-chain {
-  font-size: 0.82em;
-  color: var(--text-muted);
-  border-style: dashed;
-}
-
-.force-all-link {
-  font-size: 0.78em;
-  color: var(--text-dim);
-  cursor: pointer;
-  text-decoration: underline;
-  margin-bottom: 6px;
-  display: inline-block;
-}
-
-.force-all-link:hover { color: var(--text-muted); }
-
-/* --- New Game --- */
-
-.new-game-btn {
-  margin-top: 16px;
-  width: 100%;
-  padding: 9px 16px;
-  font-weight: bold;
-  border-style: dashed;
-}
-
-.name-hint {
-  font-size: 0.78em;
-  color: var(--text-dim);
-  margin: -2px 0 16px 102px;
-}
-
-.source-area {
-  margin-top: 8px;
-}
-
-.source-area > label {
-  display: block;
-  color: var(--text-muted);
-  font-size: 0.85em;
-  margin-bottom: 6px;
-}
-
-.source-area textarea {
-  width: 100%;
-  max-width: 600px;
-  height: 220px;
-  padding: 10px 12px;
-  background: var(--bg-selected);
-  border: 1px solid var(--border-accent);
-  color: var(--text);
-  font-family: Consolas, Monaco, "Courier New", monospace;
-  font-size: 12.5px;
-  line-height: 1.5;
-  border-radius: 4px;
-  resize: vertical;
-}
-
-.source-area textarea:focus {
-  outline: none;
-  border-color: var(--text-muted);
-}
-
-.source-hint {
-  font-size: 0.78em;
-  color: var(--text-dim);
-  margin-top: 6px;
-}
+_HTML_FILE = os.path.join(SCRIPT_DIR, "dashboard.html")
+if os.path.isfile(_HTML_FILE):
+    HTML_PAGE = open(_HTML_FILE, "r", encoding="utf-8").read()
+else:
+    HTML_PAGE = "<html><body><h1>Missing dashboard.html</h1></body></html>"
+
+
+_UNUSED_INLINE_HTML = r"""<!DOCTYPE html>
+
+/* Header */
+header { padding:14px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:16px; background:var(--bg-card); }
+header h1 { color:var(--accent); font-size:1.15em; font-weight:600; }
+header .sub { color:var(--text-muted); font-size:.82em; }
+header .spacer { flex:1; }
+.hdr-btn { padding:6px 14px; font-size:.82em; border:1px solid var(--border-accent); background:transparent; color:var(--text-muted); border-radius:6px; cursor:pointer; font-family:inherit; transition:all .12s; }
+.hdr-btn:hover { background:var(--bg-hover); border-color:var(--accent); color:var(--text); }
+
+/* Matrix Table */
+.matrix { width:100%; border-collapse:collapse; table-layout:fixed; }
+.matrix th { text-align:left; padding:10px 12px; font-size:.72em; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:2; }
+.matrix td { padding:10px 12px; font-size:.86em; border-bottom:1px solid var(--border); vertical-align:middle; }
+.col-game { width:22%; } .col-engine { width:8%; } .col-status { width:10%; } .col-actions { width:18%; }
+.matrix tbody tr { cursor:pointer; transition:background .08s; }
+.matrix tbody tr:hover { background:var(--bg-hover); }
+.matrix tbody tr.row-sel { background:var(--bg-sel); }
+.game-name { color:var(--text); font-weight:600; text-decoration:none; }
+.game-name:hover { color:var(--accent); }
+.engine-tag { font-size:.72em; color:var(--text-muted); background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:2px 7px; white-space:nowrap; font-weight:500; }
+
+/* Badges */
+.badge { display:inline-block; font-size:.68em; font-weight:600; padding:3px 8px; border-radius:4px; letter-spacing:.3px; cursor:pointer; white-space:nowrap; transition:all .1s; text-transform:uppercase; }
+.badge:hover { filter:brightness(1.2); }
+.badge-present { background:var(--green-dim); color:var(--green); border:1px solid rgba(52,211,153,.2); }
+.badge-missing { background:rgba(85,91,112,.15); color:var(--text-dim); border:1px solid var(--border); }
+.badge-stale   { background:var(--yellow-dim); color:var(--yellow); border:1px solid rgba(251,191,36,.2); }
+.badge-failed  { background:var(--red-dim); color:var(--red); border:1px solid rgba(248,113,113,.2); }
+.badge-na      { background:transparent; color:var(--text-dim); border:1px solid var(--border); font-weight:normal; opacity:.5; }
+
+/* Buttons */
+.btn { padding:5px 12px; font-family:inherit; font-size:.8em; border:1px solid var(--border-accent); background:var(--bg-card); color:var(--text); border-radius:6px; cursor:pointer; white-space:nowrap; transition:all .1s; }
+.btn:hover { background:var(--bg-sel); border-color:var(--accent); }
+.btn:disabled { opacity:.3; cursor:default; }
+.btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+.btn-primary:hover { background:var(--accent-hover); }
+.force-label { font-size:.72em; color:var(--text-dim); display:flex; align-items:center; gap:3px; cursor:pointer; }
+
+/* Expanded row */
+.expanded-row td { padding:0!important; border-bottom:2px solid var(--accent); }
+.expanded-content { background:var(--bg-expanded); padding:20px 28px; display:flex; gap:28px; }
+.expanded-left { flex:0 0 340px; }
+.expanded-right { flex:1; min-width:0; }
+
+/* DAG */
+.dag { display:flex; flex-direction:column; align-items:stretch; max-width:340px; }
+.dag-node { border:1px solid var(--border); border-left:3px solid var(--text-dim); border-radius:6px; padding:10px 14px; background:var(--bg-card); }
+.dag-node-present { border-left-color:var(--green); }
+.dag-node-missing { border-left-color:var(--text-dim); }
+.dag-node-stale   { border-left-color:var(--yellow); }
+.dag-node-failed  { border-left-color:var(--red); }
+.dag-node-na      { border-left-color:var(--border); opacity:.35; }
+.dag-node-running { border-left-color:var(--accent); background:repeating-linear-gradient(-45deg,var(--bg-card),var(--bg-card) 8px,rgba(108,158,255,.06) 8px,rgba(108,158,255,.06) 16px); background-size:200% 100%; animation:stripe-scroll .8s linear infinite; }
+@keyframes stripe-scroll { 0%{background-position:0 0} 100%{background-position:22.6px 0} }
+.only-link { font-size:.7em; color:var(--text-dim); cursor:pointer; text-decoration:underline; margin-left:4px; }
+.only-link:hover { color:var(--text-muted); }
+.node-head { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+.node-name { font-weight:600; font-size:.88em; }
+.node-badge { font-size:.65em; font-weight:600; padding:2px 7px; border-radius:4px; margin-left:auto; text-transform:uppercase; }
+.node-detail { font-size:.76em; color:var(--text-muted); margin-bottom:6px; }
+.node-detail a { color:var(--blue); text-decoration:none; }
+.node-detail a:hover { text-decoration:underline; }
+.node-btns { display:flex; gap:6px; align-items:center; }
+.node-btns .spacer { flex:1; }
+
+/* DAG connectors */
+.dag-connector { display:flex; align-items:stretch; height:28px; position:relative; }
+.conn-straight { width:2px; background:var(--line); margin:0 auto; position:relative; }
+.conn-straight::after { content:''; position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--line); }
+.conn-branch { position:relative; height:28px; width:100%; }
+.conn-fork::before { content:''; position:absolute; top:0; left:50%; width:2px; height:50%; background:var(--line); transform:translateX(-50%); }
+.conn-fork::after { content:''; position:absolute; top:50%; left:15%; right:15%; height:2px; background:var(--line); }
+.conn-fork-left, .conn-fork-right { position:absolute; top:50%; width:2px; height:50%; background:var(--line); }
+.conn-fork-left { left:15%; } .conn-fork-right { right:15%; }
+.conn-fork-left::after, .conn-fork-right::after { content:''; position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); border:4px solid transparent; border-top-color:var(--line); }
+.conn-merge::after { content:''; position:absolute; bottom:0; left:15%; right:15%; height:2px; background:var(--line); }
+.conn-merge::before { content:''; position:absolute; bottom:0; left:50%; width:2px; height:50%; background:var(--line); transform:translateX(-50%); }
+.conn-merge-left, .conn-merge-right { position:absolute; top:0; width:2px; height:50%; background:var(--line); }
+.conn-merge-left { left:15%; } .conn-merge-right { right:15%; }
+.conn-merge-down { position:absolute; bottom:-4px; left:50%; transform:translateX(-50%); border:5px solid transparent; border-top-color:var(--line); }
+.dag-row { display:flex; gap:12px; }
+.dag-row > .dag-node { flex:1; min-width:0; }
+
+/* Metadata form */
+.meta-form { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; margin-bottom:12px; padding:12px 14px; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; }
+.meta-form label { font-size:.76em; color:var(--text-dim); text-align:right; font-weight:500; }
+.meta-form input[type="text"] { padding:5px 8px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:.82em; border-radius:4px; }
+.meta-form input[type="text"]:focus { outline:none; border-color:var(--accent); }
+.meta-form .chk { grid-column:2; display:flex; align-items:center; gap:5px; font-size:.76em; color:var(--text-dim); }
+.meta-form .chk input { accent-color:var(--accent); }
+
+/* Terminal */
+.output-bar { display:flex; align-items:center; gap:12px; margin-bottom:6px; }
+.output-bar h4 { font-size:.82em; color:var(--heading); font-weight:600; }
+.job-status { font-size:.76em; flex:1; }
+.st-run { color:var(--yellow); } .st-done { color:var(--green); } .st-err { color:var(--red); }
+.output-btns { display:flex; gap:6px; }
+.term { background:var(--term-bg); border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-family:"SF Mono","Cascadia Code",Consolas,monospace; font-size:12px; line-height:1.6; height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; color:var(--text-muted); }
+.term::-webkit-scrollbar { width:6px; } .term::-webkit-scrollbar-track { background:transparent; } .term::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* Modal */
+.overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); z-index:100; justify-content:center; align-items:center; }
+.overlay.show { display:flex; }
+.modal { background:var(--bg-card); border:1px solid var(--border-accent); border-radius:10px; padding:24px; width:480px; max-height:80vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+.modal h2 { color:var(--accent); font-size:1.05em; margin-bottom:14px; font-weight:600; }
+.modal .form-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.modal .form-row label { font-size:.82em; color:var(--text-muted); min-width:60px; text-align:right; }
+.modal .form-row input, .modal .form-row select { flex:1; padding:7px 10px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:.85em; border-radius:6px; }
+.modal .form-row input:focus, .modal .form-row select:focus { outline:none; border-color:var(--accent); }
+.modal textarea { width:100%; height:160px; padding:10px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-family:"SF Mono",Consolas,monospace; font-size:12px; border-radius:6px; resize:vertical; margin-top:8px; }
+.modal textarea:focus { outline:none; border-color:var(--accent); }
+.modal .btn-row { display:flex; gap:8px; margin-top:14px; }
+
+main { height:calc(100vh - 51px); overflow-y:auto; }
 </style>
 </head>
 <body>
+<script type="module">
+import { h, render, Fragment } from 'https://esm.sh/preact@10.25.4';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'https://esm.sh/preact@10.25.4/hooks';
+import htm from 'https://esm.sh/htm@3.1.1';
+const html = htm.bind(h);
 
-<aside class="sidebar">
-  <h1>IF Hub</h1>
-  <div class="sidebar-sub">Dashboard</div>
-  <div id="proj-list"></div>
-  <button class="new-game-btn" onclick="showCreate()">+ New Game</button>
-</aside>
+/* ── Helpers ── */
+const ENG = {inform7:'I7',zmachine:'Z',ink:'Ink',wwwbasic:'wwwBASIC',qbjc:'qbjc',applesoft:'Apple',bwbasic:'bwBASIC',jsdos:'DOS',twine:'Twine',sharpee:'Sharpee',rez:'Rez',unknown:'?'};
+const BLBL = {present:'DONE',missing:'\u2014',stale:'STALE',failed:'FAIL','n/a':'n/a'};
+const BCLS = {present:'badge-present',missing:'badge-missing',stale:'badge-stale',failed:'badge-failed','n/a':'badge-na'};
+const NCLS = {present:'dag-node-present',missing:'dag-node-missing',stale:'dag-node-stale',failed:'dag-node-failed','n/a':'dag-node-na'};
 
-<main>
-  <div id="welcome" class="welcome">
-    <h2>IF Hub Dashboard</h2>
-    <p>Select a project from the sidebar, or create a new one.</p>
-  </div>
+function fileUrl(p){if(!p)return'';p=p.replace(/\\/g,'/');if(!p.startsWith('/'))p='/'+p;return'file://'+p;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 
-  <div id="create-panel" style="display:none">
-    <div class="panel-head">
+/* ── Badge ── */
+function Badge({status,detail,onClick}){
+  const label=BLBL[status]||status, cls=BCLS[status]||'badge-missing';
+  return html`<span class="badge ${cls}" title=${detail||''} onClick=${e=>{e.stopPropagation();onClick&&onClick();}}>${label}</span>`;
+}
+
+/* ── DAG Node ── */
+function DagNode({name,detail,linkUrl,status,running,onRunTo,onRunOnly}){
+  const ncls = running ? 'dag-node-running' : (NCLS[status]||'dag-node-missing');
+  const bLabel=BLBL[status]||status, bCls=BCLS[status]||'badge-missing';
+  const forceRef=useRef(null);
+
+  const parts=(detail||'').split(' \u00b7 ');
+  const detailEl = linkUrl && parts.length>0
+    ? html`<div class="node-detail"><a href=${linkUrl} onClick=${e=>e.stopPropagation()}>${parts[0]}</a>${parts.length>1?' \u00b7 '+parts.slice(1).join(' \u00b7 '):''}</div>`
+    : detail ? html`<div class="node-detail">${detail}</div>` : null;
+
+  return html`<div class="dag-node ${ncls}">
+    <div class="node-head">
+      <span class="node-name">${name}</span>
+      <span class="node-badge ${bCls}">${bLabel}</span>
+    </div>
+    ${detailEl}
+    ${onRunTo && html`<div class="node-btns">
+      <button class="btn" onClick=${e=>{e.stopPropagation();onRunTo(forceRef.current?.checked);}}>${name}</button>
+      ${onRunOnly && html`<a class="only-link" onClick=${e=>{e.stopPropagation();onRunOnly(forceRef.current?.checked);}}>only</a>`}
+      <span class="spacer" />
+      <label class="force-label" onClick=${e=>e.stopPropagation()}><input type="checkbox" ref=${forceRef} /> Force</label>
+    </div>`}
+  </div>`;
+}
+
+/* ── Connector ── */
+function Conn({type,style}){
+  if(type==='straight') return html`<div class="dag-connector" style=${style}><div class="conn-straight" /></div>`;
+  if(type==='fork') return html`<div class="dag-connector"><div class="conn-branch conn-fork"><div class="conn-fork-left"/><div class="conn-fork-right"/></div></div>`;
+  if(type==='merge') return html`<div class="dag-connector"><div class="conn-branch conn-merge"><div class="conn-merge-left"/><div class="conn-merge-right"/><div class="conn-merge-down"/></div></div>`;
+  return null;
+}
+
+/* ── Terminal — persistent, never unmounted while expanded ── */
+function Terminal({game}){
+  const termRef=useRef(null);
+  const [status,setStatus]=useState({cls:'',text:''});
+  const [running,setRunning]=useState(false);
+
+  // Expose imperative API via window so run() can drive it
+  useEffect(()=>{
+    const api={
+      clear(){if(termRef.current)termRef.current.textContent='';setStatus({cls:'',text:''});},
+      append(text){if(termRef.current){termRef.current.textContent+=text;termRef.current.scrollTop=termRef.current.scrollHeight;}},
+      setStatus(cls,text){setStatus({cls,text});},
+      setRunning(v){setRunning(v);},
+    };
+    window.__term=window.__term||{};
+    window.__term[game]=api;
+    return ()=>{if(window.__term)delete window.__term[game];};
+  },[game]);
+
+  const stop=useCallback(async()=>{
+    if(window.__curJob){await fetch('/api/stop/'+window.__curJob,{method:'POST'});}
+  },[]);
+
+  const clear=useCallback(()=>{
+    if(termRef.current)termRef.current.textContent='';
+    setStatus({cls:'',text:''});
+  },[]);
+
+  return html`<div>
+    <div class="output-bar">
+      <h4>Output</h4>
+      <span class="job-status ${status.cls}">${status.text}</span>
+      <div class="output-btns">
+        <button class="btn" disabled=${!running} onClick=${stop}>Stop</button>
+        <button class="btn" onClick=${clear}>Clear</button>
+      </div>
+    </div>
+    <pre class="term" ref=${termRef} />
+  </div>`;
+}
+
+/* ── DAG panel ── */
+function DAG({project,onAction,runningSteps}){
+  const a=project.artifacts, hasTests=a.tests&&a.tests.status!=='n/a';
+  const rs=runningSteps||[];
+  // onRunTo: run all steps up to this one; onRunOnly: run just this step
+  const runTo=(step,force)=>onAction('run-to',project,force,{target:step});
+  const runOnly=(step,force)=>onAction(step,project,force);
+
+  return html`<div class="dag">
+    <${DagNode} name="Source" detail=${project.sourceFile||'n/a'} linkUrl=${project.sourceFile?fileUrl(project.dir+'/'+project.sourceFile):''} status="present" />
+    <${Conn} type="fork" />
+    <div class="dag-row">
+      <${DagNode} name="Build" detail=${a.build.detail} linkUrl=${a.build.path?fileUrl(a.build.path):''} status=${a.build.status} running=${rs.includes('build')} onRunTo=${f=>runTo('build',f)} onRunOnly=${f=>runOnly('build',f)} />
+      <${DagNode} name="Pages" detail=${a.pages.detail} linkUrl=${a.pages.path?fileUrl(a.pages.path):''} status=${a.pages.status} running=${rs.includes('pages')} onRunTo=${f=>runTo('pages',f)} onRunOnly=${f=>runOnly('pages',f)} />
+    </div>
+    ${hasTests && html`<${Fragment}>
+      <${Conn} type="straight" style=${{}} />
+      <div class="dag-row">
+        <${DagNode} name="Tests" detail=${a.tests.detail} status=${a.tests.status} running=${rs.includes('test')} onRunTo=${f=>runTo('test',f)} onRunOnly=${f=>runOnly('test',f)} />
+        <div />
+      </div>
+    </${Fragment}>`}
+    <${Conn} type="merge" />
+    <${DagNode} name="Ship" detail=${a.shipped.detail} status=${a.shipped.status} running=${rs.includes('ship')} onRunTo=${f=>runTo('ship',f)} onRunOnly=${f=>runOnly('ship',f)} />
+    <${Conn} type="straight" />
+    <${DagNode} name="Register" detail=${a.registered.detail} status=${a.registered.status} running=${rs.includes('register')} onRunTo=${f=>runTo('register',f)} onRunOnly=${f=>runOnly('register',f)} />
+    <${Conn} type="straight" />
+    <button class="btn btn-primary" style=${{width:'100%',marginTop:'4px'}} onClick=${e=>{e.stopPropagation();runTo('register',false);}}>Ship All</button>
+  </div>`;
+}
+
+/* ── Meta form ── */
+function MetaForm({project,formRef}){
+  const p=project;
+  const t=p.title||p.name.replace(/[-_]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const m=p.meta||'An Interactive Fiction';
+  const d=p.description||'An interactive fiction game.';
+  return html`<div class="meta-form" ref=${formRef}>
+    <label>Title</label><input type="text" name="title" defaultValue=${t} />
+    <label>Sub</label><input type="text" name="meta" defaultValue=${m} />
+    <label>Desc</label><input type="text" name="description" defaultValue=${d} />
+    <span class="chk"><input type="checkbox" name="sound" defaultChecked=${p.sound} /> Sound</span>
+  </div>`;
+}
+
+/* ── Expanded row content ── */
+function ExpandedContent({project,onAction,runningSteps}){
+  const formRef=useRef(null);
+
+  const handleAction=useCallback((action,proj,force,extra)=>{
+    const form=formRef.current;
+    const meta={};
+    if(form){
+      meta.title=form.querySelector('[name=title]')?.value||'';
+      meta.meta=form.querySelector('[name=meta]')?.value||'';
+      meta.description=form.querySelector('[name=description]')?.value||'';
+      meta.sound=form.querySelector('[name=sound]')?.checked||false;
+    }
+    onAction(action,proj.name,force,{...meta,...(extra||{})});
+  },[onAction]);
+
+  return html`<div class="expanded-content">
+    <div class="expanded-left">
+      <${DAG} project=${project} onAction=${handleAction} runningSteps=${runningSteps} />
+    </div>
+    <div class="expanded-right">
+      <${MetaForm} project=${project} formRef=${formRef} />
+      <${Terminal} game=${project.name} key=${project.name} />
+    </div>
+  </div>`;
+}
+
+/* ── Pipeline step order (mirrors backend PIPELINE_ORDER) ── */
+const STEPS=['build','pages','test','ship','register'];
+
+/* ── Main App ── */
+function App(){
+  const [projects,setProjects]=useState([]);
+  const [expanded,setExpanded]=useState(null);
+  const [showModal,setShowModal]=useState(false);
+  const [runningSteps,setRunningSteps]=useState([]);  // steps currently executing
+
+  const fetchProjects=useCallback(async()=>{
+    const r=await fetch('/api/projects');
+    setProjects(await r.json());
+  },[]);
+
+  useEffect(()=>{fetchProjects();},[]);
+
+  // Compute which pipeline steps a task will touch (for the running animation)
+  const computeRunningSteps=useCallback((action,meta,game)=>{
+    if(action==='run-to'||action==='ship-all'){
+      const target=meta?.target||'register';
+      const idx=STEPS.indexOf(target);
+      return idx>=0?STEPS.slice(0,idx+1):[target];
+    }
+    return [action];
+  },[]);
+
+  const runTask=useCallback(async(action,game,force,meta)=>{
+    setExpanded(game);
+    await new Promise(r=>setTimeout(r,60));
+
+    // Show running animation on affected steps
+    const steps=computeRunningSteps(action,meta,game);
+    setRunningSteps(steps);
+
+    const api=window.__term&&window.__term[game];
+    if(api){api.clear();api.setRunning(true);api.setStatus('job-status st-run','Running...');}
+
+    const body={task:action,game,force:!!force,...(meta||{})};
+    const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const data=await r.json();
+
+    if(data.error){
+      if(api){api.append('[ERROR] '+data.error+'\n');api.setStatus('job-status st-err','Error');api.setRunning(false);}
+      setRunningSteps([]);
+      return;
+    }
+
+    window.__curJob=data.jobId;
+    if(api)data.commands.forEach(c=>api.append('$ '+c+'\n'));
+    if(api)api.append('\n');
+
+    const es=new EventSource('/api/stream/'+data.jobId);
+
+    es.onmessage=e=>{
+      const d=JSON.parse(e.data);
+      if(d.line&&api)api.append(d.line.replace(/\x1b\[[0-9;]*m/g,''));
+    };
+
+    es.addEventListener('done',e=>{
+      const d=JSON.parse(e.data);
+      es.close();window.__curJob=null;
+      setRunningSteps([]);
+      if(api){
+        api.setRunning(false);
+        if(d.status==='done')api.setStatus('job-status st-done','Done');
+        else api.setStatus('job-status st-err','Failed (exit '+d.exitCode+')');
+      }
+      fetchProjects();
+    });
+
+    es.onerror=()=>{es.close();window.__curJob=null;setRunningSteps([]);if(api)api.setRunning(false);};
+  },[fetchProjects,computeRunningSteps]);
+
+  const shipAll=useCallback((game,force,meta)=>{
+    runTask('run-to',game,force,{...(meta||{}),target:'register'});
+  },[runTask]);
+
+  const badgeClick=useCallback((action,game)=>{
+    const p=projects.find(x=>x.name===game);
+    const meta=p?{title:p.title,meta:p.meta,description:p.description,sound:p.sound}:{};
+    runTask(action,game,false,meta);
+  },[projects,runTask]);
+
+  const toggleRow=useCallback(name=>{
+    setExpanded(prev=>prev===name?null:name);
+  },[]);
+
+  return html`<div>
+    <header>
+      <h1>IF Hub</h1>
+      <span class="sub">Dashboard</span>
+      <span class="spacer" />
+      <button class="hdr-btn" onClick=${()=>setShowModal(true)}>+ New Game</button>
+      <button class="hdr-btn" onClick=${fetchProjects}>Refresh</button>
+    </header>
+    <main>
+      <table class="matrix">
+        <thead><tr>
+          <th class="col-game">Game</th><th class="col-engine">Engine</th>
+          <th class="col-status">Build</th><th class="col-status">Pages</th>
+          <th class="col-status">Tests</th><th class="col-status">Ship</th>
+          <th class="col-status">Hub</th><th class="col-actions">Actions</th>
+        </tr></thead>
+        <tbody>
+          ${projects.map(p=>{
+            const a=p.artifacts;
+            const isExp=expanded===p.name;
+            return html`<${Fragment} key=${p.name}>
+              <tr class=${isExp?'row-sel':''} onClick=${e=>{if(!e.target.closest('.badge,.btn,.force-label'))toggleRow(p.name);}}>
+                <td><a class="game-name" href=${fileUrl(p.dir)} title=${p.dir} onClick=${e=>e.stopPropagation()}>${p.name}</a></td>
+                <td><span class="engine-tag">${ENG[p.engine]||p.engine}</span></td>
+                <td><${Badge} status=${a.build.status} detail=${a.build.detail} onClick=${()=>badgeClick('build',p.name)} /></td>
+                <td><${Badge} status=${a.pages.status} detail=${a.pages.detail} onClick=${()=>badgeClick('pages',p.name)} /></td>
+                <td><${Badge} status=${a.tests.status} detail=${a.tests.detail} onClick=${()=>badgeClick('test',p.name)} /></td>
+                <td><${Badge} status=${a.shipped.status} detail=${a.shipped.detail} onClick=${()=>badgeClick('ship',p.name)} /></td>
+                <td><${Badge} status=${a.registered.status} detail=${a.registered.detail} onClick=${()=>badgeClick('register',p.name)} /></td>
+                <td>
+                  <button class="btn btn-primary" disabled=${p.overallStatus==='ready'} onClick=${e=>{e.stopPropagation();shipAll(p.name);}}>Ship All</button>
+                  ${' '}<label class="force-label" onClick=${e=>e.stopPropagation()}><input type="checkbox" id=${'force-row-'+p.name} /> Force</label>
+                </td>
+              </tr>
+              ${isExp && html`<tr class="expanded-row"><td colSpan="8">
+                <${ExpandedContent} project=${p} onAction=${runTask} runningSteps=${runningSteps} />
+              </td></tr>`}
+            </${Fragment}>`;
+          })}
+        </tbody>
+      </table>
+    </main>
+    ${showModal && html`<${CreateModal} onClose=${()=>setShowModal(false)} onCreated=${async(name)=>{await fetchProjects();setExpanded(name);}} />`}
+  </div>`;
+}
+
+/* ── Create modal ── */
+function CreateModal({onClose,onCreated}){
+  const [name,setName]=useState('');
+  const [engine,setEngine]=useState('inform7');
+  const [source,setSource]=useState('');
+
+  const create=async()=>{
+    if(!name.trim()){alert('Enter a game name.');return;}
+    const r=await fetch('/api/create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name.trim(),source,engine})});
+    const data=await r.json();
+    if(data.error){alert(data.error);return;}
+    onClose();
+    onCreated(name.trim());
+  };
+
+  return html`<div class="overlay show" onClick=${e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div class="modal">
       <h2>New Game</h2>
-      <div class="panel-tags">Create a new project</div>
+      <div class="form-row"><label>Name</label><input type="text" value=${name} onInput=${e=>setName(e.target.value)} placeholder="my-game" /></div>
+      <div class="form-row"><label>Engine</label><select value=${engine} onChange=${e=>setEngine(e.target.value)}>
+        <option value="inform7">Inform 7</option><option value="ink">Ink</option>
+        <option value="wwwbasic">wwwBASIC</option><option value="qbjc">qbjc</option>
+        <option value="applesoft">Applesoft</option><option value="sharpee">Sharpee</option>
+        <option value="rez">Rez</option>
+      </select></div>
+      <label style="font-size:.82em;color:var(--text-muted)">Source (optional)</label>
+      <textarea value=${source} onInput=${e=>setSource(e.target.value)} placeholder="Paste source code or leave blank..." />
+      <div class="btn-row">
+        <button class="btn btn-primary" onClick=${create}>Create</button>
+        <button class="btn" onClick=${onClose}>Cancel</button>
+      </div>
     </div>
-
-    <section>
-      <div class="form-grid">
-        <label for="c-name">Name</label>
-        <input id="c-name" type="text" placeholder="my-game">
-      </div>
-      <div class="name-hint">Lowercase, alphanumeric, hyphens ok. Becomes the project folder and URL.</div>
-
-      <div class="form-grid" style="margin-top:10px">
-        <label for="c-engine">Engine</label>
-        <select id="c-engine" onchange="onEngineChange()">
-          <option value="inform7">Inform 7</option>
-          <option value="ink">Ink</option>
-          <option value="wwwbasic">wwwBASIC (GW-BASIC)</option>
-          <option value="qbjc">qbjc (QBasic)</option>
-          <option value="applesoft">Applesoft BASIC</option>
-          <option value="bwbasic">bwBASIC (GW-BASIC)</option>
-          <option value="jsdos">DOS (js-dos)</option>
-          <option value="twine">Twine</option>
-          <option value="sharpee">Sharpee</option>
-        </select>
-      </div>
-
-      <div class="source-area">
-        <label for="c-source" id="c-source-label">Source code (story.ni)</label>
-        <textarea id="c-source" placeholder='"My Game" by "Author Name"
-
-The Foyer is a room. "You stand in a grand foyer."'></textarea>
-        <div class="source-hint" id="c-source-hint">
-          Paste your Inform 7 source here, or leave empty for a starter template.
-        </div>
-      </div>
-
-      <div class="btn-row" style="margin-top:14px">
-        <button class="primary" onclick="createGame()">Create Project</button>
-        <button onclick="hideCreate()">Cancel</button>
-      </div>
-    </section>
-
-    <section>
-      <div class="output-bar">
-        <h3>Output</h3>
-        <span id="create-status"></span>
-      </div>
-      <pre id="create-term" style="height:200px;background:var(--terminal-bg);border:1px solid var(--border);border-radius:4px;padding:12px 14px;font-family:Consolas,Monaco,monospace;font-size:12.5px;line-height:1.5;overflow-y:auto;white-space:pre-wrap;word-break:break-all;color:#b0a080"></pre>
-    </section>
-  </div>
-
-  <div id="panel">
-    <div class="panel-head">
-      <h2 id="p-name"></h2>
-      <div class="panel-tags" id="p-tags"></div>
-    </div>
-
-    <section>
-      <details id="meta-section">
-        <summary><h3>Metadata</h3></summary>
-        <div class="form-grid">
-          <label for="f-title">Title</label>
-          <input id="f-title" type="text">
-          <label for="f-meta">Subtitle</label>
-          <input id="f-meta" type="text" value="An Interactive Fiction">
-          <label for="f-desc">Description</label>
-          <input id="f-desc" type="text" value="An interactive fiction game.">
-        </div>
-        <div class="form-check">
-          <input id="f-sound" type="checkbox">
-          <span>Sound (blorb)</span>
-        </div>
-      </details>
-    </section>
-
-    <section>
-      <h3>Pipeline</h3>
-      <span class="force-all-link" onclick="toggleForceAll()">Force all steps</span>
-      <div id="steps"></div>
-    </section>
-
-    <section>
-      <details>
-        <summary><h3>Quick Actions</h3></summary>
-        <div class="btn-row">
-          <button id="btn-pubup" onclick="pubUpdate()">Publish Update</button>
-          <button onclick="unregister()">Unregister</button>
-        </div>
-      </details>
-    </section>
-
-    <section>
-      <div class="output-bar">
-        <h3>Output</h3>
-        <span id="job-status"></span>
-        <div class="output-btns">
-          <button id="btn-stop" onclick="stopJob()" disabled>Stop</button>
-          <button onclick="clr()">Clear</button>
-        </div>
-      </div>
-      <pre id="term"></pre>
-    </section>
-  </div>
-</main>
-
-<script>
-let projects = [];
-let sel = null;
-let curJob = null;
-let evtSrc = null;
-
-const ENGINE_LABELS = {
-  inform7: 'Inform 7', wwwbasic: 'wwwBASIC', qbjc: 'QBasic',
-  applesoft: 'Applesoft', bwbasic: 'bwBASIC', jsdos: 'DOS', basic: 'BASIC',
-  twine: 'Twine', ink: 'Ink', sharpee: 'Sharpee', unknown: 'Unknown',
-};
-
-const BASIC_ENGINES = ['wwwbasic', 'qbjc', 'applesoft', 'bwbasic'];
-const BUILDABLE = ['inform7', 'wwwbasic', 'qbjc', 'applesoft', 'bwbasic', 'ink', 'jsdos', 'sharpee', 'rez'];
-
-const STEPS = [
-  {
-    id: 'build', name: 'Build',
-    desc: p => p.engine === 'inform7'
-      ? 'Compile I7 source \u2192 binary + web player'
-      : p.engine === 'ink'
-        ? 'Compile .ink \u2192 JSON + web player'
-        : BASIC_ENGINES.includes(p.engine)
-          ? 'Generate web player from source'
-          : p.engine === 'jsdos'
-            ? 'Generate web player from .jsdos bundle'
-            : 'Compile source',
-    checks: p => [
-      { ok: p.hasBinary, t: p.hasBinary ? 'binary' : 'no binary' },
-      { ok: p.hasPlayHtml, t: p.hasPlayHtml ? 'play.html' : 'no play.html' },
-    ],
-    enabled: p => BUILDABLE.includes(p.engine),
-  },
-  {
-    id: 'test', name: 'Test',
-    desc: () => 'Run walkthrough + regression tests',
-    checks: p => {
-      const s = [];
-      if (p.hasWalkthrough) s.push({ ok: true, t: 'walkthrough' });
-      if (p.hasRegtest) s.push({ ok: true, t: 'regtest' });
-      if (!s.length) s.push({ ok: false, t: 'no tests configured' });
-      return s;
-    },
-    enabled: p => (p.engine === 'inform7' || p.engine === 'zmachine') && (p.hasWalkthrough || p.hasRegtest),
-  },
-  {
-    id: 'package', name: 'Package',
-    desc: () => 'Generate landing page + source browser',
-    checks: p => [
-      { ok: p.hasIndex, t: p.hasIndex ? 'index.html' : 'no index.html' },
-      { ok: p.hasSourceHtml, t: p.hasSourceHtml ? 'source.html' : 'no source.html' },
-    ],
-    enabled: () => true,
-  },
-  {
-    id: 'register', name: 'Register',
-    desc: () => 'Add to IF Hub registry + push changes',
-    checks: p => [
-      { ok: p.registered, t: p.registered ? 'registered' : 'not registered' },
-    ],
-    enabled: () => true,
-  },
-  {
-    id: 'publish', name: 'Publish',
-    desc: p => p.hasGit ? 'Push changes to GitHub Pages' : 'Create GitHub repo + enable Pages',
-    checks: p => [
-      { ok: p.hasGit, t: p.hasGit ? 'git repo' : 'no repo' },
-    ],
-    enabled: () => true,
-  },
-];
-
-async function load() {
-  const r = await fetch('/api/projects');
-  projects = await r.json();
-  renderList();
-  // Re-render steps if a project is selected
-  if (sel) {
-    const p = projects.find(x => x.name === sel);
-    if (p) renderSteps(p);
-  }
+  </div>`;
 }
 
-function renderList() {
-  const el = document.getElementById('proj-list');
-  el.innerHTML = '';
-  projects.forEach(p => {
-    const tags = [ENGINE_LABELS[p.engine] || p.engine];
-    if (p.sound) tags.push('sound');
-    if (p.hasWalkthrough) tags.push('walkthrough');
-    if (p.hasRegtest) tags.push('regtest');
-
-    let dc = 'dot-r';
-    if (p.registered) dc = 'dot-g';
-    else if (p.hasPlayHtml) dc = 'dot-y';
-
-    const d = document.createElement('div');
-    d.className = 'proj-item' + (sel === p.name ? ' sel' : '');
-    d.onclick = () => pick(p.name);
-    d.innerHTML =
-      '<div class="proj-name"><span class="dot ' + dc + '"></span>' + p.name + '</div>' +
-      (tags.length ? '<div class="proj-tags">' + tags.join(' &middot; ') + '</div>' : '');
-    el.appendChild(d);
-  });
-}
-
-function fmtSize(bytes) {
-  if (bytes <= 0) return '';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
-function fmtRelTime(epoch) {
-  if (!epoch) return '';
-  const diff = (Date.now() / 1000) - epoch;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
-  if (diff < 172800) return 'yesterday';
-  const d = new Date(epoch * 1000);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-const BADGE_MAP = {
-  'done':    { label: 'DONE',    cls: 'badge-done' },
-  'stale':   { label: 'STALE',   cls: 'badge-stale' },
-  'failed':  { label: 'FAILED',  cls: 'badge-failed' },
-  'not-run': { label: '\u2014',  cls: 'badge-notrun' },
-  'n/a':     { label: 'N/A',     cls: 'badge-na' },
-  'blocked': { label: 'BLOCKED', cls: 'badge-blocked' },
-};
-
-function renderSteps(p) {
-  const el = document.getElementById('steps');
-  el.innerHTML = '';
-  const ss = p.stageStatus || {};
-
-  STEPS.forEach((s, i) => {
-    const on = s.enabled(p);
-    const checks = s.checks(p);
-    const isLast = i === STEPS.length - 1;
-    const status = ss[s.id] || 'not-run';
-    const badge = BADGE_MAP[status] || BADGE_MAP['not-run'];
-
-    // Connector between cards
-    if (i > 0) {
-      const prevStatus = ss[STEPS[i - 1].id] || 'not-run';
-      const conn = document.createElement('div');
-      conn.className = 'step-connector' + (prevStatus === 'done' ? ' step-connector-done' : '');
-      conn.textContent = '\u25BC';
-      el.appendChild(conn);
-    }
-
-    // Check indicators
-    const checksHtml = checks.map(x =>
-      '<span class="' + (x.ok ? 'ck' : 'xk') + '">' +
-      (x.ok ? '\u2713 ' : '\u2717 ') + x.t + '</span>'
-    ).join(' <span class="step-sep">\u00b7</span> ');
-
-    // Artifact detail line
-    let artifactHtml = '';
-    if (s.id === 'build' && p.binaryName && p.binarySize) {
-      artifactHtml = '<div class="step-artifact">' +
-        p.binaryName + ' \u00b7 ' + fmtSize(p.binarySize) +
-        ' \u00b7 compiled ' + fmtRelTime(p.binaryMtime) + '</div>';
-    }
-    if (s.id === 'test' && status !== 'n/a' && p.testStale && p.hasBinary) {
-      artifactHtml = '<div class="step-artifact-warn">\u26A0 Binary changed since last test</div>';
-    }
-
-    // Skip hint
-    let skipHtml = '';
-    if (status === 'done') {
-      skipHtml = '<div class="step-skip-hint">Will skip (unchanged)</div>';
-    }
-
-    // Buttons
-    let btns = '<button ' + (on ? '' : 'disabled ') +
-      'onclick="runStep(\'' + s.id + '\')">' + s.name + '</button>';
-    if (!isLast) {
-      btns += ' <button ' + (on ? '' : 'disabled ') +
-        'onclick="runFrom(\'' + s.id + '\')" class="btn-chain">' +
-        s.name + ' \u2192 Publish</button>';
-    }
-
-    // Per-step force checkbox (only for done/stale)
-    let forceHtml = '';
-    if (status === 'done' || status === 'stale') {
-      forceHtml = '<span class="step-btns-spacer"></span>' +
-        '<label class="force-label">' +
-        '<input type="checkbox" id="force-' + s.id + '" onchange="onForceToggle(\'' + s.id + '\')">' +
-        ' Force re-run</label>';
-    }
-
-    const borderCls = 'step-border-' + status.replace('-', '');
-    const div = document.createElement('div');
-    div.className = 'step' + (on ? '' : ' step-off') + ' ' + borderCls;
-    div.id = 'step-card-' + s.id;
-    div.innerHTML =
-      '<div class="step-head">' +
-        '<span class="step-num">' + (i + 1) + '</span>' +
-        '<div class="step-info">' +
-          '<div class="step-name">' + s.name + '</div>' +
-          '<div class="step-desc">' + s.desc(p) + '</div>' +
-          artifactHtml +
-          '<div class="step-status">' + checksHtml + '</div>' +
-          skipHtml +
-        '</div>' +
-        '<span class="badge ' + badge.cls + '">' + badge.label + '</span>' +
-      '</div>' +
-      '<div class="step-btns">' + btns + forceHtml + '</div>';
-    el.appendChild(div);
-  });
-}
-
-function onForceToggle(stepId) {
-  const cb = document.getElementById('force-' + stepId);
-  const card = document.getElementById('step-card-' + stepId);
-  if (!cb || !card) return;
-  if (cb.checked) {
-    card.classList.add('step-force-active');
-    // Hide skip hint when forcing
-    const hint = card.querySelector('.step-skip-hint');
-    if (hint) hint.style.display = 'none';
-  } else {
-    card.classList.remove('step-force-active');
-    const hint = card.querySelector('.step-skip-hint');
-    if (hint) hint.style.display = '';
-  }
-}
-
-function toggleForceAll() {
-  const boxes = document.querySelectorAll('[id^="force-"]');
-  const allChecked = Array.from(boxes).every(b => b.checked);
-  boxes.forEach(b => { b.checked = !allChecked; onForceToggle(b.id.replace('force-', '')); });
-}
-
-function pick(name) {
-  sel = name;
-  const p = projects.find(x => x.name === name);
-  if (!p) return;
-
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('create-panel').style.display = 'none';
-  document.getElementById('panel').style.display = 'block';
-  document.getElementById('p-name').textContent = p.name;
-
-  const info = [ENGINE_LABELS[p.engine] || p.engine];
-  if (p.sourceFile) info.push(p.sourceFile);
-  if (p.hasPlayHtml) info.push('Web player');
-  if (p.hasBinary) info.push('Compiled');
-  if (p.sound) info.push('Sound (blorb)');
-  if (p.hasGit) info.push('Git repo');
-  document.getElementById('p-tags').textContent = info.join(' \u00b7 ');
-
-  // Pre-fill metadata form
-  document.getElementById('f-title').value =
-    name.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  document.getElementById('f-sound').checked = p.sound;
-
-  // Publish Update button
-  document.getElementById('btn-pubup').disabled = !p.hasGit;
-
-  renderSteps(p);
-  renderList();
-}
-
-function fd(stepId) {
-  const base = {
-    title: document.getElementById('f-title').value,
-    meta: document.getElementById('f-meta').value,
-    description: document.getElementById('f-desc').value,
-    sound: document.getElementById('f-sound').checked,
-  };
-  // Per-step force: check the step's own checkbox
-  if (stepId) {
-    const cb = document.getElementById('force-' + stepId);
-    if (cb && cb.checked) base.force = true;
-  }
-  return base;
-}
-
-function runStep(step) { run(step, fd(step)); }
-
-function runFrom(step) {
-  const data = fd(step);
-  data.from = step;
-  // Collect force from all steps in the chain
-  const idx = STEPS.findIndex(s => s.id === step);
-  for (let i = idx; i < STEPS.length; i++) {
-    const cb = document.getElementById('force-' + STEPS[i].id);
-    if (cb && cb.checked) { data.force = true; break; }
-  }
-  run('run-from', data);
-}
-
-async function run(task, extra) {
-  if (!sel) return;
-  const body = { task: task, game: sel, ...(extra || {}) };
-
-  clr();
-  setSt('st-run', 'Running...');
-
-  const r = await fetch('/api/run', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await r.json();
-
-  if (data.error) {
-    out('[ERROR] ' + data.error + '\n');
-    setSt('st-err', 'Error');
-    return;
-  }
-
-  curJob = data.jobId;
-  document.getElementById('btn-stop').disabled = false;
-
-  data.commands.forEach(c => out('$ ' + c + '\n'));
-  out('\n');
-
-  if (evtSrc) evtSrc.close();
-  evtSrc = new EventSource('/api/stream/' + data.jobId);
-
-  evtSrc.onmessage = e => {
-    const d = JSON.parse(e.data);
-    if (d.line) out(d.line);
-  };
-
-  evtSrc.addEventListener('done', e => {
-    const d = JSON.parse(e.data);
-    evtSrc.close();
-    evtSrc = null;
-    curJob = null;
-    document.getElementById('btn-stop').disabled = true;
-    if (d.status === 'done') {
-      setSt('st-done', 'Done');
-    } else {
-      setSt('st-err', 'Failed (exit code ' + d.exitCode + ')');
-    }
-    load();
-  });
-
-  evtSrc.onerror = () => {
-    if (evtSrc) evtSrc.close();
-    evtSrc = null;
-    document.getElementById('btn-stop').disabled = true;
-  };
-}
-
-function unregister() {
-  if (!sel) return;
-  if (!confirm('Remove ' + sel + ' from IF Hub?\n\nThe game repo and Pages site will NOT be deleted.')) return;
-  run('unregister');
-}
-
-function pubUpdate() {
-  const msg = prompt('Commit message (blank = default):');
-  if (msg === null) return;
-  run('publish-update', { message: msg });
-}
-
-async function stopJob() {
-  if (!curJob) return;
-  await fetch('/api/stop/' + curJob, { method: 'POST' });
-}
-
-function out(text) {
-  const t = document.getElementById('term');
-  t.textContent += text.replace(/\x1b\[[0-9;]*m/g, '');
-  t.scrollTop = t.scrollHeight;
-}
-
-function clr() {
-  document.getElementById('term').textContent = '';
-  setSt('', '');
-}
-
-function setSt(cls, text) {
-  const el = document.getElementById('job-status');
-  el.className = cls;
-  el.textContent = text;
-}
-
-const ENGINE_META = {
-  inform7:   { label: 'Inform 7',  file: 'story.ni',  hint: 'Paste your Inform 7 source here, or leave empty for a starter template.', placeholder: '"My Game" by "Author Name"\\n\\nThe Foyer is a room. "You stand in a grand foyer."' },
-  ink:       { label: 'Ink',       file: '.ink',       hint: 'Paste your Ink source here, or leave empty for a starter template.', placeholder: '=== start ===\\nYou stand at a crossroads.\\n\\n+ [Go north] -> north' },
-  wwwbasic:  { label: 'wwwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
-  qbjc:      { label: 'qbjc',      file: '.bas',       hint: 'Paste your QBasic source here, or leave empty for a starter template.', placeholder: 'PRINT "Hello, World!"\\nEND' },
-  applesoft: { label: 'Applesoft', file: '.bas',       hint: 'Paste your Applesoft BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "HELLO, WORLD!"\\n20 END' },
-  bwbasic:   { label: 'bwBASIC',  file: '.bas',       hint: 'Paste your GW-BASIC source here, or leave empty for a starter template.', placeholder: '10 PRINT "Hello, World!"\\n20 END' },
-  jsdos:     { label: 'DOS',      file: '.jsdos',     hint: 'A .jsdos bundle is required. Create one with js-dos tools.', placeholder: '' },
-  twine:     { label: 'Twine',     file: '.tw',        hint: 'Paste your Twee source here, or leave empty for a starter template.', placeholder: ':: Start\\nYou stand at a crossroads.\\n\\n[[Go north->North]]' },
-  sharpee:   { label: 'Sharpee',  file: '.ts',        hint: 'Sharpee games are built from a TypeScript monorepo. Place the dist/web/ output here.', placeholder: '' },
-};
-
-function onEngineChange() {
-  const engine = document.getElementById('c-engine').value;
-  const meta = ENGINE_META[engine] || ENGINE_META.inform7;
-  const name = document.getElementById('c-name').value.trim();
-  const fileLabel = engine === 'inform7' ? meta.file : (name ? name.replace(/-/g,'_') + meta.file : '*' + meta.file);
-  document.getElementById('c-source-label').textContent = 'Source code (' + fileLabel + ')';
-  document.getElementById('c-source-hint').textContent = meta.hint;
-  document.getElementById('c-source').placeholder = meta.placeholder;
-}
-
-function showCreate() {
-  sel = null;
-  document.getElementById('welcome').style.display = 'none';
-  document.getElementById('panel').style.display = 'none';
-  document.getElementById('create-panel').style.display = 'block';
-  document.getElementById('c-name').value = '';
-  document.getElementById('c-source').value = '';
-  document.getElementById('c-engine').value = 'inform7';
-  document.getElementById('create-term').textContent = '';
-  document.getElementById('create-status').textContent = '';
-  document.getElementById('create-status').className = '';
-  onEngineChange();
-  renderList();
-}
-
-function hideCreate() {
-  document.getElementById('create-panel').style.display = 'none';
-  document.getElementById('welcome').style.display = 'block';
-}
-
-async function createGame() {
-  const name = document.getElementById('c-name').value.trim();
-  const source = document.getElementById('c-source').value;
-  const engine = document.getElementById('c-engine').value;
-  const cTerm = document.getElementById('create-term');
-  const cSt = document.getElementById('create-status');
-
-  if (!name) { alert('Enter a game name.'); return; }
-
-  cTerm.textContent = '';
-  cSt.className = 'st-run';
-  cSt.textContent = 'Creating...';
-
-  const engineLabel = (ENGINE_META[engine] || {}).label || engine;
-  cTerm.textContent += 'Creating projects/' + name + '/ [' + engineLabel + ']...\n';
-
-  const r = await fetch('/api/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, source, engine }),
-  });
-  const data = await r.json();
-
-  if (data.error) {
-    cTerm.textContent += '[ERROR] ' + data.error + '\n';
-    cSt.className = 'st-err';
-    cSt.textContent = 'Error';
-    return;
-  }
-
-  cTerm.textContent += 'Created: ' + data.dir + '\n';
-  cTerm.textContent += 'Refreshing project list...\n';
-
-  await load();
-
-  cSt.className = 'st-done';
-  cSt.textContent = 'Done';
-
-  setTimeout(() => {
-    hideCreate();
-    pick(name);
-  }, 500);
-}
-
-load();
+/* ── Mount ── */
+render(html`<${App} />`, document.body);
 </script>
 </body>
 </html>
@@ -1636,7 +965,6 @@ def main():
     print("  Press Ctrl-C to stop.")
     print()
 
-    # Open browser after a short delay (so server is ready)
     threading.Thread(
         target=lambda: (time.sleep(1), webbrowser.open(url)),
         daemon=True,

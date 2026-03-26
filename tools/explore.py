@@ -43,7 +43,7 @@ from typing import Optional
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 I7_ROOT = os.path.dirname(SCRIPT_DIR)
 PROJECTS_DIR = os.path.join(I7_ROOT, "projects")
-TESTING_DIR = os.path.join(SCRIPT_DIR, "testing")
+TESTING_DIR = os.path.join(os.path.dirname(I7_ROOT), "text-games", "i7", "tools")
 INTERPRETERS_DIR = os.path.join(SCRIPT_DIR, "interpreters")
 
 

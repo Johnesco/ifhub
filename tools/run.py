@@ -37,7 +37,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 from lib import config  # noqa: E402
 from lib import paths  # noqa: E402
-from lib.projects import ProjectInfo, load_projects  # noqa: E402
+from lib.projects import ProjectInfo, ArtifactStatus, load_projects  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Path constants (from lib.paths + script-relative tools)
@@ -53,7 +53,7 @@ GENERATE_PAGES_PY = str(paths.WEB_DIR / "generate_pages.py")
 REGISTER_GAME_PY = str(paths.TOOLS_DIR / "register_game.py")
 PUSH_HUB_PY = str(paths.TOOLS_DIR / "push_hub.py")
 NEW_PROJECT_PY = str(paths.TOOLS_DIR / "new_project.py")
-TESTING_DIR = str(paths.TESTING_DIR)
+I7_TESTING_DIR = str(paths.engine_tools_dir("inform7"))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -96,25 +96,35 @@ def prompt_or_cancel(prompt_fn):
 
 
 def build_game_annotation(p: ProjectInfo) -> str:
-    """Build a tag string like '(Ink)' or '(sound, walkthrough+regtest, seed:2)'."""
-    tags = []
-    # Show engine label for non-Inform 7 projects
+    """Build a tag string showing engine + artifact status indicators."""
+    parts = []
+
+    # Engine label
+    spec = config.get_engine_spec(p.engine)
+    engine_label = spec.label if spec else p.engine
     if p.engine != "inform7":
-        spec = config.get_engine_spec(p.engine)
-        tags.append(spec.label if spec else p.engine)
+        parts.append(engine_label)
+
+    # Artifact status indicators: C=compile T=test P=publish R=register
+    status_chars = {
+        ArtifactStatus.PRESENT: "+",
+        ArtifactStatus.MISSING: ".",
+        ArtifactStatus.STALE: "~",
+        ArtifactStatus.FAILED: "!",
+        ArtifactStatus.NA: "-",
+    }
+    if p.artifacts:
+        indicators = []
+        for key in ("compile", "published", "registered"):
+            art = p.artifacts.get(key)
+            if art:
+                indicators.append(status_chars.get(art.status, "?"))
+        parts.append("".join(indicators))
+
     if p.sound:
-        tags.append("sound")
-    # Test types
-    test_parts = []
-    if p.has_walkthrough:
-        test_parts.append("walkthrough")
-    if p.has_regtest:
-        test_parts.append("regtest")
-    if test_parts:
-        tags.append("+".join(test_parts))
-    if p.golden_seed:
-        tags.append(f"seed:{p.golden_seed}")
-    return f"  ({', '.join(tags)})" if tags else ""
+        parts.append("sound")
+
+    return f"  ({', '.join(parts)})" if parts else ""
 
 
 def prompt_game(
@@ -353,7 +363,7 @@ def preset_walkthroughs(projects: list[ProjectInfo]):
     )
 
     conf_path = os.path.join(project.dir, "tests", "project.conf")
-    cmd = py_cmd(os.path.join(TESTING_DIR, "run_walkthrough.py"), "--config", conf_path)
+    cmd = py_cmd(os.path.join(I7_TESTING_DIR, "run_walkthrough.py"), "--config", conf_path)
     if seed.strip():
         cmd.extend(["--seed", seed.strip()])
 
@@ -371,7 +381,7 @@ def preset_regtests(projects: list[ProjectInfo]):
     )
 
     conf_path = os.path.join(project.dir, "tests", "project.conf")
-    cmd = py_cmd(os.path.join(TESTING_DIR, "run_tests.py"), "--config", conf_path)
+    cmd = py_cmd(os.path.join(I7_TESTING_DIR, "run_tests.py"), "--config", conf_path)
     if pattern.strip():
         cmd.append(pattern.strip())
 
@@ -395,7 +405,7 @@ def preset_find_seeds(projects: list[ProjectInfo]):
     )
 
     conf_path = os.path.join(project.dir, "tests", "project.conf")
-    find_seeds_py = os.path.join(TESTING_DIR, "find_seeds.py")
+    find_seeds_py = os.path.join(I7_TESTING_DIR, "find_seeds.py")
     cmd = py_cmd(find_seeds_py, "--config", conf_path)
     if max_seeds.strip():
         cmd.extend(["--max", max_seeds.strip()])
