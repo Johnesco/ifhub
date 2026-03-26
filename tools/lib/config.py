@@ -118,10 +118,26 @@ def get_engine_spec(engine: str) -> EngineSpec | None:
     return ENGINE_REGISTRY.get(engine)
 
 
+# Map engine folder names to engine identifiers
+_FOLDER_TO_ENGINE = {
+    "i7": "inform7", "inform7": "inform7",
+    "sharpee": "sharpee",
+    "ink": "ink",
+    "rez": "rez",
+    "wwwbasic": "wwwbasic",
+    "applesoft": "applesoft",
+    "qbjc": "qbjc",
+    "bwbasic": "bwbasic",
+    "jsdos": "jsdos",
+    "twine": "twine",
+    "zmachine": "zmachine",
+}
+
+
 def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> str:
     """Detect the engine type for a project.
 
-    Priority: explicit ENGINE= in project.conf > filesystem heuristics.
+    Priority: explicit ENGINE= in project.conf > parent folder name > filesystem heuristics.
     """
     if conf_fields:
         explicit = conf_fields.get("ENGINE", "").lower()
@@ -130,7 +146,12 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
 
     project_dir = str(project_dir)
 
-    # Filesystem heuristics
+    # Parent folder detection (text-games/<engine>/<game>/)
+    parent = os.path.basename(os.path.dirname(project_dir))
+    if parent in _FOLDER_TO_ENGINE:
+        return _FOLDER_TO_ENGINE[parent]
+
+    # Filesystem heuristics (fallback for games not in engine folders)
     if os.path.isfile(os.path.join(project_dir, "story.ni")):
         return "inform7"
 
@@ -139,9 +160,6 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
     except OSError:
         return "unknown"
 
-    # BASIC dialect detection — explicit ENGINE= in project.conf is preferred;
-    # wwwbasic.js presence is a secondary heuristic. Bare .bas files alone are
-    # not enough since each dialect needs a different runtime.
     if any(f == "wwwbasic.js" for f in files):
         return "wwwbasic"
     if any(f.lower().endswith(".jsdos") for f in files):
@@ -150,8 +168,6 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
         return "twine"
     if any(f.lower().endswith(".ink") for f in files):
         return "ink"
-    if any(f.lower().endswith(".sharpee") for f in files):
-        return "sharpee"
     if any(f.lower().endswith(".rez") for f in files):
         return "rez"
 
@@ -459,6 +475,40 @@ def get_golden_seed(project_dir: str | Path, engine_key: str = "glulxe") -> str 
     except OSError:
         pass
     return None
+
+
+def get_scenario_seeds(project_dir: str | Path, engine_key: str = "glulxe",
+                       scenario: str = "") -> list[str]:
+    """Read all seeds for a specific scenario from tests/seeds.conf.
+
+    Supports both formats:
+      4-field (global):   engine:seed:hash:date
+      5-field (scenario): engine:scenario:seed:hash:date
+
+    If scenario is empty, returns global seeds only.
+    If scenario is given, returns scenario-specific seeds only.
+    """
+    seeds_path = Path(project_dir) / "tests" / "seeds.conf"
+    result = []
+    try:
+        for line in seeds_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split(":")
+            if parts[0] != engine_key:
+                continue
+            if scenario:
+                # Look for 5-field format: engine:scenario:seed:hash:date
+                if len(parts) >= 5 and parts[1] == scenario:
+                    result.append(parts[2])
+            else:
+                # Look for 4-field format: engine:seed:hash:date
+                if len(parts) == 4 and parts[1]:
+                    result.append(parts[1])
+    except OSError:
+        pass
+    return result
 
 
 def get_seed_hash(project_dir: str | Path, engine_key: str = "glulxe") -> str | None:

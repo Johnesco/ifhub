@@ -1,97 +1,113 @@
 {
   "zork1": {
-    "path": "../text-games/zork1",
+    "path": "../text-games/i7/zork1",
     "repo": "Johnesco/zork1"
   },
   "dracula": {
-    "path": "../text-games/dracula",
+    "path": "../text-games/i7/dracula",
     "repo": "Johnesco/dracula"
   },
   "feverdream": {
-    "path": "../text-games/feverdream",
+    "path": "../text-games/i7/feverdream",
     "repo": "Johnesco/feverdream"
   },
   "sample": {
-    "path": "../text-games/sample",
+    "path": "../text-games/i7/sample",
     "repo": "Johnesco/sample"
   },
   "seasons": {
-    "path": "../text-games/seasons",
+    "path": "../text-games/i7/seasons",
     "repo": "Johnesco/seasons"
   },
   "life": {
-    "path": "../text-games/life",
+    "path": "../text-games/i7/life",
     "repo": "Johnesco/life"
   },
   "mood": {
-    "path": "../text-games/mood",
+    "path": "../text-games/i7/mood",
     "repo": "Johnesco/mood"
   },
   "larva": {
-    "path": "../text-games/larva",
+    "path": "../text-games/i7/larva",
     "repo": "Johnesco/larva"
   },
   "guess-the-verb-inform7": {
-    "path": "../text-games/guess-the-verb-inform7",
+    "path": "../text-games/i7/guess-the-verb-inform7",
     "repo": "Johnesco/guess_the_verb"
   },
   "cloak-inform7": {
-    "path": "../text-games/cloak-inform7",
+    "path": "../text-games/i7/cloak-inform7",
     "repo": "Johnesco/cloak-inform7"
   },
-  "cloak-rez": {
-    "path": "../text-games/cloak-rez",
-    "repo": "Johnesco/cloak-rez"
-  },
-  "guess-the-verb-sharpee": {
-    "path": "../text-games/guess-the-verb-sharpee",
-    "repo": "Johnesco/guess-the-verb-sharpee"
-  },
-  "haunted-house": {
-    "path": "../text-games/haunted-house",
-    "repo": "Johnesco/haunted-house"
-  },
-  "apple-adventure": {
-    "path": "../text-games/apple-adventure",
-    "repo": "Johnesco/apple-adventure"
-  },
-  "ink-story": {
-    "path": "../text-games/ink-story",
-    "repo": "Johnesco/ink-story"
-  },
-  "adj": {
-    "path": "../text-games/adj",
-    "repo": "Johnesco/adj"
-  },
   "babel": {
-    "path": "../text-games/babel",
+    "path": "../text-games/i7/babel",
     "repo": "Johnesco/babel"
   },
   "disenchantment12": {
-    "path": "../text-games/disenchantment12",
+    "path": "../text-games/i7/disenchantment12",
     "repo": "Johnesco/disenchantment12"
   },
+  "cloak-rez": {
+    "path": "../text-games/rez/cloak-rez",
+    "repo": "Johnesco/cloak-rez"
+  },
+  "guess-the-verb-sharpee": {
+    "path": "../text-games/sharpee/guess-the-verb-sharpee",
+    "repo": "Johnesco/guess-the-verb-sharpee"
+  },
+  "haunted-house": {
+    "path": "../text-games/wwwbasic/haunted-house",
+    "repo": "Johnesco/haunted-house"
+  },
+  "apple-adventure": {
+    "path": "../text-games/applesoft/apple-adventure",
+    "repo": "Johnesco/apple-adventure"
+  },
+  "ink-story": {
+    "path": "../text-games/ink/ink-story",
+    "repo": "Johnesco/ink-story"
+  },
+  "adj": {
+    "path": "../text-games/ink/adj",
+    "repo": "Johnesco/adj"
+  },
   "lostinnewyork": {
-    "path": "../text-games/lostinnewyork",
+    "path": "../text-games/ink/lostinnewyork",
     "repo": "Johnesco/lostinnewyork"
   },
   "dracula-v0": {
-    "path": "../text-games/dracula-v0",
+    "path": "../text-games/wwwbasic/dracula-v0",
     "repo": "Johnesco/dracula-v0"
   },
   "cloak-ink": {
-    "path": "../text-games/cloak-ink",
+    "path": "../text-games/ink/cloak-ink",
     "repo": "Johnesco/cloak-ink"
   },
   "cloak-sharpee": {
-    "path": "../text-games/cloak-sharpee",
+    "path": "../text-games/sharpee/cloak-sharpee",
     "repo": "Johnesco/cloak-sharpee"
   },
   "dungeo": {
-    "path": "../text-games/dungeo",
+    "path": "../text-games/sharpee/dungeo",
     "repo": "Johnesco/dungeo"
   },
   "familyzoo": {
-    "path": "../text-games/familyzoo"
+    "path": "../text-games/sharpee/familyzoo"
+  },
+  "zork1-v1": {
+    "path": "../text-games/i7/zork1-v1",
+    "repo": ""
+  },
+  "zork1-v2": {
+    "path": "../text-games/i7/zork1-v2",
+    "repo": ""
+  },
+  "zork1-v3": {
+    "path": "../text-games/i7/zork1-v3",
+    "repo": ""
+  },
+  "zork1-v0": {
+    "path": "../text-games/zmachine/zork1-v0",
+    "repo": ""
   }
 }
