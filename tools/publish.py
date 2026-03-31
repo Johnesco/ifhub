@@ -23,7 +23,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -50,6 +50,7 @@ jobs:
           [ -d web ] && cp -r web/* _site/ || true
           [ -d lib ] && cp -r lib _site/ || true
           [ -d assets ] && cp -r assets _site/ || true
+          [ -d src ] && cp -r src _site/ || true
           cp *.html _site/ 2>/dev/null || true
           cp *.txt _site/ 2>/dev/null || true
           cp *.ni _site/ 2>/dev/null || true
