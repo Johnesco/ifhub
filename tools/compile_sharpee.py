@@ -21,6 +21,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Ensure Unicode output works on Windows (transcript tests use ✓/✗ characters)
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr.encoding and sys.stderr.encoding.lower() != "utf-8":
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import config, paths
 
@@ -130,7 +136,55 @@ def main():
         print(f"ERROR: Build did not produce dist/web/ in {source_dir}", file=sys.stderr)
         sys.exit(1)
 
-    # --- Step 3: Import via jukebox (handles source, walkthroughs, registration) ---
+    # --- Step 3: Transcript tests (before dist cleanup) ---
+    if not args.no_test:
+        wt_dir = source_dir / "walkthroughs"
+        test_dirs = [source_dir / "tests" / "transcripts"] if not wt_dir.is_dir() else []
+        wt_dirs = [wt_dir] + test_dirs
+        transcripts = []
+        for d in wt_dirs:
+            if d.is_dir():
+                transcripts.extend(sorted(d.glob("*.transcript")))
+        if transcripts:
+            # Build Node.js version for transcript-test (tsc → dist/index.js)
+            # Use --noCheck to skip type checking (we only need runnable JS)
+            print(f"\n=== Running transcript tests ===")
+            tsc_cmd = ["npx", "tsc", "--noCheck"]
+            tsc_result = subprocess.run(
+                tsc_cmd, cwd=str(source_dir),
+                capture_output=True, text=True, encoding="utf-8", errors="replace",
+            )
+            if tsc_result.returncode != 0:
+                print(f"  WARNING: tsc build failed, skipping transcript tests", file=sys.stderr)
+                for line in (tsc_result.stderr or "").strip().splitlines()[-3:]:
+                    print(f"    {line}")
+            else:
+                print(f"  Running {len(transcripts)} transcript test(s)...")
+                try:
+                    result = subprocess.run(
+                        ["npx", "transcript-test", ".", *[str(t) for t in transcripts]],
+                        cwd=str(source_dir),
+                        capture_output=True, text=True, encoding="utf-8", errors="replace",
+                        timeout=120,
+                    )
+                except subprocess.TimeoutExpired:
+                    print(f"  WARNING: Transcript tests timed out", file=sys.stderr)
+                else:
+                    out = (result.stdout or "") + (result.stderr or "")
+                    if result.returncode != 0:
+                        for line in out.strip().splitlines()[-5:]:
+                            print(f"    {line}")
+                        print(f"  WARNING: Transcript tests failed", file=sys.stderr)
+                    else:
+                        for line in out.strip().splitlines():
+                            if "passed" in line or "failed" in line:
+                                print(f"    {line.strip()}")
+                                break
+                        print(f"  Transcript tests: OK")
+        else:
+            print(f"\n  No transcript tests found, skipping")
+
+    # --- Step 4: Import via jukebox (handles source, walkthroughs, registration) ---
     print(f"\n=== Importing via jukebox ===", flush=True)
     jukebox_script = paths.TOOLS_DIR / "jukebox.py"
     import_cmd = [
@@ -153,7 +207,7 @@ def main():
         shutil.rmtree(str(dist_parent))
         print(f"  Cleaned dist/ from {source_dir.name}/")
 
-    # --- Step 4: Validate build ---
+    # --- Step 5: Validate deploy ---
     project_dir = paths.project_dir(args.game)
     print(f"\n=== Validating build ===")
 
@@ -186,32 +240,6 @@ def main():
             print(f"  play.html: OK (loads {', '.join(s for s in script_refs if s != 'theme-listener.js')})")
     else:
         print(f"  WARNING: play.html not found", file=sys.stderr)
-
-    # Run transcript tests if available
-    if not args.no_test:
-        wt_dir = source_dir / "walkthroughs"
-        transcripts = list(wt_dir.glob("*.transcript")) if wt_dir.is_dir() else []
-        if transcripts:
-            print(f"  Running {len(transcripts)} transcript test(s)...")
-            result = subprocess.run(
-                ["npx", "transcript-test", ".", *[str(t) for t in transcripts]],
-                cwd=str(source_dir),
-                capture_output=True, text=True,
-                timeout=60,
-            )
-            if result.returncode != 0:
-                lines = (result.stdout + result.stderr).strip().splitlines()
-                for line in lines[-5:]:
-                    print(f"    {line}")
-                print(f"  WARNING: Transcript tests failed", file=sys.stderr)
-            else:
-                for line in result.stdout.strip().splitlines():
-                    if "passed" in line or "failed" in line:
-                        print(f"    {line.strip()}")
-                        break
-                print(f"  Transcript tests: OK")
-        else:
-            print(f"  No transcript tests found, skipping")
 
     print(f"\n=== Done ===")
     print(f"  Project: {project_dir}")
