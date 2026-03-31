@@ -30,11 +30,13 @@ C:\code\ifhub\
 │   ├── lib/               ← Shared Python modules (paths, output, process, config, web, git, regex)
 │   ├── pipeline.py        ← Unified build pipeline orchestrator
 │   ├── compile.py         ← I7→I6→Glulx→Blorb→web player compilation
-│   ├── compile_sharpee.py ← Build Sharpee game + import into IF Hub
+│   ├── compile_sharpee.py ← Build Sharpee game (npm build + jukebox import)
+│   ├── jukebox.py         ← Universal game import/publish CLI (all engines)
 │   ├── publish.py         ← Publish a project to its own GitHub Pages repo
 │   ├── register_game.py   ← Register a game in IF Hub (adds to games.json + cards.json)
 │   ├── push_hub.py        ← Push hub registry changes to GitHub
 │   ├── new_project.py     ← Create a new project scaffold
+│   ├── adapters/          ← Per-engine adapters for jukebox (sharpee, inform7, ink, etc.)
 │   ├── regtest.py         ← Shared RegTest runner
 │   ├── testing/           ← Generic testing framework (walkthrough, seeds, regtest, guide gen)
 │   ├── interpreters/      ← Native Windows CLI interpreters (glulxe.exe, dfrotz.exe — gitignored)
@@ -86,7 +88,7 @@ The hub is engine-agnostic — any game that produces a `play.html` works. The p
 | Engine | Source | Pipeline handles |
 |--------|--------|-----------------|
 | `inform7` | `story.ni` | Compile I7→I6→Glulx→web player |
-| `sharpee` | `src/index.ts` (npm project at `/c/code/sharpee/<game>/`) | `npx sharpee build-browser` + import |
+| `sharpee` | `src/index.ts` (npm project at `/c/code/npmsharpee/games/<game>/`) | `npx sharpee build-browser` + jukebox import |
 | `wwwbasic` | `.bas` file | Embed source in play template |
 | `qbjc` | `.bas` → `.js` | Pre-compile + template |
 | `applesoft` | `.bas` file | jsbasic template |
@@ -96,7 +98,26 @@ The hub is engine-agnostic — any game that produces a `play.html` works. The p
 
 Each BASIC dialect must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
 
-**Sharpee workspace:** Games at `/c/code/sharpee/<game>/` (npm projects). Engine fork at `/c/code/fork/sharpee/` (engine contributions only — never modify during game dev). See `reference/sharpee-author-guide.md`.
+**Sharpee workspace:** Games at `/c/code/npmsharpee/games/<game>/` (npm projects, standalone — not pnpm workspace). Each game has its own `ifhub.conf` manifest and `package.json` with `@sharpee/*` npm dependencies. Engine fork at `/c/code/fork/sharpee/` (engine contributions only — never modify during game dev). See `reference/sharpee-author-guide.md`.
+
+### Sharpee Build & Publish
+
+The full Sharpee pipeline is automated — one command handles build, import, source viewer, walkthroughs, registration, and publish:
+
+```bash
+# Build + import (no publish)
+python tools/compile_sharpee.py <game-name> --force
+
+# Build + import + publish to GitHub Pages
+python tools/compile_sharpee.py <game-name> --force --ship
+
+# Or use jukebox directly (requires pre-built dist/web/)
+python tools/jukebox.py import /c/code/npmsharpee/games/<game>/ --force --ship
+```
+
+`compile_sharpee.py` handles: npm install → `npx sharpee build-browser` → `jukebox.py import` (which copies binaries, source files, extracts walkthroughs from `.transcript` files, generates `source.html`/`walkthrough.html`, registers in `games.json`/`cards.json`) → validates bundle → cleans dist.
+
+**Registry:** Sharpee games use `deploy` and `source` fields in `games-registry.json` (not `path`). The `source` field points to the npm project; `deploy` points to the GitHub Pages deploy directory (relative to ifhub root, e.g., `../text-games/cloak-sharpee`).
 
 ## Hub Architecture
 

@@ -151,6 +151,17 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
     if parent in _FOLDER_TO_ENGINE:
         return _FOLDER_TO_ENGINE[parent]
 
+    # Check ifhub.conf in registry source directory
+    from . import paths as _paths
+    game_name = os.path.basename(project_dir)
+    source_dir = _paths.game_source_dir(game_name)
+    if source_dir != Path():
+        ihconf = source_dir / "ifhub.conf"
+        if ihconf.exists():
+            for line in ihconf.read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith("engine"):
+                    return line.split("=", 1)[1].strip().lower()
+
     # Filesystem heuristics (fallback for games not in engine folders)
     if os.path.isfile(os.path.join(project_dir, "story.ni")):
         return "inform7"

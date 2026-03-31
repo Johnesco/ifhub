@@ -244,18 +244,17 @@ def cmd_import(args):
     print(f"Importing '{name}' (engine: {engine})")
     print(f"  Source: {game_dir}")
 
-    # Resolve deploy directory (paths are relative to ifhub's parent)
+    # Resolve deploy directory (paths are relative to IFHUB_DIR)
     registry = load_registry()
-    parent_dir = IFHUB_DIR.parent
     if name in registry and "deploy" in registry[name]:
         deploy_path = registry[name]["deploy"]
         if Path(deploy_path).is_absolute():
             deploy_dir = Path(deploy_path)
         else:
-            deploy_dir = (parent_dir / deploy_path).resolve()
+            deploy_dir = (IFHUB_DIR / deploy_path).resolve()
     else:
         # Default: ../text-games/<name>/
-        deploy_dir = (parent_dir / "text-games" / name).resolve()
+        deploy_dir = (IFHUB_DIR.parent / "text-games" / name).resolve()
 
     deploy_dir.mkdir(parents=True, exist_ok=True)
     print(f"  Deploy: {deploy_dir}")
@@ -294,11 +293,9 @@ def cmd_import(args):
     # Register in hub
     register_game(name, conf, deploy_dir)
 
-    # Update registry (paths use forward slashes, relative to ifhub parent)
-    try:
-        rel_deploy = deploy_dir.relative_to(IFHUB_DIR.parent)
-    except ValueError:
-        rel_deploy = deploy_dir
+    # Update registry (paths use forward slashes, relative to IFHUB_DIR)
+    import os
+    rel_deploy = Path(os.path.relpath(deploy_dir, IFHUB_DIR))
     registry[name] = {
         "deploy": str(rel_deploy).replace("\\", "/"),
         "source": str(game_dir).replace("\\", "/"),
@@ -323,9 +320,9 @@ def cmd_publish(args):
         print(f"Error: '{name}' not in registry", file=sys.stderr)
         sys.exit(1)
 
-    deploy_dir = (IFHUB_DIR / registry[name]["deploy"]).resolve() \
-        if not Path(registry[name]["deploy"]).is_absolute() \
-        else Path(registry[name]["deploy"])
+    deploy_path = registry[name].get("deploy", registry[name].get("path", ""))
+    deploy_dir = Path(deploy_path) if Path(deploy_path).is_absolute() \
+        else (IFHUB_DIR / deploy_path).resolve()
 
     if not deploy_dir.exists():
         print(f"Error: deploy directory not found: {deploy_dir}", file=sys.stderr)

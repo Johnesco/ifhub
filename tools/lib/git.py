@@ -36,8 +36,25 @@ def commit(message: str, cwd: Path | str | None = None) -> int:
     return r.returncode
 
 
+def current_branch(cwd: Path | str | None = None) -> str:
+    """Return the current branch name."""
+    r = process.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=cwd, capture=True)
+    return r.stdout.strip()
+
+
+def has_upstream(cwd: Path | str | None = None) -> bool:
+    """Return True if the current branch has an upstream tracking branch."""
+    r = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "@{u}"],
+        cwd=cwd, capture_output=True, text=True,
+    )
+    return r.returncode == 0
+
+
 def push(cwd: Path | str | None = None, set_upstream: str = "") -> int:
-    """Push to remote. Returns exit code."""
+    """Push to remote. Auto-sets upstream if not configured."""
+    if not set_upstream and not has_upstream(cwd):
+        set_upstream = current_branch(cwd)
     cmd = ["git", "push"]
     if set_upstream:
         cmd.extend(["-u", "origin", set_upstream])

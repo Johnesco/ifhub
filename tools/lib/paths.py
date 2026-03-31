@@ -96,13 +96,12 @@ def _load_registry() -> dict:
     return registry
 
 
-def _resolve_game_path(entry: dict) -> Path:
-    """Resolve a registry entry's path to an absolute Path.
+def _resolve_raw_path(raw: str) -> Path:
+    """Resolve a raw path string to an absolute Path.
 
     Relative paths are resolved from the ifhub root (I7_ROOT).
     POSIX paths (/c/code/...) are converted to Windows.
     """
-    raw = entry.get("path", "")
     if not raw:
         return Path()
     # Convert POSIX paths to Windows if needed
@@ -114,6 +113,13 @@ def _resolve_game_path(entry: dict) -> Path:
     return p
 
 
+def _resolve_game_path(entry: dict) -> Path:
+    """Resolve a registry entry's deploy/path to an absolute Path."""
+    # Prefer 'deploy' (Sharpee-style), fall back to 'path' (legacy)
+    raw = entry.get("deploy", "") or entry.get("path", "")
+    return _resolve_raw_path(raw)
+
+
 def registered_games() -> dict[str, Path]:
     """Return dict mapping game name -> resolved absolute path for all registered games."""
     registry = _load_registry()
@@ -123,6 +129,13 @@ def registered_games() -> dict[str, Path]:
         if resolved != Path() and resolved.is_dir():
             result[name] = resolved
     return result
+
+
+def game_source_dir(name: str) -> Path:
+    """Return absolute path to a game's source directory (from 'source' registry field), or Path()."""
+    registry = _load_registry()
+    entry = registry.get(name, {})
+    return _resolve_raw_path(entry.get("source", ""))
 
 
 def game_repo(name: str) -> str:
