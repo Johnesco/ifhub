@@ -119,23 +119,34 @@ def setup(game_dir: Path, deploy_dir: Path, conf: dict):
 
     # Extract walkthrough from .transcript files
     walkthrough_name = conf.get("walkthrough")
-    if not walkthrough_name:
-        # Auto-detect: check walkthroughs/ and tests/transcripts/
+    transcript_files = []
+
+    if walkthrough_name:
+        wt_path_check = game_dir / walkthrough_name
+        if wt_path_check.is_dir():
+            # Conf points to a directory — use all transcripts in it
+            transcript_files = sorted(wt_path_check.glob("*.transcript"))
+        elif wt_path_check.exists():
+            # Conf points to a single file — use all transcripts in its directory
+            # (walkthrough dirs often have numbered parts: wt-01, wt-02, ...)
+            siblings = sorted(wt_path_check.parent.glob("*.transcript"))
+            transcript_files = siblings if len(siblings) > 1 else [wt_path_check]
+    if not transcript_files:
+        # Auto-detect: check walkthroughs/ then tests/transcripts/
         for wdir in ("walkthroughs", "tests/transcripts"):
             candidates = sorted((game_dir / wdir).glob("*.transcript")) if (game_dir / wdir).is_dir() else []
             if candidates:
-                walkthrough_name = str(candidates[0].relative_to(game_dir))
+                transcript_files = candidates
                 break
 
-    if walkthrough_name and (game_dir / walkthrough_name).exists():
-        transcript_path = game_dir / walkthrough_name
-        commands = extract_commands_from_transcript(transcript_path)
+    if transcript_files:
+        commands = []
+        for tf in transcript_files:
+            commands.extend(extract_commands_from_transcript(tf))
         if commands:
-            # Write bare commands
             wt_path = deploy_dir / "walkthrough.txt"
             wt_path.write_text("\n".join(commands) + "\n", encoding="utf-8")
-            print(f"  Extracted {len(commands)} commands -> walkthrough.txt")
-            # Update conf so jukebox generates walkthrough.html
+            print(f"  Extracted {len(commands)} commands from {len(transcript_files)} transcript(s) -> walkthrough.txt")
             conf["walkthrough"] = "walkthrough.txt"
 
         # Check for test results with full game output
