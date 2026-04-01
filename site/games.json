@@ -394,5 +394,16 @@
       "demo"
     ],
     "sourceLabel": "src/index.ts"
+  },
+  {
+    "id": "zork1-v1",
+    "title": "Zork I - The Great Underground Empire",
+    "sourceLabel": "story.ni",
+    "playUrl": "/zork1-v1/play.html",
+    "landingUrl": "/zork1-v1/",
+    "sourceBrowser": true,
+    "sourceUrl": "/zork1-v1/source.html",
+    "engine": "inform7",
+    "tags": []
   }
 ]
