@@ -113,6 +113,41 @@ def main():
     print(f"=== Building {title} ===")
     print(f"  Source: {source_dir}")
 
+    # --- Ensure browser client is initialized ---
+    browser_dir = source_dir / "browser"
+    browser_entry = source_dir / "src" / "browser-entry.ts"
+    if not browser_dir.is_dir() or not browser_entry.is_file():
+        print("  Browser client not initialized, running init-browser...")
+        init_cmd = ["npx", "sharpee", "init-browser"]
+        init_result = subprocess.run(
+            init_cmd, cwd=str(source_dir),
+            capture_output=True, text=True,
+        )
+        if init_result.returncode != 0:
+            # init-browser may fail if browser-entry.ts exists but browser/ doesn't
+            # In that case, copy browser/ from the package template
+            if not browser_dir.is_dir():
+                # Find template from another game in the same workspace
+                for sibling in source_dir.parent.iterdir():
+                    tmpl = sibling / "browser"
+                    if tmpl.is_dir() and (tmpl / "index.html").is_file():
+                        shutil.copytree(str(tmpl), str(browser_dir))
+                        # Remove any game-specific files from copy
+                        for f in ("walkthrough.html", "walkthrough.json"):
+                            (browser_dir / f).unlink(missing_ok=True)
+                        print(f"  Copied browser/ template from {sibling.name}")
+                        break
+            if not browser_entry.is_file():
+                # Copy browser-entry.ts from a sibling
+                for sibling in source_dir.parent.iterdir():
+                    tmpl = sibling / "src" / "browser-entry.ts"
+                    if tmpl.is_file():
+                        shutil.copy2(str(tmpl), str(browser_entry))
+                        print(f"  Copied browser-entry.ts from {sibling.name}")
+                        break
+        else:
+            print("  Browser client initialized.")
+
     if is_workspace:
         cli_path = workspace_root / "packages" / "sharpee" / "dist" / "cli" / "index.js"
         build_cmd = ["node", str(cli_path), "build-browser"]
@@ -135,6 +170,33 @@ def main():
     if not dist_dir.is_dir():
         print(f"ERROR: Build did not produce dist/web/ in {source_dir}", file=sys.stderr)
         sys.exit(1)
+
+    # --- Fix index.html script reference ---
+    # build-browser copies browser/index.html as-is; the script tag may reference
+    # the wrong bundle if browser/ was copied from another game's template.
+    dist_index = dist_dir / "index.html"
+    if dist_index.is_file():
+        import re as _re
+        html_text = dist_index.read_text(encoding="utf-8")
+        # Find the actual JS bundle (exclude theme-listener.js and source maps)
+        bundles = [f.name for f in dist_dir.iterdir()
+                   if f.suffix == ".js" and f.name != "theme-listener.js"]
+        # Also check subdirs (scoped packages like @sharpee/)
+        for subdir in dist_dir.iterdir():
+            if subdir.is_dir():
+                bundles.extend(f"{subdir.name}/{f.name}" for f in subdir.iterdir()
+                               if f.suffix == ".js")
+        if bundles:
+            bundle_name = bundles[0]
+            # Replace whatever script src is there with the actual bundle
+            new_html = _re.sub(
+                r'<script src="[^"]*\.js"></script>',
+                f'<script src="{bundle_name}"></script>',
+                html_text,
+            )
+            if new_html != html_text:
+                dist_index.write_text(new_html, encoding="utf-8")
+                print(f"  Fixed index.html script reference -> {bundle_name}")
 
     # --- Step 3: Transcript tests (before dist cleanup) ---
     if not args.no_test:

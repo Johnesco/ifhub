@@ -105,6 +105,8 @@ def run_job(job_id, commands):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 bufsize=1,
             )
             job.process = proc

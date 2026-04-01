@@ -395,8 +395,13 @@ def main():
     state_file = project_dir / ".pipeline-state"
 
     if not project_dir.is_dir():
-        print(f"ERROR: Project not found: {project_dir}", file=sys.stderr)
-        sys.exit(1)
+        # Deploy dir missing — check if source exists (first build)
+        source_dir = paths.game_source_dir(name)
+        if source_dir != Path() and source_dir.is_dir():
+            project_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            print(f"ERROR: Project not found: {project_dir}", file=sys.stderr)
+            sys.exit(1)
 
     # Determine stages
     stages = list(args.stages)

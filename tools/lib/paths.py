@@ -121,13 +121,22 @@ def _resolve_game_path(entry: dict) -> Path:
 
 
 def registered_games() -> dict[str, Path]:
-    """Return dict mapping game name -> resolved absolute path for all registered games."""
+    """Return dict mapping game name -> resolved absolute path for all registered games.
+
+    If the deploy directory doesn't exist yet but a source directory does,
+    include the game anyway so the dashboard can trigger the first build.
+    """
     registry = _load_registry()
     result = {}
     for name, entry in registry.items():
         resolved = _resolve_game_path(entry)
         if resolved != Path() and resolved.is_dir():
             result[name] = resolved
+        elif entry.get("source"):
+            # Deploy dir missing but source exists — still discoverable
+            source = _resolve_raw_path(entry["source"])
+            if source != Path() and source.is_dir():
+                result[name] = resolved  # keep deploy path as target
     return result
 
 

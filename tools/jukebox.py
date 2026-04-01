@@ -80,6 +80,34 @@ def save_registry(registry: dict):
     )
 
 
+# ── Portman integration ────────────────────────────────────────────────────
+
+PORTMAN_CONFIG = Path.home() / ".portman" / "config.json"
+
+
+def register_portman(name: str, deploy_dir: Path):
+    """Register a game with Portman's local dev server (idempotent)."""
+    try:
+        if PORTMAN_CONFIG.exists():
+            config = json.loads(PORTMAN_CONFIG.read_text(encoding="utf-8"))
+        else:
+            PORTMAN_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+            config = {"port": 9000, "sites": {}, "fallback_dirs": []}
+
+        resolved = str(deploy_dir.resolve())
+        existing = config.get("sites", {}).get(name, {})
+        if existing.get("path") == resolved:
+            return  # already registered with same path
+
+        config.setdefault("sites", {})[name] = {"path": resolved}
+        PORTMAN_CONFIG.write_text(
+            json.dumps(config, indent=2) + "\n", encoding="utf-8"
+        )
+        print(f"  Portman: registered '{name}' -> {resolved}")
+    except Exception as e:
+        print(f"  Portman: skipped ({e})")
+
+
 # ── Source/walkthrough generators ───────────────────────────────────────────
 
 def generate_source_html(source_path: Path, deploy_dir: Path, conf: dict):
@@ -302,6 +330,9 @@ def cmd_import(args):
         "repo": registry.get(name, {}).get("repo", ""),
     }
     save_registry(registry)
+
+    # Register with Portman (local dev server) if available
+    register_portman(name, deploy_dir)
 
     print(f"\nImport complete: {name}")
     print(f"  Play: {deploy_dir / 'play.html'}")

@@ -247,7 +247,10 @@ def _compute_artifacts(
 ) -> dict[str, ArtifactState]:
     """Compute artifact states for a project from filesystem + pipeline state."""
 
-    dir_files = os.listdir(project_dir)
+    try:
+        dir_files = os.listdir(project_dir)
+    except OSError:
+        dir_files = []
 
     # --- Load .pipeline-state ---
     pipeline_state: dict = {}
@@ -375,13 +378,21 @@ def load_projects() -> list[ProjectInfo]:
 
     for name in sorted(game_dirs):
         project_dir = game_dirs[name]
-        if not os.path.isdir(project_dir):
-            continue
 
-        conf_fields = _libconfig.parse_conf_fields(project_dir)
-        engine = _libconfig.detect_engine(project_dir, conf_fields)
-        source_file = _libconfig.detect_source_file(project_dir, engine, conf_fields)
-        source_path = os.path.join(project_dir, source_file) if source_file else ""
+        # If deploy dir doesn't exist, try source dir for detection
+        source_dir = str(paths.game_source_dir(name))
+        if not os.path.isdir(project_dir):
+            if not os.path.isdir(source_dir):
+                continue
+            # Use source dir for engine/source detection (deploy not built yet)
+            detect_dir = source_dir
+        else:
+            detect_dir = project_dir
+
+        conf_fields = _libconfig.parse_conf_fields(detect_dir)
+        engine = _libconfig.detect_engine(detect_dir, conf_fields)
+        source_file = _libconfig.detect_source_file(detect_dir, engine, conf_fields)
+        source_path = os.path.join(detect_dir, source_file) if source_file else ""
         has_source = bool(source_file) and os.path.isfile(source_path)
         engine_spec = _libconfig.get_engine_spec(engine)
 

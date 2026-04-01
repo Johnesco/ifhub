@@ -278,17 +278,16 @@
   },
   {
     "id": "cloak-sharpee",
-    "title": "Cloak of Darkness (Sharpee)",
+    "title": "Cloak of Darkness",
     "playUrl": "/cloak-sharpee/play.html",
     "landingUrl": "/cloak-sharpee/",
     "sourceBrowser": true,
     "sourceUrl": "/cloak-sharpee/source.html",
     "engine": "sharpee",
     "tags": [
-      "cloak",
-      "demo"
+      "demo",
+      "cloak-of-darkness"
     ],
-    "walkthroughUrl": "/cloak-sharpee/walkthrough.html",
     "sourceLabel": "src/index.ts"
   },
   {
@@ -390,5 +389,36 @@
     "sourceUrl": "/adj/source.html",
     "engine": "ink",
     "tags": []
+  },
+  {
+    "id": "no-signal-home-sharpee",
+    "title": "No Signal Home",
+    "playUrl": "/no-signal-home-sharpee/play.html",
+    "landingUrl": "/no-signal-home-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sci-fi",
+      "horror",
+      "salvage"
+    ],
+    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.html",
+    "sourceLabel": "src/index.ts"
+  },
+  {
+    "id": "armoured-sharpee",
+    "title": "Armoured",
+    "playUrl": "/armoured-sharpee/play.html",
+    "landingUrl": "/armoured-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/armoured-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "combat",
+      "equipment",
+      "demo"
+    ],
+    "sourceLabel": "src/index.ts"
   }
 ]

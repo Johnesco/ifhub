@@ -216,15 +216,15 @@
   {
     "id": "cloak-sharpee",
     "base": "cloak-sharpee",
-    "title": "Cloak of Darkness (Sharpee)",
-    "meta": "A Sharpee Game",
-    "description": "The classic IF test game implemented in the Sharpee TypeScript engine.",
+    "title": "Cloak of Darkness",
+    "meta": "Roger Firth (Sharpee implementation)",
+    "description": "A basic IF demonstration - hang up your cloak!",
     "playUrl": "/cloak-sharpee/play.html",
     "landingUrl": "/cloak-sharpee/",
     "engine": "sharpee",
     "tags": [
-      "cloak",
-      "demo"
+      "demo",
+      "cloak-of-darkness"
     ]
   },
   {
@@ -322,5 +322,35 @@
     "landingUrl": "/adj/",
     "engine": "ink",
     "tags": []
+  },
+  {
+    "id": "no-signal-home-sharpee",
+    "base": "no-signal-home-sharpee",
+    "title": "No Signal Home",
+    "meta": "John Googol",
+    "description": "A sci-fi salvage horror text adventure on a derelict corporate freighter.",
+    "playUrl": "/no-signal-home-sharpee/play.html",
+    "landingUrl": "/no-signal-home-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "sci-fi",
+      "horror",
+      "salvage"
+    ]
+  },
+  {
+    "id": "armoured-sharpee",
+    "base": "armoured-sharpee",
+    "title": "Armoured",
+    "meta": "Sharpee Examples",
+    "description": "A sample story demonstrating trait composition for equipment systems.",
+    "playUrl": "/armoured-sharpee/play.html",
+    "landingUrl": "/armoured-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "combat",
+      "equipment",
+      "demo"
+    ]
   }
 ]

@@ -151,12 +151,12 @@ def detect_engine(project_dir: str | Path, conf_fields: dict | None = None) -> s
     if parent in _FOLDER_TO_ENGINE:
         return _FOLDER_TO_ENGINE[parent]
 
-    # Check ifhub.conf in registry source directory
+    # Check ifhub.conf in project directory itself or registry source directory
     from . import paths as _paths
-    game_name = os.path.basename(project_dir)
-    source_dir = _paths.game_source_dir(game_name)
-    if source_dir != Path():
-        ihconf = source_dir / "ifhub.conf"
+    for check_dir in (Path(project_dir), _paths.game_source_dir(os.path.basename(project_dir))):
+        if check_dir == Path():
+            continue
+        ihconf = check_dir / "ifhub.conf"
         if ihconf.exists():
             for line in ihconf.read_text(encoding="utf-8").splitlines():
                 if line.strip().startswith("engine"):
@@ -192,6 +192,19 @@ def detect_source_file(project_dir: str | Path, engine: str,
         explicit = conf_fields.get("SOURCE", "")
         if explicit:
             return explicit
+
+    # Check ifhub.conf for explicit source field (in project dir or registry source dir)
+    from . import paths as _paths
+    _check_dirs = [Path(project_dir)]
+    _src = _paths.game_source_dir(Path(project_dir).name)
+    if _src != Path():
+        _check_dirs.append(_src)
+    for check_dir in _check_dirs:
+        ihconf = check_dir / "ifhub.conf"
+        if ihconf.exists():
+            for line in ihconf.read_text(encoding="utf-8").splitlines():
+                if line.strip().startswith("source"):
+                    return line.split("=", 1)[1].strip()
 
     if engine == "inform7":
         return "story.ni"
