@@ -36,6 +36,7 @@
     "versionLabel": "v3 — Multimedia",
     "sourceLabel": "zork1-v3.ni",
     "sound": "blorb",
+    "sourceBrowser": true,
     "overlayLabel": "Zork I Multimedia",
     "playUrl": "/zork1-v3/play.html",
     "walkthroughUrl": "/zork1-v3/walkthrough.html",
