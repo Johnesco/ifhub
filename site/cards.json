@@ -352,5 +352,16 @@
       "equipment",
       "demo"
     ]
+  },
+  {
+    "id": "zork1-v0",
+    "base": "zork1-v0",
+    "title": "Zork1 V0",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/zork1-v0/play.html",
+    "landingUrl": "/zork1-v0/",
+    "engine": "zmachine",
+    "tags": []
   }
 ]
