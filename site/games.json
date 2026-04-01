@@ -380,17 +380,6 @@
     "sourceLabel": "src/index.ts"
   },
   {
-    "id": "adj",
-    "title": "Adj",
-    "sourceLabel": "adj.ink",
-    "playUrl": "/adj/play.html",
-    "landingUrl": "/adj/",
-    "sourceBrowser": true,
-    "sourceUrl": "/adj/source.html",
-    "engine": "ink",
-    "tags": []
-  },
-  {
     "id": "no-signal-home-sharpee",
     "title": "No Signal Home",
     "playUrl": "/no-signal-home-sharpee/play.html",
