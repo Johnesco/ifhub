@@ -16,21 +16,6 @@
     ]
   },
   {
-    "id": "zork1-v1",
-    "title": "Zork I (v1)",
-    "versionLabel": "v1 — The Port",
-    "sourceLabel": "zork1-v1.ni",
-    "playUrl": "/zork1-v1/play.html",
-    "walkthroughUrl": "/zork1-v1/walkthrough.html",
-    "sourceUrl": "/zork1-v1/source.html",
-    "landingUrl": "/zork1-v1/",
-    "engine": "inform7",
-    "tags": [
-      "classic",
-      "zork"
-    ]
-  },
-  {
     "id": "zork1-v2",
     "title": "Zork I (v2)",
     "versionLabel": "v2 — Bug Fixes",
