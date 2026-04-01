@@ -328,21 +328,6 @@
     ]
   },
   {
-    "id": "armoured-sharpee",
-    "base": "armoured-sharpee",
-    "title": "Armoured",
-    "meta": "Sharpee Examples",
-    "description": "A sample story demonstrating trait composition for equipment systems.",
-    "playUrl": "/armoured-sharpee/play.html",
-    "landingUrl": "/armoured-sharpee/",
-    "engine": "sharpee",
-    "tags": [
-      "combat",
-      "equipment",
-      "demo"
-    ]
-  },
-  {
     "id": "zork1-v0",
     "base": "zork1-v0",
     "title": "Zork1 V0",

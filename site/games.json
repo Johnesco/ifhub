@@ -382,21 +382,6 @@
     "sourceLabel": "src/index.ts"
   },
   {
-    "id": "armoured-sharpee",
-    "title": "Armoured",
-    "playUrl": "/armoured-sharpee/play.html",
-    "landingUrl": "/armoured-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/armoured-sharpee/source.html",
-    "engine": "sharpee",
-    "tags": [
-      "combat",
-      "equipment",
-      "demo"
-    ],
-    "sourceLabel": "src/index.ts"
-  },
-  {
     "id": "zork1-v1",
     "title": "Zork I - The Great Underground Empire",
     "sourceLabel": "story.ni",
