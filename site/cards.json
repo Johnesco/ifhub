@@ -374,5 +374,16 @@
     "landingUrl": "/zork1-v2/",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "zork1-v3",
+    "base": "zork1-v3",
+    "title": "Zork I - The Great Underground Empire",
+    "meta": "An Interactive Fiction",
+    "description": "ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!",
+    "playUrl": "/zork1-v3/play.html",
+    "landingUrl": "/zork1-v3/",
+    "engine": "inform7",
+    "tags": []
   }
 ]
