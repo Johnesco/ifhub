@@ -370,5 +370,19 @@
     "landingUrl": "/zork1-v3/",
     "engine": "inform7",
     "tags": []
+  },
+  {
+    "id": "feverdream-sharpee",
+    "base": "feverdream-sharpee",
+    "title": "Fever Dream (Sharpee)",
+    "meta": "John Googol",
+    "description": "A perceptual horror. Three items alter your perception. The world stays the same. You do not.",
+    "playUrl": "/feverdream-sharpee/play.html",
+    "landingUrl": "/feverdream-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "horror",
+      "perceptual"
+    ]
   }
 ]
