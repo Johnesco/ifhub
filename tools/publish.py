@@ -48,6 +48,7 @@ jobs:
         run: |
           mkdir -p _site
           [ -d web ] && cp -r web/* _site/ || true
+          [ -d browser ] && cp -r browser/* _site/ || true
           [ -d lib ] && cp -r lib _site/ || true
           [ -d assets ] && cp -r assets _site/ || true
           [ -d audio ] && cp -r audio _site/ || true
@@ -96,8 +97,9 @@ def main():
     project_dir = paths.project_dir(args.game)
     msg = args.message or f"Update {args.game}"
 
-    if not (project_dir / "play.html").exists():
-        print("ERROR: play.html not found. Run compile.py first.", file=sys.stderr)
+    # Sharpee games put play.html under browser/; in-place engines put it at root.
+    if not (project_dir / "play.html").exists() and not (project_dir / "browser" / "play.html").exists():
+        print("ERROR: play.html not found (checked ./ and ./browser/). Run the build first.", file=sys.stderr)
         sys.exit(1)
 
     git_dir = project_dir / ".git"

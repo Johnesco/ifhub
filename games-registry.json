@@ -119,6 +119,11 @@
     "path": "../text-games/sharpee/fever-dream-sharpee",
     "repo": "Johnesco/fever-dream-sharpee"
   },
+  "familyzoo": {
+    "path": "../text-games/sharpee/familyzoo",
+    "repo": "Johnesco/familyzoo",
+    "engine": "sharpee"
+  },
   "familyzoo-01": {
     "path": "../text-games/sharpee/familyzoo",
     "entry": "src/v01-entry.ts",
