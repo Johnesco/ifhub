@@ -40,38 +40,37 @@ python /c/code/ifhub/tools/compile.py <name> --source <path/to/story.ni> --compi
 
 If `tests/inform7/walkthrough.txt` exists, compile.py automatically runs the walkthrough, generates the transcript and guide, and copies all walkthrough files to the web root. It also auto-generates `index.html` and `source.html` from `story.ni` metadata if they don't exist.
 
-### Sharpee (`compile_sharpee.py`)
+### Sharpee (built outside IF Hub)
 
-Sharpee games are authored as npm projects in an external workspace (`/c/code/sharpee/<game>/`). The build script bridges the external workspace and the ifhub project.
+Sharpee builds are owned by the **`/c/code/npmsharpee/`** workspace, not IF Hub. IF Hub is the *target* a Sharpee game ships to via the intake API. The game is authored, built, and tested **in-place inside its own folder**, then registered/published into IF Hub from there.
+
+Game source lives in:
+- `/c/code/text-games/sharpee/<game>/` — user-authored games
+- `/c/code/npmsharpee/from-fork/<game>/` — pristine upstream mirrors
+
+Each game folder builds **in-place** into `<game>/browser/` (or `<game>/browser/<subpath>/` for multi-version projects). The `browser/` directory IS the deployable artifact: `play.html`, the bundled `*.js`, `styles.css`, plus `source.html` and `walkthrough.html` (rendered from IF Hub's shared `tools/web/source-template.html` and `walkthrough-template.html`).
+
+**Build + ship a Sharpee game** (run from `/c/code/npmsharpee/`):
 
 ```bash
-# One command: build in Sharpee workspace + import into IF Hub
-python /c/code/ifhub/tools/compile_sharpee.py <name>
-python /c/code/ifhub/tools/compile_sharpee.py <name> --force  # overwrite play.html
+./ship.sh <game>                  # build only — open <game>/browser/play.html
+./ship.sh <game> hub-local        # build + register with on-disk IF Hub
+./ship.sh <game> hub              # build + register + publish + push hub registry
 ```
 
-Requires `tests/project.conf` in the ifhub project with:
-```bash
-ENGINE=sharpee
-SHARPEE_DIR=/c/code/sharpee/<npm-project>
-TITLE="Game Title"
-```
+`ship.sh` orchestrates `tools/build.py` (esbuild + transcript tests + asset install) and the IF Hub intake scripts (`register_game.py`, `publish.py`, `push_hub.py`). It does NOT use `tests/project.conf`; Sharpee config is declared in `<game>/ifhub.conf` plus per-version overrides in IF Hub's `games-registry.json` (e.g. `entry`, `binary`, `subpath`, `walkthrough` for multi-version projects).
 
 **Scaffolding a new Sharpee game:**
 ```bash
-cd /c/code/sharpee
+cd /c/code/text-games/sharpee
 npx @sharpee/sharpee init <game-name> -y
 cd <game-name> && npx @sharpee/sharpee init-browser && npm install
+# Add an ifhub.conf next to package.json (title, source, walkthrough, tags)
+# Add a registry entry to /c/code/ifhub/games-registry.json
+cd /c/code/npmsharpee && ./ship.sh <game-name> hub-local
 ```
 
-Then create the ifhub project dir and config:
-```bash
-mkdir -p ../text-games/sharpee/<name>/tests
-# Create tests/project.conf with SHARPEE_DIR pointing to the npm project
-python tools/compile_sharpee.py <name> --force
-python tools/register_game.py --name <id> --title "Title" --engine sharpee
-python tools/publish.py <name>
-```
+For details on the npmsharpee build chain and authoring conventions see `/c/code/npmsharpee/CLAUDE.md` and `reference/sharpee-author-guide.md`.
 
 ### Pipeline (all engines)
 
@@ -158,7 +157,7 @@ Source lives where the engine's toolchain naturally expects it. Web deliverables
 | wwwbasic | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
 | applesoft | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
 | Ink | `<game>/*.ink` | `SOURCE=<file>` in project.conf | `setup_ink.py` (via pipeline) |
-| Sharpee | External npm project | `SHARPEE_DIR=/c/code/sharpee/<game>` | `compile_sharpee.py` |
+| Sharpee | `text-games/sharpee/<game>/` or `npmsharpee/from-fork/<game>/` | `<game>/ifhub.conf` + `games-registry.json` | `npmsharpee/tools/ship.sh` (in-place build to `<game>/browser/`) |
 
 Each BASIC dialect (wwwbasic, qbjc, applesoft, bwbasic) must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
 
@@ -190,10 +189,10 @@ python /c/code/ifhub/tools/pipeline.py <name> compile test
 
 ### Sharpee Testing
 
-Sharpee uses its own transcript-based test system (`@sharpee/transcript-tester`). Tests live in the Sharpee project workspace, not in the ifhub project.
+Sharpee uses its own transcript-based test system (`@sharpee/transcript-tester`). Tests live in the game folder (same folder that holds `src/` and `browser/`), not in IF Hub.
 
 ```bash
-cd /c/code/sharpee/<game>
+cd /c/code/text-games/sharpee/<game>     # or /c/code/npmsharpee/from-fork/<game>
 
 # Build + run all transcript tests:
 npx sharpee build --test
@@ -204,6 +203,8 @@ npx transcript-test --play
 # Run specific transcript file:
 npx transcript-test walkthroughs/wt-01.transcript
 ```
+
+`./ship.sh <game>` (from `/c/code/npmsharpee/`) runs the transcript tests automatically as part of the build; the single walkthrough selected via the rules in `sharpee_adapter.pick_walkthrough()` is used to generate `walkthrough.html` alongside `play.html`.
 
 Transcript files use `> command` / `[OK: contains "text"]` assertions. See `/c/code/fork/sharpee/docs/testing/README.md` for the full format spec.
 

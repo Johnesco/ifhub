@@ -93,7 +93,8 @@
   },
   "cloak-sharpee": {
     "path": "../npmsharpee/from-fork/cloak-sharpee",
-    "repo": "Johnesco/cloak-sharpee"
+    "repo": "Johnesco/cloak-sharpee",
+    "title": "Cloak Of Darkness - Sharpee"
   },
   "dungeo": {
     "path": "../npmsharpee/from-fork/dungeo",
@@ -119,19 +120,14 @@
     "path": "../text-games/sharpee/fever-dream-sharpee",
     "repo": "Johnesco/fever-dream-sharpee"
   },
-  "familyzoo": {
-    "path": "../text-games/sharpee/familyzoo",
-    "repo": "Johnesco/familyzoo",
-    "engine": "sharpee"
-  },
   "familyzoo-01": {
     "path": "../text-games/sharpee/familyzoo",
     "entry": "src/v01-entry.ts",
     "binary": "familyzoo-01.js",
     "subpath": "v01",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v01: A Single Room",
-    "description": "Sharpee tutorial step 1 \u2014 A Single Room.",
+    "title": "Family Zoo v01: A Single Room",
+    "description": "Sharpee tutorial step 1 — A Single Room.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v01-single-room.transcript"
   },
@@ -141,8 +137,8 @@
     "binary": "familyzoo-02.js",
     "subpath": "v02",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v02: Multiple Rooms & Navigation",
-    "description": "Sharpee tutorial step 2 \u2014 Multiple Rooms & Navigation.",
+    "title": "Family Zoo v02: Multiple Rooms & Navigation",
+    "description": "Sharpee tutorial step 2 — Multiple Rooms & Navigation.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v02-navigation.transcript"
   },
@@ -152,8 +148,8 @@
     "binary": "familyzoo-03.js",
     "subpath": "v03",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v03: Scenery",
-    "description": "Sharpee tutorial step 3 \u2014 Scenery.",
+    "title": "Family Zoo v03: Scenery",
+    "description": "Sharpee tutorial step 3 — Scenery.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v03-scenery.transcript"
   },
@@ -163,8 +159,8 @@
     "binary": "familyzoo-04.js",
     "subpath": "v04",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v04: Portable Objects",
-    "description": "Sharpee tutorial step 4 \u2014 Portable Objects.",
+    "title": "Family Zoo v04: Portable Objects",
+    "description": "Sharpee tutorial step 4 — Portable Objects.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v04-portable.transcript"
   },
@@ -174,8 +170,8 @@
     "binary": "familyzoo-05.js",
     "subpath": "v05",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v05: Containers & Supporters",
-    "description": "Sharpee tutorial step 5 \u2014 Containers & Supporters.",
+    "title": "Family Zoo v05: Containers & Supporters",
+    "description": "Sharpee tutorial step 5 — Containers & Supporters.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v05-containers.transcript"
   },
@@ -185,8 +181,8 @@
     "binary": "familyzoo-06.js",
     "subpath": "v06",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v06: Openable Things",
-    "description": "Sharpee tutorial step 6 \u2014 Openable Things.",
+    "title": "Family Zoo v06: Openable Things",
+    "description": "Sharpee tutorial step 6 — Openable Things.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v06-openable.transcript"
   },
@@ -196,8 +192,8 @@
     "binary": "familyzoo-07.js",
     "subpath": "v07",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v07: Locked Doors & Keys",
-    "description": "Sharpee tutorial step 7 \u2014 Locked Doors & Keys.",
+    "title": "Family Zoo v07: Locked Doors & Keys",
+    "description": "Sharpee tutorial step 7 — Locked Doors & Keys.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v07-locked.transcript"
   },
@@ -207,8 +203,8 @@
     "binary": "familyzoo-08.js",
     "subpath": "v08",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v08: Light & Dark",
-    "description": "Sharpee tutorial step 8 \u2014 Light & Dark.",
+    "title": "Family Zoo v08: Light & Dark",
+    "description": "Sharpee tutorial step 8 — Light & Dark.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v08-light.transcript"
   },
@@ -218,8 +214,8 @@
     "binary": "familyzoo-09.js",
     "subpath": "v09",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v09: Readable Objects",
-    "description": "Sharpee tutorial step 9 \u2014 Readable Objects.",
+    "title": "Family Zoo v09: Readable Objects",
+    "description": "Sharpee tutorial step 9 — Readable Objects.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v09-readable.transcript"
   },
@@ -229,8 +225,8 @@
     "binary": "familyzoo-10.js",
     "subpath": "v10",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v10: Switchable Devices",
-    "description": "Sharpee tutorial step 10 \u2014 Switchable Devices.",
+    "title": "Family Zoo v10: Switchable Devices",
+    "description": "Sharpee tutorial step 10 — Switchable Devices.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v10-switchable.transcript"
   },
@@ -240,8 +236,8 @@
     "binary": "familyzoo-11.js",
     "subpath": "v11",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v11: Non-Player Characters",
-    "description": "Sharpee tutorial step 11 \u2014 Non-Player Characters.",
+    "title": "Family Zoo v11: Non-Player Characters",
+    "description": "Sharpee tutorial step 11 — Non-Player Characters.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v11-npcs.transcript"
   },
@@ -251,8 +247,8 @@
     "binary": "familyzoo-12.js",
     "subpath": "v12",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v12: Event Handlers",
-    "description": "Sharpee tutorial step 12 \u2014 Event Handlers.",
+    "title": "Family Zoo v12: Event Handlers",
+    "description": "Sharpee tutorial step 12 — Event Handlers.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v12-event-handlers.transcript"
   },
@@ -262,8 +258,8 @@
     "binary": "familyzoo-13.js",
     "subpath": "v13",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v13: Custom Actions",
-    "description": "Sharpee tutorial step 13 \u2014 Custom Actions.",
+    "title": "Family Zoo v13: Custom Actions",
+    "description": "Sharpee tutorial step 13 — Custom Actions.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v13-custom-actions.transcript"
   },
@@ -273,8 +269,8 @@
     "binary": "familyzoo-14.js",
     "subpath": "v14",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v14: Capability Dispatch",
-    "description": "Sharpee tutorial step 14 \u2014 Capability Dispatch.",
+    "title": "Family Zoo v14: Capability Dispatch",
+    "description": "Sharpee tutorial step 14 — Capability Dispatch.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v14-capability-dispatch.transcript"
   },
@@ -284,8 +280,8 @@
     "binary": "familyzoo-15.js",
     "subpath": "v15",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v15: Timed Events (Daemons & Fuses)",
-    "description": "Sharpee tutorial step 15 \u2014 Timed Events (Daemons & Fuses).",
+    "title": "Family Zoo v15: Timed Events (Daemons & Fuses)",
+    "description": "Sharpee tutorial step 15 — Timed Events (Daemons & Fuses).",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v15-timed-events.transcript"
   },
@@ -295,8 +291,8 @@
     "binary": "familyzoo-16.js",
     "subpath": "v16",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v16: Scoring and Endgame",
-    "description": "Sharpee tutorial step 16 \u2014 Scoring and Endgame.",
+    "title": "Family Zoo v16: Scoring and Endgame",
+    "description": "Sharpee tutorial step 16 — Scoring and Endgame.",
     "tags": "sharpee, tutorial, learning",
     "walkthrough": "tests/transcripts/v16-scoring.transcript"
   },
@@ -306,8 +302,8 @@
     "binary": "familyzoo-17.js",
     "subpath": "v17",
     "repo": "Johnesco/familyzoo",
-    "title": "Family Zoo Tutorial v17: After Hours & Multi-File Organization",
-    "description": "Sharpee tutorial step 17 \u2014 After Hours & Multi-File Organization.",
+    "title": "Family Zoo v17: After Hours & Multi-File Organization",
+    "description": "Sharpee tutorial step 17 — After Hours & Multi-File Organization.",
     "tags": "sharpee, tutorial, learning"
   }
 }

@@ -94,10 +94,9 @@ C:\code\text-games\
 ├── wwwbasic/         ← WWWBasic workspace
 ├── applesoft/        ← Applesoft BASIC workspace
 ├── zmachine/         ← Z-machine workspace
-├── sharpee/          ← Sharpee game workspace (each game = own git repo; familyzoo/ holds all tutorial versions)
-└── deploy/           ← (legacy) Sharpee build outputs — kept for historical refs only
+└── sharpee/          ← Sharpee game workspace (each game = own git repo; familyzoo/ holds all tutorial versions)
 
-C:\code\npmsharpee\   ← Sharpee build tooling + fork mirrors (NO user games)
+C:\code\npmsharpee\   ← Sharpee build tooling + fork mirrors only (from-fork/) — NO user games, NO build output
 ```
 
 ### Game Discovery
@@ -108,7 +107,7 @@ Three layers control game discovery (later layers override earlier):
 2. **`games-registry.json`** (committed) — explicit path + GitHub repo references (overrides)
 3. **`games-local.json`** (gitignored) — per-developer path overrides
 
-For "in-place" engines (i7, ink, rez, etc.), the game directory IS the deploy directory. For sharpee, source lives in `npmsharpee/games/` and deploy output goes to `text-games/deploy/`.
+All engines build **in-place**: the game directory IS the deploy directory. For Sharpee that means `text-games/sharpee/<game>/browser/` (source at `<game>/src/`, output at `<game>/browser/`).
 
 Tools resolve game names via `paths.project_dir(name)` which checks: registry → workspace scan → legacy `projects/` fallback.
 

@@ -18,23 +18,23 @@
     "versions": [
       {
         "id": "zork1-v3",
-        "label": "v3 \u00e2\u20ac\u201d Multimedia",
+        "label": "v3 — Multimedia",
         "sound": "blorb",
         "playUrl": "/zork1-v3/play.html"
       },
       {
         "id": "zork1-v2",
-        "label": "v2 \u00e2\u20ac\u201d Bug Fixes",
+        "label": "v2 — Bug Fixes",
         "playUrl": "/zork1-v2/play.html"
       },
       {
         "id": "zork1-v1",
-        "label": "v1 \u00e2\u20ac\u201d The Port",
+        "label": "v1 — The Port",
         "playUrl": "/zork1-v1/play.html"
       },
       {
         "id": "zork1-v0",
-        "label": "v0 \u00e2\u20ac\u201d Original ZIL",
+        "label": "v0 — Original ZIL",
         "playUrl": "/zork1-v0/play.html"
       }
     ]
@@ -57,7 +57,7 @@
     "versions": [
       {
         "id": "dracula-v0",
-        "label": "v0 \u00e2\u20ac\u201d Original BASIC",
+        "label": "v0 — Original BASIC",
         "playUrl": "/dracula-v0/play.html"
       }
     ]
@@ -216,7 +216,7 @@
   {
     "id": "cloak-sharpee",
     "base": "cloak-sharpee",
-    "title": "Cloak of Darkness",
+    "title": "Cloak Of Darkness - Sharpee",
     "meta": "Roger Firth (Sharpee implementation)",
     "description": "A basic IF demonstration - hang up your cloak!",
     "playUrl": "/cloak-sharpee/play.html",
@@ -225,7 +225,10 @@
     "tags": [
       "demo",
       "cloak-of-darkness"
-    ]
+    ],
+    "sourceUrl": "/cloak-sharpee/source.html",
+    "walkthroughUrl": "/cloak-sharpee/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "cloak-inform7",
@@ -254,7 +257,10 @@
       "parser-lab",
       "disambiguation",
       "guess-the-verb"
-    ]
+    ],
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "cloak-ink",
@@ -276,7 +282,7 @@
     "base": "cloak-rez",
     "title": "Cloak of Darkness (Rez)",
     "meta": "A Rez Game",
-    "description": "The classic IF benchmark implemented in Rez \u00e2\u20ac\u201d an open-source choice-based IF engine.",
+    "description": "The classic IF benchmark implemented in Rez — an open-source choice-based IF engine.",
     "playUrl": "/cloak-rez/play.html",
     "landingUrl": "/cloak-rez/",
     "engine": "rez",
@@ -298,20 +304,10 @@
       "zork",
       "classic",
       "adventure"
-    ]
-  },
-  {
-    "id": "familyzoo",
-    "base": "familyzoo",
-    "title": "Family Zoo",
-    "meta": "Sharpee Tutorial (V17)",
-    "description": "A progressive Sharpee tutorial - explore Willowbrook Family Zoo. Locked doors, NPCs, scoring, and more.",
-    "playUrl": "/familyzoo/play.html",
-    "landingUrl": "/familyzoo/",
-    "engine": "sharpee",
-    "tags": [
-      "demo"
-    ]
+    ],
+    "sourceUrl": "/dungeo/source.html",
+    "walkthroughUrl": "/dungeo/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "no-signal-home-sharpee",
@@ -326,7 +322,10 @@
       "sci-fi",
       "horror",
       "salvage"
-    ]
+    ],
+    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "zork1-v0",
@@ -375,257 +374,291 @@
   {
     "id": "familyzoo-01",
     "base": "familyzoo-01",
-    "title": "Family Zoo Tutorial v01: A Single Room",
+    "title": "Family Zoo v01: A Single Room",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 1 \u00e2\u20ac\u201d A Single Room.",
+    "description": "Sharpee tutorial step 1 — A Single Room.",
     "playUrl": "/familyzoo/v01/play.html",
-    "landingUrl": "/familyzoo-01/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v01/source.html",
+    "walkthroughUrl": "/familyzoo/v01/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-02",
     "base": "familyzoo-02",
-    "title": "Family Zoo Tutorial v02: Multiple Rooms & Navigation",
+    "title": "Family Zoo v02: Multiple Rooms & Navigation",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 2 \u00e2\u20ac\u201d Multiple Rooms & Navigation.",
+    "description": "Sharpee tutorial step 2 — Multiple Rooms & Navigation.",
     "playUrl": "/familyzoo/v02/play.html",
-    "landingUrl": "/familyzoo-02/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v02/source.html",
+    "walkthroughUrl": "/familyzoo/v02/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-03",
     "base": "familyzoo-03",
-    "title": "Family Zoo Tutorial v03: Scenery",
+    "title": "Family Zoo v03: Scenery",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 3 \u00e2\u20ac\u201d Scenery.",
+    "description": "Sharpee tutorial step 3 — Scenery.",
     "playUrl": "/familyzoo/v03/play.html",
-    "landingUrl": "/familyzoo-03/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v03/source.html",
+    "walkthroughUrl": "/familyzoo/v03/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-04",
     "base": "familyzoo-04",
-    "title": "Family Zoo Tutorial v04: Portable Objects",
+    "title": "Family Zoo v04: Portable Objects",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 4 \u00e2\u20ac\u201d Portable Objects.",
+    "description": "Sharpee tutorial step 4 — Portable Objects.",
     "playUrl": "/familyzoo/v04/play.html",
-    "landingUrl": "/familyzoo-04/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v04/source.html",
+    "walkthroughUrl": "/familyzoo/v04/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-05",
     "base": "familyzoo-05",
-    "title": "Family Zoo Tutorial v05: Containers & Supporters",
+    "title": "Family Zoo v05: Containers & Supporters",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 5 \u00e2\u20ac\u201d Containers & Supporters.",
+    "description": "Sharpee tutorial step 5 — Containers & Supporters.",
     "playUrl": "/familyzoo/v05/play.html",
-    "landingUrl": "/familyzoo-05/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v05/source.html",
+    "walkthroughUrl": "/familyzoo/v05/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-06",
     "base": "familyzoo-06",
-    "title": "Family Zoo Tutorial v06: Openable Things",
+    "title": "Family Zoo v06: Openable Things",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 6 \u00e2\u20ac\u201d Openable Things.",
+    "description": "Sharpee tutorial step 6 — Openable Things.",
     "playUrl": "/familyzoo/v06/play.html",
-    "landingUrl": "/familyzoo-06/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v06/source.html",
+    "walkthroughUrl": "/familyzoo/v06/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-07",
     "base": "familyzoo-07",
-    "title": "Family Zoo Tutorial v07: Locked Doors & Keys",
+    "title": "Family Zoo v07: Locked Doors & Keys",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 7 \u00e2\u20ac\u201d Locked Doors & Keys.",
+    "description": "Sharpee tutorial step 7 — Locked Doors & Keys.",
     "playUrl": "/familyzoo/v07/play.html",
-    "landingUrl": "/familyzoo-07/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v07/source.html",
+    "walkthroughUrl": "/familyzoo/v07/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-08",
     "base": "familyzoo-08",
-    "title": "Family Zoo Tutorial v08: Light & Dark",
+    "title": "Family Zoo v08: Light & Dark",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 8 \u00e2\u20ac\u201d Light & Dark.",
+    "description": "Sharpee tutorial step 8 — Light & Dark.",
     "playUrl": "/familyzoo/v08/play.html",
-    "landingUrl": "/familyzoo-08/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v08/source.html",
+    "walkthroughUrl": "/familyzoo/v08/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-09",
     "base": "familyzoo-09",
-    "title": "Family Zoo Tutorial v09: Readable Objects",
+    "title": "Family Zoo v09: Readable Objects",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 9 \u00e2\u20ac\u201d Readable Objects.",
+    "description": "Sharpee tutorial step 9 — Readable Objects.",
     "playUrl": "/familyzoo/v09/play.html",
-    "landingUrl": "/familyzoo-09/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v09/source.html",
+    "walkthroughUrl": "/familyzoo/v09/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-10",
     "base": "familyzoo-10",
-    "title": "Family Zoo Tutorial v10: Switchable Devices",
+    "title": "Family Zoo v10: Switchable Devices",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 10 \u00e2\u20ac\u201d Switchable Devices.",
+    "description": "Sharpee tutorial step 10 — Switchable Devices.",
     "playUrl": "/familyzoo/v10/play.html",
-    "landingUrl": "/familyzoo-10/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v10/source.html",
+    "walkthroughUrl": "/familyzoo/v10/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-11",
     "base": "familyzoo-11",
-    "title": "Family Zoo Tutorial v11: Non-Player Characters",
+    "title": "Family Zoo v11: Non-Player Characters",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 11 \u00e2\u20ac\u201d Non-Player Characters.",
+    "description": "Sharpee tutorial step 11 — Non-Player Characters.",
     "playUrl": "/familyzoo/v11/play.html",
-    "landingUrl": "/familyzoo-11/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v11/source.html",
+    "walkthroughUrl": "/familyzoo/v11/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-12",
     "base": "familyzoo-12",
-    "title": "Family Zoo Tutorial v12: Event Handlers",
+    "title": "Family Zoo v12: Event Handlers",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 12 \u00e2\u20ac\u201d Event Handlers.",
+    "description": "Sharpee tutorial step 12 — Event Handlers.",
     "playUrl": "/familyzoo/v12/play.html",
-    "landingUrl": "/familyzoo-12/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v12/source.html",
+    "walkthroughUrl": "/familyzoo/v12/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-13",
     "base": "familyzoo-13",
-    "title": "Family Zoo Tutorial v13: Custom Actions",
+    "title": "Family Zoo v13: Custom Actions",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 13 \u00e2\u20ac\u201d Custom Actions.",
+    "description": "Sharpee tutorial step 13 — Custom Actions.",
     "playUrl": "/familyzoo/v13/play.html",
-    "landingUrl": "/familyzoo-13/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v13/source.html",
+    "walkthroughUrl": "/familyzoo/v13/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-14",
     "base": "familyzoo-14",
-    "title": "Family Zoo Tutorial v14: Capability Dispatch",
+    "title": "Family Zoo v14: Capability Dispatch",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 14 \u00e2\u20ac\u201d Capability Dispatch.",
+    "description": "Sharpee tutorial step 14 — Capability Dispatch.",
     "playUrl": "/familyzoo/v14/play.html",
-    "landingUrl": "/familyzoo-14/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v14/source.html",
+    "walkthroughUrl": "/familyzoo/v14/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-15",
     "base": "familyzoo-15",
-    "title": "Family Zoo Tutorial v15: Timed Events (Daemons & Fuses)",
+    "title": "Family Zoo v15: Timed Events (Daemons & Fuses)",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 15 \u00e2\u20ac\u201d Timed Events (Daemons & Fuses).",
+    "description": "Sharpee tutorial step 15 — Timed Events (Daemons & Fuses).",
     "playUrl": "/familyzoo/v15/play.html",
-    "landingUrl": "/familyzoo-15/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v15/source.html",
+    "walkthroughUrl": "/familyzoo/v15/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-16",
     "base": "familyzoo-16",
-    "title": "Family Zoo Tutorial v16: Scoring and Endgame",
+    "title": "Family Zoo v16: Scoring and Endgame",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 16 \u00e2\u20ac\u201d Scoring and Endgame.",
+    "description": "Sharpee tutorial step 16 — Scoring and Endgame.",
     "playUrl": "/familyzoo/v16/play.html",
-    "landingUrl": "/familyzoo-16/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v16/source.html",
+    "walkthroughUrl": "/familyzoo/v16/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "familyzoo-17",
     "base": "familyzoo-17",
-    "title": "Family Zoo Tutorial v17: After Hours & Multi-File Organization",
+    "title": "Family Zoo v17: After Hours & Multi-File Organization",
     "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 17 \u00e2\u20ac\u201d After Hours & Multi-File Organization.",
+    "description": "Sharpee tutorial step 17 — After Hours & Multi-File Organization.",
     "playUrl": "/familyzoo/v17/play.html",
-    "landingUrl": "/familyzoo-17/",
     "engine": "sharpee",
     "tags": [
       "sharpee",
       "tutorial",
       "learning"
-    ]
+    ],
+    "sourceUrl": "/familyzoo/v17/source.html",
+    "walkthroughUrl": "/familyzoo/v17/walkthrough.html",
+    "sourceBrowser": true
   },
   {
     "id": "fever-dream-sharpee",
@@ -639,6 +672,9 @@
     "tags": [
       "horror",
       "perceptual"
-    ]
+    ],
+    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.html",
+    "sourceBrowser": true
   }
 ]
