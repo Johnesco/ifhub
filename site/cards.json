@@ -385,5 +385,274 @@
       "horror",
       "perceptual"
     ]
+  },
+  {
+    "id": "familyzoo-01",
+    "base": "familyzoo-01",
+    "title": "Family Zoo Tutorial v01: A Single Room",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 1 — A Single Room.",
+    "playUrl": "/familyzoo-01/play.html",
+    "landingUrl": "/familyzoo-01/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-02",
+    "base": "familyzoo-02",
+    "title": "Family Zoo Tutorial v02: Multiple Rooms & Navigation",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 2 — Multiple Rooms & Navigation.",
+    "playUrl": "/familyzoo-02/play.html",
+    "landingUrl": "/familyzoo-02/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-03",
+    "base": "familyzoo-03",
+    "title": "Family Zoo Tutorial v03: Scenery",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 3 — Scenery.",
+    "playUrl": "/familyzoo-03/play.html",
+    "landingUrl": "/familyzoo-03/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-04",
+    "base": "familyzoo-04",
+    "title": "Family Zoo Tutorial v04: Portable Objects",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 4 — Portable Objects.",
+    "playUrl": "/familyzoo-04/play.html",
+    "landingUrl": "/familyzoo-04/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-05",
+    "base": "familyzoo-05",
+    "title": "Family Zoo Tutorial v05: Containers & Supporters",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 5 — Containers & Supporters.",
+    "playUrl": "/familyzoo-05/play.html",
+    "landingUrl": "/familyzoo-05/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-06",
+    "base": "familyzoo-06",
+    "title": "Family Zoo Tutorial v06: Openable Things",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 6 — Openable Things.",
+    "playUrl": "/familyzoo-06/play.html",
+    "landingUrl": "/familyzoo-06/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-07",
+    "base": "familyzoo-07",
+    "title": "Family Zoo Tutorial v07: Locked Doors & Keys",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 7 — Locked Doors & Keys.",
+    "playUrl": "/familyzoo-07/play.html",
+    "landingUrl": "/familyzoo-07/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-08",
+    "base": "familyzoo-08",
+    "title": "Family Zoo Tutorial v08: Light & Dark",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 8 — Light & Dark.",
+    "playUrl": "/familyzoo-08/play.html",
+    "landingUrl": "/familyzoo-08/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-09",
+    "base": "familyzoo-09",
+    "title": "Family Zoo Tutorial v09: Readable Objects",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 9 — Readable Objects.",
+    "playUrl": "/familyzoo-09/play.html",
+    "landingUrl": "/familyzoo-09/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-10",
+    "base": "familyzoo-10",
+    "title": "Family Zoo Tutorial v10: Switchable Devices",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 10 — Switchable Devices.",
+    "playUrl": "/familyzoo-10/play.html",
+    "landingUrl": "/familyzoo-10/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-11",
+    "base": "familyzoo-11",
+    "title": "Family Zoo Tutorial v11: Non-Player Characters",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 11 — Non-Player Characters.",
+    "playUrl": "/familyzoo-11/play.html",
+    "landingUrl": "/familyzoo-11/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-12",
+    "base": "familyzoo-12",
+    "title": "Family Zoo Tutorial v12: Event Handlers",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 12 — Event Handlers.",
+    "playUrl": "/familyzoo-12/play.html",
+    "landingUrl": "/familyzoo-12/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-13",
+    "base": "familyzoo-13",
+    "title": "Family Zoo Tutorial v13: Custom Actions",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 13 — Custom Actions.",
+    "playUrl": "/familyzoo-13/play.html",
+    "landingUrl": "/familyzoo-13/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-14",
+    "base": "familyzoo-14",
+    "title": "Family Zoo Tutorial v14: Capability Dispatch",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 14 — Capability Dispatch.",
+    "playUrl": "/familyzoo-14/play.html",
+    "landingUrl": "/familyzoo-14/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-15",
+    "base": "familyzoo-15",
+    "title": "Family Zoo Tutorial v15: Timed Events (Daemons & Fuses)",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 15 — Timed Events (Daemons & Fuses).",
+    "playUrl": "/familyzoo-15/play.html",
+    "landingUrl": "/familyzoo-15/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-16",
+    "base": "familyzoo-16",
+    "title": "Family Zoo Tutorial v16: Scoring and Endgame",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 16 — Scoring and Endgame.",
+    "playUrl": "/familyzoo-16/play.html",
+    "landingUrl": "/familyzoo-16/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-17",
+    "base": "familyzoo-17",
+    "title": "Family Zoo Tutorial v17: After Hours & Multi-File Organization",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 17 — After Hours & Multi-File Organization.",
+    "playUrl": "/familyzoo-17/play.html",
+    "landingUrl": "/familyzoo-17/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "fever-dream-sharpee",
+    "base": "fever-dream-sharpee",
+    "title": "Fever Dream (Sharpee)",
+    "meta": "An Interactive Fiction",
+    "description": "A perceptual horror. Three items alter your perception. The world stays the same. You do not.",
+    "playUrl": "/fever-dream-sharpee/play.html",
+    "landingUrl": "/fever-dream-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "horror",
+      "perceptual"
+    ]
   }
 ]

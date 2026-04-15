@@ -407,5 +407,274 @@
     ],
     "walkthroughUrl": "/feverdream-sharpee/walkthrough.html",
     "sourceLabel": "src/index.ts"
+  },
+  {
+    "id": "familyzoo-01",
+    "title": "Family Zoo Tutorial v01: A Single Room",
+    "sourceLabel": "familyzoo-01.ts",
+    "playUrl": "/familyzoo-01/play.html",
+    "landingUrl": "/familyzoo-01/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-01/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-02",
+    "title": "Family Zoo Tutorial v02: Multiple Rooms & Navigation",
+    "sourceLabel": "familyzoo-02.ts",
+    "playUrl": "/familyzoo-02/play.html",
+    "landingUrl": "/familyzoo-02/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-02/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-03",
+    "title": "Family Zoo Tutorial v03: Scenery",
+    "sourceLabel": "familyzoo-03.ts",
+    "playUrl": "/familyzoo-03/play.html",
+    "landingUrl": "/familyzoo-03/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-03/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-04",
+    "title": "Family Zoo Tutorial v04: Portable Objects",
+    "sourceLabel": "familyzoo-04.ts",
+    "playUrl": "/familyzoo-04/play.html",
+    "landingUrl": "/familyzoo-04/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-04/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-05",
+    "title": "Family Zoo Tutorial v05: Containers & Supporters",
+    "sourceLabel": "familyzoo-05.ts",
+    "playUrl": "/familyzoo-05/play.html",
+    "landingUrl": "/familyzoo-05/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-05/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-06",
+    "title": "Family Zoo Tutorial v06: Openable Things",
+    "sourceLabel": "familyzoo-06.ts",
+    "playUrl": "/familyzoo-06/play.html",
+    "landingUrl": "/familyzoo-06/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-06/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-07",
+    "title": "Family Zoo Tutorial v07: Locked Doors & Keys",
+    "sourceLabel": "familyzoo-07.ts",
+    "playUrl": "/familyzoo-07/play.html",
+    "landingUrl": "/familyzoo-07/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-07/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-08",
+    "title": "Family Zoo Tutorial v08: Light & Dark",
+    "sourceLabel": "familyzoo-08.ts",
+    "playUrl": "/familyzoo-08/play.html",
+    "landingUrl": "/familyzoo-08/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-08/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-09",
+    "title": "Family Zoo Tutorial v09: Readable Objects",
+    "sourceLabel": "familyzoo-09.ts",
+    "playUrl": "/familyzoo-09/play.html",
+    "landingUrl": "/familyzoo-09/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-09/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-10",
+    "title": "Family Zoo Tutorial v10: Switchable Devices",
+    "sourceLabel": "familyzoo-10.ts",
+    "playUrl": "/familyzoo-10/play.html",
+    "landingUrl": "/familyzoo-10/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-10/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-11",
+    "title": "Family Zoo Tutorial v11: Non-Player Characters",
+    "sourceLabel": "familyzoo-11.ts",
+    "playUrl": "/familyzoo-11/play.html",
+    "landingUrl": "/familyzoo-11/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-11/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-12",
+    "title": "Family Zoo Tutorial v12: Event Handlers",
+    "sourceLabel": "familyzoo-12.ts",
+    "playUrl": "/familyzoo-12/play.html",
+    "landingUrl": "/familyzoo-12/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-12/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-13",
+    "title": "Family Zoo Tutorial v13: Custom Actions",
+    "sourceLabel": "familyzoo-13.ts",
+    "playUrl": "/familyzoo-13/play.html",
+    "landingUrl": "/familyzoo-13/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-13/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-14",
+    "title": "Family Zoo Tutorial v14: Capability Dispatch",
+    "sourceLabel": "familyzoo-14.ts",
+    "playUrl": "/familyzoo-14/play.html",
+    "landingUrl": "/familyzoo-14/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-14/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-15",
+    "title": "Family Zoo Tutorial v15: Timed Events (Daemons & Fuses)",
+    "sourceLabel": "familyzoo-15.ts",
+    "playUrl": "/familyzoo-15/play.html",
+    "landingUrl": "/familyzoo-15/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-15/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-16",
+    "title": "Family Zoo Tutorial v16: Scoring and Endgame",
+    "sourceLabel": "familyzoo-16.ts",
+    "playUrl": "/familyzoo-16/play.html",
+    "landingUrl": "/familyzoo-16/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-16/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "familyzoo-17",
+    "title": "Family Zoo Tutorial v17: After Hours & Multi-File Organization",
+    "sourceLabel": "familyzoo-17.ts",
+    "playUrl": "/familyzoo-17/play.html",
+    "landingUrl": "/familyzoo-17/",
+    "sourceBrowser": true,
+    "sourceUrl": "/familyzoo-17/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ]
+  },
+  {
+    "id": "fever-dream-sharpee",
+    "title": "Fever Dream (Sharpee)",
+    "sourceLabel": "fever-dream-sharpee.ts",
+    "playUrl": "/fever-dream-sharpee/play.html",
+    "landingUrl": "/fever-dream-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "horror",
+      "perceptual"
+    ]
   }
 ]
