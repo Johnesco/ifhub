@@ -53,6 +53,8 @@ header .spacer { flex:1; }
 .btn:disabled { opacity:.3; cursor:default; }
 .btn-primary { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
 .btn-primary:hover { background:var(--accent-hover); }
+.btn-danger { background:var(--red-dim); color:var(--red); border-color:rgba(248,113,113,.3); }
+.btn-danger:hover { background:rgba(248,113,113,.2); border-color:var(--red); }
 .force-label { font-size:.82em; color:var(--text-dim); display:flex; align-items:center; gap:4px; cursor:pointer; }
 .only-link { font-size:.82em; color:var(--text-dim); cursor:pointer; text-decoration:underline; margin-left:6px; }
 .only-link:hover { color:var(--text-muted); }
@@ -140,7 +142,7 @@ const NCLS = {present:'dag-node-present',missing:'dag-node-missing',stale:'dag-n
 const PORTMAN_PORT = 9000;
 function localUrl(game){ return 'http://127.0.0.1:'+PORTMAN_PORT+'/'+game+'/play.html'; }
 function liveUrl(game){ return 'https://johnesco.github.io/'+game+'/play.html'; }
-const STEPS = ['compile','publish','register'];
+const STEPS = ['build','deploy','register'];
 
 function fileUrl(p){if(!p)return'';p=p.replace(/\\/g,'/');if(!p.startsWith('/'))p='/'+p;return'file://'+p;}
 
@@ -249,7 +251,7 @@ function Terminal({game}){
   </div>`;
 }
 
-function DAG({project,onAction,runningSteps}){
+function DAG({project,onAction,runningSteps,liveStatus}){
   const a=project.artifacts;
   const rs=runningSteps||[];
   const runTo=(step,force)=>onAction('run-to',project,force,{target:step});
@@ -258,13 +260,16 @@ function DAG({project,onAction,runningSteps}){
   return html`<div class="dag">
     <${DagNode} name="Source" detail=${project.sourceFile||'n/a'} linkUrl=${project.sourceFile?fileUrl(project.dir+'/'+project.sourceFile):''} status="present" />
     <${Conn} />
-    <${DagNode} name="Compile" detail=${project.compileScripts||a.compile.detail} linkUrl=${a.compile.path?fileUrl(a.compile.path):''} status=${a.compile.status} running=${rs.includes('compile')} onRunTo=${f=>runTo('compile',f)} onRunOnly=${f=>runOnly('compile',f)} />
+    <${DagNode} name="Build" detail=${project.compileScripts||a.compile.detail} linkUrl=${a.compile.path?fileUrl(a.compile.path):''} status=${a.compile.status} running=${rs.includes('build')} onRunTo=${f=>runTo('build',f)} onRunOnly=${f=>runOnly('build',f)} />
     <${Conn} />
-    <${DagNode} name="Publish" detail=${a.published.detail} status=${a.published.status} running=${rs.includes('publish')} onRunTo=${f=>runTo('publish',f)} onRunOnly=${f=>runOnly('publish',f)} />
+    <${DagNode} name="Deploy" detail=${a.published.detail} status=${liveStatus[project.name]===200?'present':liveStatus[project.name]?'failed':a.published.status} running=${rs.includes('deploy')} onRunTo=${f=>runTo('deploy',f)} onRunOnly=${f=>runOnly('deploy',f)}>
+      ${liveStatus[project.name] && html`<div class="node-detail" style=${{fontSize:'.78em',marginTop:'2px'}}>${liveStatus[project.name]===200?'\u2705 Live (200)':'\u274c Down ('+liveStatus[project.name]+')'}</div>`}
+    <//>
     <${Conn} />
     <${DagNode} name="Register" detail=${a.registered.detail} status=${a.registered.status} running=${rs.includes('register')} onRunTo=${f=>runTo('register',f)} onRunOnly=${f=>runOnly('register',f)} />
     <div style=${{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
       <button class="btn btn-primary" style=${{width:'100%'}} onClick=${e=>{e.stopPropagation();runTo('register',false);}}>Ship All</button>
+      ${a.registered.status==='present' && html`<button class="btn btn-danger" style=${{width:'100%'}} onClick=${e=>{e.stopPropagation();if(confirm('Unregister "'+project.name+'" from the hub?'))onAction('unregister',project,false);}}>Unregister</button>`}
       <div style=${{display:'flex',gap:'6px'}}>
         <a class="btn" style=${{flex:1,textAlign:'center',textDecoration:'none'}} href=${localUrl(project.name)} target="_blank" onClick=${e=>e.stopPropagation()}>Open Local</a>
         <a class="btn" style=${{flex:1,textAlign:'center',textDecoration:'none'}} href=${liveUrl(project.name)} target="_blank" onClick=${e=>e.stopPropagation()}>Open Live</a>
@@ -284,7 +289,7 @@ function MetaForm({project,formRef}){
   </div>`;
 }
 
-function ExpandedContent({project,onAction,runningSteps}){
+function ExpandedContent({project,onAction,runningSteps,liveStatus}){
   const formRef=useRef(null);
 
   const handleAction=useCallback(async(action,proj,force,extra)=>{
@@ -306,7 +311,7 @@ function ExpandedContent({project,onAction,runningSteps}){
 
   return html`<div class="expanded-content">
     <div class="expanded-left">
-      <${DAG} project=${project} onAction=${handleAction} runningSteps=${runningSteps} />
+      <${DAG} project=${project} onAction=${handleAction} runningSteps=${runningSteps} liveStatus=${liveStatus||{}} />
     </div>
     <div class="expanded-right">
       <${MetaForm} project=${project} formRef=${formRef} />
@@ -321,11 +326,20 @@ function App(){
   const [expanded,setExpanded]=useState(null);
   const [showModal,setShowModal]=useState(false);
   const [runningSteps,setRunningSteps]=useState([]);
+  const [liveStatus,setLiveStatus]=useState({});
+  const [checking,setChecking]=useState(false);
 
   const fetchProjects=useCallback(async()=>{
     const r=await fetch('/api/projects'); setProjects(await r.json());
   },[]);
   useEffect(()=>{fetchProjects();},[]);
+
+  const checkLive=useCallback(async()=>{
+    setChecking(true);
+    try{const r=await fetch('/api/check-live');setLiveStatus(await r.json());}
+    catch(e){console.error('check-live failed',e);}
+    setChecking(false);
+  },[]);
 
   const runTask=useCallback(async(action,game,force,meta)=>{
     setExpanded(game);
@@ -373,13 +387,14 @@ function App(){
     <header>
       <h1>IF Hub</h1><span class="sub">Dashboard</span><span class="spacer" />
       <button class="hdr-btn" onClick=${()=>setShowModal(true)}>+ New Game</button>
+      <button class="hdr-btn" onClick=${checkLive} disabled=${checking}>${checking?'Checking...':'Check Deploy'}</button>
       <button class="hdr-btn" onClick=${fetchProjects}>Refresh</button>
     </header>
     <main><table class="matrix">
       <thead><tr>
         <th class="col-game">Game</th><th class="col-engine">Engine</th>
-        <th class="col-status">Compile</th>
-        <th class="col-status">Publish</th><th class="col-status">Register</th>
+        <th class="col-status">Build</th>
+        <th class="col-status">Deploy</th><th class="col-status">Register</th>
         <th class="col-actions">Actions</th>
       </tr></thead>
       <tbody>${projects.map(p=>{
@@ -388,14 +403,16 @@ function App(){
           <tr class=${isExp?'row-sel':''} onClick=${e=>{if(!e.target.closest('.badge,.btn,.force-label'))setExpanded(isExp?null:p.name);}}>
             <td><a class="game-name" href=${fileUrl(p.dir)} title=${p.dir} onClick=${e=>e.stopPropagation()}>${p.name}</a><span class="play-links" onClick=${e=>e.stopPropagation()}><a class="play-link" href=${localUrl(p.name)} target="_blank" title="Open in Portman (local)">local</a><a class="play-link" href=${liveUrl(p.name)} target="_blank" title="Open on GitHub Pages (live)">live</a></span></td>
             <td><span class="engine-tag">${ENG[p.engine]||p.engine}</span></td>
-            <td><${Badge} status=${a.compile.status} detail=${a.compile.detail} onClick=${()=>badgeClick('compile',p.name)} /></td>
-
-            <td><${Badge} status=${a.published.status} detail=${a.published.detail} onClick=${()=>badgeClick('publish',p.name)} /></td>
+            <td><${Badge} status=${a.compile.status} detail=${a.compile.detail} onClick=${()=>badgeClick('build',p.name)} /></td>
+            <td><${Badge} status=${checking&&liveStatus[p.name]==null?'stale':liveStatus[p.name]===200?'present':liveStatus[p.name]?'failed':a.published.status} detail=${checking&&liveStatus[p.name]==null?'Checking...':liveStatus[p.name]?'HTTP '+liveStatus[p.name]:a.published.detail} onClick=${()=>badgeClick('deploy',p.name)} /></td>
             <td><${Badge} status=${a.registered.status} detail=${a.registered.detail} onClick=${()=>badgeClick('register',p.name)} /></td>
-            <td><button class="btn btn-primary" disabled=${p.overallStatus==='ready'} onClick=${e=>{e.stopPropagation();runTask('run-to',p.name,false,{target:'register',title:p.title,meta:p.meta,description:p.description});}}>Ship All</button></td>
+            <td>
+              <button class="btn btn-primary" disabled=${p.overallStatus==='ready'} onClick=${e=>{e.stopPropagation();runTask('run-to',p.name,false,{target:'register',title:p.title,meta:p.meta,description:p.description});}}>Ship All</button>
+              ${a.registered.status==='present' && html`${' '}<button class="btn btn-danger" onClick=${e=>{e.stopPropagation();if(confirm('Unregister "'+p.name+'" from the hub?'))runTask('unregister',p.name,false);}}>Unreg</button>`}
+            </td>
           </tr>
           ${isExp && html`<tr class="expanded-row"><td colSpan="6">
-            <${ExpandedContent} project=${p} onAction=${runTask} runningSteps=${runningSteps} />
+            <${ExpandedContent} project=${p} onAction=${runTask} runningSteps=${runningSteps} liveStatus=${liveStatus} />
           </td></tr>`}
         </${Fragment}>`;
       })}</tbody>

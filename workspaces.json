@@ -1,0 +1,11 @@
+{
+  "workspaces": [
+    { "engine": "inform7",  "root": "../text-games/i7",        "deploy": "in-place" },
+    { "engine": "ink",      "root": "../text-games/ink",       "deploy": "in-place" },
+    { "engine": "rez",      "root": "../text-games/rez",       "deploy": "in-place" },
+    { "engine": "wwwbasic", "root": "../text-games/wwwbasic",  "deploy": "in-place" },
+    { "engine": "applesoft","root": "../text-games/applesoft", "deploy": "in-place" },
+    { "engine": "zmachine", "root": "../text-games/zmachine",  "deploy": "in-place" },
+    { "engine": "sharpee",  "root": "../text-games/sharpee",   "deploy": "in-place" }
+  ]
+}

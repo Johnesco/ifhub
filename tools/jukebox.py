@@ -6,6 +6,8 @@ Usage:
     python tools/jukebox.py import /path/ --ship       Import + publish
     python tools/jukebox.py publish <game-name>        Publish to GitHub Pages
     python tools/jukebox.py list                       List registered games
+    python tools/jukebox.py check                      Check live status on GitHub Pages
+    python tools/jukebox.py unregister <game-name>     Unregister a game from the hub
 
 The game directory must contain an ifhub.conf manifest:
 
@@ -22,6 +24,8 @@ import json
 import shutil
 import subprocess
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 TOOLS_DIR = Path(__file__).resolve().parent
@@ -30,6 +34,7 @@ SITE_DIR = IFHUB_DIR / "site"
 REGISTRY_PATH = IFHUB_DIR / "games-registry.json"
 
 sys.path.insert(0, str(TOOLS_DIR))
+from lib.paths import GH_ORG  # noqa: E402
 
 
 # ── Config parsing ──────────────────────────────────────────────────────────
@@ -386,6 +391,98 @@ def cmd_list(args):
     print(f"\n{len(registry)} games registered.")
 
 
+def cmd_check(args):
+    """Check which registered games are live on GitHub Pages."""
+    games_path = SITE_DIR / "games.json"
+    if not games_path.exists():
+        print("No games.json found.", file=sys.stderr)
+        sys.exit(1)
+
+    games = json.loads(games_path.read_text(encoding="utf-8"))
+    if not games:
+        print("No games registered.")
+        return
+
+    base_url = f"https://{GH_ORG.lower()}.github.io"
+    results = []
+
+    for game in games:
+        gid = game["id"]
+        play_url = game.get("playUrl", "")
+        url = base_url + play_url
+
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            resp = urllib.request.urlopen(req, timeout=10)
+            code = resp.getcode()
+            status = "LIVE" if code == 200 else "DOWN"
+        except urllib.error.HTTPError as e:
+            code = e.code
+            status = "DOWN"
+        except (urllib.error.URLError, OSError):
+            code = "ERR"
+            status = "DOWN"
+
+        results.append((gid, status, str(code), url))
+        marker = "+" if status == "LIVE" else "-"
+        print(f"  [{marker}] {gid}")
+
+    print(f"\n{'Game':<35} {'Status':<8} {'Code':<6} URL")
+    print("-" * 100)
+    for gid, status, code, url in results:
+        print(f"{gid:<35} {status:<8} {code:<6} {url}")
+
+    live = sum(1 for _, s, _, _ in results if s == "LIVE")
+    print(f"\n{live} of {len(results)} games live.")
+
+
+def cmd_unregister(args):
+    """Unregister a game from the hub (removes from games.json and cards.json)."""
+    name = args.game
+    games_path = SITE_DIR / "games.json"
+    cards_path = SITE_DIR / "cards.json"
+
+    print(f"Unregistering '{name}' from IF Hub...")
+    removed = False
+
+    # games.json
+    if games_path.exists():
+        games = json.loads(games_path.read_text(encoding="utf-8"))
+        before = len(games)
+        games = [g for g in games if g["id"] != name]
+        if len(games) < before:
+            games_path.write_text(
+                json.dumps(games, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            print(f"  games.json: removed '{name}'")
+            removed = True
+        else:
+            print(f"  games.json: '{name}' not found")
+
+    # cards.json
+    if cards_path.exists():
+        cards = json.loads(cards_path.read_text(encoding="utf-8"))
+        before = len(cards)
+        cards = [c for c in cards if c["id"] != name]
+        if len(cards) < before:
+            cards_path.write_text(
+                json.dumps(cards, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            print(f"  cards.json: removed '{name}'")
+            removed = True
+        else:
+            print(f"  cards.json: '{name}' not found")
+
+    if removed:
+        base_url = f"https://{GH_ORG.lower()}.github.io"
+        print(f"\nDone. Game still live at: {base_url}/{name}/")
+        print(f"Push hub changes: python tools/push_hub.py")
+    else:
+        print(f"\n'{name}' was not registered.")
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────
 
 def main():
@@ -408,6 +505,13 @@ def main():
     # list
     sub.add_parser("list", help="List all registered games")
 
+    # check
+    sub.add_parser("check", help="Check which games are live on GitHub Pages")
+
+    # unregister
+    p_unreg = sub.add_parser("unregister", help="Unregister a game from the hub")
+    p_unreg.add_argument("game", help="Game name to unregister")
+
     args = parser.parse_args()
     if args.command == "import":
         cmd_import(args)
@@ -415,6 +519,10 @@ def main():
         cmd_publish(args)
     elif args.command == "list":
         cmd_list(args)
+    elif args.command == "check":
+        cmd_check(args)
+    elif args.command == "unregister":
+        cmd_unregister(args)
     else:
         parser.print_help()
 

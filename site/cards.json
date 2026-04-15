@@ -289,14 +289,15 @@
     "id": "dungeo",
     "base": "dungeo",
     "title": "DUNGEON",
-    "meta": "Mainframe Zork (1981)",
-    "description": "A faithful Sharpee port of the 1981 Mainframe Zork. 172 rooms, 716 max score.",
+    "meta": "Tim Anderson, Marc Blank, Bruce Daniels, and Dave Lebling",
+    "description": "A port of Mainframe Zork (1981)",
     "playUrl": "/dungeo/play.html",
     "landingUrl": "/dungeo/",
     "engine": "sharpee",
     "tags": [
+      "zork",
       "classic",
-      "zork"
+      "adventure"
     ]
   },
   {

@@ -12,8 +12,7 @@
     "repo": "Johnesco/feverdream"
   },
   "sample": {
-    "deploy": "../text-games/sample",
-    "source": "C:/code/text-games/i7/sample",
+    "path": "../text-games/i7/sample",
     "repo": "Johnesco/sample"
   },
   "seasons": {
@@ -53,18 +52,15 @@
     "repo": "Johnesco/cloak-rez"
   },
   "armoured-sharpee": {
-    "deploy": "../text-games/armoured-sharpee",
-    "source": "C:/code/npmsharpee/games/armoured",
+    "path": "../npmsharpee/from-fork/armoured-sharpee",
     "repo": "Johnesco/armoured-sharpee"
   },
   "guess-the-verb-sharpee": {
-    "deploy": "../text-games/guess-the-verb-sharpee",
-    "source": "C:/code/npmsharpee/games/guess-the-verb",
+    "path": "../text-games/sharpee/guess-the-verb-sharpee",
     "repo": "Johnesco/guess-the-verb-sharpee"
   },
   "no-signal-home-sharpee": {
-    "deploy": "../text-games/no-signal-home-sharpee",
-    "source": "C:/code/npmsharpee/games/no-signal-home",
+    "path": "../text-games/sharpee/no-signal-home-sharpee",
     "repo": "Johnesco/no-signal-home-sharpee"
   },
   "haunted-house": {
@@ -96,19 +92,12 @@
     "repo": "Johnesco/cloak-ink"
   },
   "cloak-sharpee": {
-    "deploy": "../text-games/cloak-sharpee",
-    "source": "C:/code/npmsharpee/games/cloak-of-darkness",
+    "path": "../npmsharpee/from-fork/cloak-sharpee",
     "repo": "Johnesco/cloak-sharpee"
   },
   "dungeo": {
-    "deploy": "../text-games/dungeo",
-    "source": "C:/code/npmsharpee/games/dungeo",
+    "path": "../npmsharpee/from-fork/dungeo",
     "repo": "Johnesco/dungeo"
-  },
-  "familyzoo": {
-    "deploy": "../text-games/familyzoo",
-    "source": "C:/code/npmsharpee/games/familyzoo",
-    "repo": "Johnesco/familyzoo"
   },
   "zork1-v1": {
     "path": "../text-games/i7/zork1-v1",
@@ -125,5 +114,195 @@
   "zork1-v0": {
     "path": "../text-games/zmachine/zork1-v0",
     "repo": "Johnesco/zork1-v0"
+  },
+  "fever-dream-sharpee": {
+    "path": "../text-games/sharpee/fever-dream-sharpee",
+    "repo": "Johnesco/fever-dream-sharpee"
+  },
+  "familyzoo-01": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v01-entry.ts",
+    "binary": "familyzoo-01.js",
+    "subpath": "v01",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v01: A Single Room",
+    "description": "Sharpee tutorial step 1 \u2014 A Single Room.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v01-single-room.transcript"
+  },
+  "familyzoo-02": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v02-entry.ts",
+    "binary": "familyzoo-02.js",
+    "subpath": "v02",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v02: Multiple Rooms & Navigation",
+    "description": "Sharpee tutorial step 2 \u2014 Multiple Rooms & Navigation.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v02-navigation.transcript"
+  },
+  "familyzoo-03": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v03-entry.ts",
+    "binary": "familyzoo-03.js",
+    "subpath": "v03",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v03: Scenery",
+    "description": "Sharpee tutorial step 3 \u2014 Scenery.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v03-scenery.transcript"
+  },
+  "familyzoo-04": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v04-entry.ts",
+    "binary": "familyzoo-04.js",
+    "subpath": "v04",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v04: Portable Objects",
+    "description": "Sharpee tutorial step 4 \u2014 Portable Objects.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v04-portable.transcript"
+  },
+  "familyzoo-05": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v05-entry.ts",
+    "binary": "familyzoo-05.js",
+    "subpath": "v05",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v05: Containers & Supporters",
+    "description": "Sharpee tutorial step 5 \u2014 Containers & Supporters.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v05-containers.transcript"
+  },
+  "familyzoo-06": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v06-entry.ts",
+    "binary": "familyzoo-06.js",
+    "subpath": "v06",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v06: Openable Things",
+    "description": "Sharpee tutorial step 6 \u2014 Openable Things.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v06-openable.transcript"
+  },
+  "familyzoo-07": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v07-entry.ts",
+    "binary": "familyzoo-07.js",
+    "subpath": "v07",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v07: Locked Doors & Keys",
+    "description": "Sharpee tutorial step 7 \u2014 Locked Doors & Keys.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v07-locked.transcript"
+  },
+  "familyzoo-08": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v08-entry.ts",
+    "binary": "familyzoo-08.js",
+    "subpath": "v08",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v08: Light & Dark",
+    "description": "Sharpee tutorial step 8 \u2014 Light & Dark.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v08-light.transcript"
+  },
+  "familyzoo-09": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v09-entry.ts",
+    "binary": "familyzoo-09.js",
+    "subpath": "v09",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v09: Readable Objects",
+    "description": "Sharpee tutorial step 9 \u2014 Readable Objects.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v09-readable.transcript"
+  },
+  "familyzoo-10": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v10-entry.ts",
+    "binary": "familyzoo-10.js",
+    "subpath": "v10",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v10: Switchable Devices",
+    "description": "Sharpee tutorial step 10 \u2014 Switchable Devices.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v10-switchable.transcript"
+  },
+  "familyzoo-11": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v11-entry.ts",
+    "binary": "familyzoo-11.js",
+    "subpath": "v11",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v11: Non-Player Characters",
+    "description": "Sharpee tutorial step 11 \u2014 Non-Player Characters.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v11-npcs.transcript"
+  },
+  "familyzoo-12": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v12-entry.ts",
+    "binary": "familyzoo-12.js",
+    "subpath": "v12",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v12: Event Handlers",
+    "description": "Sharpee tutorial step 12 \u2014 Event Handlers.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v12-event-handlers.transcript"
+  },
+  "familyzoo-13": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v13-entry.ts",
+    "binary": "familyzoo-13.js",
+    "subpath": "v13",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v13: Custom Actions",
+    "description": "Sharpee tutorial step 13 \u2014 Custom Actions.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v13-custom-actions.transcript"
+  },
+  "familyzoo-14": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v14-entry.ts",
+    "binary": "familyzoo-14.js",
+    "subpath": "v14",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v14: Capability Dispatch",
+    "description": "Sharpee tutorial step 14 \u2014 Capability Dispatch.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v14-capability-dispatch.transcript"
+  },
+  "familyzoo-15": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v15-entry.ts",
+    "binary": "familyzoo-15.js",
+    "subpath": "v15",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v15: Timed Events (Daemons & Fuses)",
+    "description": "Sharpee tutorial step 15 \u2014 Timed Events (Daemons & Fuses).",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v15-timed-events.transcript"
+  },
+  "familyzoo-16": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v16-entry.ts",
+    "binary": "familyzoo-16.js",
+    "subpath": "v16",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v16: Scoring and Endgame",
+    "description": "Sharpee tutorial step 16 \u2014 Scoring and Endgame.",
+    "tags": "sharpee, tutorial, learning",
+    "walkthrough": "tests/transcripts/v16-scoring.transcript"
+  },
+  "familyzoo-17": {
+    "path": "../text-games/sharpee/familyzoo",
+    "entry": "src/v17-entry.ts",
+    "binary": "familyzoo-17.js",
+    "subpath": "v17",
+    "repo": "Johnesco/familyzoo",
+    "title": "Family Zoo Tutorial v17: After Hours & Multi-File Organization",
+    "description": "Sharpee tutorial step 17 \u2014 After Hours & Multi-File Organization.",
+    "tags": "sharpee, tutorial, learning"
   }
 }

@@ -50,6 +50,8 @@ jobs:
           [ -d web ] && cp -r web/* _site/ || true
           [ -d lib ] && cp -r lib _site/ || true
           [ -d assets ] && cp -r assets _site/ || true
+          [ -d audio ] && cp -r audio _site/ || true
+          [ -d sfx ] && cp -r sfx _site/ || true
           [ -d src ] && cp -r src _site/ || true
           cp *.html _site/ 2>/dev/null || true
           cp *.txt _site/ 2>/dev/null || true
@@ -126,7 +128,7 @@ def main():
         git.push(cwd=project_dir, set_upstream="main")
 
         print("  Enabling GitHub Pages (workflow deployment)...")
-        git.gh_enable_pages(args.game)
+        git.gh_ensure_pages(args.game)
 
         print()
         print("=== Published ===")
@@ -148,6 +150,10 @@ def main():
             cwd=project_dir,
         )
         git.push(cwd=project_dir)
+
+        # Ensure Pages is enabled (catches repos created outside first-time flow)
+        if git.gh_ensure_pages(args.game):
+            print("  Enabled GitHub Pages (was not configured)")
 
         print()
         print("=== Pushed ===")

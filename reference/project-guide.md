@@ -261,7 +261,7 @@ Adds entries to `ifhub/games.json` and `ifhub/cards.json`.
 python /c/code/ifhub/tools/publish.py <name>
 ```
 
-First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables GitHub Pages (workflow deployment via GitHub Actions). Subsequent runs: commits and pushes changes.
+First run: creates `Johnesco/<name>` GitHub repo, pushes all files, enables GitHub Pages (workflow deployment via GitHub Actions). Subsequent runs: commits, pushes, and verifies Pages is enabled (catches repos created outside the first-time flow).
 
 ## Push Hub Changes
 

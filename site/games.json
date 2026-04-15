@@ -345,8 +345,9 @@
     "sourceUrl": "/dungeo/source.html",
     "engine": "sharpee",
     "tags": [
+      "zork",
       "classic",
-      "zork"
+      "adventure"
     ],
     "walkthroughUrl": "/dungeo/walkthrough.html",
     "sourceLabel": "src/index.ts"

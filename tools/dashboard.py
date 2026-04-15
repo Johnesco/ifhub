@@ -16,8 +16,11 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
+import urllib.request
 import uuid
 import webbrowser
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 try:
@@ -51,7 +54,6 @@ UNREGISTER_GAME_PY = str(paths.TOOLS_DIR / "unregister_game.py")
 PUSH_HUB_PY = str(paths.TOOLS_DIR / "push_hub.py")
 NEW_PROJECT_PY = str(paths.TOOLS_DIR / "new_project.py")
 GENERATE_PAGES_PY = str(paths.WEB_DIR / "generate_pages.py")
-COMPILE_SHARPEE_PY = str(paths.TOOLS_DIR / "compile_sharpee.py")
 COMPILE_REZ_PY = str(paths.TOOLS_DIR / "compile_rez.py")
 SETUP_BASIC_PY = str(paths.WEB_DIR / "setup_basic.py")
 SETUP_INK_PY = str(paths.WEB_DIR / "setup_ink.py")
@@ -141,13 +143,13 @@ def run_job(job_id, commands):
 # Action command builders
 # ---------------------------------------------------------------------------
 
-# Pipeline steps: compile → publish → register
-PIPELINE_ORDER = ["compile", "publish", "register"]
-STEP_TO_ARTIFACT = {"compile": "compile", "publish": "published", "register": "registered"}
+# Pipeline steps: build → deploy → register
+PIPELINE_ORDER = ["build", "deploy", "register"]
+STEP_TO_ARTIFACT = {"build": "compile", "deploy": "published", "register": "registered"}
 
 
-def _compile_commands(project, data):
-    """Compile step: engine-specific build."""
+def _build_commands(project, data):
+    """Build step: compile source into playable artifacts (local only)."""
     game = project.name
     force = data.get("force", False)
     cmd = py_cmd(PIPELINE_PY, game, "compile")
@@ -156,13 +158,21 @@ def _compile_commands(project, data):
     return [cmd]
 
 
-def _publish_commands(project, data):
-    """Publish step: push to GitHub Pages."""
+def _deploy_commands(project, data):
+    """Deploy step: push to GitHub + enable Pages + trigger workflow."""
+    name = project.name
+    org = paths.GH_ORG
     message = data.get("message", "")
-    cmd = py_cmd(PUBLISH_PY, project.name)
+    # 1. git push via publish.py
+    publish_cmd = py_cmd(PUBLISH_PY, name)
     if message:
-        cmd.append(message)
-    return [cmd]
+        publish_cmd.append(message)
+    # 2. enable Pages (ignore 409 if already enabled)
+    enable_pages = ["bash", "-c",
+                    f'gh api repos/{org}/{name}/pages -X POST -f build_type=workflow 2>/dev/null || echo "Pages already enabled"']
+    # 3. trigger deploy workflow
+    trigger = ["gh", "workflow", "run", "deploy-pages.yml", "--repo", f"{org}/{name}"]
+    return [publish_cmd, enable_pages, trigger]
 
 
 def _register_commands(project, data):
@@ -185,8 +195,8 @@ def _register_commands(project, data):
 
 
 STEP_HANDLERS = {
-    "compile": _compile_commands,
-    "publish": _publish_commands,
+    "build": _build_commands,
+    "deploy": _deploy_commands,
     "register": _register_commands,
 }
 
@@ -260,9 +270,6 @@ def build_commands(task, project, data):
 app = Flask(__name__)
 
 
-@app.route("/")
-def index():
-    return HTML_PAGE
 
 
 @app.route("/favicon.ico")
@@ -476,15 +483,47 @@ def api_stop(job_id):
     return jsonify({"status": "stopped"})
 
 
+@app.route("/api/check-live")
+def api_check_live():
+    """Check which registered games are actually live on GitHub Pages."""
+    games_path = paths.IFHUB_DIR / "games.json"
+    if not games_path.exists():
+        return jsonify({})
+
+    games = json.loads(games_path.read_text(encoding="utf-8"))
+    base_url = f"https://{paths.GH_ORG.lower()}.github.io"
+
+    def check_one(game):
+        gid = game["id"]
+        url = base_url + game.get("playUrl", "")
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            resp = urllib.request.urlopen(req, timeout=10)
+            return (gid, resp.getcode())
+        except urllib.error.HTTPError as e:
+            return (gid, e.code)
+        except (urllib.error.URLError, OSError):
+            return (gid, 0)
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = dict(pool.map(check_one, games))
+
+    return jsonify(results)
+
+
 # ---------------------------------------------------------------------------
 # HTML — Preact SPA (no build step, CDN imports via htm tagged templates)
 # ---------------------------------------------------------------------------
 
 _HTML_FILE = os.path.join(SCRIPT_DIR, "dashboard.html")
-if os.path.isfile(_HTML_FILE):
-    HTML_PAGE = open(_HTML_FILE, "r", encoding="utf-8").read()
-else:
-    HTML_PAGE = "<html><body><h1>Missing dashboard.html</h1></body></html>"
+
+
+@app.route("/")
+def index_reload():
+    """Serve dashboard.html, re-reading from disk each time for hot-reload."""
+    if os.path.isfile(_HTML_FILE):
+        return open(_HTML_FILE, "r", encoding="utf-8").read()
+    return "<html><body><h1>Missing dashboard.html</h1></body></html>"
 
 
 _UNUSED_INLINE_HTML = r"""<!DOCTYPE html>

@@ -81,7 +81,7 @@ def _fmt_rel_time(epoch: float) -> str:
 ENGINE_COMPILE_SCRIPTS = {
     "inform7": "compile.py \u2192 setup_web.py",
     "zmachine": "setup_web.py",
-    "sharpee": "compile_sharpee.py",
+    "sharpee": "npmsharpee/tools/ship.py",
     "rez": "compile_rez.py",
     "ink": "setup_ink.py",
     "wwwbasic": "setup_basic.py",

@@ -396,3 +396,47 @@ supplyRoom.get(RoomTrait)!.exits = {
 - **Capability dispatch** (V14) — same verb, different behavior per entity via traits.
 - **Event chains** (V12) — `world.chainEvent()` for puzzle logic reacting to actions.
 - **Score IDs are idempotent** — `world.awardScore('unique-id', points, description)` prevents double-scoring.
+
+## New in 0.9.111
+
+### Audio System (`@sharpee/media` + `@sharpee/platform-browser`)
+
+Register audio cues in your story, fire them from action `report()` methods:
+
+```typescript
+import { AudioRegistry } from '@sharpee/media';
+import { createTypedEvent } from '@sharpee/core';
+
+const audio = new AudioRegistry();
+audio.registerCue('door.open', () => createTypedEvent('audio.sfx', { src: 'sfx/door.ogg', volume: 0.8 }));
+world.setStateValue('audio', audio);
+
+// In action report():
+...(audio.cue('door.open') ?? [])
+```
+
+Browser client: `BrowserClient` handles audio automatically. For custom `browser-entry.ts`, import `AudioManager` from `@sharpee/platform-browser` and wire it up. Audio files go in `browser/sfx/`, `browser/audio/`, etc.
+
+### Fluent Entity Helpers (`@sharpee/helpers`)
+
+```typescript
+import '@sharpee/helpers';
+const { room, object, container } = world.helpers();
+const kitchen = room('Kitchen').description('A warm kitchen.').build();
+```
+
+### Entity Queries (`@sharpee/queries`)
+
+```typescript
+import '@sharpee/queries';
+const darkRooms = world.rooms.where(r => r.get(RoomTrait)?.isDark).toArray();
+const sword = world.all.named('sword').first();
+```
+
+### Regions and Scenes (ADR-149)
+
+```typescript
+const forest = world.createRegion('forest', { name: 'Dark Forest' });
+world.assignRoom(clearing.id, forest.id);
+// Emits if.event.region_entered / if.event.region_exited on room transitions
+```

@@ -86,3 +86,16 @@ def gh_enable_pages(repo_name: str) -> int:
         capture=True,
     )
     return r.returncode
+
+
+def gh_ensure_pages(repo_name: str) -> bool:
+    """Ensure GitHub Pages is enabled (idempotent). Returns True if it was newly enabled."""
+    check = process.run(
+        ["gh", "api", f"repos/{GH_ORG}/{repo_name}/pages"],
+        capture=True,
+    )
+    if check.returncode == 0:
+        return False  # already enabled
+    # Not enabled yet — enable it
+    gh_enable_pages(repo_name)
+    return True

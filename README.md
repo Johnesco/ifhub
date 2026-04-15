@@ -1,6 +1,8 @@
 # IF Hub
 
-Central hub for Inform 7 authoring, compilation, testing, and web deployment. All Inform 7 projects reference this location for shared tooling, reference docs, and the Parchment web player.
+IF Hub displays interactive fiction games online in a browsable format. It is a **target** — engine workspaces build their games and ship them to the hub.
+
+It also owns the full build pipeline for several in-tree engines (Inform 7, Ink, Rez, BASIC dialects). For Sharpee, the build chain lives in the Sharpee workspace (`/c/code/npmsharpee/`); IF Hub provides only the intake API (register / publish / push-hub) that it calls.
 
 **Live site**: [johnesco.github.io/ifhub](https://johnesco.github.io/ifhub/)
 

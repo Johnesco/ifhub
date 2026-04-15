@@ -9,7 +9,9 @@ ADAPTERS = {
     "inform7": "adapters.inform7",
     "zmachine": "adapters.zmachine",
     "ink": "adapters.ink",
-    "sharpee": "adapters.sharpee",
+    # sharpee: builds in its own workspace (npmsharpee/tools/ship.py).
+    # IF Hub does not build Sharpee games; sharpee workspaces call
+    # register_game.py / publish.py / push_hub.py directly.
     "rez": "adapters.rez",
     "wwwbasic": "adapters.basic",
     "applesoft": "adapters.basic",

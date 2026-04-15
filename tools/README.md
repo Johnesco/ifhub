@@ -282,6 +282,23 @@ Some projects add custom scripts beyond the standard testing framework:
 
 ---
 
+## Sharpee Build
+
+Sharpee builds live in the Sharpee workspace, not IF Hub. Use `/c/code/npmsharpee/ship.sh`:
+
+```bash
+cd /c/code/npmsharpee
+./ship.sh <game>            # build to <game>/browser/ only
+./ship.sh <game> hub-local  # build + register with on-disk IF Hub
+./ship.sh <game> hub        # build + register + publish + push hub
+```
+
+See `/c/code/npmsharpee/CLAUDE.md` for the full build chain (npm install, esbuild, transcript tests, adapter install).
+
+IF Hub's role for Sharpee is only the **intake API**: `register_game.py`, `publish.py`, `push_hub.py` — called by `ship.py` when the target is `hub-local` or `hub`.
+
+---
+
 ## Typical Workflows
 
 ### New game from scratch

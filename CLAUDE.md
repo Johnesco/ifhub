@@ -1,12 +1,30 @@
-# IF Hub — Tools, Hub UI & Game Registry
+# IF Hub — Registry, Hub UI & Intake API
 
-IF Hub is the shared tooling, web hub, and game registry for interactive fiction projects.
-Game projects live **outside** this repo at `/c/code/text-games/<game>/`, each with its own git repo.
-IF Hub provides the build pipeline, dashboard, web player setup, and the hub web UI that aggregates all games.
+IF Hub's job is to **easily display games online in a browsable format**. It is a target that engine workspaces ship to — not a producer of game builds.
 
-## Pipeline First
+Game projects live **outside** this repo, each with its own git repo and engine-specific build chain. IF Hub provides:
 
-**All building, registering, and publishing MUST go through the pipeline.** Never run individual scripts manually (compile.py, register_game.py, publish.py, setup_web.py, etc.) — use the pipeline instead:
+- **Hub site** (`site/`) — the browsable landing page and split-pane player
+- **Registry** (`games-registry.json`, `site/games.json`, `site/cards.json`, `site/hubs.json`)
+- **Intake API** (`tools/register_game.py`, `tools/publish.py`, `tools/push_hub.py`) — called by engine workspaces
+- **Pipeline orchestrator** (`tools/pipeline.py`) — for in-tree engines (I7, Ink, Rez) whose build tools still live here
+
+## Sharpee is NOT built here
+
+IF Hub does not build Sharpee games. The Sharpee workspace (`/c/code/npmsharpee/`) owns the full build chain. Use its `ship.sh` to build and ship to IF Hub:
+
+```bash
+cd /c/code/npmsharpee
+./ship.sh <game>                # local build only
+./ship.sh <game> hub-local      # build + register with on-disk IF Hub
+./ship.sh <game> hub            # build + register + publish + push hub
+```
+
+See `/c/code/npmsharpee/CLAUDE.md` for the Sharpee build chain.
+
+## Pipeline (I7, Ink, Rez)
+
+For engines whose build tools still live in IF Hub, the pipeline orchestrates build/test/register/publish/push-hub:
 
 ```bash
 python tools/pipeline.py <game> compile          # compile only
@@ -14,7 +32,7 @@ python tools/pipeline.py <game> compile test      # compile + test
 python tools/pipeline.py <game> --ship            # compile + test + register + publish + push hub
 ```
 
-The pipeline auto-detects the engine from `project.conf`, chains all steps in order, handles staleness checks, and ensures nothing is missed. If a step is missing from the pipeline, **fix the pipeline** — don't work around it with manual commands.
+The pipeline auto-detects the engine from `project.conf` and chains stages. For Sharpee games, the `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`.
 
 **Known gaps:**
 - Syncing fork packages to `/c/code/sharpee/*/node_modules/` requires `python tools/sync_fork.py` — not yet integrated into the pipeline stages.
@@ -30,19 +48,19 @@ C:\code\ifhub\
 │   ├── lib/               ← Shared Python modules (paths, output, process, config, web, git, regex)
 │   ├── pipeline.py        ← Unified build pipeline orchestrator
 │   ├── compile.py         ← I7→I6→Glulx→Blorb→web player compilation
-│   ├── compile_sharpee.py ← Build Sharpee game (npm build + jukebox import)
-│   ├── jukebox.py         ← Universal game import/publish CLI (all engines)
+│   ├── jukebox.py         ← Universal game import/publish CLI (I7, Ink, Rez, Z-machine, BASIC)
 │   ├── publish.py         ← Publish a project to its own GitHub Pages repo
 │   ├── register_game.py   ← Register a game in IF Hub (adds to games.json + cards.json)
 │   ├── push_hub.py        ← Push hub registry changes to GitHub
 │   ├── new_project.py     ← Create a new project scaffold
-│   ├── adapters/          ← Per-engine adapters for jukebox (sharpee, inform7, ink, etc.)
+│   ├── adapters/          ← Per-engine adapters for jukebox (inform7, ink, rez, etc. — no sharpee; that lives in npmsharpee/tools/)
 │   ├── regtest.py         ← Shared RegTest runner
 │   ├── testing/           ← Generic testing framework (walkthrough, seeds, regtest, guide gen)
 │   ├── interpreters/      ← Native Windows CLI interpreters (glulxe.exe, dfrotz.exe — gitignored)
 │   ├── rez/               ← Rez compiler (pre-built binary — gitignored)
 │   └── web/               ← Web player setup, templates (per engine), Parchment 2025.1 library
-├── games-registry.json    ← Game path registry (maps game names to local paths + repos)
+├── workspaces.json        ← Engine workspace roots (convention-based game discovery)
+├── games-registry.json    ← Game path overrides + GitHub repo references
 └── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
     ├── index.html         ← Landing page (renders cards from cards.json)
     ├── app.html           ← Split-pane player (game + source viewer)
@@ -64,16 +82,35 @@ Do NOT create `.inform/` IDE project bundles — the `-source` and `-o` flags le
 
 ## Game Projects (External)
 
-Game projects live **outside** this repo at `/c/code/text-games/<game>/`. Each game is its own git repo with its own GitHub Pages deployment.
+Game projects live **outside** this repo in engine-specific workspaces. Each game is its own git repo with its own GitHub Pages deployment. Each engine workspace has its own CLAUDE.md with engine-specific authoring rules.
 
-### Game Registry
+### Workspace Layout
 
-Two files control game discovery (resolution: local overrides defaults):
+```
+C:\code\text-games\
+├── i7/               ← Inform 7 workspace (each game = own git repo)
+├── ink/              ← Ink workspace
+├── rez/              ← Rez workspace
+├── wwwbasic/         ← WWWBasic workspace
+├── applesoft/        ← Applesoft BASIC workspace
+├── zmachine/         ← Z-machine workspace
+├── sharpee/          ← Sharpee game workspace (each game = own git repo; familyzoo/ holds all tutorial versions)
+└── deploy/           ← (legacy) Sharpee build outputs — kept for historical refs only
 
-- **`games-registry.json`** (committed) — default paths + GitHub repo references
-- **`games-local.json`** (gitignored) — per-developer path overrides
+C:\code\npmsharpee\   ← Sharpee build tooling + fork mirrors (NO user games)
+```
 
-Tools resolve game names via `paths.project_dir(name)` which checks: local → defaults → legacy `projects/` fallback.
+### Game Discovery
+
+Three layers control game discovery (later layers override earlier):
+
+1. **`workspaces.json`** (committed) — workspace roots scanned for `ifhub.conf` files (convention-based)
+2. **`games-registry.json`** (committed) — explicit path + GitHub repo references (overrides)
+3. **`games-local.json`** (gitignored) — per-developer path overrides
+
+For "in-place" engines (i7, ink, rez, etc.), the game directory IS the deploy directory. For sharpee, source lives in `npmsharpee/games/` and deploy output goes to `text-games/deploy/`.
+
+Tools resolve game names via `paths.project_dir(name)` which checks: registry → workspace scan → legacy `projects/` fallback.
 
 ### Project-Local Play Templates
 
@@ -85,39 +122,30 @@ Placeholders substituted: `__TITLE__`, `__BASIC_SOURCE__` (BASIC engines), `__ST
 
 The hub is engine-agnostic — any game that produces a `play.html` works. The pipeline handles all engines automatically via `ENGINE=` in `project.conf`.
 
-| Engine | Source | Pipeline handles |
+| Engine | Source | Build owner |
 |--------|--------|-----------------|
-| `inform7` | `story.ni` | Compile I7→I6→Glulx→web player |
-| `sharpee` | `src/index.ts` (npm project at `/c/code/npmsharpee/games/<game>/`) | `npx sharpee build-browser` + jukebox import |
-| `wwwbasic` | `.bas` file | Embed source in play template |
-| `qbjc` | `.bas` → `.js` | Pre-compile + template |
-| `applesoft` | `.bas` file | jsbasic template |
-| `jsdos` | `.jsdos` bundle | DOSBox template |
-| `ink` | `.ink` file | ink.js runtime |
-| `rez` | `.rez` files | Rez compiler |
+| `inform7` | `story.ni` | IF Hub pipeline (compile.py) |
+| `sharpee` | npm project at `/c/code/text-games/sharpee/<game>/` (or `/c/code/npmsharpee/from-fork/<game>/` for fork mirrors) | **Sharpee workspace** (`npmsharpee/tools/ship.py`) |
+| `wwwbasic` | `.bas` file | IF Hub pipeline |
+| `qbjc` | `.bas` → `.js` | IF Hub pipeline |
+| `applesoft` | `.bas` file | IF Hub pipeline |
+| `jsdos` | `.jsdos` bundle | IF Hub pipeline |
+| `ink` | `.ink` file | IF Hub pipeline |
+| `rez` | `.rez` files | IF Hub pipeline |
 
 Each BASIC dialect must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
 
-**Sharpee workspace:** Games at `/c/code/npmsharpee/games/<game>/` (npm projects, standalone — not pnpm workspace). Each game has its own `ifhub.conf` manifest and `package.json` with `@sharpee/*` npm dependencies. Engine fork at `/c/code/fork/sharpee/` (engine contributions only — never modify during game dev). See `reference/sharpee-author-guide.md`.
+### Sharpee integration
 
-### Sharpee Build & Publish
+Sharpee games own their build chain in `/c/code/npmsharpee/`. IF Hub is a **target** they ship to via the intake API:
 
-The full Sharpee pipeline is automated — one command handles build, import, source viewer, walkthroughs, registration, and publish:
+- `python tools/register_game.py --name <game> --title … --engine sharpee` — updates games.json + cards.json
+- `python tools/publish.py <game>` — pushes the game folder to `Johnesco/<game>` Pages repo
+- `python tools/push_hub.py -m "msg"` — commits + pushes site/* registry changes
 
-```bash
-# Build + import (no publish)
-python tools/compile_sharpee.py <game-name> --force
+The pipeline's Sharpee `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`. For hub-local or full publishing, run ship.sh from the Sharpee workspace directly.
 
-# Build + import + publish to GitHub Pages
-python tools/compile_sharpee.py <game-name> --force --ship
-
-# Or use jukebox directly (requires pre-built dist/web/)
-python tools/jukebox.py import /c/code/npmsharpee/games/<game>/ --force --ship
-```
-
-`compile_sharpee.py` handles: npm install → `npx sharpee build-browser` → `jukebox.py import` (which copies binaries, source files, extracts walkthroughs from `.transcript` files, generates `source.html`/`walkthrough.html`, registers in `games.json`/`cards.json`) → validates bundle → cleans dist.
-
-**Registry:** Sharpee games use `deploy` and `source` fields in `games-registry.json` (not `path`). The `source` field points to the npm project; `deploy` points to the GitHub Pages deploy directory (relative to ifhub root, e.g., `../text-games/cloak-sharpee`).
+**Registry:** Sharpee games use a single `path:` field in `games-registry.json` pointing at the game folder. Path can be absolute or relative to ifhub root — games can live anywhere on disk, not just under `npmsharpee/`. Multi-version games (familyzoo) add `entry:` / `binary:` / `subpath:` fields to build distinct targets from one folder. Registration is mandatory: `tools/ship.py` does not scan filesystem, so any game without a registry entry is unknown to the hub.
 
 ## Hub Architecture
 
@@ -138,6 +166,8 @@ python tools/pipeline.py game-name --ship         # compile + test + register + 
 ```
 
 `compile.py` auto-generates `index.html` + `source.html` from `story.ni` metadata when they don't exist. The `register` stage reads title/description from `story.ni` — no CLI args needed. All steps are idempotent. No colons in game titles (Windows filename limitation).
+
+**GitHub Pages:** `publish.py` automatically enables Pages (workflow deployment) on every publish. If the repo was created manually before running the pipeline, Pages is still detected and enabled. Do NOT create repos or init git manually — let `publish.py` handle first-time setup end-to-end.
 
 See `reference/project-guide.md` for detailed steps, individual scripts, and pipeline stages.
 

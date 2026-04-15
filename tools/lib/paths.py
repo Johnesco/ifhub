@@ -41,6 +41,7 @@ def new_project_dir(engine: str, name: str) -> Path:
 # Game registry files
 GAMES_REGISTRY = I7_ROOT / "games-registry.json"
 GAMES_LOCAL = I7_ROOT / "games-local.json"
+WORKSPACES_FILE = I7_ROOT / "workspaces.json"
 
 # Compiler paths — override with INFORM7_HOME env var if installed elsewhere
 _I7_HOME = Path(os.environ.get("INFORM7_HOME", r"C:\Program Files\Inform7IDE"))
@@ -123,11 +124,18 @@ def _resolve_game_path(entry: dict) -> Path:
 def registered_games() -> dict[str, Path]:
     """Return dict mapping game name -> resolved absolute path for all registered games.
 
+    Resolution order:
+    1. Workspace discovery (scans workspaces.json roots for ifhub.conf files)
+    2. games-registry.json / games-local.json (overrides workspace-discovered paths)
+
     If the deploy directory doesn't exist yet but a source directory does,
     include the game anyway so the dashboard can trigger the first build.
     """
+    # Start with workspace-discovered games
+    result = _discover_from_workspaces()
+
+    # Layer registry on top (registry entries override workspace discovery)
     registry = _load_registry()
-    result = {}
     for name, entry in registry.items():
         resolved = _resolve_game_path(entry)
         if resolved != Path() and resolved.is_dir():
@@ -140,11 +148,133 @@ def registered_games() -> dict[str, Path]:
     return result
 
 
+# --- Workspace discovery ---
+
+_workspace_cache: dict[str, Path] | None = None
+
+
+def _discover_from_workspaces() -> dict[str, Path]:
+    """Scan workspace roots from workspaces.json for games with ifhub.conf.
+
+    For "in-place" deploy workspaces, the game directory IS the deploy dir.
+    For workspaces with a separate deploy root, the deploy dir is
+    <deploy_root>/<game_name>/ (looked up via the 'name' field in ifhub.conf,
+    falling back to the directory name).
+    """
+    global _workspace_cache
+    if _workspace_cache is not None:
+        return dict(_workspace_cache)
+
+    result: dict[str, Path] = {}
+
+    if not WORKSPACES_FILE.exists():
+        _workspace_cache = result
+        return dict(result)
+
+    try:
+        data = json.loads(WORKSPACES_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        _workspace_cache = result
+        return dict(result)
+
+    for ws in data.get("workspaces", []):
+        root_raw = ws.get("root", "")
+        deploy_mode = ws.get("deploy", "in-place")
+
+        root = _resolve_raw_path(root_raw)
+        if root == Path() or not root.is_dir():
+            continue
+
+        # Resolve deploy root for non-in-place workspaces
+        deploy_root = None
+        if deploy_mode != "in-place":
+            deploy_root = _resolve_raw_path(deploy_mode)
+
+        # Scan subdirectories for ifhub.conf
+        try:
+            entries = sorted(root.iterdir())
+        except OSError:
+            continue
+
+        for subdir in entries:
+            if not subdir.is_dir():
+                continue
+            conf_file = subdir / "ifhub.conf"
+            if not conf_file.exists():
+                continue
+
+            # Read the game name from ifhub.conf (fall back to dir name)
+            game_name = subdir.name
+            try:
+                for line in conf_file.read_text(encoding="utf-8").splitlines():
+                    stripped = line.strip()
+                    if stripped.startswith("name") and "=" in stripped:
+                        game_name = stripped.split("=", 1)[1].strip()
+                        break
+            except OSError:
+                pass
+
+            if deploy_mode == "in-place":
+                result[game_name] = subdir
+            elif deploy_root is not None:
+                deploy_dir = deploy_root / game_name
+                result[game_name] = deploy_dir
+
+    _workspace_cache = result
+    return dict(result)
+
+
 def game_source_dir(name: str) -> Path:
-    """Return absolute path to a game's source directory (from 'source' registry field), or Path()."""
+    """Return absolute path to a game's source directory.
+
+    Resolution order:
+    1. 'source' field in games-registry.json / games-local.json
+    2. Workspace scan (for non-in-place workspaces, source is the workspace subdir)
+    """
     registry = _load_registry()
     entry = registry.get(name, {})
-    return _resolve_raw_path(entry.get("source", ""))
+    source = entry.get("source", "")
+    if source:
+        return _resolve_raw_path(source)
+
+    # Fall back to workspace discovery — find the workspace subdir containing this game
+    if not WORKSPACES_FILE.exists():
+        return Path()
+
+    try:
+        data = json.loads(WORKSPACES_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return Path()
+
+    for ws in data.get("workspaces", []):
+        if ws.get("deploy", "in-place") == "in-place":
+            continue  # in-place games have no separate source dir
+        root = _resolve_raw_path(ws.get("root", ""))
+        if root == Path() or not root.is_dir():
+            continue
+        # Check each subdir for a matching game name
+        try:
+            for subdir in root.iterdir():
+                if not subdir.is_dir():
+                    continue
+                conf_file = subdir / "ifhub.conf"
+                if not conf_file.exists():
+                    continue
+                game_name = subdir.name
+                try:
+                    for line in conf_file.read_text(encoding="utf-8").splitlines():
+                        stripped = line.strip()
+                        if stripped.startswith("name") and "=" in stripped:
+                            game_name = stripped.split("=", 1)[1].strip()
+                            break
+                except OSError:
+                    pass
+                if game_name == name:
+                    return subdir
+        except OSError:
+            continue
+
+    return Path()
 
 
 def game_repo(name: str) -> str:
