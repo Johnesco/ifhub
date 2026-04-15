@@ -394,21 +394,6 @@
     "tags": []
   },
   {
-    "id": "feverdream-sharpee",
-    "title": "Fever Dream (Sharpee)",
-    "playUrl": "/feverdream-sharpee/play.html",
-    "landingUrl": "/feverdream-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/feverdream-sharpee/source.html",
-    "engine": "sharpee",
-    "tags": [
-      "horror",
-      "perceptual"
-    ],
-    "walkthroughUrl": "/feverdream-sharpee/walkthrough.html",
-    "sourceLabel": "src/index.ts"
-  },
-  {
     "id": "familyzoo-01",
     "title": "Family Zoo Tutorial v01: A Single Room",
     "sourceLabel": "familyzoo-01.ts",
