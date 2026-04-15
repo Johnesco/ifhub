@@ -15,12 +15,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import git, paths
 import fix_mojibake
+import build_cards
 
 
 def main():
     parser = argparse.ArgumentParser(description="Push IF Hub registry changes.")
     parser.add_argument("game", help="Game name (for commit message)")
     args = parser.parse_args()
+
+    # Rebuild cards.json from games.json + registry so versioning consolidation
+    # is always applied before we commit.
+    print("Rebuilding cards.json from games.json + games-registry.json...")
+    build_cards.main()
 
     repaired = fix_mojibake.repair()
     for path in repaired:
@@ -29,7 +35,7 @@ def main():
 
     cwd = paths.I7_ROOT
     git.add([paths.IFHUB_DIR / "games.json", paths.IFHUB_DIR / "cards.json",
-             paths.IFHUB_DIR / "hubs.json"], cwd=cwd)
+             paths.IFHUB_DIR / "hubs.json", paths.GAMES_REGISTRY], cwd=cwd)
 
     if not git.diff_cached_quiet(cwd=cwd):
         print("No hub registry changes to push.")

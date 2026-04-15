@@ -177,12 +177,6 @@ a:hover {
   background: var(--btn-hover-bg, #ffe8a0);
 }
 
-.game-links {
-  display: flex;
-  gap: 20px;
-  font-size: 0.9em;
-}
-
 .tech-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -316,54 +310,86 @@ Promise.all([
   var hubQuery = activeHub.id !== 'all' ? '&hub=' + activeHub.id : '';
 
   filtered.forEach(function(card, cardIdx) {
-    // Build options list: primary + versions
+    // Build options list: primary + versions. Each option carries its own
+    // source/walkthrough URLs so the action dropdown can adapt per version.
     var options = [];
     var soundTag = card.sound ? ' (sound)' : '';
     var primaryLabel = card.primaryLabel || card.title;
-    options.push({ id: card.id, label: primaryLabel + soundTag, playUrl: card.playUrl });
+    options.push({
+      id: card.id,
+      label: primaryLabel + soundTag,
+      playUrl: card.playUrl,
+      sourceUrl: card.sourceUrl || '',
+      walkthroughUrl: card.walkthroughUrl || ''
+    });
 
     if (card.versions) {
       card.versions.forEach(function(v) {
         var vSound = v.sound ? ' (sound)' : '';
-        options.push({ id: v.id, label: v.label + vSound, playUrl: v.playUrl });
+        options.push({
+          id: v.id,
+          label: v.label + vSound,
+          playUrl: v.playUrl,
+          sourceUrl: v.sourceUrl || '',
+          walkthroughUrl: v.walkthroughUrl || ''
+        });
       });
     }
 
-    // Build select options HTML
-    var optionsHtml = options.map(function(o) {
-      return '<option value="' + o.id + '" data-play="' + o.playUrl + '">' + o.label + '</option>';
+    var versionOptionsHtml = options.map(function(o, i) {
+      return '<option value="' + o.id + '" data-idx="' + i + '">' + o.label + '</option>';
     }).join('');
 
     var cardHtml =
       '<div class="game-card">' +
-        '<h3><a href="' + card.landingUrl + '">' + card.title + '</a></h3>' +
+        '<h3><a href="' + (card.landingUrl || card.playUrl) + '">' + card.title + '</a></h3>' +
         '<p class="game-meta">' + card.meta + '</p>' +
         '<p>' + card.description + '</p>' +
         '<div class="card-controls">' +
-          '<select id="pick-' + cardIdx + '">' + optionsHtml + '</select>' +
+          '<select id="pick-' + cardIdx + '">' + versionOptionsHtml + '</select>' +
+          '<select id="action-' + cardIdx + '"></select>' +
           '<label><input type="checkbox" id="fs-' + cardIdx + '"> Fullscreen</label>' +
           '<button data-card="' + cardIdx + '">PLAY</button>' +
-        '</div>' +
-        '<div class="game-links">' +
-          '<a href="/' + card.base + '/source.html">Source</a>' +
-          '<a href="/' + card.base + '/walkthrough.html">Walkthrough</a>' +
         '</div>' +
       '</div>';
 
     container.insertAdjacentHTML('beforeend', cardHtml);
 
-    // Wire play button
+    var versionSelect = document.getElementById('pick-' + cardIdx);
+    var actionSelect = document.getElementById('action-' + cardIdx);
+
+    function rebuildActions() {
+      var idx = parseInt(versionSelect.options[versionSelect.selectedIndex].getAttribute('data-idx'), 10);
+      var opt = options[idx];
+      var prev = actionSelect.value;
+      var actions = [{ value: 'play', label: 'Play Game' }];
+      if (opt.sourceUrl) actions.push({ value: 'source', label: 'View Source' });
+      if (opt.walkthroughUrl) actions.push({ value: 'walkthrough', label: 'View Walkthrough' });
+      actionSelect.innerHTML = actions.map(function(a) {
+        return '<option value="' + a.value + '">' + a.label + '</option>';
+      }).join('');
+      if (actions.some(function(a) { return a.value === prev; })) {
+        actionSelect.value = prev;
+      }
+    }
+    rebuildActions();
+    versionSelect.addEventListener('change', rebuildActions);
+
     container.querySelector('button[data-card="' + cardIdx + '"]').addEventListener('click', function() {
-      var select = document.getElementById('pick-' + cardIdx);
-      var selected = select.options[select.selectedIndex];
-      var id = selected.value;
-      var playUrl = selected.getAttribute('data-play');
+      var idx = parseInt(versionSelect.options[versionSelect.selectedIndex].getAttribute('data-idx'), 10);
+      var opt = options[idx];
+      var action = actionSelect.value;
       var fullscreen = document.getElementById('fs-' + cardIdx).checked;
 
+      var directUrl = opt.playUrl;
+      var view = 'game';
+      if (action === 'source') { directUrl = opt.sourceUrl; view = 'source'; }
+      else if (action === 'walkthrough') { directUrl = opt.walkthroughUrl; view = 'walkthrough'; }
+
       if (fullscreen) {
-        window.location.href = playUrl;
+        window.location.href = directUrl;
       } else {
-        window.location.href = 'app.html?game=' + id + hubQuery;
+        window.location.href = 'app.html?game=' + opt.id + '&view=' + view + hubQuery;
       }
     });
   });

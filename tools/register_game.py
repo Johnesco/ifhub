@@ -41,7 +41,19 @@ def main():
     parser.add_argument("--engine", default="inform7", help="Engine type: inform7, ink, basic")
     parser.add_argument("--tags", default="", help="Comma-separated tags (e.g. 'horror,classic')")
     parser.add_argument("--repo", default="", help="GitHub repo (default: {GH_ORG}/{name})")
+    parser.add_argument("--version-of", default="", dest="version_of",
+                        help="Mark as a version of this base id (e.g. 'familyzoo')")
+    parser.add_argument("--version-label", default="", dest="version_label",
+                        help="Label shown in the version dropdown")
+    parser.add_argument("--version-order", type=int, default=None, dest="version_order",
+                        help="Integer sort key for version ordering")
+    parser.add_argument("--version-primary", action="store_true", dest="version_primary",
+                        help="Mark this entry as the featured/current version")
+    parser.add_argument("--version-primary-label", default="", dest="version_primary_label",
+                        help="Label for the primary in the dropdown (default: 'Current')")
     args = parser.parse_args()
+
+    is_versioned = bool(args.version_of or args.version_primary)
 
     games_path = IFHUB_DIR / "games.json"
     cards_path = IFHUB_DIR / "cards.json"
@@ -94,28 +106,34 @@ def main():
         print(f"  games.json: added '{name}'")
 
     # --- cards.json ---
-    cards = json.loads(cards_path.read_text(encoding="utf-8"))
-    if any(c["id"] == name for c in cards):
-        print(f"  cards.json: '{name}' already exists, skipping")
+    # For versioned games we let build_cards.py own cards.json — it consolidates
+    # version group members into a single card with versions:[...]. For non-versioned
+    # games we still add a card entry here so the direct register → push flow works.
+    if is_versioned:
+        print(f"  cards.json: skipped (versioned game — run 'python tools/build_cards.py')")
     else:
-        card: dict = {
-            "id": name,
-            "base": name,
-            "title": args.title,
-            "meta": args.meta,
-            "description": args.description,
-            "playUrl": f"/{name}/play.html",
-            "landingUrl": f"/{name}/",
-        }
-        if args.sound:
-            card["sound"] = args.sound
-        card["engine"] = args.engine
-        card["tags"] = tags
+        cards = json.loads(cards_path.read_text(encoding="utf-8"))
+        if any(c["id"] == name for c in cards):
+            print(f"  cards.json: '{name}' already exists, skipping")
+        else:
+            card: dict = {
+                "id": name,
+                "base": name,
+                "title": args.title,
+                "meta": args.meta,
+                "description": args.description,
+                "playUrl": f"/{name}/play.html",
+                "landingUrl": f"/{name}/",
+            }
+            if args.sound:
+                card["sound"] = args.sound
+            card["engine"] = args.engine
+            card["tags"] = tags
 
-        cards.append(card)
-        cards_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n",
-                              encoding="utf-8")
-        print(f"  cards.json: added '{name}'")
+            cards.append(card)
+            cards_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n",
+                                  encoding="utf-8")
+            print(f"  cards.json: added '{name}'")
 
     # --- games-registry.json ---
     if GAMES_REGISTRY.exists():
@@ -124,11 +142,43 @@ def main():
         registry = {}
 
     if name in registry:
-        print(f"  games-registry.json: '{name}' already exists, skipping")
+        existing = registry[name]
+        changed = False
+        if args.version_of and existing.get("versionOf") != args.version_of:
+            existing["versionOf"] = args.version_of
+            changed = True
+        if args.version_label and existing.get("versionLabel") != args.version_label:
+            existing["versionLabel"] = args.version_label
+            changed = True
+        if args.version_order is not None and existing.get("versionOrder") != args.version_order:
+            existing["versionOrder"] = args.version_order
+            changed = True
+        if args.version_primary and not existing.get("versionPrimary"):
+            existing["versionPrimary"] = True
+            changed = True
+        if args.version_primary_label and existing.get("versionPrimaryLabel") != args.version_primary_label:
+            existing["versionPrimaryLabel"] = args.version_primary_label
+            changed = True
+        if changed:
+            GAMES_REGISTRY.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n",
+                                      encoding="utf-8")
+            print(f"  games-registry.json: updated versioning fields on '{name}'")
+        else:
+            print(f"  games-registry.json: '{name}' already exists, skipping")
     else:
         entry = {"path": f"../text-games/{name}"}
         repo = args.repo or f"{GH_ORG}/{name}"
         entry["repo"] = repo
+        if args.version_of:
+            entry["versionOf"] = args.version_of
+        if args.version_label:
+            entry["versionLabel"] = args.version_label
+        if args.version_order is not None:
+            entry["versionOrder"] = args.version_order
+        if args.version_primary:
+            entry["versionPrimary"] = True
+        if args.version_primary_label:
+            entry["versionPrimaryLabel"] = args.version_primary_label
         registry[name] = entry
         GAMES_REGISTRY.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n",
                                   encoding="utf-8")
@@ -136,6 +186,9 @@ def main():
 
     print(f"\nDone. Next: publish to GitHub Pages with:")
     print(f"  python tools/publish.py {name}")
+    if is_versioned:
+        print(f"  python tools/build_cards.py       # consolidate versioned cards")
+        print(f"  python tools/build_landing.py {args.version_of or name}")
 
 
 if __name__ == "__main__":

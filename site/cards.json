@@ -1,151 +1,5 @@
 [
   {
-    "id": "zork1",
-    "base": "zork1",
-    "title": "Zork I - The Great Underground Empire",
-    "meta": "Infocom (translated to Inform 7)",
-    "description": "A full translation of Infocom's classic adventure game from the original ZIL source code to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, multimedia experience.",
-    "primaryLabel": "Current",
-    "sound": "blorb",
-    "playUrl": "/zork1/play.html",
-    "landingUrl": "/zork1/",
-    "engine": "inform7",
-    "tags": [
-      "sound",
-      "classic",
-      "zork"
-    ],
-    "versions": [
-      {
-        "id": "zork1-v3",
-        "label": "v3 — Multimedia",
-        "sound": "blorb",
-        "playUrl": "/zork1-v3/play.html"
-      },
-      {
-        "id": "zork1-v2",
-        "label": "v2 — Bug Fixes",
-        "playUrl": "/zork1-v2/play.html"
-      },
-      {
-        "id": "zork1-v1",
-        "label": "v1 — The Port",
-        "playUrl": "/zork1-v1/play.html"
-      },
-      {
-        "id": "zork1-v0",
-        "label": "v0 — Original ZIL",
-        "playUrl": "/zork1-v0/play.html"
-      }
-    ]
-  },
-  {
-    "id": "dracula",
-    "base": "dracula",
-    "title": "Dracula's Castle",
-    "meta": "An Interactive Adventure",
-    "description": "Explore Dracula's Castle and uncover its dark secret before midnight strikes. A horror-themed adventure written in Inform 7.",
-    "primaryLabel": "Inform 7",
-    "playUrl": "/dracula/play.html",
-    "landingUrl": "/dracula/",
-    "engine": "inform7",
-    "tags": [
-      "horror",
-      "classic",
-      "basic"
-    ],
-    "versions": [
-      {
-        "id": "dracula-v0",
-        "label": "v0 — Original BASIC",
-        "playUrl": "/dracula-v0/play.html"
-      }
-    ]
-  },
-  {
-    "id": "feverdream",
-    "base": "feverdream",
-    "title": "Fever Dream",
-    "meta": "A Perceptual Horror",
-    "description": "Three items alter your perception. The world stays the same. You do not.",
-    "sound": "blorb",
-    "playUrl": "/feverdream/play.html",
-    "landingUrl": "/feverdream/",
-    "engine": "inform7",
-    "tags": [
-      "sound",
-      "horror"
-    ]
-  },
-  {
-    "id": "babel",
-    "base": "babel",
-    "title": "Babel Fish Puzzle Permutation 2013 - An Homage To Adams and Meretzky",
-    "meta": "An Homage To Adams and Meretzky",
-    "description": "A recreation of the classic Babel Fish puzzle from The Hitchhiker's Guide to the Galaxy text adventure. Place items in the right spots, then push the button to catch the fish.",
-    "playUrl": "/babel/play.html",
-    "landingUrl": "/babel/",
-    "engine": "inform7",
-    "tags": [
-      "classic",
-      "puzzle"
-    ]
-  },
-  {
-    "id": "disenchantment12",
-    "base": "disenchantment12",
-    "title": "Disenchantment12",
-    "meta": "An Inform 7 Tutorial",
-    "description": "An Inform 7 tutorial game.",
-    "playUrl": "/disenchantment12/play.html",
-    "landingUrl": "/disenchantment12/",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "larva",
-    "base": "larva",
-    "title": "Larva",
-    "meta": "An Inform 7 Tutorial",
-    "description": "An Inform 7 tutorial game.",
-    "playUrl": "/larva/play.html",
-    "landingUrl": "/larva/",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "sample",
-    "base": "sample",
-    "title": "Sample",
-    "meta": "An Inform 7 Demo",
-    "description": "A sample Inform 7 game.",
-    "playUrl": "/sample/play.html",
-    "landingUrl": "/sample/",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "haunted-house",
-    "base": "haunted-house",
-    "title": "Haunted House",
-    "meta": "1983 Usborne Classic",
-    "description": "A classic 1983 Usborne text adventure with 64 rooms and a candle timer.",
-    "playUrl": "/haunted-house/play.html",
-    "landingUrl": "/haunted-house/",
-    "engine": "wwwbasic",
-    "tags": [
-      "horror",
-      "classic",
-      "basic"
-    ]
-  },
-  {
     "id": "apple-adventure",
     "base": "apple-adventure",
     "title": "Apple Adventure",
@@ -157,61 +11,72 @@
     "tags": [
       "classic",
       "basic"
-    ]
+    ],
+    "sourceUrl": "/apple-adventure/source.html"
   },
   {
-    "id": "seasons",
-    "base": "seasons",
-    "title": "Seasons",
-    "meta": "An Inform 7 Demo",
-    "description": "A mood-palette demo with seasonal CSS effects.",
-    "playUrl": "/seasons/play.html",
-    "landingUrl": "/seasons/",
+    "id": "babel",
+    "base": "babel",
+    "title": "Babel Fish Puzzle from HHGG",
+    "meta": "An Homage To Adams and Meretzky",
+    "description": "A recreation of the classic Babel Fish puzzle from The Hitchhiker's Guide to the Galaxy text adventure. Place items in the right spots, then push the button to catch the fish.",
+    "playUrl": "/babel/play.html",
+    "landingUrl": "/babel/",
     "engine": "inform7",
     "tags": [
-      "demo"
-    ]
+      "classic",
+      "puzzle"
+    ],
+    "sourceUrl": "/babel/source.html",
+    "walkthroughUrl": "/babel/walkthrough.html"
   },
   {
-    "id": "ink-story",
-    "base": "ink-story",
-    "title": "Farmer's Heart",
-    "meta": "An Ink Story",
-    "description": "A branching adventure of a farmer inheriting her grandfather's magical farm in Stardew Valley. Built with Ink.",
-    "playUrl": "/ink-story/play.html",
-    "landingUrl": "/ink-story/",
-    "engine": "ink",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "lostinnewyork",
-    "base": "lostinnewyork",
-    "title": "Lost in New York",
-    "meta": "An Ink Story",
-    "description": "You're standing on the corner of Broadway and Canal with a dead phone and the world's worst directions. Your friends are somewhere in downtown Manhattan. Find them.",
-    "playUrl": "/lostinnewyork/play.html",
-    "landingUrl": "/lostinnewyork/",
-    "engine": "ink",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "guess-the-verb-inform7",
-    "base": "guess-the-verb-inform7",
-    "title": "Guess The Verb (Inform 7)",
-    "meta": "A Parser Puzzle Laboratory",
-    "description": "A parser disambiguation lab. Every room tests a different verb pattern.",
-    "playUrl": "/guess-the-verb-inform7/play.html",
-    "landingUrl": "/guess-the-verb-inform7/",
+    "id": "cloak-inform7",
+    "base": "cloak-inform7",
+    "title": "Cloak of Darkness (Inform 7)",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/cloak-inform7/play.html",
+    "landingUrl": "/cloak-inform7/",
     "engine": "inform7",
     "tags": [
-      "guess-the-verb",
-      "parser-lab",
-      "disambiguation"
-    ]
+      "cloak",
+      "demo"
+    ],
+    "sourceUrl": "/cloak-inform7/source.html",
+    "walkthroughUrl": "/cloak-inform7/walkthrough.html"
+  },
+  {
+    "id": "cloak-ink",
+    "base": "cloak-ink",
+    "title": "Cloak of Darkness (Ink)",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/cloak-ink/play.html",
+    "landingUrl": "/cloak-ink/",
+    "engine": "ink",
+    "tags": [
+      "cloak",
+      "demo",
+      "classic"
+    ],
+    "sourceUrl": "/cloak-ink/source.html"
+  },
+  {
+    "id": "cloak-rez",
+    "base": "cloak-rez",
+    "title": "Cloak of Darkness (Rez)",
+    "meta": "A Rez Game",
+    "description": "The classic IF benchmark implemented in Rez — an open-source choice-based IF engine.",
+    "playUrl": "/cloak-rez/play.html",
+    "landingUrl": "/cloak-rez/",
+    "engine": "rez",
+    "tags": [
+      "cloak",
+      "demo"
+    ],
+    "sourceUrl": "/cloak-rez/src/cloak_of_darkness.rez",
+    "walkthroughUrl": "/cloak-rez/walkthrough.html"
   },
   {
     "id": "cloak-sharpee",
@@ -231,64 +96,46 @@
     "sourceBrowser": true
   },
   {
-    "id": "cloak-inform7",
-    "base": "cloak-inform7",
-    "title": "Cloak of Darkness (Inform 7)",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
-    "playUrl": "/cloak-inform7/play.html",
-    "landingUrl": "/cloak-inform7/",
+    "id": "disenchantment12",
+    "base": "disenchantment12",
+    "title": "Disenchantment12",
+    "meta": "An Inform 7 Tutorial",
+    "description": "An Inform 7 tutorial game.",
+    "playUrl": "/disenchantment12/play.html",
+    "landingUrl": "/disenchantment12/",
     "engine": "inform7",
     "tags": [
-      "cloak",
       "demo"
-    ]
-  },
-  {
-    "id": "guess-the-verb-sharpee",
-    "base": "guess-the-verb-sharpee",
-    "title": "Guess the Verb (Sharpee)",
-    "meta": "A Parser Puzzle Laboratory",
-    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language.",
-    "playUrl": "/guess-the-verb-sharpee/play.html",
-    "landingUrl": "/guess-the-verb-sharpee/",
-    "engine": "sharpee",
-    "tags": [
-      "parser-lab",
-      "disambiguation",
-      "guess-the-verb"
     ],
-    "sourceUrl": "/guess-the-verb-sharpee/source.html",
-    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
-    "sourceBrowser": true
+    "sourceUrl": "/disenchantment12/source.html",
+    "walkthroughUrl": "/disenchantment12/walkthrough.html"
   },
   {
-    "id": "cloak-ink",
-    "base": "cloak-ink",
-    "title": "Cloak of Darkness (Ink)",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
-    "playUrl": "/cloak-ink/play.html",
-    "landingUrl": "/cloak-ink/",
-    "engine": "ink",
+    "id": "dracula",
+    "base": "dracula",
+    "title": "Dracula's Castle (Current)",
+    "meta": "An Interactive Adventure",
+    "description": "Explore Dracula's Castle and uncover its dark secret before midnight strikes. A horror-themed adventure written in Inform 7.",
+    "primaryLabel": "Inform 7",
+    "playUrl": "/dracula/play.html",
+    "landingUrl": "/dracula/",
+    "engine": "inform7",
     "tags": [
-      "cloak",
-      "demo",
-      "classic"
-    ]
-  },
-  {
-    "id": "cloak-rez",
-    "base": "cloak-rez",
-    "title": "Cloak of Darkness (Rez)",
-    "meta": "A Rez Game",
-    "description": "The classic IF benchmark implemented in Rez — an open-source choice-based IF engine.",
-    "playUrl": "/cloak-rez/play.html",
-    "landingUrl": "/cloak-rez/",
-    "engine": "rez",
-    "tags": [
-      "cloak",
-      "demo"
+      "horror",
+      "classic",
+      "basic"
+    ],
+    "sourceUrl": "/dracula/story.ni",
+    "walkthroughUrl": "/dracula/walkthrough.html",
+    "versions": [
+      {
+        "id": "dracula-v0",
+        "label": "v0 — Original BASIC",
+        "playUrl": "/dracula-v0/play.html",
+        "landingUrl": "/dracula/#dracula-v0",
+        "sourceUrl": "/dracula-v0/source.html",
+        "walkthroughUrl": "/dracula-v0/walkthrough.html"
+      }
     ]
   },
   {
@@ -310,6 +157,283 @@
     "sourceBrowser": true
   },
   {
+    "id": "familyzoo-17",
+    "base": "familyzoo-17",
+    "title": "Family Zoo v17: After Hours & Multi-File Org.",
+    "meta": "An Interactive Fiction",
+    "description": "Sharpee tutorial step 17 — After Hours & Multi-File Organization.",
+    "primaryLabel": "Current",
+    "playUrl": "/familyzoo/v17/play.html",
+    "landingUrl": "/familyzoo/",
+    "engine": "sharpee",
+    "tags": [
+      "sharpee",
+      "tutorial",
+      "learning"
+    ],
+    "sourceUrl": "/familyzoo/v17/source.html",
+    "walkthroughUrl": "/familyzoo/v17/walkthrough.html",
+    "versions": [
+      {
+        "id": "familyzoo-16",
+        "label": "v16 — Scoring and Endgame",
+        "playUrl": "/familyzoo/v16/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-16",
+        "sourceUrl": "/familyzoo/v16/source.html",
+        "walkthroughUrl": "/familyzoo/v16/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-15",
+        "label": "v15 — Timed Events (Daemons & Fuses)",
+        "playUrl": "/familyzoo/v15/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-15",
+        "sourceUrl": "/familyzoo/v15/source.html",
+        "walkthroughUrl": "/familyzoo/v15/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-14",
+        "label": "v14 — Capability Dispatch",
+        "playUrl": "/familyzoo/v14/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-14",
+        "sourceUrl": "/familyzoo/v14/source.html",
+        "walkthroughUrl": "/familyzoo/v14/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-13",
+        "label": "v13 — Custom Actions",
+        "playUrl": "/familyzoo/v13/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-13",
+        "sourceUrl": "/familyzoo/v13/source.html",
+        "walkthroughUrl": "/familyzoo/v13/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-12",
+        "label": "v12 — Event Handlers",
+        "playUrl": "/familyzoo/v12/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-12",
+        "sourceUrl": "/familyzoo/v12/source.html",
+        "walkthroughUrl": "/familyzoo/v12/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-11",
+        "label": "v11 — Non-Player Characters",
+        "playUrl": "/familyzoo/v11/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-11",
+        "sourceUrl": "/familyzoo/v11/source.html",
+        "walkthroughUrl": "/familyzoo/v11/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-10",
+        "label": "v10 — Switchable Devices",
+        "playUrl": "/familyzoo/v10/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-10",
+        "sourceUrl": "/familyzoo/v10/source.html",
+        "walkthroughUrl": "/familyzoo/v10/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-09",
+        "label": "v09 — Readable Objects",
+        "playUrl": "/familyzoo/v09/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-09",
+        "sourceUrl": "/familyzoo/v09/source.html",
+        "walkthroughUrl": "/familyzoo/v09/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-08",
+        "label": "v08 — Light & Dark",
+        "playUrl": "/familyzoo/v08/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-08",
+        "sourceUrl": "/familyzoo/v08/source.html",
+        "walkthroughUrl": "/familyzoo/v08/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-07",
+        "label": "v07 — Locked Doors & Keys",
+        "playUrl": "/familyzoo/v07/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-07",
+        "sourceUrl": "/familyzoo/v07/source.html",
+        "walkthroughUrl": "/familyzoo/v07/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-06",
+        "label": "v06 — Openable Things",
+        "playUrl": "/familyzoo/v06/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-06",
+        "sourceUrl": "/familyzoo/v06/source.html",
+        "walkthroughUrl": "/familyzoo/v06/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-05",
+        "label": "v05 — Containers & Supporters",
+        "playUrl": "/familyzoo/v05/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-05",
+        "sourceUrl": "/familyzoo/v05/source.html",
+        "walkthroughUrl": "/familyzoo/v05/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-04",
+        "label": "v04 — Portable Objects",
+        "playUrl": "/familyzoo/v04/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-04",
+        "sourceUrl": "/familyzoo/v04/source.html",
+        "walkthroughUrl": "/familyzoo/v04/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-03",
+        "label": "v03 — Scenery",
+        "playUrl": "/familyzoo/v03/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-03",
+        "sourceUrl": "/familyzoo/v03/source.html",
+        "walkthroughUrl": "/familyzoo/v03/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-02",
+        "label": "v02 — Multiple Rooms & Navigation",
+        "playUrl": "/familyzoo/v02/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-02",
+        "sourceUrl": "/familyzoo/v02/source.html",
+        "walkthroughUrl": "/familyzoo/v02/walkthrough.html"
+      },
+      {
+        "id": "familyzoo-01",
+        "label": "v01 — A Single Room",
+        "playUrl": "/familyzoo/v01/play.html",
+        "landingUrl": "/familyzoo/#familyzoo-01",
+        "sourceUrl": "/familyzoo/v01/source.html",
+        "walkthroughUrl": "/familyzoo/v01/walkthrough.html"
+      }
+    ]
+  },
+  {
+    "id": "fever-dream-sharpee",
+    "base": "fever-dream-sharpee",
+    "title": "Fever Dream (Sharpee)",
+    "meta": "An Interactive Fiction",
+    "description": "A perceptual horror. Three items alter your perception. The world stays the same. You do not.",
+    "playUrl": "/fever-dream-sharpee/play.html",
+    "landingUrl": "/fever-dream-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "horror",
+      "perceptual"
+    ],
+    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.html",
+    "sourceBrowser": true
+  },
+  {
+    "id": "feverdream",
+    "base": "feverdream",
+    "title": "Fever Dream",
+    "meta": "A Perceptual Horror",
+    "description": "Three items alter your perception. The world stays the same. You do not.",
+    "sound": "blorb",
+    "playUrl": "/feverdream/play.html",
+    "landingUrl": "/feverdream/",
+    "engine": "inform7",
+    "tags": [
+      "sound",
+      "horror"
+    ],
+    "sourceUrl": "/feverdream/story.ni",
+    "walkthroughUrl": "/feverdream/walkthrough.html"
+  },
+  {
+    "id": "guess-the-verb-inform7",
+    "base": "guess-the-verb-inform7",
+    "title": "Guess The Verb (Inform 7)",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A parser disambiguation lab. Every room tests a different verb pattern.",
+    "playUrl": "/guess-the-verb-inform7/play.html",
+    "landingUrl": "/guess-the-verb-inform7/",
+    "engine": "inform7",
+    "tags": [
+      "guess-the-verb",
+      "parser-lab",
+      "disambiguation"
+    ],
+    "sourceUrl": "/guess-the-verb-inform7/source.html",
+    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.html"
+  },
+  {
+    "id": "guess-the-verb-sharpee",
+    "base": "guess-the-verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language.",
+    "playUrl": "/guess-the-verb-sharpee/play.html",
+    "landingUrl": "/guess-the-verb-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "parser-lab",
+      "disambiguation",
+      "guess-the-verb"
+    ],
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
+    "sourceBrowser": true
+  },
+  {
+    "id": "haunted-house",
+    "base": "haunted-house",
+    "title": "Haunted House",
+    "meta": "1983 Usborne Classic",
+    "description": "A classic 1983 Usborne text adventure with 64 rooms and a candle timer.",
+    "playUrl": "/haunted-house/play.html",
+    "landingUrl": "/haunted-house/",
+    "engine": "wwwbasic",
+    "tags": [
+      "horror",
+      "basic",
+      "classic"
+    ],
+    "sourceUrl": "/haunted-house/source.html"
+  },
+  {
+    "id": "ink-story",
+    "base": "ink-story",
+    "title": "Farmer's Heart",
+    "meta": "An Ink Story",
+    "description": "A branching adventure of a farmer inheriting her grandfather's magical farm in Stardew Valley. Built with Ink.",
+    "playUrl": "/ink-story/play.html",
+    "landingUrl": "/ink-story/",
+    "engine": "ink",
+    "tags": [
+      "demo"
+    ],
+    "sourceUrl": "/ink-story/source.html",
+    "walkthroughUrl": "/ink-story/walkthrough.html"
+  },
+  {
+    "id": "larva",
+    "base": "larva",
+    "title": "Larva",
+    "meta": "An Inform 7 Tutorial",
+    "description": "An Inform 7 tutorial game.",
+    "playUrl": "/larva/play.html",
+    "landingUrl": "/larva/",
+    "engine": "inform7",
+    "tags": [
+      "demo"
+    ],
+    "sourceUrl": "/larva/source.html",
+    "walkthroughUrl": "/larva/walkthrough.html"
+  },
+  {
+    "id": "lostinnewyork",
+    "base": "lostinnewyork",
+    "title": "Lost in New York",
+    "meta": "An Ink Story",
+    "description": "You're standing on the corner of Broadway and Canal with a dead phone and the world's worst directions. Your friends are somewhere in downtown Manhattan. Find them.",
+    "playUrl": "/lostinnewyork/play.html",
+    "landingUrl": "/lostinnewyork/",
+    "engine": "ink",
+    "tags": [
+      "demo"
+    ],
+    "sourceUrl": "/lostinnewyork/source.html"
+  },
+  {
     "id": "no-signal-home-sharpee",
     "base": "no-signal-home-sharpee",
     "title": "No Signal Home",
@@ -328,353 +452,86 @@
     "sourceBrowser": true
   },
   {
-    "id": "zork1-v0",
-    "base": "zork1-v0",
-    "title": "Zork1 V0",
-    "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
-    "playUrl": "/zork1-v0/play.html",
-    "landingUrl": "/zork1-v0/",
-    "engine": "zmachine",
-    "tags": []
-  },
-  {
-    "id": "zork1-v1",
-    "base": "zork1-v1",
-    "title": "Zork I - The Great Underground Empire",
-    "meta": "An Interactive Fiction",
-    "description": "ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!",
-    "playUrl": "/zork1-v1/play.html",
-    "landingUrl": "/zork1-v1/",
+    "id": "sample",
+    "base": "sample",
+    "title": "Sample",
+    "meta": "An Inform 7 Demo",
+    "description": "A sample Inform 7 game.",
+    "playUrl": "/sample/play.html",
+    "landingUrl": "/sample/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ],
+    "sourceUrl": "/sample/source.html",
+    "walkthroughUrl": "/sample/walkthrough.html"
   },
   {
-    "id": "zork1-v2",
-    "base": "zork1-v2",
-    "title": "Zork I - The Great Underground Empire",
-    "meta": "An Interactive Fiction",
-    "description": "ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!",
-    "playUrl": "/zork1-v2/play.html",
-    "landingUrl": "/zork1-v2/",
+    "id": "seasons",
+    "base": "seasons",
+    "title": "Seasons",
+    "meta": "An Inform 7 Demo",
+    "description": "A mood-palette demo with seasonal CSS effects.",
+    "playUrl": "/seasons/play.html",
+    "landingUrl": "/seasons/",
     "engine": "inform7",
-    "tags": []
+    "tags": [
+      "demo"
+    ],
+    "sourceUrl": "/seasons/source.html",
+    "walkthroughUrl": "/seasons/walkthrough.html"
   },
   {
-    "id": "zork1-v3",
-    "base": "zork1-v3",
-    "title": "Zork I - The Great Underground Empire",
-    "meta": "An Interactive Fiction",
-    "description": "ZORK is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!",
-    "playUrl": "/zork1-v3/play.html",
-    "landingUrl": "/zork1-v3/",
+    "id": "zork1",
+    "base": "zork1",
+    "title": "Zork I (Current)",
+    "meta": "Infocom (translated to Inform 7)",
+    "description": "A full translation of Infocom's classic adventure game from the original ZIL source code to Inform 7. 110 rooms, 19 treasures, a roaming thief, and every puzzle faithfully reproduced. Multiple versioned milestones track the evolution from raw translation to bug-fixed, multimedia experience.",
+    "primaryLabel": "Current",
+    "sound": "blorb",
+    "playUrl": "/zork1/play.html",
+    "landingUrl": "/zork1/",
     "engine": "inform7",
-    "tags": []
-  },
-  {
-    "id": "familyzoo-01",
-    "base": "familyzoo-01",
-    "title": "Family Zoo v01: A Single Room",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 1 — A Single Room.",
-    "playUrl": "/familyzoo/v01/play.html",
-    "engine": "sharpee",
     "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
+      "sound",
+      "classic",
+      "zork"
     ],
-    "sourceUrl": "/familyzoo/v01/source.html",
-    "walkthroughUrl": "/familyzoo/v01/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-02",
-    "base": "familyzoo-02",
-    "title": "Family Zoo v02: Multiple Rooms & Navigation",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 2 — Multiple Rooms & Navigation.",
-    "playUrl": "/familyzoo/v02/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v02/source.html",
-    "walkthroughUrl": "/familyzoo/v02/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-03",
-    "base": "familyzoo-03",
-    "title": "Family Zoo v03: Scenery",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 3 — Scenery.",
-    "playUrl": "/familyzoo/v03/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v03/source.html",
-    "walkthroughUrl": "/familyzoo/v03/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-04",
-    "base": "familyzoo-04",
-    "title": "Family Zoo v04: Portable Objects",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 4 — Portable Objects.",
-    "playUrl": "/familyzoo/v04/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v04/source.html",
-    "walkthroughUrl": "/familyzoo/v04/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-05",
-    "base": "familyzoo-05",
-    "title": "Family Zoo v05: Containers & Supporters",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 5 — Containers & Supporters.",
-    "playUrl": "/familyzoo/v05/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v05/source.html",
-    "walkthroughUrl": "/familyzoo/v05/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-06",
-    "base": "familyzoo-06",
-    "title": "Family Zoo v06: Openable Things",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 6 — Openable Things.",
-    "playUrl": "/familyzoo/v06/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v06/source.html",
-    "walkthroughUrl": "/familyzoo/v06/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-07",
-    "base": "familyzoo-07",
-    "title": "Family Zoo v07: Locked Doors & Keys",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 7 — Locked Doors & Keys.",
-    "playUrl": "/familyzoo/v07/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v07/source.html",
-    "walkthroughUrl": "/familyzoo/v07/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-08",
-    "base": "familyzoo-08",
-    "title": "Family Zoo v08: Light & Dark",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 8 — Light & Dark.",
-    "playUrl": "/familyzoo/v08/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v08/source.html",
-    "walkthroughUrl": "/familyzoo/v08/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-09",
-    "base": "familyzoo-09",
-    "title": "Family Zoo v09: Readable Objects",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 9 — Readable Objects.",
-    "playUrl": "/familyzoo/v09/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v09/source.html",
-    "walkthroughUrl": "/familyzoo/v09/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-10",
-    "base": "familyzoo-10",
-    "title": "Family Zoo v10: Switchable Devices",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 10 — Switchable Devices.",
-    "playUrl": "/familyzoo/v10/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v10/source.html",
-    "walkthroughUrl": "/familyzoo/v10/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-11",
-    "base": "familyzoo-11",
-    "title": "Family Zoo v11: Non-Player Characters",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 11 — Non-Player Characters.",
-    "playUrl": "/familyzoo/v11/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v11/source.html",
-    "walkthroughUrl": "/familyzoo/v11/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-12",
-    "base": "familyzoo-12",
-    "title": "Family Zoo v12: Event Handlers",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 12 — Event Handlers.",
-    "playUrl": "/familyzoo/v12/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v12/source.html",
-    "walkthroughUrl": "/familyzoo/v12/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-13",
-    "base": "familyzoo-13",
-    "title": "Family Zoo v13: Custom Actions",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 13 — Custom Actions.",
-    "playUrl": "/familyzoo/v13/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v13/source.html",
-    "walkthroughUrl": "/familyzoo/v13/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-14",
-    "base": "familyzoo-14",
-    "title": "Family Zoo v14: Capability Dispatch",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 14 — Capability Dispatch.",
-    "playUrl": "/familyzoo/v14/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v14/source.html",
-    "walkthroughUrl": "/familyzoo/v14/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-15",
-    "base": "familyzoo-15",
-    "title": "Family Zoo v15: Timed Events (Daemons & Fuses)",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 15 — Timed Events (Daemons & Fuses).",
-    "playUrl": "/familyzoo/v15/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v15/source.html",
-    "walkthroughUrl": "/familyzoo/v15/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-16",
-    "base": "familyzoo-16",
-    "title": "Family Zoo v16: Scoring and Endgame",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 16 — Scoring and Endgame.",
-    "playUrl": "/familyzoo/v16/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v16/source.html",
-    "walkthroughUrl": "/familyzoo/v16/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "familyzoo-17",
-    "base": "familyzoo-17",
-    "title": "Family Zoo v17: After Hours & Multi-File Organization",
-    "meta": "An Interactive Fiction",
-    "description": "Sharpee tutorial step 17 — After Hours & Multi-File Organization.",
-    "playUrl": "/familyzoo/v17/play.html",
-    "engine": "sharpee",
-    "tags": [
-      "sharpee",
-      "tutorial",
-      "learning"
-    ],
-    "sourceUrl": "/familyzoo/v17/source.html",
-    "walkthroughUrl": "/familyzoo/v17/walkthrough.html",
-    "sourceBrowser": true
-  },
-  {
-    "id": "fever-dream-sharpee",
-    "base": "fever-dream-sharpee",
-    "title": "Fever Dream (Sharpee)",
-    "meta": "An Interactive Fiction",
-    "description": "A perceptual horror. Three items alter your perception. The world stays the same. You do not.",
-    "playUrl": "/fever-dream-sharpee/play.html",
-    "landingUrl": "/fever-dream-sharpee/",
-    "engine": "sharpee",
-    "tags": [
-      "horror",
-      "perceptual"
-    ],
-    "sourceUrl": "/fever-dream-sharpee/source.html",
-    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.html",
-    "sourceBrowser": true
+    "sourceUrl": "/zork1/story.ni",
+    "walkthroughUrl": "/zork1/walkthrough.html",
+    "versions": [
+      {
+        "id": "zork1-v3",
+        "label": "v3 — Multimedia",
+        "playUrl": "/zork1-v3/play.html",
+        "landingUrl": "/zork1/#zork1-v3",
+        "sound": "blorb",
+        "sourceUrl": "/zork1-v3/source.html",
+        "walkthroughUrl": "/zork1-v3/walkthrough.html"
+      },
+      {
+        "id": "zork1-v2",
+        "label": "v2 — Bug Fixes",
+        "playUrl": "/zork1-v2/play.html",
+        "landingUrl": "/zork1/#zork1-v2",
+        "sourceUrl": "/zork1-v2/source.html",
+        "walkthroughUrl": "/zork1-v2/walkthrough.html"
+      },
+      {
+        "id": "zork1-v1",
+        "label": "v1 — The Port",
+        "playUrl": "/zork1-v1/play.html",
+        "landingUrl": "/zork1/#zork1-v1",
+        "sourceUrl": "/zork1-v1/source.html"
+      },
+      {
+        "id": "zork1-v0",
+        "label": "v0 — Original ZIL",
+        "playUrl": "/zork1-v0/play.html",
+        "landingUrl": "/zork1/#zork1-v0",
+        "sourceUrl": "/zork1-v0/source.html",
+        "walkthroughUrl": "/zork1-v0/walkthrough.html"
+      }
+    ]
   }
 ]

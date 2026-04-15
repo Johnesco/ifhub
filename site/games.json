@@ -118,7 +118,7 @@
   },
   {
     "id": "babel",
-    "title": "Babel Fish Puzzle - 2013",
+    "title": "Babel Fish Puzzle from HHGG",
     "sourceLabel": "babel.ni",
     "playUrl": "/babel/play.html",
     "walkthroughUrl": "/babel/walkthrough.html",
@@ -178,7 +178,6 @@
     "title": "Haunted House",
     "sourceLabel": "HAUNTED.BAS",
     "playUrl": "/haunted-house/play.html",
-    "walkthroughUrl": "/haunted-house/walkthrough.html",
     "landingUrl": "/haunted-house/",
     "sourceBrowser": true,
     "sourceUrl": "/haunted-house/source.html",
@@ -194,7 +193,6 @@
     "title": "Apple Adventure",
     "sourceLabel": "ADVENTURE.BAS",
     "playUrl": "/apple-adventure/play.html",
-    "walkthroughUrl": "/apple-adventure/walkthrough.html",
     "landingUrl": "/apple-adventure/",
     "sourceBrowser": true,
     "sourceUrl": "/apple-adventure/source.html",
@@ -622,7 +620,7 @@
   },
   {
     "id": "familyzoo-17",
-    "title": "Family Zoo v17: After Hours & Multi-File Organization",
+    "title": "Family Zoo v17: After Hours & Multi-File Org.",
     "sourceLabel": "familyzoo-17.ts",
     "playUrl": "/familyzoo/v17/play.html",
     "sourceBrowser": true,
