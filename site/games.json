@@ -1,119 +1,16 @@
 [
   {
-    "id": "zork1-v0",
-    "title": "Zork I (v0 — Original ZIL)",
-    "versionLabel": "v0 — Original ZIL",
-    "sourceLabel": "ZIL Source",
+    "id": "apple-adventure",
+    "title": "Apple Adventure",
+    "sourceLabel": "ADVENTURE.BAS",
+    "playUrl": "/apple-adventure/play.html",
+    "landingUrl": "/apple-adventure/",
     "sourceBrowser": true,
-    "playUrl": "/zork1-v0/play.html",
-    "walkthroughUrl": "/zork1-v0/walkthrough.html",
-    "sourceUrl": "/zork1-v0/source.html",
-    "landingUrl": "/zork1-v0/",
-    "engine": "zmachine",
+    "sourceUrl": "/apple-adventure/source.html",
+    "engine": "applesoft",
     "tags": [
-      "classic",
-      "zork"
-    ]
-  },
-  {
-    "id": "zork1-v2",
-    "title": "Zork I (v2)",
-    "versionLabel": "v2 — Bug Fixes",
-    "sourceLabel": "zork1-v2.ni",
-    "playUrl": "/zork1-v2/play.html",
-    "walkthroughUrl": "/zork1-v2/walkthrough.html",
-    "sourceUrl": "/zork1-v2/source.html",
-    "landingUrl": "/zork1-v2/",
-    "engine": "inform7",
-    "tags": [
-      "classic",
-      "zork"
-    ]
-  },
-  {
-    "id": "zork1-v3",
-    "title": "Zork I (v3 — Multimedia)",
-    "versionLabel": "v3 — Multimedia",
-    "sourceLabel": "zork1-v3.ni",
-    "sound": "blorb",
-    "sourceBrowser": true,
-    "overlayLabel": "Zork I Multimedia",
-    "playUrl": "/zork1-v3/play.html",
-    "walkthroughUrl": "/zork1-v3/walkthrough.html",
-    "sourceUrl": "/zork1-v3/source.html",
-    "landingUrl": "/zork1-v3/",
-    "engine": "inform7",
-    "tags": [
-      "sound",
-      "classic",
-      "zork"
-    ]
-  },
-  {
-    "id": "zork1",
-    "title": "Zork I (Current)",
-    "versionLabel": "Current",
-    "sourceLabel": "zork1.ni",
-    "sound": "blorb",
-    "overlayLabel": "Zork I Multimedia",
-    "playUrl": "/zork1/play.html",
-    "walkthroughUrl": "/zork1/walkthrough.html",
-    "sourceUrl": "/zork1/story.ni",
-    "landingUrl": "/zork1/",
-    "engine": "inform7",
-    "tags": [
-      "sound",
-      "classic",
-      "zork"
-    ]
-  },
-  {
-    "id": "dracula-v0",
-    "title": "Dracula (v0 BASIC)",
-    "versionLabel": "v0 — Original BASIC",
-    "sourceLabel": "BASIC Source",
-    "sourceBrowser": true,
-    "playUrl": "/dracula-v0/play.html",
-    "walkthroughUrl": "/dracula-v0/walkthrough.html",
-    "sourceUrl": "/dracula-v0/source.html",
-    "landingUrl": "/dracula-v0/",
-    "engine": "wwwbasic",
-    "tags": [
-      "horror",
       "classic",
       "basic"
-    ]
-  },
-  {
-    "id": "dracula",
-    "title": "Dracula's Castle (Current)",
-    "versionLabel": "Current — Inform 7",
-    "sourceLabel": "dracula.ni",
-    "playUrl": "/dracula/play.html",
-    "walkthroughUrl": "/dracula/walkthrough.html",
-    "sourceUrl": "/dracula/story.ni",
-    "landingUrl": "/dracula/",
-    "engine": "inform7",
-    "tags": [
-      "horror",
-      "classic",
-      "basic"
-    ]
-  },
-  {
-    "id": "feverdream",
-    "title": "Fever Dream",
-    "sourceLabel": "feverdream.ni",
-    "sound": "blorb",
-    "overlayLabel": "Fever Dream Overlay",
-    "playUrl": "/feverdream/play.html",
-    "walkthroughUrl": "/feverdream/walkthrough.html",
-    "sourceUrl": "/feverdream/story.ni",
-    "landingUrl": "/feverdream/",
-    "engine": "inform7",
-    "tags": [
-      "sound",
-      "horror"
     ]
   },
   {
@@ -132,156 +29,12 @@
     ]
   },
   {
-    "id": "disenchantment12",
-    "title": "Disenchantment12",
-    "sourceLabel": "disenchantment12.ni",
-    "playUrl": "/disenchantment12/play.html",
-    "walkthroughUrl": "/disenchantment12/walkthrough.html",
-    "landingUrl": "/disenchantment12/",
-    "sourceBrowser": true,
-    "sourceUrl": "/disenchantment12/source.html",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "larva",
-    "title": "Larva",
-    "sourceLabel": "larva.ni",
-    "playUrl": "/larva/play.html",
-    "walkthroughUrl": "/larva/walkthrough.html",
-    "landingUrl": "/larva/",
-    "sourceBrowser": true,
-    "sourceUrl": "/larva/source.html",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "sample",
-    "title": "Sample",
-    "playUrl": "/sample/play.html",
-    "landingUrl": "/sample/",
-    "sourceBrowser": true,
-    "sourceUrl": "/sample/source.html",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ],
-    "walkthroughUrl": "/sample/walkthrough.html",
-    "sourceLabel": "story.ni"
-  },
-  {
-    "id": "haunted-house",
-    "title": "Haunted House",
-    "sourceLabel": "HAUNTED.BAS",
-    "playUrl": "/haunted-house/play.html",
-    "landingUrl": "/haunted-house/",
-    "sourceBrowser": true,
-    "sourceUrl": "/haunted-house/source.html",
-    "engine": "wwwbasic",
-    "tags": [
-      "horror",
-      "basic",
-      "classic"
-    ]
-  },
-  {
-    "id": "apple-adventure",
-    "title": "Apple Adventure",
-    "sourceLabel": "ADVENTURE.BAS",
-    "playUrl": "/apple-adventure/play.html",
-    "landingUrl": "/apple-adventure/",
-    "sourceBrowser": true,
-    "sourceUrl": "/apple-adventure/source.html",
-    "engine": "applesoft",
-    "tags": [
-      "classic",
-      "basic"
-    ]
-  },
-  {
-    "id": "seasons",
-    "title": "Seasons",
-    "sourceLabel": "seasons.ni",
-    "overlayLabel": "Seasons Overlay",
-    "playUrl": "/seasons/play.html",
-    "walkthroughUrl": "/seasons/walkthrough.html",
-    "landingUrl": "/seasons/",
-    "sourceBrowser": true,
-    "sourceUrl": "/seasons/source.html",
-    "engine": "inform7",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "ink-story",
-    "title": "Farmer's Heart",
-    "sourceLabel": "farmers_heart.ink",
-    "playUrl": "/ink-story/play.html",
-    "walkthroughUrl": "/ink-story/walkthrough.html",
-    "landingUrl": "/ink-story/",
-    "sourceBrowser": true,
-    "sourceUrl": "/ink-story/source.html",
-    "engine": "ink",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "lostinnewyork",
-    "title": "Lost in New York",
-    "sourceLabel": "lostinnewyork.ink",
-    "playUrl": "/lostinnewyork/play.html",
-    "landingUrl": "/lostinnewyork/",
-    "sourceBrowser": true,
-    "sourceUrl": "/lostinnewyork/source.html",
-    "engine": "ink",
-    "tags": [
-      "demo"
-    ]
-  },
-  {
-    "id": "guess-the-verb-inform7",
-    "title": "Guess The Verb (Inform 7)",
-    "sourceLabel": "story.ni",
-    "playUrl": "/guess-the-verb-inform7/play.html",
-    "landingUrl": "/guess-the-verb-inform7/",
-    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.html",
-    "sourceBrowser": true,
-    "sourceUrl": "/guess-the-verb-inform7/source.html",
-    "engine": "inform7",
-    "tags": [
-      "guess-the-verb",
-      "parser-lab",
-      "disambiguation"
-    ]
-  },
-  {
-    "id": "cloak-sharpee",
-    "title": "Cloak Of Darkness - Sharpee",
-    "playUrl": "/cloak-sharpee/play.html",
-    "landingUrl": "/cloak-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/cloak-sharpee/source.html",
-    "engine": "sharpee",
-    "tags": [
-      "demo",
-      "cloak-of-darkness"
-    ],
-    "sourceLabel": "src/index.ts",
-    "walkthroughUrl": "/cloak-sharpee/walkthrough.html"
-  },
-  {
     "id": "cloak-inform7",
     "title": "Cloak of Darkness (Inform 7)",
     "sourceLabel": "story.ni",
     "playUrl": "/cloak-inform7/play.html",
-    "landingUrl": "/cloak-inform7/",
     "walkthroughUrl": "/cloak-inform7/walkthrough.html",
+    "landingUrl": "/cloak-inform7/",
     "sourceBrowser": true,
     "sourceUrl": "/cloak-inform7/source.html",
     "engine": "inform7",
@@ -289,22 +42,6 @@
       "cloak",
       "demo"
     ]
-  },
-  {
-    "id": "guess-the-verb-sharpee",
-    "title": "Guess the Verb (Sharpee)",
-    "playUrl": "/guess-the-verb-sharpee/play.html",
-    "landingUrl": "/guess-the-verb-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/guess-the-verb-sharpee/source.html",
-    "engine": "sharpee",
-    "tags": [
-      "parser-lab",
-      "disambiguation",
-      "guess-the-verb"
-    ],
-    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
-    "sourceLabel": "src/index.ts"
   },
   {
     "id": "cloak-ink",
@@ -336,9 +73,77 @@
     ]
   },
   {
+    "id": "cloak-sharpee",
+    "title": "Cloak Of Darkness - Sharpee",
+    "sourceLabel": "src/index.ts",
+    "playUrl": "/cloak-sharpee/play.html",
+    "walkthroughUrl": "/cloak-sharpee/walkthrough.html",
+    "landingUrl": "/cloak-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/cloak-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "demo",
+      "cloak-of-darkness"
+    ]
+  },
+  {
+    "id": "disenchantment12",
+    "title": "Disenchantment12",
+    "sourceLabel": "disenchantment12.ni",
+    "playUrl": "/disenchantment12/play.html",
+    "walkthroughUrl": "/disenchantment12/walkthrough.html",
+    "landingUrl": "/disenchantment12/",
+    "sourceBrowser": true,
+    "sourceUrl": "/disenchantment12/source.html",
+    "engine": "inform7",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "dracula",
+    "title": "Dracula's Castle (Current)",
+    "sourceLabel": "dracula.ni",
+    "versionLabel": "Current — Inform 7",
+    "versionPrimaryLabel": "Inform 7",
+    "playUrl": "/dracula/play.html",
+    "walkthroughUrl": "/dracula/walkthrough.html",
+    "landingUrl": "/dracula/",
+    "sourceUrl": "/dracula/story.ni",
+    "engine": "inform7",
+    "tags": [
+      "horror",
+      "classic",
+      "basic"
+    ],
+    "versionPrimary": true
+  },
+  {
+    "id": "dracula-v0",
+    "title": "Dracula (v0 BASIC)",
+    "sourceLabel": "BASIC Source",
+    "versionLabel": "v0 — Original BASIC",
+    "playUrl": "/dracula-v0/play.html",
+    "walkthroughUrl": "/dracula-v0/walkthrough.html",
+    "landingUrl": "/dracula-v0/",
+    "sourceBrowser": true,
+    "sourceUrl": "/dracula-v0/source.html",
+    "engine": "wwwbasic",
+    "tags": [
+      "horror",
+      "classic",
+      "basic"
+    ],
+    "versionOf": "dracula",
+    "versionOrder": 0
+  },
+  {
     "id": "dungeo",
     "title": "DUNGEON",
+    "sourceLabel": "src/index.ts",
     "playUrl": "/dungeo/play.html",
+    "walkthroughUrl": "/dungeo/walkthrough.html",
     "landingUrl": "/dungeo/",
     "sourceBrowser": true,
     "sourceUrl": "/dungeo/source.html",
@@ -347,42 +152,16 @@
       "zork",
       "classic",
       "adventure"
-    ],
-    "walkthroughUrl": "/dungeo/walkthrough.html",
-    "sourceLabel": "src/index.ts"
-  },
-  {
-    "id": "no-signal-home-sharpee",
-    "title": "No Signal Home",
-    "playUrl": "/no-signal-home-sharpee/play.html",
-    "landingUrl": "/no-signal-home-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/no-signal-home-sharpee/source.html",
-    "engine": "sharpee",
-    "tags": [
-      "sci-fi",
-      "horror",
-      "salvage"
-    ],
-    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.html",
-    "sourceLabel": "src/index.ts"
-  },
-  {
-    "id": "zork1-v1",
-    "title": "Zork I - The Great Underground Empire",
-    "sourceLabel": "story.ni",
-    "playUrl": "/zork1-v1/play.html",
-    "landingUrl": "/zork1-v1/",
-    "sourceBrowser": true,
-    "sourceUrl": "/zork1-v1/source.html",
-    "engine": "inform7",
-    "tags": []
+    ]
   },
   {
     "id": "familyzoo-01",
     "title": "Family Zoo v01: A Single Room",
     "sourceLabel": "familyzoo-01.ts",
+    "versionLabel": "v01 — A Single Room",
     "playUrl": "/familyzoo/v01/play.html",
+    "walkthroughUrl": "/familyzoo/v01/walkthrough.html",
+    "testsUrl": "/familyzoo/v01/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v01/source.html",
     "engine": "sharpee",
@@ -391,13 +170,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v01/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-02",
     "title": "Family Zoo v02: Multiple Rooms & Navigation",
     "sourceLabel": "familyzoo-02.ts",
+    "versionLabel": "v02 — Multiple Rooms & Navigation",
     "playUrl": "/familyzoo/v02/play.html",
+    "walkthroughUrl": "/familyzoo/v02/walkthrough.html",
+    "testsUrl": "/familyzoo/v02/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v02/source.html",
     "engine": "sharpee",
@@ -406,13 +188,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v02/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-03",
     "title": "Family Zoo v03: Scenery",
     "sourceLabel": "familyzoo-03.ts",
+    "versionLabel": "v03 — Scenery",
     "playUrl": "/familyzoo/v03/play.html",
+    "walkthroughUrl": "/familyzoo/v03/walkthrough.html",
+    "testsUrl": "/familyzoo/v03/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v03/source.html",
     "engine": "sharpee",
@@ -421,13 +206,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v03/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-04",
     "title": "Family Zoo v04: Portable Objects",
     "sourceLabel": "familyzoo-04.ts",
+    "versionLabel": "v04 — Portable Objects",
     "playUrl": "/familyzoo/v04/play.html",
+    "walkthroughUrl": "/familyzoo/v04/walkthrough.html",
+    "testsUrl": "/familyzoo/v04/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v04/source.html",
     "engine": "sharpee",
@@ -436,13 +224,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v04/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-05",
     "title": "Family Zoo v05: Containers & Supporters",
     "sourceLabel": "familyzoo-05.ts",
+    "versionLabel": "v05 — Containers & Supporters",
     "playUrl": "/familyzoo/v05/play.html",
+    "walkthroughUrl": "/familyzoo/v05/walkthrough.html",
+    "testsUrl": "/familyzoo/v05/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v05/source.html",
     "engine": "sharpee",
@@ -451,13 +242,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v05/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-06",
     "title": "Family Zoo v06: Openable Things",
     "sourceLabel": "familyzoo-06.ts",
+    "versionLabel": "v06 — Openable Things",
     "playUrl": "/familyzoo/v06/play.html",
+    "walkthroughUrl": "/familyzoo/v06/walkthrough.html",
+    "testsUrl": "/familyzoo/v06/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v06/source.html",
     "engine": "sharpee",
@@ -466,13 +260,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v06/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-07",
     "title": "Family Zoo v07: Locked Doors & Keys",
     "sourceLabel": "familyzoo-07.ts",
+    "versionLabel": "v07 — Locked Doors & Keys",
     "playUrl": "/familyzoo/v07/play.html",
+    "walkthroughUrl": "/familyzoo/v07/walkthrough.html",
+    "testsUrl": "/familyzoo/v07/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v07/source.html",
     "engine": "sharpee",
@@ -481,13 +278,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v07/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-08",
     "title": "Family Zoo v08: Light & Dark",
     "sourceLabel": "familyzoo-08.ts",
+    "versionLabel": "v08 — Light & Dark",
     "playUrl": "/familyzoo/v08/play.html",
+    "walkthroughUrl": "/familyzoo/v08/walkthrough.html",
+    "testsUrl": "/familyzoo/v08/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v08/source.html",
     "engine": "sharpee",
@@ -496,13 +296,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v08/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-09",
     "title": "Family Zoo v09: Readable Objects",
     "sourceLabel": "familyzoo-09.ts",
+    "versionLabel": "v09 — Readable Objects",
     "playUrl": "/familyzoo/v09/play.html",
+    "walkthroughUrl": "/familyzoo/v09/walkthrough.html",
+    "testsUrl": "/familyzoo/v09/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v09/source.html",
     "engine": "sharpee",
@@ -511,13 +314,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v09/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-10",
     "title": "Family Zoo v10: Switchable Devices",
     "sourceLabel": "familyzoo-10.ts",
+    "versionLabel": "v10 — Switchable Devices",
     "playUrl": "/familyzoo/v10/play.html",
+    "walkthroughUrl": "/familyzoo/v10/walkthrough.html",
+    "testsUrl": "/familyzoo/v10/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v10/source.html",
     "engine": "sharpee",
@@ -526,13 +332,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v10/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-11",
     "title": "Family Zoo v11: Non-Player Characters",
     "sourceLabel": "familyzoo-11.ts",
+    "versionLabel": "v11 — Non-Player Characters",
     "playUrl": "/familyzoo/v11/play.html",
+    "walkthroughUrl": "/familyzoo/v11/walkthrough.html",
+    "testsUrl": "/familyzoo/v11/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v11/source.html",
     "engine": "sharpee",
@@ -541,13 +350,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v11/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-12",
     "title": "Family Zoo v12: Event Handlers",
     "sourceLabel": "familyzoo-12.ts",
+    "versionLabel": "v12 — Event Handlers",
     "playUrl": "/familyzoo/v12/play.html",
+    "walkthroughUrl": "/familyzoo/v12/walkthrough.html",
+    "testsUrl": "/familyzoo/v12/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v12/source.html",
     "engine": "sharpee",
@@ -556,13 +368,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v12/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-13",
     "title": "Family Zoo v13: Custom Actions",
     "sourceLabel": "familyzoo-13.ts",
+    "versionLabel": "v13 — Custom Actions",
     "playUrl": "/familyzoo/v13/play.html",
+    "walkthroughUrl": "/familyzoo/v13/walkthrough.html",
+    "testsUrl": "/familyzoo/v13/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v13/source.html",
     "engine": "sharpee",
@@ -571,13 +386,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v13/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-14",
     "title": "Family Zoo v14: Capability Dispatch",
     "sourceLabel": "familyzoo-14.ts",
+    "versionLabel": "v14 — Capability Dispatch",
     "playUrl": "/familyzoo/v14/play.html",
+    "walkthroughUrl": "/familyzoo/v14/walkthrough.html",
+    "testsUrl": "/familyzoo/v14/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v14/source.html",
     "engine": "sharpee",
@@ -586,13 +404,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v14/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-15",
     "title": "Family Zoo v15: Timed Events (Daemons & Fuses)",
     "sourceLabel": "familyzoo-15.ts",
+    "versionLabel": "v15 — Timed Events (Daemons & Fuses)",
     "playUrl": "/familyzoo/v15/play.html",
+    "walkthroughUrl": "/familyzoo/v15/walkthrough.html",
+    "testsUrl": "/familyzoo/v15/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v15/source.html",
     "engine": "sharpee",
@@ -601,13 +422,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v15/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-16",
     "title": "Family Zoo v16: Scoring and Endgame",
     "sourceLabel": "familyzoo-16.ts",
+    "versionLabel": "v16 — Scoring and Endgame",
     "playUrl": "/familyzoo/v16/play.html",
+    "walkthroughUrl": "/familyzoo/v16/walkthrough.html",
+    "testsUrl": "/familyzoo/v16/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v16/source.html",
     "engine": "sharpee",
@@ -616,13 +440,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v16/walkthrough.html"
+    "versionOf": "familyzoo"
   },
   {
     "id": "familyzoo-17",
     "title": "Family Zoo v17: After Hours & Multi-File Org.",
     "sourceLabel": "familyzoo-17.ts",
+    "versionLabel": "v17 — After Hours & Multi-File Organization",
+    "versionPrimaryLabel": "Current",
     "playUrl": "/familyzoo/v17/play.html",
+    "walkthroughUrl": "/familyzoo/v17/walkthrough.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v17/source.html",
     "engine": "sharpee",
@@ -631,13 +458,16 @@
       "tutorial",
       "learning"
     ],
-    "walkthroughUrl": "/familyzoo/v17/walkthrough.html"
+    "versionOf": "familyzoo",
+    "versionPrimary": true
   },
   {
     "id": "fever-dream-sharpee",
     "title": "Fever Dream (Sharpee)",
     "sourceLabel": "fever-dream-sharpee.ts",
     "playUrl": "/fever-dream-sharpee/play.html",
+    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.html",
+    "testsUrl": "/fever-dream-sharpee/tests.html",
     "landingUrl": "/fever-dream-sharpee/",
     "sourceBrowser": true,
     "sourceUrl": "/fever-dream-sharpee/source.html",
@@ -645,7 +475,244 @@
     "tags": [
       "horror",
       "perceptual"
+    ]
+  },
+  {
+    "id": "feverdream",
+    "title": "Fever Dream",
+    "sourceLabel": "feverdream.ni",
+    "sound": "blorb",
+    "overlayLabel": "Fever Dream Overlay",
+    "playUrl": "/feverdream/play.html",
+    "walkthroughUrl": "/feverdream/walkthrough.html",
+    "landingUrl": "/feverdream/",
+    "sourceUrl": "/feverdream/story.ni",
+    "engine": "inform7",
+    "tags": [
+      "sound",
+      "horror"
+    ]
+  },
+  {
+    "id": "guess-the-verb-inform7",
+    "title": "Guess The Verb (Inform 7)",
+    "sourceLabel": "story.ni",
+    "playUrl": "/guess-the-verb-inform7/play.html",
+    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.html",
+    "landingUrl": "/guess-the-verb-inform7/",
+    "sourceBrowser": true,
+    "sourceUrl": "/guess-the-verb-inform7/source.html",
+    "engine": "inform7",
+    "tags": [
+      "guess-the-verb",
+      "parser-lab",
+      "disambiguation"
+    ]
+  },
+  {
+    "id": "guess-the-verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "sourceLabel": "src/index.ts",
+    "playUrl": "/guess-the-verb-sharpee/play.html",
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.html",
+    "testsUrl": "/guess-the-verb-sharpee/tests.html",
+    "landingUrl": "/guess-the-verb-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "parser-lab",
+      "disambiguation",
+      "guess-the-verb"
+    ]
+  },
+  {
+    "id": "haunted-house",
+    "title": "Haunted House",
+    "sourceLabel": "HAUNTED.BAS",
+    "playUrl": "/haunted-house/play.html",
+    "landingUrl": "/haunted-house/",
+    "sourceBrowser": true,
+    "sourceUrl": "/haunted-house/source.html",
+    "engine": "wwwbasic",
+    "tags": [
+      "horror",
+      "basic",
+      "classic"
+    ]
+  },
+  {
+    "id": "ink-story",
+    "title": "Farmer's Heart",
+    "sourceLabel": "farmers_heart.ink",
+    "playUrl": "/ink-story/play.html",
+    "walkthroughUrl": "/ink-story/walkthrough.html",
+    "landingUrl": "/ink-story/",
+    "sourceBrowser": true,
+    "sourceUrl": "/ink-story/source.html",
+    "engine": "ink",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "larva",
+    "title": "Larva",
+    "sourceLabel": "larva.ni",
+    "playUrl": "/larva/play.html",
+    "walkthroughUrl": "/larva/walkthrough.html",
+    "landingUrl": "/larva/",
+    "sourceBrowser": true,
+    "sourceUrl": "/larva/source.html",
+    "engine": "inform7",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "lostinnewyork",
+    "title": "Lost in New York",
+    "sourceLabel": "lostinnewyork.ink",
+    "playUrl": "/lostinnewyork/play.html",
+    "landingUrl": "/lostinnewyork/",
+    "sourceBrowser": true,
+    "sourceUrl": "/lostinnewyork/source.html",
+    "engine": "ink",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "no-signal-home-sharpee",
+    "title": "No Signal Home",
+    "sourceLabel": "src/index.ts",
+    "playUrl": "/no-signal-home-sharpee/play.html",
+    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.html",
+    "testsUrl": "/no-signal-home-sharpee/tests.html",
+    "landingUrl": "/no-signal-home-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sci-fi",
+      "horror",
+      "salvage"
+    ]
+  },
+  {
+    "id": "sample",
+    "title": "Sample",
+    "sourceLabel": "story.ni",
+    "playUrl": "/sample/play.html",
+    "walkthroughUrl": "/sample/walkthrough.html",
+    "landingUrl": "/sample/",
+    "sourceBrowser": true,
+    "sourceUrl": "/sample/source.html",
+    "engine": "inform7",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "seasons",
+    "title": "Seasons",
+    "sourceLabel": "seasons.ni",
+    "overlayLabel": "Seasons Overlay",
+    "playUrl": "/seasons/play.html",
+    "walkthroughUrl": "/seasons/walkthrough.html",
+    "landingUrl": "/seasons/",
+    "sourceBrowser": true,
+    "sourceUrl": "/seasons/source.html",
+    "engine": "inform7",
+    "tags": [
+      "demo"
+    ]
+  },
+  {
+    "id": "zork1",
+    "title": "Zork I (Current)",
+    "sourceLabel": "zork1.ni",
+    "sound": "blorb",
+    "overlayLabel": "Zork I Multimedia",
+    "versionLabel": "Current",
+    "versionPrimaryLabel": "Current",
+    "playUrl": "/zork1/play.html",
+    "walkthroughUrl": "/zork1/walkthrough.html",
+    "landingUrl": "/zork1/",
+    "sourceUrl": "/zork1/story.ni",
+    "engine": "inform7",
+    "tags": [
+      "sound",
+      "classic",
+      "zork"
     ],
-    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.html"
+    "versionPrimary": true
+  },
+  {
+    "id": "zork1-v0",
+    "title": "Zork I (v0 — Original ZIL)",
+    "sourceLabel": "ZIL Source",
+    "versionLabel": "v0 — Original ZIL",
+    "playUrl": "/zork1-v0/play.html",
+    "walkthroughUrl": "/zork1-v0/walkthrough.html",
+    "landingUrl": "/zork1-v0/",
+    "sourceBrowser": true,
+    "sourceUrl": "/zork1-v0/source.html",
+    "engine": "zmachine",
+    "tags": [
+      "classic",
+      "zork"
+    ],
+    "versionOf": "zork1"
+  },
+  {
+    "id": "zork1-v1",
+    "title": "Zork I - The Great Underground Empire",
+    "sourceLabel": "story.ni",
+    "versionLabel": "v1 — The Port",
+    "playUrl": "/zork1-v1/play.html",
+    "walkthroughUrl": "/zork1-v1/walkthrough.html",
+    "landingUrl": "/zork1-v1/",
+    "sourceBrowser": true,
+    "sourceUrl": "/zork1-v1/source.html",
+    "engine": "inform7",
+    "tags": [],
+    "versionOf": "zork1"
+  },
+  {
+    "id": "zork1-v2",
+    "title": "Zork I (v2)",
+    "sourceLabel": "zork1-v2.ni",
+    "versionLabel": "v2 — Bug Fixes",
+    "playUrl": "/zork1-v2/play.html",
+    "walkthroughUrl": "/zork1-v2/walkthrough.html",
+    "landingUrl": "/zork1-v2/",
+    "sourceUrl": "/zork1-v2/story.ni",
+    "engine": "inform7",
+    "tags": [
+      "classic",
+      "zork"
+    ],
+    "versionOf": "zork1"
+  },
+  {
+    "id": "zork1-v3",
+    "title": "Zork I (v3 — Multimedia)",
+    "sourceLabel": "zork1-v3.ni",
+    "sound": "blorb",
+    "overlayLabel": "Zork I Multimedia",
+    "versionLabel": "v3 — Multimedia",
+    "playUrl": "/zork1-v3/play.html",
+    "walkthroughUrl": "/zork1-v3/walkthrough.html",
+    "landingUrl": "/zork1-v3/",
+    "sourceBrowser": true,
+    "sourceUrl": "/zork1-v3/source.html",
+    "engine": "inform7",
+    "tags": [
+      "sound",
+      "classic",
+      "zork"
+    ],
+    "versionOf": "zork1"
   }
 ]

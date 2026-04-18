@@ -53,7 +53,8 @@ body.game-collapsed #resize-handle {
 /* Source pane modes — driven by data-source-mode attribute */
 #source-pane .source-with-nav,
 #source-pane #source-browser-frame,
-#source-pane #walkthrough-content { display: none; }
+#source-pane #walkthrough-content,
+#source-pane #tests-content { display: none; }
 
 #source-pane[data-source-mode="inline"] .source-with-nav { display: flex; }
 #source-pane[data-source-mode="inline"] .sidebar-toggle { display: flex; }
@@ -61,6 +62,8 @@ body.game-collapsed #resize-handle {
 #source-pane[data-source-mode="browser"] .sidebar-toggle { display: none; }
 #source-pane[data-source-mode="walkthrough"] #walkthrough-content { display: flex; }
 #source-pane[data-source-mode="walkthrough"] .sidebar-toggle { display: none; }
+#source-pane[data-source-mode="tests"] #tests-content { display: flex; }
+#source-pane[data-source-mode="tests"] .sidebar-toggle { display: none; }
 
 #source-browser-frame {
   flex: 1;
@@ -304,6 +307,28 @@ tr:target td.ln, tr.highlight td.ln { color: var(--muted, #806050); }
   font-style: italic;
 }
 
+/* --- Tests content area --- */
+#tests-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#tests-content iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--page-bg, #0a0a0a);
+}
+
+#tests-unavailable {
+  padding: 20px;
+  color: var(--muted, #605840);
+  font-style: italic;
+}
+
 /* --- Resize Handle --- */
 #resize-handle {
   width: 5px;
@@ -377,23 +402,40 @@ body.resizing iframe {
   outline: none;
 }
 
-#game-select:focus, #view-select:focus { border-color: var(--border-hover, #5a4a30); }
+#game-select:focus { border-color: var(--border-hover, #5a4a30); }
 
-#view-select {
+/* --- View toggle buttons --- */
+.view-toggles {
+  display: flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.view-toggle {
   background: var(--input-bg, #110a08);
   border: 1px solid var(--border, #2a2418);
-  border-radius: 4px;
-  color: var(--accent, #e8d090);
+  color: var(--dim, #5a4a30);
   font-family: inherit;
-  font-size: 0.9em;
+  font-size: 0.82em;
   padding: 3px 8px;
   cursor: pointer;
   outline: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
 }
 
-#view-select option {
-  background: var(--input-bg, #110a08);
+.view-toggle:first-child { border-radius: 4px 0 0 4px; }
+.view-toggle:last-child { border-radius: 0 4px 4px 0; }
+
+.view-toggle:hover {
   color: var(--page-fg, #d4c5a9);
+  border-color: var(--border-hover, #5a4a30);
+}
+
+.view-toggle.active {
+  background: var(--surface-bg, #1a1410);
+  color: var(--accent, #e8d090);
+  border-color: var(--border-hover, #5a4a30);
 }
 
 #game-select option {
@@ -578,6 +620,7 @@ body.resizing iframe {
 
   #volume-slider { width: 50px; }
 
+  .view-toggle .vt-label { display: none; }
 }
 
 @media (max-width: 480px) {
@@ -605,14 +648,12 @@ body.resizing iframe {
     <select id="hub-select"></select>
     <label for="game-select" class="toolbar-label">Game</label>
     <select id="game-select"></select>
-    <label for="view-select" class="toolbar-label">View</label>
-    <select id="view-select" title="Layout">
-      <option value="game+source">Game + Source</option>
-      <option value="game+walkthrough">Game + Walkthrough</option>
-      <option value="game">Game Only</option>
-      <option value="source">Source Only</option>
-      <option value="walkthrough">Walkthrough Only</option>
-    </select>
+    <div class="view-toggles" id="view-toggles">
+      <button class="view-toggle active" data-pane="game" title="Toggle game pane">&#9654;<span class="vt-label"> Game</span></button>
+      <button class="view-toggle active" data-pane="source" title="Toggle source pane">&lt;/&gt;<span class="vt-label"> Source</span></button>
+      <button class="view-toggle" data-pane="walkthrough" title="Toggle walkthrough pane">&#9776;<span class="vt-label"> Walk</span></button>
+      <button class="view-toggle" data-pane="tests" title="Toggle tests pane" style="display:none">&#10003;<span class="vt-label"> Tests</span></button>
+    </div>
     <label class="toolbar-label" id="theme-label">Theme</label>
     <div id="theme-picker"></div>
   </div>
@@ -674,6 +715,12 @@ body.resizing iframe {
     <iframe id="walkthrough-frame" src="about:blank" title="Walkthrough"></iframe>
     <div id="walkthrough-unavailable">
       Walkthrough not yet available for this game.
+    </div>
+  </div>
+  <div id="tests-content">
+    <iframe id="tests-frame" src="about:blank" title="Tests"></iframe>
+    <div id="tests-unavailable">
+      Tests not available for this game.
     </div>
   </div>
 </div>
@@ -752,7 +799,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (initGame) switchGame(initGame);
     var savedView = params.get('view');
     applyView(savedView || 'game');
-    document.getElementById('view-select').value = savedView || 'game';
   });
 });
 
@@ -773,16 +819,12 @@ function buildDropdown() {
    BIND UI (once)
    ================================================================== */
 function bindUI() {
-  // View layout select
-  document.getElementById('view-select').addEventListener('change', function() {
-    applyView(this.value);
-    var params = new URLSearchParams(window.location.search);
-    if (this.value !== 'game') {
-      params.set('view', this.value);
-    } else {
-      params.delete('view');
-    }
-    history.replaceState(null, '', '?' + params.toString());
+  // View toggle buttons
+  document.getElementById('view-toggles').addEventListener('click', function(e) {
+    var btn = e.target.closest('.view-toggle');
+    if (!btn) return;
+    var pane = btn.dataset.pane;
+    handleToggleClick(pane);
   });
 
   // Ctrl+F shortcut
@@ -1257,7 +1299,7 @@ function updateSidebarToggle() {
    SOURCE PANE MODE — single function drives all visibility via CSS
    ================================================================== */
 function setSourcePaneMode(mode) {
-  // mode: "inline", "browser", "walkthrough"
+  // mode: "inline", "browser", "walkthrough", "tests"
   document.getElementById('source-pane').dataset.sourceMode = mode;
 }
 
@@ -1308,24 +1350,101 @@ function loadSourceForGame(gameId) {
 /* ==================================================================
    VIEW SWITCHING — source / walkthrough tabs
    ================================================================== */
-function applyView(mode) {
-  // mode: "game+source", "game+walkthrough", "game", "source", "walkthrough"
-  var body = document.body;
-  var showGame = mode.indexOf('game') !== -1;
-  var showSide = mode !== 'game';
-  var isSource = mode.indexOf('source') !== -1 || mode === 'game';
+/* ------ Toggle-button helpers ------ */
 
-  body.classList.toggle('source-collapsed', !showSide);
-  body.classList.toggle('game-collapsed', !showGame);
+function isToggleActive(pane) {
+  var btn = document.querySelector('.view-toggle[data-pane="' + pane + '"]');
+  return btn ? btn.classList.contains('active') : false;
+}
 
-  currentView = isSource ? 'source' : 'walkthrough';
+function setToggleActive(pane, on) {
+  var btn = document.querySelector('.view-toggle[data-pane="' + pane + '"]');
+  if (btn) btn.classList.toggle('active', !!on);
+}
 
-  if (!isSource) {
-    setSourcePaneMode('walkthrough');
+function getActiveSidePane() {
+  var sides = ['source', 'walkthrough', 'tests'];
+  for (var i = 0; i < sides.length; i++) {
+    if (isToggleActive(sides[i])) return sides[i];
+  }
+  return null;
+}
+
+function getViewMode() {
+  var parts = [];
+  if (isToggleActive('game')) parts.push('game');
+  var side = getActiveSidePane();
+  if (side) parts.push(side);
+  return parts.join('+') || 'game';
+}
+
+function handleToggleClick(pane) {
+  var wasActive = isToggleActive(pane);
+
+  if (pane === 'game') {
+    if (wasActive) {
+      // Turning off game — need at least one side pane
+      if (!getActiveSidePane()) setToggleActive('source', true);
+    }
+    setToggleActive('game', !wasActive);
   } else {
+    // Side panes are radio: clicking one deactivates the others
+    if (wasActive) {
+      // Turning off the active side pane — game must stay on
+      if (!isToggleActive('game')) return; // can't leave everything off
+      setToggleActive(pane, false);
+    } else {
+      ['source', 'walkthrough', 'tests'].forEach(function(p) {
+        setToggleActive(p, p === pane);
+      });
+    }
+  }
+
+  applyView(getViewMode());
+}
+
+function applyView(mode) {
+  // mode: "game+source", "game+walkthrough", "game+tests", "game",
+  //       "source", "walkthrough", "tests"
+  // Normalize: URLSearchParams decodes + as space; treat both as delimiter
+  mode = mode.replace(/\s+/g, '+');
+  var parts = mode.split('+');
+  var showGame = parts.indexOf('game') !== -1;
+  var sidePane = null;
+  if (parts.indexOf('tests') !== -1) sidePane = 'tests';
+  if (parts.indexOf('walkthrough') !== -1) sidePane = 'walkthrough';
+  if (parts.indexOf('source') !== -1) sidePane = 'source';
+
+  // Sync toggle states to match the mode string
+  setToggleActive('game', showGame);
+  setToggleActive('source', sidePane === 'source');
+  setToggleActive('walkthrough', sidePane === 'walkthrough');
+  setToggleActive('tests', sidePane === 'tests');
+
+  // Apply CSS
+  document.body.classList.toggle('source-collapsed', !sidePane);
+  document.body.classList.toggle('game-collapsed', !showGame);
+
+  // Set source pane content mode
+  if (sidePane === 'walkthrough') {
+    setSourcePaneMode('walkthrough');
+  } else if (sidePane === 'tests') {
+    setSourcePaneMode('tests');
+  } else if (sidePane) {
     var g = gameMap[currentGame];
     setSourcePaneMode(g && g.sourceBrowser ? 'browser' : 'inline');
   }
+
+  currentView = sidePane || 'source';
+
+  // Update URL
+  var params = new URLSearchParams(window.location.search);
+  if (mode !== 'game') {
+    params.set('view', mode);
+  } else {
+    params.delete('view');
+  }
+  history.replaceState(null, '', '?' + params.toString());
 }
 
 /* ==================================================================
@@ -1348,6 +1467,34 @@ function loadWalkthroughForGame(gameId) {
     frame.style.display = 'none';
     msg.style.display = '';
     status.textContent = 'Not available';
+  }
+}
+
+/* ==================================================================
+   LOAD TESTS FOR GAME
+   ================================================================== */
+function loadTestsForGame(gameId) {
+  var g = gameMap[gameId];
+  var frame = document.getElementById('tests-frame');
+  var msg = document.getElementById('tests-unavailable');
+  var testsBtn = document.querySelector('.view-toggle[data-pane="tests"]');
+
+  if (g && g.testsUrl) {
+    frame.src = g.testsUrl;
+    frame.style.display = '';
+    msg.style.display = 'none';
+    frame.onload = function() { themeIframe(frame); };
+    if (testsBtn) testsBtn.style.display = '';
+  } else {
+    frame.src = 'about:blank';
+    frame.style.display = 'none';
+    msg.style.display = '';
+    if (testsBtn) testsBtn.style.display = 'none';
+    // If tests was the active side pane, fall back to source
+    if (isToggleActive('tests')) {
+      setToggleActive('tests', false);
+      setToggleActive('source', true);
+    }
   }
 }
 
@@ -1612,7 +1759,7 @@ function themeGameIframe() {
 }
 
 function themeAllIframes() {
-  var frames = ['source-browser-frame', 'walkthrough-frame'];
+  var frames = ['source-browser-frame', 'walkthrough-frame', 'tests-frame'];
   frames.forEach(function(id) {
     var iframe = document.getElementById(id);
     if (iframe) themeIframe(iframe);
@@ -1629,19 +1776,8 @@ function switchGame(gameId) {
 
   currentGame = gameId;
 
-  // Keep current view when switching games — re-apply it after loading
-  var viewSelect = document.getElementById('view-select');
-  var currentViewMode = viewSelect.value;
-
-  // Update URL so refresh keeps the same game + view
-  var params = new URLSearchParams(window.location.search);
-  params.set('game', gameId);
-  if (currentViewMode !== 'game') {
-    params.set('view', currentViewMode);
-  } else {
-    params.delete('view');
-  }
-  history.replaceState(null, '', '?' + params.toString());
+  // Keep current view when switching games
+  var currentViewMode = getViewMode();
 
   // Hide sound controls until iframe reports ready
   soundReady = false;
@@ -1688,10 +1824,13 @@ function switchGame(gameId) {
     }
   };
 
-  // Load source and walkthrough, then re-apply the current view
+  // Load source, walkthrough, and tests, then re-apply the current view.
+  // loadTestsForGame may hide the tests toggle and fall back to source,
+  // so read the view mode AFTER it runs to pick up any corrections.
   loadSourceForGame(gameId);
   loadWalkthroughForGame(gameId);
-  applyView(currentViewMode);
+  loadTestsForGame(gameId);
+  applyView(getViewMode());
 }
 
 

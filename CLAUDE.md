@@ -109,6 +109,8 @@ Three layers control game discovery (later layers override earlier):
 
 All engines build **in-place**: the game directory IS the deploy directory. For Sharpee that means `text-games/sharpee/<game>/browser/` (source at `<game>/src/`, output at `<game>/browser/`).
 
+`games.json` entries include auto-probed URL fields: `walkthroughUrl` (from walkthrough files) and `testsUrl` (from `tests.html` in the deploy directory). Both are set by `build_games.py` when the corresponding file exists.
+
 Tools resolve game names via `paths.project_dir(name)` which checks: registry → workspace scan → legacy `projects/` fallback.
 
 ### Project-Local Play Templates
@@ -121,16 +123,16 @@ Placeholders substituted: `__TITLE__`, `__BASIC_SOURCE__` (BASIC engines), `__ST
 
 The hub is engine-agnostic — any game that produces a `play.html` works. The pipeline handles all engines automatically via `ENGINE=` in `project.conf`.
 
-| Engine | Source | Build owner |
-|--------|--------|-----------------|
-| `inform7` | `story.ni` | IF Hub pipeline (compile.py) |
-| `sharpee` | npm project at `/c/code/text-games/sharpee/<game>/` (or `/c/code/npmsharpee/from-fork/<game>/` for fork mirrors) | **Sharpee workspace** (`npmsharpee/tools/ship.py`) |
-| `wwwbasic` | `.bas` file | IF Hub pipeline |
-| `qbjc` | `.bas` → `.js` | IF Hub pipeline |
-| `applesoft` | `.bas` file | IF Hub pipeline |
-| `jsdos` | `.jsdos` bundle | IF Hub pipeline |
-| `ink` | `.ink` file | IF Hub pipeline |
-| `rez` | `.rez` files | IF Hub pipeline |
+| Engine | Source | Build owner | Tests tab |
+|--------|--------|-----------------|-----------|
+| `inform7` | `story.ni` | IF Hub pipeline (compile.py) | In progress |
+| `sharpee` | npm project at `/c/code/text-games/sharpee/<game>/` (or `/c/code/npmsharpee/from-fork/<game>/` for fork mirrors) | **Sharpee workspace** (`npmsharpee/tools/ship.py`) | Yes |
+| `wwwbasic` | `.bas` file | IF Hub pipeline | — |
+| `qbjc` | `.bas` → `.js` | IF Hub pipeline | — |
+| `applesoft` | `.bas` file | IF Hub pipeline | — |
+| `jsdos` | `.jsdos` bundle | IF Hub pipeline | — |
+| `ink` | `.ink` file | IF Hub pipeline | — |
+| `rez` | `.rez` files | IF Hub pipeline | — |
 
 Each BASIC dialect must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
 
@@ -156,6 +158,8 @@ The hub serves games **in-place** — it iframes each game's own play page direc
 
 **Multi-hub collections:** Games can belong to curated collections via `hubs.json` filtering. See `reference/project-guide.md` § Hub Collections.
 
+**Tests pane:** The split-pane player (`app.html`) has a standard Tests frame alongside Source and Walkthrough. Games opt in by placing a `tests.html` file in their browser/deploy directory — `build_games.py` auto-detects it and sets `testsUrl` in `games.json`. When `testsUrl` is present, the IF Hub toolbar shows a checkmark Tests toggle button. The `tests.html` viewer and its backing `test-results.json` format are engine-agnostic: any engine that can produce the expected JSON schema can use the tab.
+
 ## New Game Publish Flow
 
 ```bash
@@ -171,6 +175,12 @@ python tools/pipeline.py game-name --ship         # compile + test + register + 
 See `reference/project-guide.md` for detailed steps, individual scripts, and pipeline stages.
 
 ## Testing
+
+### Test Results Tab
+
+The Tests tab is production-ready for Sharpee games. The pipeline is: `transcript-test` (run transcripts) → `slim-test-results.js` (produce `test-results.json`) → `tests-template.html` (render results in-browser). The `test-results.json` schema and `tests.html` viewer are engine-agnostic — Inform 7 support is in progress, and any engine that emits the expected JSON can plug in.
+
+### Engine-Specific Testing
 
 Testing tools live per-engine at `/c/code/text-games/<engine>/tools/` (e.g., `i7/tools/run_walkthrough.py`). See `reference/engine-testing.md` for per-engine test capabilities.
 

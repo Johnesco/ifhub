@@ -78,14 +78,25 @@ The primary play interface. A two-pane layout with the game on the left and sour
 - Game selector dropdown (populated from `games.json`)
 - Style dropdown (overlay-aware theme selector): for games with `overlayLabel`, shows the game's native overlay as the default first option, then a separator, then all platform themes; for games without overlays, shows only platform themes. Per-game style preference stored in `localStorage` key `ifhub-style-<gameId>`
 - Sound controls (mute button + volume slider) — hidden by default, shown when game iframe reports `ifhub:soundReady`
-- View tabs: "Source" and "Walkthrough"
+- View toggle buttons: Game, Source, Walk, Tests (see **View switching** below)
+
+**View switching:**
+
+The toolbar displays four toggle buttons — Game, Source, Walk, and Tests — that control which panes are visible. The buttons follow two rules:
+
+- **Game** is independent: clicking it toggles the game pane on or off regardless of the other buttons.
+- **Source, Walk, and Tests** are mutually exclusive (radio behavior): clicking one activates it and deactivates the other two. Clicking the already-active button deactivates it (collapses the right pane).
+
+The active view combination is reflected in the URL query string as `?view=<panes>`, where panes are joined with `+`. Examples: `?view=game+tests`, `?view=game+source`, `?view=tests`. This allows bookmarkable links to specific view states.
+
+The Tests button is only visible for games that have `testsUrl` in `games.json`.
 
 **Pane visibility states:**
-- Default: both panes visible
-- Source collapsed: `body.source-collapsed` — game fills full width
-- Game collapsed: `body.game-collapsed` — source fills full width
+- Default: both panes visible (game + source)
+- Source/right pane collapsed: `body.source-collapsed` — game fills full width
+- Game collapsed: `body.game-collapsed` — right pane fills full width
 - Toggle buttons: "Hide Game" / "Show Game" and dismiss (x) button
-- Clicking an active tab collapses the source pane; clicking an inactive tab expands and switches
+- Clicking an active right-pane tab collapses the right pane; clicking an inactive tab expands and switches
 
 **Game pane:**
 - Iframe loading the game's own play page via `playUrl` from `games.json`
@@ -101,6 +112,16 @@ The primary play interface. A two-pane layout with the game on the left and sour
 **Source pane (walkthrough view):**
 - Loads walkthrough HTML in an iframe from `walkthroughUrl` in `games.json`
 - Shows "Not yet available" message if no walkthrough defined for the game
+
+**Source pane (tests view):**
+
+A fourth view alongside Game, Source, and Walkthrough. Loads the game's `testsUrl` in an iframe, following the same pattern as the walkthrough frame.
+
+- **Viewer page (`tests.html`):** A self-contained HTML page that reads `test-results.json` from its own directory. Each game version that has test results gets its own `tests.html` and `test-results.json` pair.
+- **Data format (`test-results.json`):** A compact JSON format produced by `slim-test-results.js` from full `transcript-test` output. Contains only the fields needed for display (pass/fail status, assertion details, command sequences).
+- **Summary view:** Shows pass/fail cards for each transcript — a quick overview of test health across the game's transcripts.
+- **Detail view:** Collapsible per-command sections showing individual assertions and their results.
+- **Visibility:** The Tests toggle button in the toolbar only appears for games that have `testsUrl` in `games.json`. `build_games.py` auto-detects `tests.html` on disk and sets `testsUrl` automatically when building the registry.
 
 **Keyboard shortcuts:**
 - Ctrl+F / Cmd+F: focus search box (when source pane is visible)
@@ -198,6 +219,7 @@ Each entry is an object with these fields:
 | `playUrl` | string | Yes | Absolute URL path to game's play page (e.g., `"/zork1-v3/play.html"`) |
 | `sourceUrl` | string | Yes | Absolute URL path to source file or source browser (e.g., `"/zork1-v3/source.html"`) |
 | `walkthroughUrl` | string | No | Absolute URL path to walkthrough HTML page |
+| `testsUrl` | string | No | Absolute URL path to the tests.html viewer page (e.g., `"/familyzoo/v01/tests.html"`). When present, the Tests toggle button appears in the toolbar. `build_games.py` auto-detects `tests.html` on disk and sets this field automatically. |
 | `landingUrl` | string | No | Absolute URL path to game's landing page (e.g., `"/zork1/"`) |
 | `sound` | string | No | Sound mode: `"blorb"` for native Glk sound, absent for no sound |
 | `versionLabel` | string | No | Label shown in version lists (e.g., `"v2 — Bug Fixes"`) |
