@@ -450,6 +450,7 @@
     "versionPrimaryLabel": "Current",
     "playUrl": "/familyzoo/v17/play.html",
     "walkthroughUrl": "/familyzoo/v17/walkthrough.html",
+    "testsUrl": "/familyzoo/v17/tests.html",
     "sourceBrowser": true,
     "sourceUrl": "/familyzoo/v17/source.html",
     "engine": "sharpee",
