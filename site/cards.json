@@ -514,7 +514,7 @@
         "label": "v2 — Bug Fixes",
         "playUrl": "/zork1-v2/play.html",
         "landingUrl": "/zork1/#zork1-v2",
-        "sourceUrl": "/zork1-v2/source.html",
+        "sourceUrl": "/zork1-v2/story.ni",
         "walkthroughUrl": "/zork1-v2/walkthrough.html"
       },
       {
@@ -522,7 +522,8 @@
         "label": "v1 — The Port",
         "playUrl": "/zork1-v1/play.html",
         "landingUrl": "/zork1/#zork1-v1",
-        "sourceUrl": "/zork1-v1/source.html"
+        "sourceUrl": "/zork1-v1/source.html",
+        "walkthroughUrl": "/zork1-v1/walkthrough.html"
       },
       {
         "id": "zork1-v0",
