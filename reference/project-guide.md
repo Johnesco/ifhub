@@ -289,6 +289,7 @@ python -m http.server 8000 --directory ../text-games/i7/<name>
 | Resource | Location |
 |----------|----------|
 | Hub CLAUDE.md | `C:\code\ifhub\CLAUDE.md` |
+| Multi-version games | `C:\code\ifhub\reference\multi-version-guide.md` |
 | Syntax reference | `C:\code\ifhub\reference\syntax-guide.md` |
 | Text formatting | `C:\code\ifhub\reference\text-formatting.md` |
 | Sound architecture | `C:\code\ifhub\reference\sound.md` |
