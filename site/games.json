@@ -668,7 +668,7 @@
   },
   {
     "id": "zork1-v1",
-    "title": "Zork I - The Great Underground Empire",
+    "title": "Zork I (v1 — The Port)",
     "sourceLabel": "story.ni",
     "versionLabel": "v1 — The Port",
     "playUrl": "/zork1-v1/play.html",
@@ -682,7 +682,7 @@
   },
   {
     "id": "zork1-v2",
-    "title": "Zork I (v2)",
+    "title": "Zork I (v2 — Bug Fixes)",
     "sourceLabel": "zork1-v2.ni",
     "versionLabel": "v2 — Bug Fixes",
     "playUrl": "/zork1-v2/play.html",
