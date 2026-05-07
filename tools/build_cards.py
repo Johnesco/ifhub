@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Rebuild site/cards.json from games.json + games-registry.json.
+"""Rebuild site/cards.json from games.json.
 
 Collapses versioned-game groups into a single card with `versions:[...]`.
 Preserves hand-edited card metadata (meta, description, tags, sound) by
 reading the existing cards.json and merging.
 
-A registry entry is part of a version group if any of:
+A games.json entry is part of a version group if any of:
     - versionOf: "<base-id>"          explicit
     - versionPrimary: true            marks the featured version of a group
     - naming-convention match         id matches "<base>-v?\\d+" and <base> is
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR, GAMES_REGISTRY
+from lib.paths import IFHUB_DIR
 
 
 VERSION_SUFFIX_RE = re.compile(r"^(?P<base>.+?)-v?(?P<num>\d+)$")
@@ -37,8 +37,8 @@ def infer_base(game_id: str) -> tuple[str, int] | None:
     return m.group("base"), int(m.group("num"))
 
 
-def build_groups(registry: dict) -> tuple[dict[str, str], dict[str, dict]]:
-    """Compute version-group membership from the registry.
+def build_groups(games_by_id: dict) -> tuple[dict[str, str], dict[str, dict]]:
+    """Compute version-group membership from games.json entries.
 
     Returns:
         member_to_base: dict mapping every group-member id -> base id
@@ -48,7 +48,7 @@ def build_groups(registry: dict) -> tuple[dict[str, str], dict[str, dict]]:
     primaries: dict[str, dict] = {}
     explicit_members: list[tuple[str, str]] = []
 
-    for gid, entry in registry.items():
+    for gid, entry in games_by_id.items():
         if entry.get("versionPrimary"):
             base = entry.get("versionOf") or gid
             primaries[base] = {
@@ -64,7 +64,7 @@ def build_groups(registry: dict) -> tuple[dict[str, str], dict[str, dict]]:
     for base, meta in primaries.items():
         member_to_base[meta["primary_id"]] = base
 
-    for gid in registry:
+    for gid in games_by_id:
         if gid in member_to_base:
             continue
         inferred = infer_base(gid)
@@ -115,13 +115,14 @@ def main() -> None:
 
     games: list[dict] = load_json(games_path)
     cards_existing: list[dict] = load_json(cards_path) if cards_path.exists() else []
-    registry: dict = load_json(GAMES_REGISTRY) if GAMES_REGISTRY.exists() else {}
 
     games_by_id = {g["id"]: g for g in games}
     cards_by_id = {c["id"]: c for c in cards_existing}
-    reg_by_id = registry
+    # Legacy name kept for body below; "reg_by_id" now points at games.json
+    # entries (which carry the version fields previously on the registry).
+    reg_by_id = games_by_id
 
-    member_to_base, primaries = build_groups(registry)
+    member_to_base, primaries = build_groups(games_by_id)
 
     out_cards: list[dict] = []
     handled_ids: set[str] = set()
@@ -154,13 +155,13 @@ def main() -> None:
         if primary_game.get("sound") or existing.get("sound"):
             card["sound"] = primary_game.get("sound") or existing.get("sound")
         card["playUrl"] = primary_game["playUrl"]
-        # Group landing URL: derived from the deploy-dir name in the registry
-        # (handles shared-repo groups whose primary game has no per-version
-        # landingUrl in games.json — e.g., familyzoo-17 lives in /familyzoo/).
-        primary_entry = reg_by_id.get(primary_id, {})
-        primary_path = primary_entry.get("path", "")
-        deploy_name = Path(primary_path).name if primary_path else primary_id
-        group_landing = primary_game.get("landingUrl") or f"/{deploy_name}/"
+        # Group landing URL: derived from the first path segment of the
+        # primary's playUrl (handles shared-repo groups like familyzoo where
+        # primary's landingUrl is `/familyzoo/v17/` but the group index
+        # lives at `/familyzoo/`).
+        play_segments = primary_game["playUrl"].strip("/").split("/")
+        deploy_name = play_segments[0] if play_segments else primary_id
+        group_landing = f"/{deploy_name}/"
         card["landingUrl"] = group_landing
         card["engine"] = primary_game.get("engine", existing.get("engine", "inform7"))
         card["tags"] = primary_game.get("tags", existing.get("tags", []))
@@ -168,6 +169,8 @@ def main() -> None:
             card["sourceUrl"] = primary_game["sourceUrl"]
         if primary_game.get("walkthroughUrl"):
             card["walkthroughUrl"] = primary_game["walkthroughUrl"]
+        if primary_game.get("testsUrl"):
+            card["testsUrl"] = primary_game["testsUrl"]
 
         versions_list = []
         for mid in members_sorted:
@@ -185,6 +188,8 @@ def main() -> None:
                 v["sourceUrl"] = mgame["sourceUrl"]
             if mgame.get("walkthroughUrl"):
                 v["walkthroughUrl"] = mgame["walkthroughUrl"]
+            if mgame.get("testsUrl"):
+                v["testsUrl"] = mgame["testsUrl"]
             versions_list.append(v)
         if versions_list:
             card["versions"] = versions_list
@@ -221,6 +226,8 @@ def main() -> None:
             card["sourceUrl"] = game["sourceUrl"]
         if game.get("walkthroughUrl"):
             card["walkthroughUrl"] = game["walkthroughUrl"]
+        if game.get("testsUrl"):
+            card["testsUrl"] = game["testsUrl"]
         if existing.get("sourceBrowser"):
             card["sourceBrowser"] = True
 
