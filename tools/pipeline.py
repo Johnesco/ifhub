@@ -270,6 +270,30 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
             if r.returncode != 0:
                 raise RuntimeError(f"regtests failed (exit {r.returncode})")
 
+    # ifplayer .test files (I7 games with ifPlayer test suites)
+    test_files = sorted(project_dir.glob("tests/*.test"))
+    if not test_files:
+        test_files = sorted(project_dir.glob("tests/ifplayer/*.test"))
+
+    if test_files:
+        print(f"  Running ifplayer tests ({len(test_files)} file(s))...")
+        has_tests = True
+        json_out = project_dir / "test-results.json"
+        ifplayer_cmd = [
+            sys.executable, "-m", "ifplayer.cli", "test",
+            *[str(f) for f in test_files],
+            "--json-report", str(json_out),
+            "--story-id", name,
+        ]
+        r = process.run(ifplayer_cmd)
+        if r.returncode != 0:
+            raise RuntimeError(f"ifplayer tests failed (exit {r.returncode})")
+        # Copy tests viewer template
+        tests_template = paths.WEB_DIR / "tests-template.html"
+        tests_dest = project_dir / "tests.html"
+        if tests_template.exists() and not tests_dest.exists():
+            shutil.copy2(str(tests_template), str(tests_dest))
+
     if not has_tests:
         output.skip("No tests configured")
 

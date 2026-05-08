@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0a0a0a;
+  color: #d4c5a9;
+  font-family: Georgia, "Times New Roman", serif;
+  overflow: hidden;
+}
+
+/* --- Layout --- */
+.container {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+/* --- Status banner --- */
+.status-banner {
+  padding: 6px 20px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.82em;
+  letter-spacing: 0.3px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.status-banner.all-passed {
+  background: #141e12;
+  border-bottom: 1px solid #2a3a20;
+  color: #8bab6e;
+}
+
+.status-banner.has-failures {
+  background: #1e1410;
+  border-bottom: 1px solid #3a2418;
+  color: #cc6644;
+}
+
+.status-banner.no-data {
+  background: #1a1810;
+  border-bottom: 1px solid #2a2418;
+  color: #887755;
+}
+
+/* --- Body layout --- */
+.body-wrap {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: #0e0e0c;
+  border-right: 1px solid #1e1a14;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #1e1a14;
+}
+
+.sidebar-header h1 {
+  font-size: 0.95em;
+  color: #c4b48a;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.sidebar-header .timestamp {
+  font-size: 0.75em;
+  color: #665544;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: #0e0e0c; }
+.nav::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 3px; }
+
+.nav-group {
+  margin-bottom: 4px;
+}
+
+.nav-transcript {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.75em;
+  color: #998866;
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-transcript:hover {
+  background: #151510;
+  color: #c4b48a;
+}
+
+.nav-transcript.active {
+  background: #18160f;
+  color: #e8d090;
+  border-left-color: #e8d090;
+}
+
+.nav-transcript .nav-file {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-badge {
+  font-size: 0.85em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.nav-badge.pass {
+  background: #1a2a16;
+  color: #8bab6e;
+}
+
+.nav-badge.fail {
+  background: #2a1810;
+  color: #cc6644;
+}
+
+.nav-commands {
+  padding-left: 8px;
+  display: none;
+}
+
+.nav-transcript.active + .nav-commands,
+.nav-commands.expanded {
+  display: block;
+}
+
+.nav-cmd {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 16px 3px 28px;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.7em;
+  color: #776655;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-cmd:hover {
+  background: #151510;
+  color: #aa9966;
+}
+
+.nav-cmd.active {
+  color: #c4b48a;
+}
+
+.nav-cmd-icon {
+  flex-shrink: 0;
+  font-size: 0.9em;
+}
+
+.nav-cmd-icon.pass { color: #8bab6e; }
+.nav-cmd-icon.fail { color: #cc6644; }
+
+.nav-cmd-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Main content --- */
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  padding: 8px 20px;
+  background: #0e0e0c;
+  border-bottom: 1px solid #1e1a14;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85em;
+  color: #887755;
+  flex-wrap: wrap;
+}
+
+.toggle-btn {
+  background: #1a1810;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #887755;
+  font-family: inherit;
+  font-size: 0.85em;
+  padding: 3px 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.toggle-btn:hover {
+  background: #2a2010;
+  color: #c4b48a;
+  border-color: #7a6a50;
+}
+
+.toggle-btn.active {
+  background: #2a2010;
+  border-color: #5a4a30;
+  color: #e8d090;
+}
+
+.search-box {
+  background: #111;
+  border: 1px solid #2a2418;
+  border-radius: 4px;
+  color: #d4c5a9;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  width: 180px;
+  outline: none;
+}
+
+.search-box:focus {
+  border-color: #7a6a50;
+}
+
+.search-box::placeholder {
+  color: #554433;
+}
+
+.toolbar .spacer {
+  flex: 1;
+}
+
+.total-badge {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.total-badge.all-pass {
+  background: #1a2a16;
+  color: #8bab6e;
+}
+
+.total-badge.has-fail {
+  background: #2a1810;
+  color: #cc6644;
+}
+
+.content-wrap {
+  flex: 1;
+  overflow: auto;
+  padding: 24px 40px 40px;
+}
+
+.content-wrap::-webkit-scrollbar { width: 8px; }
+.content-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
+.content-wrap::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 4px; }
+.content-wrap::-webkit-scrollbar-thumb:hover { background: #3a3020; }
+
+/* --- Summary view --- */
+.summary-card {
+  background: #0e0e0c;
+  border: 1px solid #1e1a14;
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+
+.summary-card-title {
+  font-size: 1.05em;
+  font-weight: bold;
+  color: #e8d8b0;
+}
+
+.summary-card-desc {
+  font-size: 0.85em;
+  color: #887755;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.summary-card-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.badge.pass {
+  background: #1a2a16;
+  color: #8bab6e;
+}
+
+.badge.fail {
+  background: #2a1810;
+  color: #cc6644;
+}
+
+.badge.skip {
+  background: #1a1810;
+  color: #887755;
+}
+
+.badge.duration {
+  background: #1a1810;
+  color: #887755;
+  font-weight: normal;
+}
+
+.summary-commands {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #1e1a14;
+}
+
+.summary-cmd {
+  display: flex;
+  align-items: baseline;
+  padding: 3px 0;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.82em;
+  line-height: 1.5;
+}
+
+.summary-cmd-icon {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.summary-cmd-icon.pass { color: #8bab6e; }
+.summary-cmd-icon.fail { color: #cc6644; }
+
+.summary-cmd-num {
+  min-width: 28px;
+  text-align: right;
+  padding-right: 10px;
+  color: #7a6a50;
+  user-select: none;
+  font-size: 0.85em;
+}
+
+.summary-cmd-prompt {
+  color: #5a4a30;
+  margin-right: 6px;
+  user-select: none;
+}
+
+.summary-cmd-text {
+  color: #c4b48a;
+}
+
+.summary-cmd-text.fail {
+  color: #cc6644;
+}
+
+.summary-cmd-assert-count {
+  margin-left: auto;
+  color: #665544;
+  font-size: 0.85em;
+  padding-left: 12px;
+  white-space: nowrap;
+}
+
+/* --- Unified row: clickable summary header that expands inline to detail --- */
+.summary-cmd {
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+.summary-cmd:hover { background: #1a1810; }
+.summary-cmd-expand-icon {
+  width: 14px;
+  flex-shrink: 0;
+  text-align: center;
+  color: #665544;
+  font-size: 0.7em;
+  user-select: none;
+  margin-right: 2px;
+  transition: transform 0.15s;
+  display: inline-block;
+}
+.summary-cmd.expanded .summary-cmd-expand-icon { transform: rotate(90deg); }
+
+.summary-cmd-body {
+  display: none;
+  margin: 4px 0 12px 34px;
+  padding: 8px 12px;
+  background: #090908;
+  border-left: 2px solid #2a2418;
+  border-radius: 0 3px 3px 0;
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.82em;
+  line-height: 1.5;
+}
+.summary-cmd.expanded + .summary-cmd-body { display: block; }
+.summary-cmd-body .body-comment {
+  color: #776655;
+  font-style: italic;
+  margin-bottom: 6px;
+}
+.summary-cmd-body .body-asserts { margin-bottom: 8px; }
+.summary-cmd-body .body-assert {
+  display: flex;
+  gap: 8px;
+  padding: 1px 0;
+}
+.summary-cmd-body .body-assert .assert-icon { width: 14px; text-align: center; flex-shrink: 0; font-weight: bold; }
+.summary-cmd-body .body-assert .assert-icon.pass { color: #8bab6e; }
+.summary-cmd-body .body-assert .assert-icon.fail { color: #cc6644; }
+.summary-cmd-body .body-assert .assert-text { color: #b8a888; }
+.summary-cmd-body .body-assert .assert-text.fail { color: #cc6644; }
+.summary-cmd-body .body-output-label {
+  color: #665544;
+  font-size: 0.92em;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  user-select: none;
+}
+.summary-cmd-body .body-output {
+  background: #050505;
+  border: 1px solid #1a1612;
+  border-radius: 2px;
+  padding: 8px 12px;
+  color: #998866;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* --- Failures-only filter --- */
+.summary-cmd.hidden-by-filter,
+.summary-cmd-body.hidden-by-filter,
+.summary-card.hidden-by-filter { display: none; }
+
+/* --- Search highlights --- */
+.search-hit {
+  background: #5a4a10;
+  color: #ffe8a0;
+  border-radius: 2px;
+}
+
+.search-current {
+  background: #7a6a20;
+  outline: 1px solid #aa9930;
+}
+
+/* --- Loading / error / empty --- */
+.loading {
+  text-align: center;
+  padding: 80px 40px;
+  color: #887755;
+  font-size: 1.1em;
+}
+
+.loading em {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.error-msg {
+  text-align: center;
+  padding: 80px 40px;
+  color: #aa6644;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 80px 40px;
+  color: #887755;
+}
+
+.empty-msg h2 {
+  color: #aa9966;
+  font-size: 1.2em;
+  margin-bottom: 16px;
+}
+
+.empty-msg p {
+  font-size: 0.95em;
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.empty-msg code {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.9em;
+  background: #1a1810;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: #c4b48a;
+}
+
+/* --- I7 extension badges (room, score, outcome) --- */
+.body-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.body-badge {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.8em;
+  padding: 1px 8px;
+  border-radius: 3px;
+}
+
+.body-badge.room {
+  background: #1a1428;
+  color: #a088cc;
+}
+
+.body-badge.score {
+  background: #1e1a10;
+  color: #c4a040;
+}
+
+.body-badge.delta-up {
+  background: #141e12;
+  color: #8bab6e;
+}
+
+.body-badge.delta-down {
+  background: #1e1210;
+  color: #cc6644;
+}
+
+.body-badge.outcome-win {
+  background: #141e12;
+  color: #8bab6e;
+  font-weight: bold;
+}
+
+.body-badge.outcome-lose {
+  background: #1e1210;
+  color: #cc6644;
+  font-weight: bold;
+}
+
+/* --- Drift / parser notes (collapsible) --- */
+.body-extra-section {
+  margin-top: 8px;
+}
+
+.body-extra-label {
+  color: #665544;
+  font-size: 0.85em;
+  cursor: pointer;
+  user-select: none;
+}
+
+.body-extra-label:hover {
+  color: #887766;
+}
+
+.body-extra-content {
+  display: none;
+  margin-top: 4px;
+}
+
+.body-extra-section.open .body-extra-content {
+  display: block;
+}
+
+.drift-chunk { font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace; font-size: 0.9em; }
+.drift-equal { color: #776655; }
+.drift-insert { color: #8bab6e; background: #141e12; padding: 0 2px; border-radius: 2px; }
+.drift-delete { color: #cc6644; background: #1e1210; padding: 0 2px; border-radius: 2px; text-decoration: line-through; }
+
+.parser-error {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.85em;
+  color: #cc8844;
+  padding: 1px 0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .content-wrap { padding: 16px 20px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="status-banner no-data" id="status-banner">Loading test results...</div>
+  <div class="body-wrap">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>Tests</h1>
+        <div class="timestamp" id="sidebar-timestamp"></div>
+      </div>
+      <div class="nav" id="nav"></div>
+    </div>
+    <div class="main">
+      <div class="toolbar">
+        <button class="toggle-btn" id="btn-expand-all">Expand all</button>
+        <button class="toggle-btn" id="btn-collapse-all">Collapse all</button>
+        <button class="toggle-btn" id="btn-failures-only">Failures only</button>
+        <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
+        <span class="spacer"></span>
+        <span class="total-badge all-pass" id="total-badge" style="display:none;"></span>
+      </div>
+      <div class="content-wrap" id="content-wrap">
+        <div class="loading"><em>Loading test results...</em></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var DATA_URL = 'test-results.json';
+var testData = null;
+var activeTranscriptIndex = -1;
+var failuresOnly = false;
+
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---- Format assertion type into readable text ---- */
+function formatAssertion(assertion) {
+  var type = assertion.type || '';
+  var value = assertion.value || '';
+
+  switch (type) {
+    case 'ok-contains':
+      return 'Contains "' + value + '"';
+    case 'ok-not-contains':
+      return 'Does not contain "' + value + '"';
+    case 'ok-matches':
+      return 'Matches /' + value + '/';
+    case 'ok-starts-with':
+      return 'Starts with "' + value + '"';
+    case 'ok-ends-with':
+      return 'Ends with "' + value + '"';
+    case 'ok-equals':
+      return 'Equals "' + value + '"';
+    case 'event':
+      return 'Event: ' + value;
+    case 'event-not':
+      return 'No event: ' + value;
+    case 'state':
+      return 'State: ' + value;
+    case 'state-not':
+      return 'Not state: ' + value;
+    default:
+      if (type.startsWith('ok')) return type.replace(/^ok-?/, '').replace(/-/g, ' ') + (value ? ' "' + value + '"' : '');
+      return type + (value ? ': ' + value : '');
+  }
+}
+
+/* ---- Format duration ---- */
+function formatDuration(ms) {
+  if (ms < 1000) return ms + 'ms';
+  return (ms / 1000).toFixed(1) + 's';
+}
+
+/* ---- Format timestamp ---- */
+function formatTimestamp(isoStr) {
+  try {
+    var d = new Date(isoStr);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+           d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } catch (e) {
+    return isoStr || '';
+  }
+}
+
+/* ---- Check if a command has any failures ---- */
+function commandFailed(cmd) {
+  if (cmd.passed === false) return true;
+  if (cmd.assertions) {
+    for (var i = 0; i < cmd.assertions.length; i++) {
+      if (!cmd.assertions[i].passed) return true;
+    }
+  }
+  return false;
+}
+
+/* ---- Count assertions in a command ---- */
+function commandAssertionCount(cmd) {
+  return (cmd.assertions && cmd.assertions.length) || 0;
+}
+
+/* ---- Classify output lines for highlighting ---- */
+function classifyOutputLine(line, lineIndex, allLines) {
+  if (line.match(/\[Your score/i)) return 'score';
+  if (lineIndex === 0 && line.trim() && !line.match(/^[\[\(]/) && line.length < 80) {
+    if (line.trim().match(/^[A-Z]/) && !line.trim().match(/\.\s*$/)) {
+      var nextLine = (lineIndex + 1 < allLines.length) ? allLines[lineIndex + 1] : '';
+      if (nextLine.match(/^You are |^You're |^$|^This is |^There is /)) return 'room';
+    }
+  }
+  return 'normal';
+}
+
+function renderOutputLine(line, lineIndex, allLines) {
+  var type = classifyOutputLine(line, lineIndex, allLines);
+  if (type === 'score') return '<span class="score-line">' + esc(line) + '</span>';
+  if (type === 'room') return '<span class="room-name">' + esc(line) + '</span>';
+  return esc(line);
+}
+
+/* ---- Update page title ---- */
+function updateTitle() {
+  if (!testData) return;
+  var version = testData.version || '';
+  // Try to build a title from the first transcript's title or from the storyId
+  var conceptName = '';
+  if (testData.transcripts && testData.transcripts.length > 0 && testData.transcripts[0].title) {
+    // Extract concept from "V01 -- A Single Room" style titles
+    var parts = testData.transcripts[0].title.split(/\s*[:\u2014\u2013-]+\s*/);
+    if (parts.length > 1) conceptName = parts.slice(1).join(' ').trim();
+  }
+  var title = 'Tests';
+  if (testData.storyId) title += ' \u2014 ' + testData.storyId;
+  if (version && !testData.storyId) title += ' \u2014 ' + version;
+  if (conceptName) title += ': ' + conceptName;
+  document.title = title;
+}
+
+/* ---- Update status banner ---- */
+function updateStatusBanner() {
+  var banner = document.getElementById('status-banner');
+  if (!testData) {
+    banner.className = 'status-banner no-data';
+    banner.textContent = 'No test data available';
+    return;
+  }
+
+  var total = testData.summary.totalPassed + testData.summary.totalFailed + testData.summary.totalSkipped;
+  var failed = testData.summary.totalFailed;
+
+  if (failed === 0) {
+    banner.className = 'status-banner all-passed';
+    banner.textContent = 'All ' + total + ' assertions passed';
+  } else {
+    banner.className = 'status-banner has-failures';
+    banner.textContent = failed + ' assertion' + (failed === 1 ? '' : 's') + ' failed out of ' + total;
+  }
+}
+
+/* ---- Update total badge ---- */
+function updateTotalBadge() {
+  var badge = document.getElementById('total-badge');
+  if (!testData) { badge.style.display = 'none'; return; }
+
+  var total = testData.summary.totalPassed + testData.summary.totalFailed + testData.summary.totalSkipped;
+  var failed = testData.summary.totalFailed;
+
+  badge.style.display = '';
+  badge.textContent = testData.summary.totalPassed + '/' + total + ' passed';
+  badge.className = failed > 0 ? 'total-badge has-fail' : 'total-badge all-pass';
+}
+
+/* ---- Build sidebar navigation ---- */
+function buildNav() {
+  var nav = document.getElementById('nav');
+  if (!testData || !testData.transcripts) {
+    nav.innerHTML = '';
+    return;
+  }
+
+  var html = '';
+  for (var t = 0; t < testData.transcripts.length; t++) {
+    var tr = testData.transcripts[t];
+    var failed = tr.summary.failed > 0;
+    var badgeClass = failed ? 'fail' : 'pass';
+    var badgeText = failed ? tr.summary.failed + ' fail' : tr.summary.passed + ' pass';
+
+    html += '<div class="nav-group">';
+    html += '<a class="nav-transcript' + (t === 0 ? ' active' : '') + '" data-index="' + t + '">';
+    html += '<span class="nav-file">' + esc(tr.file) + '</span>';
+    html += '<span class="nav-badge ' + badgeClass + '">' + badgeText + '</span>';
+    html += '</a>';
+    html += '<div class="nav-commands' + (t === 0 ? ' expanded' : '') + '" data-transcript="' + t + '">';
+
+    for (var c = 0; c < tr.commands.length; c++) {
+      var cmd = tr.commands[c];
+      var cmdFailed = commandFailed(cmd);
+      var iconClass = cmdFailed ? 'fail' : 'pass';
+      var icon = cmdFailed ? '\u2717' : '\u2713';
+
+      html += '<a class="nav-cmd" data-transcript="' + t + '" data-command="' + c + '">';
+      html += '<span class="nav-cmd-icon ' + iconClass + '">' + icon + '</span>';
+      html += '<span class="nav-cmd-text">' + esc(cmd.input) + '</span>';
+      html += '</a>';
+    }
+
+    html += '</div>';
+    html += '</div>';
+  }
+
+  nav.innerHTML = html;
+
+  // Click handlers for transcript headers
+  nav.addEventListener('click', function(e) {
+    var transcriptEl = e.target.closest('.nav-transcript');
+    var cmdEl = e.target.closest('.nav-cmd');
+
+    if (cmdEl) {
+      var tIdx = parseInt(cmdEl.getAttribute('data-transcript'));
+      var cIdx = parseInt(cmdEl.getAttribute('data-command'));
+      scrollToCommand(tIdx, cIdx);
+      return;
+    }
+
+    if (transcriptEl) {
+      var idx = parseInt(transcriptEl.getAttribute('data-index'));
+
+      // Toggle active state
+      nav.querySelectorAll('.nav-transcript').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      transcriptEl.classList.add('active');
+
+      // Toggle commands list
+      nav.querySelectorAll('.nav-commands').forEach(function(el) {
+        el.classList.remove('expanded');
+      });
+      var cmds = nav.querySelector('.nav-commands[data-transcript="' + idx + '"]');
+      if (cmds) cmds.classList.add('expanded');
+
+      activeTranscriptIndex = idx;
+      scrollToTranscript(idx);
+    }
+  });
+}
+
+/* ---- Scroll to a transcript section ---- */
+function scrollToTranscript(index) {
+  var target = document.getElementById('summary-' + index);
+  if (target) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+
+/* ---- Scroll to a specific command + auto-expand it ---- */
+function scrollToCommand(transcriptIndex, commandIndex) {
+  var target = document.getElementById('cmd-' + transcriptIndex + '-' + commandIndex);
+  if (!target) return;
+  // Make sure it's expanded so the body is visible after scroll.
+  target.classList.add('expanded');
+  target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  target.style.outline = '1px solid #5a4a30';
+  setTimeout(function() { target.style.outline = ''; }, 1500);
+}
+
+/* ---- Render the unified view: compact rows that expand inline. ----
+ * Each command renders TWO sibling elements:
+ *   1. .summary-cmd          \u2014 clickable header (always visible)
+ *   2. .summary-cmd-body     \u2014 assertions + output (hidden until .expanded)
+ * Failed rows start expanded so the user immediately sees what went wrong.
+ */
+function renderSummary() {
+  if (!testData || !testData.transcripts) return '<div class="empty-msg">No transcripts found.</div>';
+
+  var html = '';
+
+  for (var t = 0; t < testData.transcripts.length; t++) {
+    var tr = testData.transcripts[t];
+
+    html += '<div class="summary-card" id="summary-' + t + '">';
+
+    // Transcript header
+    html += '<div class="summary-card-header">';
+    html += '<div>';
+    html += '<div class="summary-card-title">' + esc(tr.title || tr.file) + '</div>';
+    if (tr.description) {
+      html += '<div class="summary-card-desc">' + esc(tr.description) + '</div>';
+    }
+    html += '</div>';
+    html += '<div class="summary-card-badges">';
+    html += '<span class="badge pass">' + tr.summary.passed + ' passed</span>';
+    if (tr.summary.failed > 0) {
+      html += '<span class="badge fail">' + tr.summary.failed + ' failed</span>';
+    }
+    if (tr.summary.skipped > 0) {
+      html += '<span class="badge skip">' + tr.summary.skipped + ' skipped</span>';
+    }
+    if (tr.summary.duration != null) {
+      html += '<span class="badge duration">' + formatDuration(tr.summary.duration) + '</span>';
+    }
+    html += '</div>';
+    html += '</div>';
+
+    // Commands \u2014 compact rows + hidden expanded bodies
+    html += '<div class="summary-commands">';
+    for (var c = 0; c < tr.commands.length; c++) {
+      var cmd = tr.commands[c];
+      var cmdFail = commandFailed(cmd);
+      var icon = cmdFail ? '\u2717' : '\u2713';
+      var iconClass = cmdFail ? 'fail' : 'pass';
+      var textClass = cmdFail ? ' fail' : '';
+      var assertCount = commandAssertionCount(cmd);
+      var rowId = 'cmd-' + t + '-' + c;
+
+      // 1. Clickable header
+      html += '<div class="summary-cmd' + (cmdFail ? ' expanded' : '') + '" id="' + rowId + '">';
+      html += '<span class="summary-cmd-expand-icon">\u25b8</span>';
+      html += '<span class="summary-cmd-icon ' + iconClass + '">' + icon + '</span>';
+      html += '<span class="summary-cmd-num">' + (c + 1) + '</span>';
+      html += '<span class="summary-cmd-prompt">&gt;</span>';
+      html += '<span class="summary-cmd-text' + textClass + '">' + esc(cmd.input) + '</span>';
+      if (assertCount > 0) {
+        var passedCount = 0;
+        for (var a = 0; a < cmd.assertions.length; a++) {
+          if (cmd.assertions[a].passed) passedCount++;
+        }
+        html += '<span class="summary-cmd-assert-count">' + passedCount + '/' + assertCount + '</span>';
+      }
+      html += '</div>';
+
+      // 2. Expanded body \u2014 assertions + output. CSS shows it iff the preceding
+      //    .summary-cmd has .expanded.
+      html += '<div class="summary-cmd-body" data-row="' + rowId + '">';
+      if (cmd.comment) {
+        html += '<div class="body-comment">' + esc(cmd.comment) + '</div>';
+      }
+      if (cmd.assertions && cmd.assertions.length > 0) {
+        html += '<div class="body-asserts">';
+        for (var a2 = 0; a2 < cmd.assertions.length; a2++) {
+          var assertion = cmd.assertions[a2];
+          var aIcon = assertion.passed ? '\u2713' : '\u2717';
+          var aClass = assertion.passed ? 'pass' : 'fail';
+          html += '<div class="body-assert">';
+          html += '<span class="assert-icon ' + aClass + '">' + aIcon + '</span>';
+          html += '<span class="assert-text' + (assertion.passed ? '' : ' fail') + '">' + esc(formatAssertion(assertion)) + '</span>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+      // I7 extension: room / score / outcome badges
+      if (cmd.room || cmd.score || cmd.outcome) {
+        html += '<div class="body-badges">';
+        if (cmd.room) html += '<span class="body-badge room">' + esc(cmd.room) + '</span>';
+        if (cmd.score) html += '<span class="body-badge score">' + esc(cmd.score) + '</span>';
+        if (cmd.scoreDelta && cmd.scoreDelta > 0) html += '<span class="body-badge delta-up">+' + cmd.scoreDelta + '</span>';
+        if (cmd.scoreDelta && cmd.scoreDelta < 0) html += '<span class="body-badge delta-down">' + cmd.scoreDelta + '</span>';
+        if (cmd.outcome === 'win') html += '<span class="body-badge outcome-win">WIN</span>';
+        if (cmd.outcome === 'lose') html += '<span class="body-badge outcome-lose">LOSE</span>';
+        html += '</div>';
+      }
+      if (cmd.output) {
+        var outputLines = cmd.output.split('\n');
+        var outputHtml = '';
+        for (var o = 0; o < outputLines.length; o++) {
+          outputHtml += renderOutputLine(outputLines[o], o, outputLines);
+          if (o < outputLines.length - 1) outputHtml += '\n';
+        }
+        html += '<div class="body-output-label">output</div>';
+        html += '<div class="body-output">' + outputHtml + '</div>';
+      }
+      // I7 extension: drift (word-level diff vs recorded output)
+      if (cmd.drift && cmd.drift.length > 0) {
+        html += '<div class="body-extra-section">';
+        html += '<div class="body-extra-label" onclick="this.parentElement.classList.toggle(\'open\')">&#9656; drift</div>';
+        html += '<div class="body-extra-content">';
+        for (var d = 0; d < cmd.drift.length; d++) {
+          html += '<span class="drift-chunk drift-' + cmd.drift[d].kind + '">' + esc(cmd.drift[d].text) + '</span> ';
+        }
+        html += '</div></div>';
+      }
+      // I7 extension: parser errors
+      if (cmd.parserErrors && cmd.parserErrors.length > 0) {
+        html += '<div class="body-extra-section">';
+        html += '<div class="body-extra-label" onclick="this.parentElement.classList.toggle(\'open\')">&#9656; parser notes (' + cmd.parserErrors.length + ')</div>';
+        html += '<div class="body-extra-content">';
+        for (var pe = 0; pe < cmd.parserErrors.length; pe++) {
+          html += '<div class="parser-error">' + esc(cmd.parserErrors[pe]) + '</div>';
+        }
+        html += '</div></div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+  }
+
+  return html;
+}
+
+/* ---- Render empty/missing state ---- */
+function renderEmpty() {
+  var html = '<div class="empty-msg">';
+  html += '<h2>No test results found</h2>';
+  html += '<p>Place a <code>test-results.json</code> file in this directory ';
+  html += 'to display test results.</p>';
+  html += '<p style="margin-top:12px;">Expected format: a JSON file with transcript results, ';
+  html += 'assertions, and pass/fail status per command.</p>';
+  html += '</div>';
+  return html;
+}
+
+/* ---- Render: single unified view (compact rows that expand inline) ---- */
+function render() {
+  var wrap = document.getElementById('content-wrap');
+  wrap.innerHTML = testData ? renderSummary() : renderEmpty();
+
+  // Attach click handler \u2014 toggle .expanded on each row.
+  document.querySelectorAll('.summary-cmd').forEach(function(row) {
+    row.addEventListener('click', function() {
+      this.classList.toggle('expanded');
+    });
+  });
+
+  applyFailuresFilter();
+  clearSearch();
+  var q = document.getElementById('search').value;
+  if (q && q.length >= 2) doSearch(q);
+}
+
+/* ---- Search ---- */
+var searchHits = [];
+var currentHit = -1;
+
+function clearSearch() {
+  document.querySelectorAll('.search-hit').forEach(function(el) {
+    el.outerHTML = el.textContent;
+  });
+  searchHits = [];
+  currentHit = -1;
+}
+
+function highlightMatches(el, query) {
+  var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  var lower = query.toLowerCase();
+  var nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+
+  nodes.forEach(function(node) {
+    var text = node.textContent;
+    var idx = text.toLowerCase().indexOf(lower);
+    if (idx === -1) return;
+
+    var before = text.slice(0, idx);
+    var match = text.slice(idx, idx + query.length);
+    var after = text.slice(idx + query.length);
+
+    var span = document.createElement('span');
+    span.className = 'search-hit';
+    span.textContent = match;
+
+    var parent = node.parentNode;
+    if (before) parent.insertBefore(document.createTextNode(before), node);
+    parent.insertBefore(span, node);
+    if (after) parent.insertBefore(document.createTextNode(after), node);
+    parent.removeChild(node);
+
+    if (after.toLowerCase().includes(lower)) {
+      var afterNode = span.nextSibling;
+      if (afterNode && afterNode.nodeType === Node.TEXT_NODE) {
+        var temp = document.createElement('span');
+        temp.appendChild(afterNode.cloneNode(true));
+        parent.replaceChild(temp, afterNode);
+        highlightMatches(temp, query);
+        while (temp.firstChild) parent.insertBefore(temp.firstChild, temp);
+        parent.removeChild(temp);
+      }
+    }
+  });
+}
+
+function doSearch(query) {
+  clearSearch();
+  if (!query || query.length < 2) return;
+
+  var wrap = document.getElementById('content-wrap');
+  var selectors = [
+    '.summary-card-title', '.summary-card-desc', '.summary-cmd-text',
+    '.detail-transcript-header', '.detail-transcript-desc', '.detail-cmd-text',
+    '.detail-comment', '.assert-text', '.detail-output'
+  ];
+  var els = wrap.querySelectorAll(selectors.join(', '));
+
+  els.forEach(function(el) {
+    if (el.textContent.toLowerCase().includes(query.toLowerCase())) {
+      highlightMatches(el, query);
+    }
+  });
+
+  searchHits = Array.from(document.querySelectorAll('.search-hit'));
+  if (searchHits.length > 0) {
+    currentHit = 0;
+    searchHits[0].classList.add('search-current');
+    searchHits[0].scrollIntoView({ block: 'center' });
+  }
+}
+
+function nextHit() {
+  if (searchHits.length === 0) return;
+  searchHits[currentHit].classList.remove('search-current');
+  currentHit = (currentHit + 1) % searchHits.length;
+  searchHits[currentHit].classList.add('search-current');
+  searchHits[currentHit].scrollIntoView({ block: 'center' });
+}
+
+function prevHit() {
+  if (searchHits.length === 0) return;
+  searchHits[currentHit].classList.remove('search-current');
+  currentHit = (currentHit - 1 + searchHits.length) % searchHits.length;
+  searchHits[currentHit].classList.add('search-current');
+  searchHits[currentHit].scrollIntoView({ block: 'center' });
+}
+
+/* ---- Failures-only filter ---- */
+function applyFailuresFilter() {
+  if (!failuresOnly) {
+    document.querySelectorAll('.hidden-by-filter').forEach(function(el) {
+      el.classList.remove('hidden-by-filter');
+    });
+    return;
+  }
+
+  // Hide passing rows (and the body that follows each).
+  document.querySelectorAll('.summary-cmd').forEach(function(el) {
+    var icon = el.querySelector('.summary-cmd-icon');
+    var isPass = icon && icon.classList.contains('pass');
+    if (isPass) {
+      el.classList.add('hidden-by-filter');
+      var body = el.nextElementSibling;
+      if (body && body.classList.contains('summary-cmd-body')) {
+        body.classList.add('hidden-by-filter');
+      }
+    } else {
+      el.classList.remove('hidden-by-filter');
+      var body2 = el.nextElementSibling;
+      if (body2 && body2.classList.contains('summary-cmd-body')) {
+        body2.classList.remove('hidden-by-filter');
+      }
+    }
+  });
+  // Hide entire transcript cards if all their commands pass.
+  document.querySelectorAll('.summary-card').forEach(function(el) {
+    var cmds = el.querySelectorAll('.summary-cmd');
+    var allPass = true;
+    cmds.forEach(function(cmd) {
+      var icon = cmd.querySelector('.summary-cmd-icon');
+      if (icon && icon.classList.contains('fail')) allPass = false;
+    });
+    if (allPass) el.classList.add('hidden-by-filter');
+    else el.classList.remove('hidden-by-filter');
+  });
+}
+
+/* ---- Init ---- */
+async function init() {
+  var wrap = document.getElementById('content-wrap');
+
+  try {
+    var resp = await fetch(DATA_URL);
+    if (!resp.ok) {
+      throw { notFound: true };
+    }
+    testData = await resp.json();
+  } catch (e) {
+    if (e.notFound) {
+      // No test-results.json — show helpful empty state
+      testData = null;
+      wrap.innerHTML = renderEmpty();
+      document.getElementById('status-banner').className = 'status-banner no-data';
+      document.getElementById('status-banner').textContent = 'No test results file found';
+      return;
+    }
+    wrap.innerHTML = '<div class="error-msg">Failed to load test results. ' + esc(e.message || String(e)) + '</div>';
+    return;
+  }
+
+  // Update page metadata
+  updateTitle();
+  updateStatusBanner();
+  updateTotalBadge();
+
+  // Timestamp in sidebar
+  if (testData.timestamp) {
+    document.getElementById('sidebar-timestamp').textContent = formatTimestamp(testData.timestamp);
+  }
+
+  // Build sidebar
+  buildNav();
+
+  // Initial render \u2014 failed rows auto-expand, passing rows stay collapsed.
+  render();
+
+  // Expand All / Collapse All operate on the unified rows.
+  document.getElementById('btn-expand-all').addEventListener('click', function() {
+    document.querySelectorAll('.summary-cmd').forEach(function(el) {
+      el.classList.add('expanded');
+    });
+  });
+  document.getElementById('btn-collapse-all').addEventListener('click', function() {
+    document.querySelectorAll('.summary-cmd').forEach(function(el) {
+      el.classList.remove('expanded');
+    });
+  });
+
+  // Failures only filter
+  document.getElementById('btn-failures-only').addEventListener('click', function() {
+    failuresOnly = !failuresOnly;
+    this.classList.toggle('active', failuresOnly);
+    applyFailuresFilter();
+  });
+
+  // Search
+  var searchInput = document.getElementById('search');
+  var debounce;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(debounce);
+    var self = this;
+    debounce = setTimeout(function() { doSearch(self.value); }, 200);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (e.shiftKey) prevHit(); else nextHit();
+    }
+    if (e.key === 'Escape') {
+      clearSearch();
+      this.value = '';
+      this.blur();
+    }
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+      return;
+    }
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>
