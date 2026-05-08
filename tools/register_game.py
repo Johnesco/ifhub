@@ -1,194 +1,145 @@
 #!/usr/bin/env python3
-"""Register a game in the IF Hub (adds entries to games.json and cards.json).
+"""Register a game in IF Hub by flipping its ifhub.conf to `hub = yes`.
+
+`ifhub.conf` is the single source of truth for a game's metadata. This
+script finds the game's deploy dir, ensures the conf is complete and opted
+in (`hub = yes`), then regenerates games.json + cards.json by running
+build_games.py and build_cards.py.
 
 Usage:
-    python tools/register_game.py \
-        --name game-name \
-        --title "Game Title" \
-        --meta "Subtitle" \
-        --description "Game description"
+    python tools/register_game.py --name <game> [--title ...] [--tags ...] ...
 
-Options:
-    --name TEXT         Project directory name (required)
-    --title TEXT        Display title (required)
-    --meta TEXT         Subtitle / tagline (default: "An Interactive Fiction")
-    --description TEXT  Card description (default: "An interactive fiction game.")
-    --source-browser    Use source.html iframe instead of raw .ni (default: true)
-    --sound TYPE        Sound type: "blorb" or omit for no sound
-    --engine TYPE       Engine type: inform7, ink, basic (default: inform7)
-    --tags LIST         Comma-separated tags (e.g. 'horror,classic')
+Any CLI flag that differs from the conf will be written into ifhub.conf,
+so the conf stays authoritative.
 """
 
 import argparse
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR, PROJECTS_DIR, GAMES_REGISTRY, GH_ORG
-from lib.config import get_engine_spec
+from lib import paths
+import build_games
+import build_cards
+
+
+CONF_KEY_FROM_ARG = {
+    "title": "title",
+    "description": "description",
+    "engine": "engine",
+    "tags": "tags",
+    "sound": "sound",
+    "version_of": "versionOf",
+    "version_label": "versionLabel",
+    "version_order": "versionOrder",
+    "version_primary": "versionPrimary",
+    "version_primary_label": "versionPrimaryLabel",
+}
+
+
+def find_deploy_dir(name: str) -> Path | None:
+    """Look up the game's deploy dir via workspaces + registry, same as build_games."""
+    dirs = build_games.discover_game_dirs()
+    if name in dirs:
+        return dirs[name]
+    # Fallback: check PROJECTS_DIR
+    candidate = paths.PROJECTS_DIR / name
+    if (candidate / "ifhub.conf").exists():
+        return candidate
+    return None
+
+
+def read_conf_lines(conf_path: Path) -> list[str]:
+    return conf_path.read_text(encoding="utf-8").splitlines() if conf_path.exists() else []
+
+
+def upsert_conf_field(lines: list[str], key: str, value: str) -> list[str]:
+    """Set `key = value` in the pre-section part of the conf. Appends if absent."""
+    out: list[str] = []
+    found = False
+    in_section = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_section = True
+        if not in_section and "=" in line and not found:
+            k = line.split("=", 1)[0].strip()
+            if k == key:
+                out.append(f"{key} = {value}")
+                found = True
+                continue
+        out.append(line)
+    if not found:
+        # Insert before the first section, or at end.
+        insert_at = len(out)
+        for i, line in enumerate(out):
+            s = line.strip()
+            if s.startswith("[") and s.endswith("]"):
+                insert_at = i
+                break
+        out.insert(insert_at, f"{key} = {value}")
+    return out
 
 
 def main():
     parser = argparse.ArgumentParser(description="Register a game in IF Hub.")
     parser.add_argument("--name", required=True, help="Project directory name")
-    parser.add_argument("--title", required=True, help="Display title")
-    parser.add_argument("--meta", default="An Interactive Fiction", help="Subtitle")
-    parser.add_argument("--description", default="An interactive fiction game.", help="Description")
-    parser.add_argument("--source-browser", action="store_true", default=True,
-                        help="Use source.html iframe")
-    parser.add_argument("--sound", default="", help="Sound type: 'blorb' or empty")
-    parser.add_argument("--engine", default="inform7", help="Engine type: inform7, ink, basic")
-    parser.add_argument("--tags", default="", help="Comma-separated tags (e.g. 'horror,classic')")
-    parser.add_argument("--repo", default="", help="GitHub repo (default: {GH_ORG}/{name})")
-    parser.add_argument("--version-of", default="", dest="version_of",
-                        help="Mark as a version of this base id (e.g. 'familyzoo')")
-    parser.add_argument("--version-label", default="", dest="version_label",
-                        help="Label shown in the version dropdown")
-    parser.add_argument("--version-order", type=int, default=None, dest="version_order",
-                        help="Integer sort key for version ordering")
-    parser.add_argument("--version-primary", action="store_true", dest="version_primary",
-                        help="Mark this entry as the featured/current version")
-    parser.add_argument("--version-primary-label", default="", dest="version_primary_label",
-                        help="Label for the primary in the dropdown (default: 'Current')")
+    parser.add_argument("--title", default=None, help="Display title")
+    parser.add_argument("--meta", default=None, help="Subtitle (cards.json only)")
+    parser.add_argument("--description", default=None, help="Description")
+    parser.add_argument("--sound", default=None, help="Sound type: 'blorb' or empty")
+    parser.add_argument("--engine", default=None, help="Engine type")
+    parser.add_argument("--tags", default=None, help="Comma-separated tags")
+    parser.add_argument("--version-of", default=None, dest="version_of")
+    parser.add_argument("--version-label", default=None, dest="version_label")
+    parser.add_argument("--version-order", type=int, default=None, dest="version_order")
+    parser.add_argument("--version-primary", action="store_true", dest="version_primary")
+    parser.add_argument("--version-primary-label", default=None,
+                        dest="version_primary_label")
     args = parser.parse_args()
 
-    is_versioned = bool(args.version_of or args.version_primary)
-
-    games_path = IFHUB_DIR / "games.json"
-    cards_path = IFHUB_DIR / "cards.json"
-
-    if not games_path.exists() or not cards_path.exists():
-        print(f"ERROR: games.json or cards.json not found in {IFHUB_DIR}", file=sys.stderr)
+    name = args.name
+    deploy_dir = find_deploy_dir(name)
+    if deploy_dir is None:
+        print(f"ERROR: no ifhub.conf found for '{name}' in any workspace.", file=sys.stderr)
+        print(f"  Create one at <project-dir>/ifhub.conf first.", file=sys.stderr)
         sys.exit(1)
 
-    name = args.name
-    tags = [t.strip() for t in args.tags.split(",") if t.strip()] if args.tags else []
+    conf_path = deploy_dir / "ifhub.conf"
+    lines = read_conf_lines(conf_path)
 
-    # --- games.json ---
-    games = json.loads(games_path.read_text(encoding="utf-8"))
-    if any(g["id"] == name for g in games):
-        print(f"  games.json: '{name}' already exists, skipping")
+    # Apply CLI overrides to the conf.
+    for arg_name, conf_key in CONF_KEY_FROM_ARG.items():
+        val = getattr(args, arg_name)
+        if val is None or val == "":
+            continue
+        if arg_name == "version_primary":
+            if val:
+                lines = upsert_conf_field(lines, conf_key, "yes")
+            continue
+        if arg_name == "version_order":
+            lines = upsert_conf_field(lines, conf_key, str(val))
+            continue
+        lines = upsert_conf_field(lines, conf_key, str(val))
+
+    # Always ensure hub = yes.
+    lines = upsert_conf_field(lines, "hub", "yes")
+
+    new_text = "\n".join(lines)
+    if not new_text.endswith("\n"):
+        new_text += "\n"
+    if new_text != conf_path.read_text(encoding="utf-8"):
+        conf_path.write_text(new_text, encoding="utf-8")
+        print(f"  updated {conf_path.relative_to(paths.I7_ROOT)}")
     else:
-        # Derive source label from engine type
-        spec = get_engine_spec(args.engine)
-        if spec:
-            source_label = spec.source_label(name)
-        else:
-            source_label = f"{name}.ni"
+        print(f"  no conf changes needed for {name}")
 
-        entry: dict = {
-            "id": name,
-            "title": args.title,
-            "sourceLabel": source_label,
-            "playUrl": f"/{name}/play.html",
-            "landingUrl": f"/{name}/",
-        }
-        # Only add walkthroughUrl if a walkthrough exists
-        project_dir = PROJECTS_DIR / name
-        walkthrough_file = project_dir / "tests" / "inform7" / "walkthrough.txt"
-        walkthrough_html = project_dir / "walkthrough.html"
-        if walkthrough_file.exists() or walkthrough_html.exists():
-            entry["walkthroughUrl"] = f"/{name}/walkthrough.html"
-        if args.source_browser:
-            entry["sourceBrowser"] = True
-            entry["sourceUrl"] = f"/{name}/source.html"
-        else:
-            entry["sourceUrl"] = f"/{name}/story.ni"
-        if args.sound:
-            entry["sound"] = args.sound
-        entry["engine"] = args.engine
-        entry["tags"] = tags
-
-        games.append(entry)
-        games_path.write_text(json.dumps(games, indent=2, ensure_ascii=False) + "\n",
-                              encoding="utf-8")
-        print(f"  games.json: added '{name}'")
-
-    # --- cards.json ---
-    # For versioned games we let build_cards.py own cards.json — it consolidates
-    # version group members into a single card with versions:[...]. For non-versioned
-    # games we still add a card entry here so the direct register → push flow works.
-    if is_versioned:
-        print(f"  cards.json: skipped (versioned game — run 'python tools/build_cards.py')")
-    else:
-        cards = json.loads(cards_path.read_text(encoding="utf-8"))
-        if any(c["id"] == name for c in cards):
-            print(f"  cards.json: '{name}' already exists, skipping")
-        else:
-            card: dict = {
-                "id": name,
-                "base": name,
-                "title": args.title,
-                "meta": args.meta,
-                "description": args.description,
-                "playUrl": f"/{name}/play.html",
-                "landingUrl": f"/{name}/",
-            }
-            if args.sound:
-                card["sound"] = args.sound
-            card["engine"] = args.engine
-            card["tags"] = tags
-
-            cards.append(card)
-            cards_path.write_text(json.dumps(cards, indent=2, ensure_ascii=False) + "\n",
-                                  encoding="utf-8")
-            print(f"  cards.json: added '{name}'")
-
-    # --- games-registry.json ---
-    if GAMES_REGISTRY.exists():
-        registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
-    else:
-        registry = {}
-
-    if name in registry:
-        existing = registry[name]
-        changed = False
-        if args.version_of and existing.get("versionOf") != args.version_of:
-            existing["versionOf"] = args.version_of
-            changed = True
-        if args.version_label and existing.get("versionLabel") != args.version_label:
-            existing["versionLabel"] = args.version_label
-            changed = True
-        if args.version_order is not None and existing.get("versionOrder") != args.version_order:
-            existing["versionOrder"] = args.version_order
-            changed = True
-        if args.version_primary and not existing.get("versionPrimary"):
-            existing["versionPrimary"] = True
-            changed = True
-        if args.version_primary_label and existing.get("versionPrimaryLabel") != args.version_primary_label:
-            existing["versionPrimaryLabel"] = args.version_primary_label
-            changed = True
-        if changed:
-            GAMES_REGISTRY.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n",
-                                      encoding="utf-8")
-            print(f"  games-registry.json: updated versioning fields on '{name}'")
-        else:
-            print(f"  games-registry.json: '{name}' already exists, skipping")
-    else:
-        entry = {"path": f"../text-games/{name}"}
-        repo = args.repo or f"{GH_ORG}/{name}"
-        entry["repo"] = repo
-        if args.version_of:
-            entry["versionOf"] = args.version_of
-        if args.version_label:
-            entry["versionLabel"] = args.version_label
-        if args.version_order is not None:
-            entry["versionOrder"] = args.version_order
-        if args.version_primary:
-            entry["versionPrimary"] = True
-        if args.version_primary_label:
-            entry["versionPrimaryLabel"] = args.version_primary_label
-        registry[name] = entry
-        GAMES_REGISTRY.write_text(json.dumps(registry, indent=2, ensure_ascii=False) + "\n",
-                                  encoding="utf-8")
-        print(f"  games-registry.json: added '{name}' (path: ../text-games/{name})")
+    # Regenerate derived files.
+    build_games.main()
+    build_cards.main()
 
     print(f"\nDone. Next: publish to GitHub Pages with:")
     print(f"  python tools/publish.py {name}")
-    if is_versioned:
-        print(f"  python tools/build_cards.py       # consolidate versioned cards")
-        print(f"  python tools/build_landing.py {args.version_of or name}")
 
 
 if __name__ == "__main__":

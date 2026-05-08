@@ -20,7 +20,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR, GAMES_REGISTRY, I7_ROOT
+from lib.paths import IFHUB_DIR, I7_ROOT
+import build_games
 
 
 FIELDS = ("playUrl", "landingUrl", "sourceUrl", "walkthroughUrl")
@@ -33,23 +34,19 @@ def resolve_path(raw: str) -> Path:
     return p
 
 
-def build_segment_index(registry: dict) -> dict[str, list[Path]]:
-    """Map URL first-segment (e.g., 'familyzoo') to candidate repo paths."""
+def build_segment_index() -> dict[str, list[Path]]:
+    """Map URL first-segment (e.g., 'familyzoo') to candidate deploy-dir paths.
+
+    Uses the same workspace scanner build_games.py uses, so the resolver
+    always matches what the build pipeline actually publishes.
+    """
     idx: dict[str, list[Path]] = {}
-    for gid, entry in registry.items():
-        path = resolve_path(entry.get("path", ""))
-        if path == Path() or not path.exists():
+    for name, path in build_games.discover_game_dirs().items():
+        if not path.exists():
             continue
-        candidates = set()
-        candidates.add(gid)
-        repo = entry.get("repo", "")
-        if "/" in repo:
-            candidates.add(repo.split("/", 1)[1])
-        candidates.add(path.name)
-        for c in candidates:
-            idx.setdefault(c, [])
-            if path not in idx[c]:
-                idx[c].append(path)
+        idx.setdefault(name, [])
+        if path not in idx[name]:
+            idx[name].append(path)
     return idx
 
 
@@ -125,13 +122,12 @@ def main() -> None:
                         help="Remove broken sourceUrl/walkthroughUrl/landingUrl entries")
     args = parser.parse_args()
 
-    registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
     games_path = IFHUB_DIR / "games.json"
     cards_path = IFHUB_DIR / "cards.json"
     games = json.loads(games_path.read_text(encoding="utf-8"))
     cards = json.loads(cards_path.read_text(encoding="utf-8"))
 
-    seg_idx = build_segment_index(registry)
+    seg_idx = build_segment_index()
 
     broken_games = scan(games, seg_idx, "games.json")
     broken_cards = scan(cards, seg_idx, "cards.json")
