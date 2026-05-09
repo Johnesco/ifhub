@@ -44,7 +44,8 @@
       "demo"
     ],
     "sourceUrl": "/cloak-inform7/source.html",
-    "walkthroughUrl": "/cloak-inform7/walkthrough.html"
+    "walkthroughUrl": "/cloak-inform7/walkthrough.html",
+    "testsUrl": "/cloak-inform7/tests.html"
   },
   {
     "id": "cloak-ink",

@@ -33,7 +33,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import config, git, output, paths, process
+from lib import config, git, output, paths, process, test_results
 
 
 # --- Staleness state file (JSON instead of bash key=value) ---
@@ -266,9 +266,32 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
             r = process.run([
                 sys.executable, str(paths.engine_tools_dir("inform7") / "run_tests.py"),
                 "--config", str(conf_file),
-            ])
+                "--all", "--json",
+            ], capture=True)
             if r.returncode != 0:
+                # Print captured output so failures are visible
+                if r.stdout:
+                    print(r.stdout)
+                if r.stderr:
+                    print(r.stderr, file=sys.stderr)
                 raise RuntimeError(f"regtests failed (exit {r.returncode})")
+
+            # Convert regtest JSON to IF Hub test-results.json
+            if r.stdout and r.stdout.strip():
+                regtest_data = json.loads(r.stdout)
+                hub_json = test_results.convert(regtest_data, name)
+                json_out = project_dir / "test-results.json"
+                json_out.write_text(
+                    json.dumps(hub_json, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8")
+                print(f"  Wrote {json_out.name} "
+                      f"({hub_json['summary']['totalPassed']} passed, "
+                      f"{hub_json['summary']['totalFailed']} failed)")
+                # Copy tests viewer template
+                tests_template = paths.WEB_DIR / "tests-template.html"
+                tests_dest = project_dir / "tests.html"
+                if tests_template.exists():
+                    shutil.copy2(str(tests_template), str(tests_dest))
 
     # ifplayer .test files (I7 games with ifPlayer test suites)
     test_files = sorted(project_dir.glob("tests/*.test"))
