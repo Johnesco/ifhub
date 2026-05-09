@@ -676,6 +676,106 @@ function buildChromeCSS(c, sb) {
     buildScrollbarCSS(sb);
 }
 
+function buildTestReportCSS(c, sb) {
+  // ifplayer report uses CSS custom properties + hardcoded colors designed
+  // for a light theme.  Map IF Hub chrome properties → ifplayer variables
+  // and override hardcoded colors for dark/retro themes.
+  var hex = c.pageBg.replace('#', '');
+  var rv = parseInt(hex.slice(0,2), 16);
+  var gv = parseInt(hex.slice(2,4), 16);
+  var bv = parseInt(hex.slice(4,6), 16);
+  var isLight = (rv * 299 + gv * 587 + bv * 114) / 1000 > 128;
+
+  // Adaptive pass/fail/warn — brighter on dark backgrounds
+  var pass     = isLight ? '#1a7f37' : '#3fb950';
+  var passBg   = isLight ? '#dcffe4' : 'rgba(63, 185, 80, 0.15)';
+  var fail     = isLight ? '#b81a3e' : '#f85149';
+  var failBg   = isLight ? '#ffd9e0' : 'rgba(248, 81, 73, 0.15)';
+  var warn     = isLight ? '#b87800' : '#d29922';
+  var cardBg   = isLight ? '#ffffff' : c.cardBg;
+  var roomClr  = isLight ? '#6b3a8a' : '#c49ee0';
+  var gameFg   = isLight ? '#2a2620' : c.pageFg;
+  var headerBg = isLight ? '#2b231a' : c.toolbarBg;
+  var headerFg = isLight ? '#fafafa' : c.headingFg;
+  var failHeaderBg  = isLight ? '#4a1626' : 'rgba(248, 81, 73, 0.2)';
+  var turnRowBg     = isLight ? '#f1ebdb' : c.surfaceBg;
+  var setupBg       = isLight ? '#f7f3ea' : c.surfaceBg;
+  var setupListBg   = isLight ? '#fdfbf6' : c.cardBg;
+  var failHoverBg   = isLight ? '#ffc6d3' : 'rgba(248, 81, 73, 0.2)';
+  var failRowBorder = isLight ? '#f0aab8' : 'rgba(248, 81, 73, 0.3)';
+  var hlBg     = isLight ? '#ffe88a' : 'rgba(255, 232, 138, 0.3)';
+  var hlFg     = isLight ? '#5a4400' : '#ffe88a';
+  var hlBorder = isLight ? '#d9b840' : '#b89a30';
+  var metaFg   = isLight ? 'rgba(255,255,255,0.78)' : c.mutedFg;
+  var arrowFg  = isLight ? 'rgba(255,255,255,0.55)' : c.mutedFg;
+
+  return (
+    /* ── CSS custom properties ─────────────────────────────────── */
+    ':root {\n' +
+    '  --bg: '      + c.pageBg    + ' !important;\n' +
+    '  --fg: '      + c.pageFg    + ' !important;\n' +
+    '  --muted: '   + c.mutedFg   + ' !important;\n' +
+    '  --pass: '    + pass        + ' !important;\n' +
+    '  --pass-bg: ' + passBg      + ' !important;\n' +
+    '  --fail: '    + fail        + ' !important;\n' +
+    '  --fail-bg: ' + failBg      + ' !important;\n' +
+    '  --warn: '    + warn        + ' !important;\n' +
+    '  --code-bg: ' + c.codeBg    + ' !important;\n' +
+    '  --line: '    + c.border    + ' !important;\n' +
+    '  --accent: '  + c.accentFg  + ' !important;\n' +
+    '  --hover: '   + c.surfaceBg + ' !important;\n' +
+    '  --ui-font: ' + c.fontFamily + ' !important;\n' +
+    '}\n' +
+
+    /* ── Page ──────────────────────────────────────────────────── */
+    'html, body { background: ' + c.pageBg + ' !important; color: ' + c.pageFg + ' !important; }\n' +
+    'h1 { color: ' + c.headingFg + ' !important; }\n' +
+
+    /* ── Cards — override hardcoded "white" ────────────────────── */
+    '.summary, .games, details.test, .test-body, .transcript, ' +
+    'pre.turn-response, pre.opening-text, .turn-body, ' +
+    '.drift-diff { background: ' + cardBg + ' !important; }\n' +
+    '.summary, .games, details.test { border-color: ' + c.border + ' !important; }\n' +
+    'details.test { box-shadow: none !important; }\n' +
+
+    /* ── Test card header ──────────────────────────────────────── */
+    'summary.test-summary { background: ' + headerBg + ' !important; color: ' + headerFg + ' !important; }\n' +
+    'details.test[data-status="fail"] summary.test-summary { background: ' + failHeaderBg + ' !important; }\n' +
+    'summary.test-summary .glyph.pass { color: ' + pass + ' !important; }\n' +
+    'summary.test-summary .glyph.fail { color: ' + fail + ' !important; }\n' +
+    'summary.test-summary::before { color: ' + arrowFg + ' !important; }\n' +
+    '.test-summary-meta { color: ' + metaFg + ' !important; }\n' +
+    '.test-summary-meta .outcome-walkthrough { color: ' + pass + ' !important; }\n' +
+    '.test-summary-meta .outcome-scenario { color: ' + metaFg + ' !important; }\n' +
+    '.test-summary-meta .outcome-error { color: ' + fail + ' !important; }\n' +
+
+    /* ── Turn rows ─────────────────────────────────────────────── */
+    'summary.turn-row { background: ' + turnRowBg + ' !important; border-top-color: ' + c.border + ' !important; }\n' +
+    'details.turn-detail[data-status="fail"] summary.turn-row { border-top-color: ' + failRowBorder + ' !important; }\n' +
+    'details.turn-detail[data-status="fail"] summary.turn-row:hover { background: ' + failHoverBg + ' !important; }\n' +
+
+    /* ── Game text & rooms ─────────────────────────────────────── */
+    'pre.turn-response, pre.opening-text { color: ' + gameFg + ' !important; }\n' +
+    '.turn-room, .setup-end-room, li.setup-step .setup-room { color: ' + roomClr + ' !important; }\n' +
+
+    /* ── Match highlights ──────────────────────────────────────── */
+    '.hl.hl-active { background: ' + hlBg + ' !important; color: ' + hlFg + ' !important; box-shadow: 0 0 0 1px ' + hlBorder + ' !important; }\n' +
+    'button.match-toggle { background: ' + cardBg + ' !important; }\n' +
+    'button.match-toggle.active { background: ' + hlBg + ' !important; color: ' + hlFg + ' !important; border-color: ' + hlBorder + ' !important; }\n' +
+    'li.fail button.match-toggle.active { background: ' + failBg + ' !important; color: ' + fail + ' !important; border-color: ' + fail + ' !important; }\n' +
+    'li.fail.matches-active ~ pre.turn-response .hl.hl-active, ' +
+    '.turn-detail[data-status="fail"] .hl.hl-active.hl-fail { background: ' + failBg + ' !important; color: ' + fail + ' !important; box-shadow: 0 0 0 1px ' + fail + ' !important; }\n' +
+
+    /* ── Setup section ─────────────────────────────────────────── */
+    'details.setup { background: ' + setupBg + ' !important; }\n' +
+    'ul.setup-list { background: ' + setupListBg + ' !important; }\n' +
+    'li.setup-step { border-bottom-color: ' + c.border + ' !important; }\n' +
+
+    /* ── Scrollbar ─────────────────────────────────────────────── */
+    buildScrollbarCSS(sb)
+  );
+}
+
 function buildParchmentCSS(g, sb) {
   return 'body, html { background: ' + g.bodyBg + ' !important; }\n' +
     '.BufferWindow { color: ' + g.bufferFg + ' !important; background-color: ' + g.bufferBg + ' !important; font-family: ' + g.monoFamily + ' !important; font-size: ' + g.bufferSize + ' !important; line-height: ' + g.bufferLineHeight + ' !important; }\n' +

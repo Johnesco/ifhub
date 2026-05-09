@@ -158,7 +158,7 @@ The hub serves games **in-place** — it iframes each game's own play page direc
 
 **Multi-hub collections:** Games can belong to curated collections via `hubs.json` filtering. See `reference/project-guide.md` § Hub Collections.
 
-**Tests pane:** The split-pane player (`app.html`) has a standard Tests frame alongside Source and Walkthrough. Games opt in by placing a `tests.html` file in their browser/deploy directory — `build_games.py` auto-detects it and sets `testsUrl` in `games.json`. When `testsUrl` is present, the IF Hub toolbar shows a checkmark Tests toggle button. The `tests.html` viewer and its backing `test-results.json` format are engine-agnostic: any engine that can produce the expected JSON schema can use the tab.
+**Tests pane:** The split-pane player (`app.html`) has a standard Tests frame alongside Source and Walkthrough. Games opt in by placing a `tests.html` file in their browser/deploy directory — `build_games.py` auto-detects it and sets `testsUrl` in `games.json`. When `testsUrl` is present, the IF Hub toolbar shows a checkmark Tests toggle button. All engines use ifplayer's HTML report format via `report_adapter.py` (converts `test-results.json` → ifplayer `TestResult` objects → `report.emit_html()`). The tests pane is theme-aware: `buildTestReportCSS()` in `themes.js` maps IF Hub chrome properties to ifplayer CSS variables, with adaptive pass/fail colors for dark vs light themes.
 
 ## New Game Publish Flow
 
@@ -178,7 +178,7 @@ See `reference/project-guide.md` for detailed steps, individual scripts, and pip
 
 ### Test Results Tab
 
-The Tests tab is production-ready for Sharpee games. The pipeline is: `transcript-test` (run transcripts) → `slim-test-results.js` (produce `test-results.json`) → `tests-template.html` (render results in-browser). The `test-results.json` schema and `tests.html` viewer are engine-agnostic — Inform 7 support is in progress, and any engine that emits the expected JSON can plug in.
+The Tests tab uses ifplayer's HTML report as the universal viewer for all engines. The pipeline: engine test runner → `test-results.json` → `report_adapter.py` → ifplayer HTML (`tests.html`). The adapter converts the engine-agnostic JSON schema into ifplayer's `TestResult` objects and calls `report.emit_html()`, producing the same rich transcript-first viewer that ifplayer produces natively. Features: collapsible test cards, turn-by-turn transcript with room/score tracking, inline assertion match highlighting ("show" buttons), word-level drift diffs. Theme integration: `buildTestReportCSS()` maps all 14 IF Hub themes to ifplayer CSS variables with light/dark adaptive colors.
 
 ### Engine-Specific Testing
 

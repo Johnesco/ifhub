@@ -1483,7 +1483,7 @@ function loadTestsForGame(gameId) {
     frame.src = g.testsUrl;
     frame.style.display = '';
     msg.style.display = 'none';
-    frame.onload = function() { themeIframe(frame); };
+    frame.onload = function() { themeTestsIframe(); };
     if (testsBtn) testsBtn.style.display = '';
   } else {
     frame.src = 'about:blank';
@@ -1720,6 +1720,15 @@ function themeIframe(iframe) {
   injectThemeCSS(iframe, buildChromeCSS(theme.chrome, theme.scrollbar));
 }
 
+// Theme the tests iframe (ifplayer report) — always injects because
+// ifplayer defaults to a light theme while IF Hub is dark
+function themeTestsIframe() {
+  var iframe = document.getElementById('tests-frame');
+  if (!iframe || !iframe.src || iframe.src === 'about:blank') return;
+  var theme = getTheme(getThemeId());
+  injectThemeCSS(iframe, buildTestReportCSS(theme.chrome, theme.scrollbar));
+}
+
 // Theme the game iframe (direct injection + postMessage fallback)
 function themeGameIframe() {
   var iframe = document.getElementById('game-frame');
@@ -1759,11 +1768,11 @@ function themeGameIframe() {
 }
 
 function themeAllIframes() {
-  var frames = ['source-browser-frame', 'walkthrough-frame', 'tests-frame'];
-  frames.forEach(function(id) {
+  ['source-browser-frame', 'walkthrough-frame'].forEach(function(id) {
     var iframe = document.getElementById(id);
     if (iframe) themeIframe(iframe);
   });
+  themeTestsIframe();
   themeGameIframe();
 }
 
