@@ -276,7 +276,7 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
                     print(r.stderr, file=sys.stderr)
                 raise RuntimeError(f"regtests failed (exit {r.returncode})")
 
-            # Convert regtest JSON to IF Hub test-results.json
+            # Convert regtest JSON to IF Hub test-results.json + HTML report
             if r.stdout and r.stdout.strip():
                 regtest_data = json.loads(r.stdout)
                 hub_json = test_results.convert(regtest_data, name)
@@ -287,11 +287,14 @@ def stage_test(name: str, project_dir: Path, cfg_pipeline,
                 print(f"  Wrote {json_out.name} "
                       f"({hub_json['summary']['totalPassed']} passed, "
                       f"{hub_json['summary']['totalFailed']} failed)")
-                # Copy tests viewer template
-                tests_template = paths.WEB_DIR / "tests-template.html"
-                tests_dest = project_dir / "tests.html"
-                if tests_template.exists():
-                    shutil.copy2(str(tests_template), str(tests_dest))
+                # Generate ifplayer-format HTML report from JSON
+                from tools.lib import report_adapter
+                html_out = project_dir / "tests.html"
+                report_adapter.json_file_to_html(
+                    json_out, html_out,
+                    title=f"Tests — {name}",
+                )
+                print(f"  Wrote {html_out.name} (ifplayer format)")
 
     # ifplayer .test files (I7 games with ifPlayer test suites)
     test_files = sorted(project_dir.glob("tests/*.test"))
