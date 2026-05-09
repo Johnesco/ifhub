@@ -41,6 +41,7 @@ from ifplayer import i7, report, runner, test_format
 _KIND_MAP: dict[str, test_format.AssertKind] = {
     "ok-contains": "contains",
     "ok-not-contains": "not_contains",
+    "ok-contains-any": "contains",   # match any of several values
     "ok-matches": "regex",
     "ok-not-matches": "regex",       # negated regex — note in label
     "ok-starts-with": "contains",
@@ -53,8 +54,24 @@ _KIND_MAP: dict[str, test_format.AssertKind] = {
 }
 
 
-def _assertion_label(a_type: str, value: str) -> str:
+def _format_values(value: str | list) -> str:
+    """Format a value or list of values for display."""
+    if isinstance(value, list):
+        return ", ".join(f'"{v}"' for v in value)
+    return f'"{value}"'
+
+
+def _flatten_value(value: str | list) -> str:
+    """Flatten a list value to a string for ifplayer's Assertion.text field."""
+    if isinstance(value, list):
+        return " | ".join(value)
+    return value
+
+
+def _assertion_label(a_type: str, value: str | list) -> str:
     """Create a human-readable label for an assertion."""
+    if a_type == "ok-contains-any":
+        return f"Contains any of: {_format_values(value)}"
     labels = {
         "ok-contains": f'Contains "{value}"',
         "ok-not-contains": f'Not contains "{value}"',
@@ -71,8 +88,11 @@ def _assertion_label(a_type: str, value: str) -> str:
     return labels.get(a_type, f"{a_type}: {value}")
 
 
-def _raw_line(a_type: str, value: str) -> str:
+def _raw_line(a_type: str, value: str | list) -> str:
     """Reconstruct a plausible raw assertion line for display."""
+    if a_type == "ok-contains-any":
+        vals = value if isinstance(value, list) else [value]
+        return "? any: " + " | ".join(f'"{v}"' for v in vals)
     if a_type == "ok-contains":
         return f"? {value}"
     if a_type == "ok-not-contains":
@@ -85,7 +105,7 @@ def _raw_line(a_type: str, value: str) -> str:
 
 
 def _compute_assertion_matches(
-    output: str, a_type: str, value: str, passed: bool
+    output: str, a_type: str, value: str | list, passed: bool
 ) -> list[tuple[int, int]]:
     """Compute character ranges where the assertion matched in the output.
 
@@ -94,6 +114,24 @@ def _compute_assertion_matches(
     """
     if not output or not value:
         return []
+
+    # For contains-any, highlight whichever values matched
+    if a_type == "ok-contains-any":
+        if not passed:
+            return []  # nothing matched — nothing to highlight
+        vals = value if isinstance(value, list) else [value]
+        all_matches: list[tuple[int, int]] = []
+        lower_out = output.lower()
+        for v in vals:
+            lower_val = v.lower()
+            start = 0
+            while True:
+                idx = lower_out.find(lower_val, start)
+                if idx == -1:
+                    break
+                all_matches.append((idx, idx + len(v)))
+                start = idx + 1
+        return sorted(all_matches)
 
     # For pass + positive assertion, or fail + negative assertion,
     # find where the pattern appears
@@ -126,16 +164,20 @@ def _compute_assertion_matches(
 def _convert_assertion(a: dict, output: str) -> runner.AssertionResult:
     """Convert one JSON assertion to an ifplayer AssertionResult."""
     a_type = a.get("type", "ok-contains")
-    value = a.get("value", "")
+    # ok-contains-any uses `values` (plural array) from @sharpee/transcript-tester
+    value = a.get("value", "") or a.get("values", "")
     passed = a.get("passed", True)
 
     kind = _KIND_MAP.get(a_type, "contains")
     label = _assertion_label(a_type, value)
     raw = _raw_line(a_type, value)
 
+    # ifplayer Assertion.text expects a string; flatten arrays
+    text_val = _flatten_value(value) if isinstance(value, list) else value
+
     assertion = test_format.Assertion(
         kind=kind,
-        text=value,
+        text=text_val,
         raw_line=raw,
         line_no=0,
         label=label,
@@ -145,7 +187,11 @@ def _convert_assertion(a: dict, output: str) -> runner.AssertionResult:
 
     detail = ""
     if not passed:
-        if a_type in ("ok-contains", "ok-starts-with", "ok-ends-with", "ok-equals"):
+        if a_type == "ok-contains-any":
+            vals = value if isinstance(value, list) else [value]
+            quoted = ", ".join(f'"{v}"' for v in vals)
+            detail = f"Expected to find any of: {quoted} in output"
+        elif a_type in ("ok-contains", "ok-starts-with", "ok-ends-with", "ok-equals"):
             detail = f'Expected to find "{value}" in output'
         elif a_type == "ok-not-contains":
             detail = f'Expected NOT to find "{value}" in output'
