@@ -289,15 +289,21 @@ def project_dir(name: str) -> Path:
 
     Resolution order:
     1. games-local.json (per-developer overrides)
-    2. games-registry.json (committed defaults)
-    3. projects/<name>/ (legacy fallback)
+    2. games-registry.json (committed overrides)
+    3. Workspace scan (ifhub.conf discovery)
+    4. projects/<name>/ (legacy fallback)
     """
+    # Check registry overrides first (local + committed)
     registry = _load_registry()
     entry = registry.get(name)
     if entry:
         resolved = _resolve_game_path(entry)
         if resolved != Path():
             return resolved
+    # Workspace discovery
+    all_games = _discover_from_workspaces()
+    if name in all_games:
+        return all_games[name]
     # Legacy fallback
     return PROJECTS_DIR / name
 
