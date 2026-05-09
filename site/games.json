@@ -641,6 +641,7 @@
     "versionPrimaryLabel": "Current",
     "playUrl": "/zork1/play.html",
     "walkthroughUrl": "/zork1/walkthrough.html",
+    "testsUrl": "/zork1/tests.html",
     "landingUrl": "/zork1/",
     "sourceUrl": "/zork1/story.ni",
     "engine": "inform7",
