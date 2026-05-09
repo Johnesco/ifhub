@@ -6,1079 +6,768 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ─── Design: transcript-first test viewer ─────────────────────────
+ * Modeled on ifplayer's HTML report layout.
+ * Default view reads like a game transcript (command → response).
+ * Test details (assertions, drift, parser notes) are hidden behind
+ * a secondary disclosure inside each turn.
+ * Failed turns auto-expand so the user sees what broke immediately.
+ * ─────────────────────────────────────────────────────────────────── */
 
-html, body {
-  height: 100%;
-  background: #0a0a0a;
-  color: #d4c5a9;
-  font-family: Georgia, "Times New Roman", serif;
-  overflow: hidden;
+:root {
+  --bg: #0a0a0a;
+  --fg: #d4c5a9;
+  --muted: #665544;
+  --pass: #8bab6e;
+  --pass-bg: #141e12;
+  --fail: #cc6644;
+  --fail-bg: #1e1210;
+  --warn: #cc8844;
+  --line: #1e1a14;
+  --hover: #161410;
+  --accent: #c4b48a;
+  --card-bg: #0e0e0c;
+  --turn-bg: #141210;
+  --turn-border: #1e1a14;
+  --game-font: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+  --ui-font: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Consolas, monospace;
 }
 
-/* --- Layout --- */
-.container {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 var(--ui-font);
+  padding: 0;
 }
 
-/* --- Status banner --- */
-.status-banner {
-  padding: 6px 20px;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.82em;
-  letter-spacing: 0.3px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.status-banner.all-passed {
-  background: #141e12;
-  border-bottom: 1px solid #2a3a20;
-  color: #8bab6e;
-}
-
-.status-banner.has-failures {
-  background: #1e1410;
-  border-bottom: 1px solid #3a2418;
-  color: #cc6644;
-}
-
-.status-banner.no-data {
-  background: #1a1810;
-  border-bottom: 1px solid #2a2418;
-  color: #887755;
-}
-
-/* --- Body layout --- */
-.body-wrap {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* --- Sidebar --- */
-.sidebar {
-  width: 260px;
-  min-width: 260px;
-  background: #0e0e0c;
-  border-right: 1px solid #1e1a14;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.sidebar-header {
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid #1e1a14;
-}
-
-.sidebar-header h1 {
-  font-size: 0.95em;
-  color: #c4b48a;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-
-.sidebar-header .timestamp {
-  font-size: 0.75em;
-  color: #665544;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-}
-
-.nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.nav::-webkit-scrollbar { width: 6px; }
-.nav::-webkit-scrollbar-track { background: #0e0e0c; }
-.nav::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 3px; }
-
-.nav-group {
-  margin-bottom: 4px;
-}
-
-.nav-transcript {
+/* ─── toolbar ──────────────────────────────────────────────────── */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 16px;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.75em;
-  color: #998866;
-  text-decoration: none;
-  cursor: pointer;
-  border-left: 2px solid transparent;
-  transition: background 0.1s, color 0.1s;
-}
-
-.nav-transcript:hover {
-  background: #151510;
-  color: #c4b48a;
-}
-
-.nav-transcript.active {
-  background: #18160f;
-  color: #e8d090;
-  border-left-color: #e8d090;
-}
-
-.nav-transcript .nav-file {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.nav-badge {
-  font-size: 0.85em;
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.nav-badge.pass {
-  background: #1a2a16;
-  color: #8bab6e;
-}
-
-.nav-badge.fail {
-  background: #2a1810;
-  color: #cc6644;
-}
-
-.nav-commands {
-  padding-left: 8px;
-  display: none;
-}
-
-.nav-transcript.active + .nav-commands,
-.nav-commands.expanded {
-  display: block;
-}
-
-.nav-cmd {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 16px 3px 28px;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.7em;
-  color: #776655;
-  cursor: pointer;
-  transition: background 0.1s, color 0.1s;
-}
-
-.nav-cmd:hover {
-  background: #151510;
-  color: #aa9966;
-}
-
-.nav-cmd.active {
-  color: #c4b48a;
-}
-
-.nav-cmd-icon {
-  flex-shrink: 0;
-  font-size: 0.9em;
-}
-
-.nav-cmd-icon.pass { color: #8bab6e; }
-.nav-cmd-icon.fail { color: #cc6644; }
-
-.nav-cmd-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* --- Main content --- */
-.main {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.toolbar {
   padding: 8px 20px;
-  background: #0e0e0c;
-  border-bottom: 1px solid #1e1a14;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.85em;
-  color: #887755;
-  flex-wrap: wrap;
+  background: #0c0c0a;
+  border-bottom: 1px solid var(--line);
 }
 
-.toggle-btn {
-  background: #1a1810;
-  border: 1px solid #2a2418;
+.toolbar button {
+  background: var(--card-bg);
+  color: var(--muted);
+  border: 1px solid var(--line);
   border-radius: 4px;
-  color: #887755;
-  font-family: inherit;
-  font-size: 0.85em;
-  padding: 3px 12px;
+  padding: 4px 12px;
+  font: 12px var(--ui-font);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.toolbar button:hover { color: var(--accent); border-color: #2a2418; }
+.toolbar button.active { color: var(--fail); border-color: var(--fail); }
+
+.toolbar .search-box {
+  background: var(--card-bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4px 10px;
+  font: 12px var(--mono);
+  width: 200px;
+}
+
+.toolbar .search-box:focus { outline: none; border-color: #3a3020; }
+.toolbar .spacer { flex: 1; }
+
+.toolbar .total-badge {
+  font: 12px var(--mono);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+.toolbar .total-badge.all-pass { color: var(--pass); background: var(--pass-bg); border: 1px solid #2a3a20; }
+.toolbar .total-badge.has-fail { color: var(--fail); background: var(--fail-bg); border: 1px solid #3a2418; }
+
+.search-hit { background: #3a3010; color: #ffdd88; border-radius: 2px; }
+.search-hit.search-current { background: #5a4a20; outline: 1px solid #887744; }
+
+/* ─── content area ─────────────────────────────────────────────── */
+.content {
+  padding: 16px 20px 64px;
+  max-width: 1100px;
+}
+
+/* ─── summary card ─────────────────────────────────────────────── */
+.summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary .item { display: flex; align-items: baseline; gap: 5px; }
+.summary .num { font-size: 20px; font-weight: 600; font-family: var(--mono); }
+.summary .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.summary .pass-num { color: var(--pass); }
+.summary .fail-num { color: var(--fail); }
+
+/* ─── test card (one per transcript) ───────────────────────────── */
+details.test {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+summary.test-summary {
+  cursor: pointer;
+  padding: 14px 20px;
+  display: grid;
+  grid-template-columns: 16px 24px minmax(140px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  user-select: none;
+  list-style: none;
+  background: #1a1610;
+  color: #e8dcc0;
+  border-left: 5px solid var(--pass);
+}
+
+details.test[data-status="fail"] summary.test-summary {
+  background: #1e1210;
+  border-left-color: var(--fail);
+}
+
+summary.test-summary::-webkit-details-marker { display: none; }
+summary.test-summary::before {
+  content: "▶";
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+  transition: transform 0.15s;
+}
+
+details.test[open] > summary.test-summary::before { transform: rotate(90deg); }
+summary.test-summary:hover { filter: brightness(1.15); }
+
+.test-glyph { font-size: 18px; font-weight: 700; }
+.test-glyph.pass { color: var(--pass); }
+.test-glyph.fail { color: var(--fail); }
+
+.test-name { font-weight: 700; font-size: 17px; letter-spacing: 0.2px; }
+
+.test-meta {
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
   white-space: nowrap;
 }
 
-.toggle-btn:hover {
-  background: #2a2010;
-  color: #c4b48a;
-  border-color: #7a6a50;
+.test-body { background: var(--card-bg); }
+
+.test-desc {
+  padding: 10px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  font-style: italic;
 }
 
-.toggle-btn.active {
-  background: #2a2010;
-  border-color: #5a4a30;
-  color: #e8d090;
+/* ─── turn rows (transcript-style) ─────────────────────────────── */
+.transcript {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.search-box {
-  background: #111;
-  border: 1px solid #2a2418;
-  border-radius: 4px;
-  color: #d4c5a9;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.9em;
-  padding: 3px 8px;
-  width: 180px;
-  outline: none;
+li.turn { border-bottom: 1px solid var(--line); }
+li.turn:last-child { border-bottom: none; }
+
+details.turn-detail[data-status="fail"] { background: var(--fail-bg); }
+
+summary.turn-row {
+  cursor: pointer;
+  display: grid;
+  grid-template-columns:
+    12px              /* disclosure ▶ */
+    42px              /* line # or T:N */
+    minmax(120px, auto) /* > command */
+    1fr               /* room (right-aligned) */
+    70px              /* score */
+    36px              /* delta */
+    44px              /* WIN/LOSE */
+    80px;             /* asserts */
+  gap: 10px;
+  padding: 8px 16px;
+  align-items: center;
+  font: 13px var(--ui-font);
+  background: var(--turn-bg);
+  border-top: 1px solid var(--turn-border);
+  user-select: none;
+  list-style: none;
 }
 
-.search-box:focus {
-  border-color: #7a6a50;
+li.turn:first-child summary.turn-row { border-top: none; }
+
+details.turn-detail[data-status="fail"] summary.turn-row {
+  background: var(--fail-bg);
+  border-top-color: #2a1a14;
 }
 
-.search-box::placeholder {
-  color: #554433;
+summary.turn-row::-webkit-details-marker { display: none; }
+summary.turn-row::before {
+  content: "▶";
+  color: var(--muted);
+  font-size: 8px;
+  transition: transform 0.1s;
 }
 
-.toolbar .spacer {
-  flex: 1;
+details.turn-detail[open] > summary.turn-row::before { transform: rotate(90deg); }
+summary.turn-row:hover { background: var(--hover); }
+details.turn-detail[data-status="fail"] summary.turn-row:hover { background: #261810; }
+
+.turn-num {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+  font-size: 12px;
 }
 
-.total-badge {
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.9em;
-  padding: 2px 10px;
-  border-radius: 4px;
-  font-weight: bold;
+.turn-cmd {
+  font-weight: 600;
+  color: var(--accent);
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.total-badge.all-pass {
-  background: #1a2a16;
-  color: #8bab6e;
+.turn-room {
+  color: #9b7abf;
+  font-family: var(--mono);
+  font-size: 12px;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.total-badge.has-fail {
-  background: #2a1810;
-  color: #cc6644;
+.turn-score { color: var(--warn); font-variant-numeric: tabular-nums; font-size: 12px; }
+.turn-delta { color: var(--pass); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 12px; }
+.turn-delta.neg { color: var(--fail); }
+
+.turn-outcome { font-weight: 700; font-size: 11px; }
+.turn-outcome.win { color: var(--pass); }
+.turn-outcome.lose { color: var(--fail); }
+.turn-outcome.end { color: var(--muted); }
+
+.turn-asserts {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+  font-size: 12px;
 }
 
-.content-wrap {
-  flex: 1;
-  overflow: auto;
-  padding: 24px 40px 40px;
+.turn-asserts .pass { color: var(--pass); font-weight: 600; }
+.turn-asserts .fail { color: var(--fail); font-weight: 600; }
+
+/* ─── turn body: game response (transcript-style) ──────────────── */
+.turn-body { background: var(--card-bg); }
+
+pre.turn-response {
+  margin: 0;
+  padding: 12px 20px 12px 32px;
+  background: var(--card-bg);
+  font-family: var(--game-font);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #c8bca0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  border-top: 1px dashed var(--line);
 }
 
-.content-wrap::-webkit-scrollbar { width: 8px; }
-.content-wrap::-webkit-scrollbar-track { background: #0a0a0a; }
-.content-wrap::-webkit-scrollbar-thumb { background: #2a2418; border-radius: 4px; }
-.content-wrap::-webkit-scrollbar-thumb:hover { background: #3a3020; }
-
-/* --- Summary view --- */
-.summary-card {
-  background: #0e0e0c;
-  border: 1px solid #1e1a14;
-  border-radius: 6px;
-  padding: 20px 24px;
-  margin-bottom: 16px;
+pre.turn-response .room-title {
+  font-weight: 700;
+  color: var(--accent);
 }
 
-.summary-card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  gap: 12px;
+pre.turn-response .score-line {
+  color: var(--warn);
+  font-style: italic;
 }
 
-.summary-card-title {
-  font-size: 1.05em;
-  font-weight: bold;
-  color: #e8d8b0;
+/* ─── turn extras: assertions, drift, parser notes ─────────────── */
+details.turn-extras {
+  border-top: 1px dashed var(--line);
 }
 
-.summary-card-desc {
-  font-size: 0.85em;
-  color: #887755;
-  margin-top: 2px;
+summary.turn-extras-summary {
+  cursor: pointer;
+  padding: 6px 16px 6px 32px;
+  font-size: 12px;
+  color: var(--muted);
+  user-select: none;
+  list-style: none;
+  font-family: var(--ui-font);
+}
+
+summary.turn-extras-summary::-webkit-details-marker { display: none; }
+summary.turn-extras-summary::before { content: "▸ "; font-size: 10px; }
+details.turn-extras[open] > summary.turn-extras-summary::before { content: "▾ "; }
+summary.turn-extras-summary:hover { background: var(--hover); }
+
+.turn-extras-body {
+  padding: 8px 20px 12px 32px;
+  background: #080808;
+}
+
+.turn-extras-body h4 {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 10px 0 4px;
+}
+
+.turn-extras-body h4:first-child { margin-top: 0; }
+
+/* ─── assertions list ──────────────────────────────────────────── */
+ul.assertions { margin: 0; padding: 0; list-style: none; }
+
+ul.assertions li {
+  padding: 4px 0;
+  font-size: 12.5px;
+  position: relative;
+  padding-left: 18px;
   line-height: 1.4;
 }
 
-.summary-card-badges {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
+ul.assertions li.pass::before {
+  content: "✓"; position: absolute; left: 0;
+  color: var(--pass); font-weight: 700; font-size: 13px;
 }
 
-.badge {
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.8em;
-  padding: 2px 8px;
-  border-radius: 3px;
-  font-weight: bold;
+ul.assertions li.fail::before {
+  content: "✗"; position: absolute; left: 0;
+  color: var(--fail); font-weight: 700; font-size: 13px;
 }
 
-.badge.pass {
-  background: #1a2a16;
-  color: #8bab6e;
+ul.assertions li .a-label { font-weight: 600; }
+ul.assertions li.pass .a-label { color: var(--pass); }
+ul.assertions li.fail .a-label { color: var(--fail); }
+
+ul.assertions li .a-pattern {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 6px;
+  font-weight: 400;
 }
 
-.badge.fail {
-  background: #2a1810;
-  color: #cc6644;
-}
-
-.badge.skip {
-  background: #1a1810;
-  color: #887755;
-}
-
-.badge.duration {
-  background: #1a1810;
-  color: #887755;
-  font-weight: normal;
-}
-
-.summary-commands {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #1e1a14;
-}
-
-.summary-cmd {
-  display: flex;
-  align-items: baseline;
-  padding: 3px 0;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.82em;
-  line-height: 1.5;
-}
-
-.summary-cmd-icon {
-  width: 20px;
-  flex-shrink: 0;
-  text-align: center;
-}
-
-.summary-cmd-icon.pass { color: #8bab6e; }
-.summary-cmd-icon.fail { color: #cc6644; }
-
-.summary-cmd-num {
-  min-width: 28px;
-  text-align: right;
-  padding-right: 10px;
-  color: #7a6a50;
-  user-select: none;
-  font-size: 0.85em;
-}
-
-.summary-cmd-prompt {
-  color: #5a4a30;
-  margin-right: 6px;
-  user-select: none;
-}
-
-.summary-cmd-text {
-  color: #c4b48a;
-}
-
-.summary-cmd-text.fail {
-  color: #cc6644;
-}
-
-.summary-cmd-assert-count {
-  margin-left: auto;
-  color: #665544;
-  font-size: 0.85em;
-  padding-left: 12px;
-  white-space: nowrap;
-}
-
-/* --- Unified row: clickable summary header that expands inline to detail --- */
-.summary-cmd {
-  cursor: pointer;
-  border-radius: 3px;
-  transition: background 0.1s;
-}
-.summary-cmd:hover { background: #1a1810; }
-.summary-cmd-expand-icon {
-  width: 14px;
-  flex-shrink: 0;
-  text-align: center;
-  color: #665544;
-  font-size: 0.7em;
-  user-select: none;
-  margin-right: 2px;
-  transition: transform 0.15s;
-  display: inline-block;
-}
-.summary-cmd.expanded .summary-cmd-expand-icon { transform: rotate(90deg); }
-
-.summary-cmd-body {
-  display: none;
-  margin: 4px 0 12px 34px;
-  padding: 8px 12px;
-  background: #090908;
-  border-left: 2px solid #2a2418;
-  border-radius: 0 3px 3px 0;
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.82em;
-  line-height: 1.5;
-}
-.summary-cmd.expanded + .summary-cmd-body { display: block; }
-.summary-cmd-body .body-comment {
-  color: #776655;
-  font-style: italic;
-  margin-bottom: 6px;
-}
-.summary-cmd-body .body-asserts { margin-bottom: 8px; }
-.summary-cmd-body .body-assert {
-  display: flex;
-  gap: 8px;
-  padding: 1px 0;
-}
-.summary-cmd-body .body-assert .assert-icon { width: 14px; text-align: center; flex-shrink: 0; font-weight: bold; }
-.summary-cmd-body .body-assert .assert-icon.pass { color: #8bab6e; }
-.summary-cmd-body .body-assert .assert-icon.fail { color: #cc6644; }
-.summary-cmd-body .body-assert .assert-text { color: #b8a888; }
-.summary-cmd-body .body-assert .assert-text.fail { color: #cc6644; }
-.summary-cmd-body .body-output-label {
-  color: #665544;
-  font-size: 0.92em;
-  margin-top: 4px;
-  margin-bottom: 4px;
-  user-select: none;
-}
-.summary-cmd-body .body-output {
-  background: #050505;
-  border: 1px solid #1a1612;
-  border-radius: 2px;
-  padding: 8px 12px;
-  color: #998866;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-/* --- Failures-only filter --- */
-.summary-cmd.hidden-by-filter,
-.summary-cmd-body.hidden-by-filter,
-.summary-card.hidden-by-filter { display: none; }
-
-/* --- Search highlights --- */
-.search-hit {
-  background: #5a4a10;
-  color: #ffe8a0;
-  border-radius: 2px;
-}
-
-.search-current {
-  background: #7a6a20;
-  outline: 1px solid #aa9930;
-}
-
-/* --- Loading / error / empty --- */
-.loading {
-  text-align: center;
-  padding: 80px 40px;
-  color: #887755;
-  font-size: 1.1em;
-}
-
-.loading em {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-.error-msg {
-  text-align: center;
-  padding: 80px 40px;
-  color: #aa6644;
-}
-
-.empty-msg {
-  text-align: center;
-  padding: 80px 40px;
-  color: #887755;
-}
-
-.empty-msg h2 {
-  color: #aa9966;
-  font-size: 1.2em;
-  margin-bottom: 16px;
-}
-
-.empty-msg p {
-  font-size: 0.95em;
-  line-height: 1.7;
-  max-width: 520px;
-  margin: 0 auto;
-}
-
-.empty-msg code {
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.9em;
-  background: #1a1810;
-  padding: 2px 6px;
-  border-radius: 3px;
-  color: #c4b48a;
-}
-
-/* --- I7 extension badges (room, score, outcome) --- */
-.body-badges {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-}
-
-.body-badge {
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.8em;
-  padding: 1px 8px;
-  border-radius: 3px;
-}
-
-.body-badge.room {
-  background: #1a1428;
-  color: #a088cc;
-}
-
-.body-badge.score {
-  background: #1e1a10;
-  color: #c4a040;
-}
-
-.body-badge.delta-up {
-  background: #141e12;
-  color: #8bab6e;
-}
-
-.body-badge.delta-down {
-  background: #1e1210;
-  color: #cc6644;
-}
-
-.body-badge.outcome-win {
-  background: #141e12;
-  color: #8bab6e;
-  font-weight: bold;
-}
-
-.body-badge.outcome-lose {
-  background: #1e1210;
-  color: #cc6644;
-  font-weight: bold;
-}
-
-/* --- Drift / parser notes (collapsible) --- */
-.body-extra-section {
-  margin-top: 8px;
-}
-
-.body-extra-label {
-  color: #665544;
-  font-size: 0.85em;
-  cursor: pointer;
-  user-select: none;
-}
-
-.body-extra-label:hover {
-  color: #887766;
-}
-
-.body-extra-content {
-  display: none;
-  margin-top: 4px;
-}
-
-.body-extra-section.open .body-extra-content {
+ul.assertions li .a-detail {
   display: block;
+  color: var(--fail);
+  margin-top: 2px;
+  font-size: 11px;
+  font-family: var(--mono);
 }
 
-.drift-chunk { font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace; font-size: 0.9em; }
-.drift-equal { color: #776655; }
-.drift-insert { color: #8bab6e; background: #141e12; padding: 0 2px; border-radius: 2px; }
-.drift-delete { color: #cc6644; background: #1e1210; padding: 0 2px; border-radius: 2px; text-decoration: line-through; }
+/* ─── comment blocks ───────────────────────────────────────────── */
+.turn-comment {
+  padding: 8px 20px 8px 32px;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  border-top: 1px dashed var(--line);
+  white-space: pre-wrap;
+}
+
+/* ─── drift diff ───────────────────────────────────────────────── */
+.drift-diff {
+  background: #0c0c0a;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font: 12px var(--game-font);
+  line-height: 1.6;
+}
+
+.drift-diff .equal { color: var(--muted); }
+.drift-diff .del { color: var(--fail); background: var(--fail-bg); text-decoration: line-through; padding: 0 2px; border-radius: 2px; }
+.drift-diff .ins { color: var(--pass); background: var(--pass-bg); padding: 0 2px; border-radius: 2px; }
 
 .parser-error {
-  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
-  font-size: 0.85em;
-  color: #cc8844;
+  font: 12px var(--mono);
+  color: var(--warn);
   padding: 1px 0;
 }
 
-/* --- Responsive --- */
+/* ─── loading / empty ──────────────────────────────────────────── */
+.loading, .empty-msg, .error-msg {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+}
+
+.empty-msg h2 { color: var(--accent); font-size: 16px; margin-bottom: 8px; }
+.empty-msg code { color: var(--warn); font-family: var(--mono); }
+
+/* ─── hidden by filter ─────────────────────────────────────────── */
+.hidden-by-filter { display: none !important; }
+
+/* ─── responsive ───────────────────────────────────────────────── */
 @media (max-width: 700px) {
-  .sidebar { display: none; }
-  .content-wrap { padding: 16px 20px 40px; }
+  summary.turn-row {
+    grid-template-columns: 12px 42px 1fr auto;
+  }
+  .turn-room, .turn-score, .turn-delta, .turn-outcome { display: none; }
+  .content { padding: 12px 10px 40px; }
 }
 </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="status-banner no-data" id="status-banner">Loading test results...</div>
-  <div class="body-wrap">
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h1>Tests</h1>
-        <div class="timestamp" id="sidebar-timestamp"></div>
-      </div>
-      <div class="nav" id="nav"></div>
-    </div>
-    <div class="main">
-      <div class="toolbar">
-        <button class="toggle-btn" id="btn-expand-all">Expand all</button>
-        <button class="toggle-btn" id="btn-collapse-all">Collapse all</button>
-        <button class="toggle-btn" id="btn-failures-only">Failures only</button>
-        <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
-        <span class="spacer"></span>
-        <span class="total-badge all-pass" id="total-badge" style="display:none;"></span>
-      </div>
-      <div class="content-wrap" id="content-wrap">
-        <div class="loading"><em>Loading test results...</em></div>
-      </div>
-    </div>
-  </div>
+<div class="toolbar">
+  <button id="btn-expand-all">Expand all</button>
+  <button id="btn-collapse-all">Collapse all</button>
+  <button id="btn-failures-only">Failures only</button>
+  <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
+  <span class="spacer"></span>
+  <span class="total-badge all-pass" id="total-badge" style="display:none;"></span>
+</div>
+
+<div class="content" id="content">
+  <div class="loading"><em>Loading test results...</em></div>
 </div>
 
 <script>
 var DATA_URL = 'test-results.json';
 var testData = null;
-var activeTranscriptIndex = -1;
 var failuresOnly = false;
 
 function esc(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-/* ---- Format assertion type into readable text ---- */
-function formatAssertion(assertion) {
-  var type = assertion.type || '';
-  var value = assertion.value || '';
-
-  switch (type) {
-    case 'ok-contains':
-      return 'Contains "' + value + '"';
-    case 'ok-not-contains':
-      return 'Does not contain "' + value + '"';
-    case 'ok-matches':
-      return 'Matches /' + value + '/';
-    case 'ok-starts-with':
-      return 'Starts with "' + value + '"';
-    case 'ok-ends-with':
-      return 'Ends with "' + value + '"';
-    case 'ok-equals':
-      return 'Equals "' + value + '"';
-    case 'event':
-      return 'Event: ' + value;
-    case 'event-not':
-      return 'No event: ' + value;
-    case 'state':
-      return 'State: ' + value;
-    case 'state-not':
-      return 'Not state: ' + value;
-    default:
-      if (type.startsWith('ok')) return type.replace(/^ok-?/, '').replace(/-/g, ' ') + (value ? ' "' + value + '"' : '');
-      return type + (value ? ': ' + value : '');
+/* ── Format assertion into readable text ── */
+function fmtAssertion(a) {
+  var t = a.type || '', v = a.value || '';
+  switch (t) {
+    case 'ok-contains': return 'Contains "' + v + '"';
+    case 'ok-not-contains': return 'Not contains "' + v + '"';
+    case 'ok-matches': return 'Matches /' + v + '/';
+    case 'ok-not-matches': return 'Not matches /' + v + '/';
+    case 'ok-starts-with': return 'Starts with "' + v + '"';
+    case 'ok-ends-with': return 'Ends with "' + v + '"';
+    case 'ok-equals': return 'Equals "' + v + '"';
+    case 'event': return 'Event: ' + v;
+    case 'event-not': return 'No event: ' + v;
+    case 'state': return 'State: ' + v;
+    case 'state-not': return 'Not state: ' + v;
+    default: return t + (v ? ': ' + v : '');
   }
 }
 
-/* ---- Format duration ---- */
-function formatDuration(ms) {
-  if (ms < 1000) return ms + 'ms';
-  return (ms / 1000).toFixed(1) + 's';
-}
-
-/* ---- Format timestamp ---- */
-function formatTimestamp(isoStr) {
-  try {
-    var d = new Date(isoStr);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
-           d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
-    return isoStr || '';
-  }
-}
-
-/* ---- Check if a command has any failures ---- */
-function commandFailed(cmd) {
-  if (cmd.passed === false) return true;
-  if (cmd.assertions) {
-    for (var i = 0; i < cmd.assertions.length; i++) {
-      if (!cmd.assertions[i].passed) return true;
+/* ── Classify output lines for room/score highlighting ── */
+function renderOutput(text) {
+  if (!text) return '';
+  var lines = text.split('\n');
+  var parts = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var trimmed = line.trim();
+    // Room title: first non-empty line, capitalized, short, no period
+    if (i === 0 && trimmed && trimmed.length < 80 && /^[A-Z]/.test(trimmed) && !/\.\s*$/.test(trimmed)) {
+      var next = (i + 1 < lines.length) ? lines[i + 1] : '';
+      if (/^You are |^You're |^$|^This is |^There is /.test(next)) {
+        parts.push('<strong class="room-title">' + esc(line) + '</strong>');
+        if (i < lines.length - 1) parts.push('\n');
+        continue;
+      }
     }
+    // Score notification
+    if (/\[Your score/i.test(line)) {
+      parts.push('<span class="score-line">' + esc(line) + '</span>');
+    } else {
+      parts.push(esc(line));
+    }
+    if (i < lines.length - 1) parts.push('\n');
   }
+  return parts.join('');
+}
+
+/* ── Format turn assertion badge ── */
+function fmtTurnAsserts(cmd) {
+  var asserts = cmd.assertions || [];
+  if (asserts.length === 0) return '<span style="color:var(--muted)">—</span>';
+  var passed = 0;
+  for (var i = 0; i < asserts.length; i++) { if (asserts[i].passed) passed++; }
+  var failed = asserts.length - passed;
+  if (failed === 0) return '<span class="pass">✓ ' + passed + '/' + asserts.length + '</span>';
+  if (passed === 0) return '<span class="fail">✗ ' + failed + '/' + asserts.length + '</span>';
+  return '<span class="pass">✓ ' + passed + '/' + asserts.length + '</span> <span class="fail">✗ ' + failed + '/' + asserts.length + '</span>';
+}
+
+/* ── Build extras label ── */
+function fmtExtrasLabel(cmd) {
+  var bits = [];
+  var asserts = cmd.assertions || [];
+  var total = asserts.length;
+  if (total) {
+    var passed = 0;
+    for (var i = 0; i < total; i++) { if (asserts[i].passed) passed++; }
+    if (passed === total) bits.push(total + ' check' + (total !== 1 ? 's' : '') + ' ✓');
+    else bits.push('<span style="color:var(--fail)">' + total + ' checks (' + (total - passed) + ' failed)</span>');
+  } else {
+    bits.push('no checks');
+  }
+  if (cmd.drift && cmd.drift.length > 0) bits.push('<span style="color:var(--warn)">drift</span>');
+  if (cmd.parserErrors && cmd.parserErrors.length > 0) bits.push('<span style="color:var(--warn)">parser notes</span>');
+  return bits.join('  ·  ');
+}
+
+/* ── Check if command failed ── */
+function cmdFailed(cmd) {
+  if (cmd.passed === false) return true;
+  var a = cmd.assertions || [];
+  for (var i = 0; i < a.length; i++) { if (!a[i].passed) return true; }
   return false;
 }
 
-/* ---- Count assertions in a command ---- */
-function commandAssertionCount(cmd) {
-  return (cmd.assertions && cmd.assertions.length) || 0;
-}
+/* ── Render one turn ── */
+function renderTurn(cmd, idx) {
+  var failed = cmdFailed(cmd);
+  var status = failed ? 'fail' : 'pass';
+  var openAttr = failed ? ' open' : '';
 
-/* ---- Classify output lines for highlighting ---- */
-function classifyOutputLine(line, lineIndex, allLines) {
-  if (line.match(/\[Your score/i)) return 'score';
-  if (lineIndex === 0 && line.trim() && !line.match(/^[\[\(]/) && line.length < 80) {
-    if (line.trim().match(/^[A-Z]/) && !line.trim().match(/\.\s*$/)) {
-      var nextLine = (lineIndex + 1 < allLines.length) ? allLines[lineIndex + 1] : '';
-      if (nextLine.match(/^You are |^You're |^$|^This is |^There is /)) return 'room';
+  // Turn row grid cells
+  var num = '<span class="turn-num">' + (idx + 1) + '</span>';
+  var cmdText = '<span class="turn-cmd">&gt; ' + esc(cmd.input) + '</span>';
+  var room = cmd.room ? '<span class="turn-room">' + esc(cmd.room) + '</span>' : '<span class="turn-room"></span>';
+  var score = cmd.score ? '<span class="turn-score">' + esc(cmd.score) + '</span>' : '<span class="turn-score"></span>';
+
+  var deltaText = '', deltaCls = 'turn-delta';
+  if (cmd.scoreDelta > 0) deltaText = '+' + cmd.scoreDelta;
+  else if (cmd.scoreDelta < 0) { deltaText = '' + cmd.scoreDelta; deltaCls = 'turn-delta neg'; }
+  var delta = '<span class="' + deltaCls + '">' + esc(deltaText) + '</span>';
+
+  var outcomeText = '', outcomeCls = '';
+  if (cmd.outcome === 'win') { outcomeText = 'WIN'; outcomeCls = 'win'; }
+  else if (cmd.outcome === 'lose') { outcomeText = 'LOSE'; outcomeCls = 'lose'; }
+  var outcome = '<span class="turn-outcome ' + outcomeCls + '">' + esc(outcomeText) + '</span>';
+
+  var asserts = '<span class="turn-asserts">' + fmtTurnAsserts(cmd) + '</span>';
+
+  var h = '';
+  h += '<li class="turn">';
+  h += '<details class="turn-detail"' + openAttr + ' data-status="' + status + '">';
+  h += '<summary class="turn-row">';
+  h += num + cmdText + room + score + delta + outcome + asserts;
+  h += '</summary>';
+  h += '<div class="turn-body">';
+
+  // Game response — the transcript text (primary content)
+  if (cmd.output) {
+    h += '<pre class="turn-response">' + renderOutput(cmd.output) + '</pre>';
+  }
+
+  // Comment (from Sharpee .transcript files)
+  if (cmd.comment) {
+    h += '<div class="turn-comment">' + esc(cmd.comment) + '</div>';
+  }
+
+  // Extras: assertions, drift, parser notes — nested disclosure
+  var extrasOpen = failed ? ' open' : '';
+  h += '<details class="turn-extras"' + extrasOpen + '>';
+  h += '<summary class="turn-extras-summary">' + fmtExtrasLabel(cmd) + '</summary>';
+  h += '<div class="turn-extras-body">';
+
+  // Assertions
+  var cmdAsserts = cmd.assertions || [];
+  if (cmdAsserts.length > 0) {
+    h += '<h4>Checks</h4><ul class="assertions">';
+    for (var a = 0; a < cmdAsserts.length; a++) {
+      var assertion = cmdAsserts[a];
+      var cls = assertion.passed ? 'pass' : 'fail';
+      h += '<li class="' + cls + '">';
+      h += '<span class="a-label">' + esc(fmtAssertion(assertion)) + '</span>';
+      h += '</li>';
+    }
+    h += '</ul>';
+  }
+
+  // Drift
+  if (cmd.drift && cmd.drift.length > 0) {
+    h += '<h4>Drift — recorded vs observed</h4>';
+    h += '<div class="drift-diff">';
+    for (var d = 0; d < cmd.drift.length; d++) {
+      var chunk = cmd.drift[d];
+      var dCls = chunk.kind === 'equal' ? 'equal' : (chunk.kind === 'delete' ? 'del' : 'ins');
+      h += '<span class="' + dCls + '">' + esc(chunk.text) + '</span> ';
+    }
+    h += '</div>';
+  }
+
+  // Parser errors
+  if (cmd.parserErrors && cmd.parserErrors.length > 0) {
+    h += '<h4>Parser notes</h4>';
+    for (var pe = 0; pe < cmd.parserErrors.length; pe++) {
+      h += '<div class="parser-error">' + esc(cmd.parserErrors[pe]) + '</div>';
     }
   }
-  return 'normal';
+
+  h += '</div></details>'; // /turn-extras
+  h += '</div></details></li>'; // /turn-body, /turn-detail, /turn
+  return h;
 }
 
-function renderOutputLine(line, lineIndex, allLines) {
-  var type = classifyOutputLine(line, lineIndex, allLines);
-  if (type === 'score') return '<span class="score-line">' + esc(line) + '</span>';
-  if (type === 'room') return '<span class="room-name">' + esc(line) + '</span>';
-  return esc(line);
+/* ── Render one test card ── */
+function renderTest(tr, tIdx) {
+  var failed = tr.summary.failed > 0;
+  var status = failed ? 'fail' : 'pass';
+  var glyph = failed ? '✗' : '✓';
+  var openAttr = failed ? ' open' : ' open'; // always open tests
+
+  var cmdCount = tr.commands.length;
+  var totalAsserts = 0, passedAsserts = 0;
+  for (var c = 0; c < cmdCount; c++) {
+    var a = tr.commands[c].assertions || [];
+    totalAsserts += a.length;
+    for (var i = 0; i < a.length; i++) { if (a[i].passed) passedAsserts++; }
+  }
+
+  var metaBits = [];
+  metaBits.push(cmdCount + ' cmd' + (cmdCount !== 1 ? 's' : ''));
+  metaBits.push(passedAsserts + '/' + totalAsserts + ' ✓');
+  if (tr.summary.duration != null) {
+    metaBits.push(tr.summary.duration < 1000 ? tr.summary.duration + 'ms' : (tr.summary.duration / 1000).toFixed(1) + 's');
+  }
+
+  var h = '';
+  h += '<details class="test" data-status="' + status + '"' + openAttr + ' data-test-idx="' + tIdx + '">';
+  h += '<summary class="test-summary">';
+  h += '<span class="test-glyph ' + status + '">' + glyph + '</span>';
+  h += '<span class="test-name">' + esc(tr.title || tr.file || 'Test ' + (tIdx + 1)) + '</span>';
+  h += '<span class="test-meta">' + metaBits.join(' · ') + '</span>';
+  h += '</summary>';
+  h += '<div class="test-body">';
+
+  if (tr.description) {
+    h += '<div class="test-desc">' + esc(tr.description) + '</div>';
+  }
+
+  h += '<ul class="transcript">';
+  for (var c2 = 0; c2 < tr.commands.length; c2++) {
+    h += renderTurn(tr.commands[c2], c2);
+  }
+  h += '</ul>';
+
+  h += '</div></details>';
+  return h;
 }
 
-/* ---- Update page title ---- */
+/* ── Compute actual assertion/command totals from transcripts ── */
+function computeTotals() {
+  var transcripts = testData.transcripts || [];
+  var cmds = 0, cmdPass = 0, cmdFail = 0, asserts = 0, assertPass = 0;
+  for (var t = 0; t < transcripts.length; t++) {
+    var tr = transcripts[t];
+    for (var c = 0; c < tr.commands.length; c++) {
+      cmds++;
+      var cmd = tr.commands[c];
+      var failed = cmdFailed(cmd);
+      if (failed) cmdFail++; else cmdPass++;
+      var a = cmd.assertions || [];
+      asserts += a.length;
+      for (var i = 0; i < a.length; i++) { if (a[i].passed) assertPass++; }
+    }
+  }
+  return { cmds: cmds, cmdPass: cmdPass, cmdFail: cmdFail, asserts: asserts, assertPass: assertPass,
+           skipped: (testData.summary || {}).totalSkipped || 0,
+           tests: transcripts.length };
+}
+
+/* ── Render summary bar ── */
+function renderSummaryBar() {
+  var t = computeTotals();
+
+  var h = '<div class="summary">';
+  h += '<div class="item"><span class="num">' + t.tests + '</span><span class="label">test' + (t.tests !== 1 ? 's' : '') + '</span></div>';
+  h += '<div class="item"><span class="num">' + t.cmds + '</span><span class="label">command' + (t.cmds !== 1 ? 's' : '') + '</span></div>';
+  h += '<div class="item"><span class="num pass-num">' + t.assertPass + '</span><span class="label">passed</span></div>';
+  if (t.asserts - t.assertPass > 0) h += '<div class="item"><span class="num fail-num">' + (t.asserts - t.assertPass) + '</span><span class="label">failed</span></div>';
+  if (t.skipped) h += '<div class="item"><span class="num">' + t.skipped + '</span><span class="label">skipped</span></div>';
+  h += '<div class="item"><span class="num">' + t.assertPass + '/' + t.asserts + '</span><span class="label">checks</span></div>';
+  h += '</div>';
+  return h;
+}
+
+/* ── Render all ── */
+function renderAll() {
+  if (!testData || !testData.transcripts) return '<div class="empty-msg"><h2>No test results found</h2><p>Place a <code>test-results.json</code> file in this directory.</p></div>';
+
+  var h = renderSummaryBar();
+
+  for (var t = 0; t < testData.transcripts.length; t++) {
+    h += renderTest(testData.transcripts[t], t);
+  }
+  return h;
+}
+
+/* ── Update title ── */
 function updateTitle() {
   if (!testData) return;
-  var version = testData.version || '';
-  // Try to build a title from the first transcript's title or from the storyId
-  var conceptName = '';
-  if (testData.transcripts && testData.transcripts.length > 0 && testData.transcripts[0].title) {
-    // Extract concept from "V01 -- A Single Room" style titles
-    var parts = testData.transcripts[0].title.split(/\s*[:\u2014\u2013-]+\s*/);
-    if (parts.length > 1) conceptName = parts.slice(1).join(' ').trim();
-  }
   var title = 'Tests';
-  if (testData.storyId) title += ' \u2014 ' + testData.storyId;
-  if (version && !testData.storyId) title += ' \u2014 ' + version;
-  if (conceptName) title += ': ' + conceptName;
+  if (testData.storyId) title += ' — ' + testData.storyId;
   document.title = title;
 }
 
-/* ---- Update status banner ---- */
-function updateStatusBanner() {
-  var banner = document.getElementById('status-banner');
-  if (!testData) {
-    banner.className = 'status-banner no-data';
-    banner.textContent = 'No test data available';
-    return;
-  }
-
-  var total = testData.summary.totalPassed + testData.summary.totalFailed + testData.summary.totalSkipped;
-  var failed = testData.summary.totalFailed;
-
-  if (failed === 0) {
-    banner.className = 'status-banner all-passed';
-    banner.textContent = 'All ' + total + ' assertions passed';
-  } else {
-    banner.className = 'status-banner has-failures';
-    banner.textContent = failed + ' assertion' + (failed === 1 ? '' : 's') + ' failed out of ' + total;
-  }
-}
-
-/* ---- Update total badge ---- */
-function updateTotalBadge() {
+/* ── Update total badge ── */
+function updateBadge() {
   var badge = document.getElementById('total-badge');
   if (!testData) { badge.style.display = 'none'; return; }
-
-  var total = testData.summary.totalPassed + testData.summary.totalFailed + testData.summary.totalSkipped;
-  var failed = testData.summary.totalFailed;
-
+  var t = computeTotals();
   badge.style.display = '';
-  badge.textContent = testData.summary.totalPassed + '/' + total + ' passed';
-  badge.className = failed > 0 ? 'total-badge has-fail' : 'total-badge all-pass';
+  badge.textContent = t.assertPass + '/' + t.asserts + ' passed';
+  badge.className = (t.asserts - t.assertPass) > 0 ? 'total-badge has-fail' : 'total-badge all-pass';
 }
 
-/* ---- Build sidebar navigation ---- */
-function buildNav() {
-  var nav = document.getElementById('nav');
-  if (!testData || !testData.transcripts) {
-    nav.innerHTML = '';
+/* ── Failures filter ── */
+function applyFilter() {
+  if (!failuresOnly) {
+    document.querySelectorAll('.hidden-by-filter').forEach(function(el) { el.classList.remove('hidden-by-filter'); });
     return;
   }
-
-  var html = '';
-  for (var t = 0; t < testData.transcripts.length; t++) {
-    var tr = testData.transcripts[t];
-    var failed = tr.summary.failed > 0;
-    var badgeClass = failed ? 'fail' : 'pass';
-    var badgeText = failed ? tr.summary.failed + ' fail' : tr.summary.passed + ' pass';
-
-    html += '<div class="nav-group">';
-    html += '<a class="nav-transcript' + (t === 0 ? ' active' : '') + '" data-index="' + t + '">';
-    html += '<span class="nav-file">' + esc(tr.file) + '</span>';
-    html += '<span class="nav-badge ' + badgeClass + '">' + badgeText + '</span>';
-    html += '</a>';
-    html += '<div class="nav-commands' + (t === 0 ? ' expanded' : '') + '" data-transcript="' + t + '">';
-
-    for (var c = 0; c < tr.commands.length; c++) {
-      var cmd = tr.commands[c];
-      var cmdFailed = commandFailed(cmd);
-      var iconClass = cmdFailed ? 'fail' : 'pass';
-      var icon = cmdFailed ? '\u2717' : '\u2713';
-
-      html += '<a class="nav-cmd" data-transcript="' + t + '" data-command="' + c + '">';
-      html += '<span class="nav-cmd-icon ' + iconClass + '">' + icon + '</span>';
-      html += '<span class="nav-cmd-text">' + esc(cmd.input) + '</span>';
-      html += '</a>';
-    }
-
-    html += '</div>';
-    html += '</div>';
-  }
-
-  nav.innerHTML = html;
-
-  // Click handlers for transcript headers
-  nav.addEventListener('click', function(e) {
-    var transcriptEl = e.target.closest('.nav-transcript');
-    var cmdEl = e.target.closest('.nav-cmd');
-
-    if (cmdEl) {
-      var tIdx = parseInt(cmdEl.getAttribute('data-transcript'));
-      var cIdx = parseInt(cmdEl.getAttribute('data-command'));
-      scrollToCommand(tIdx, cIdx);
-      return;
-    }
-
-    if (transcriptEl) {
-      var idx = parseInt(transcriptEl.getAttribute('data-index'));
-
-      // Toggle active state
-      nav.querySelectorAll('.nav-transcript').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      transcriptEl.classList.add('active');
-
-      // Toggle commands list
-      nav.querySelectorAll('.nav-commands').forEach(function(el) {
-        el.classList.remove('expanded');
-      });
-      var cmds = nav.querySelector('.nav-commands[data-transcript="' + idx + '"]');
-      if (cmds) cmds.classList.add('expanded');
-
-      activeTranscriptIndex = idx;
-      scrollToTranscript(idx);
-    }
+  // Hide passing turns
+  document.querySelectorAll('li.turn').forEach(function(el) {
+    var det = el.querySelector('.turn-detail');
+    if (det && det.getAttribute('data-status') === 'pass') el.classList.add('hidden-by-filter');
+    else el.classList.remove('hidden-by-filter');
+  });
+  // Hide all-pass test cards
+  document.querySelectorAll('details.test').forEach(function(el) {
+    if (el.getAttribute('data-status') === 'pass') el.classList.add('hidden-by-filter');
+    else el.classList.remove('hidden-by-filter');
   });
 }
 
-/* ---- Scroll to a transcript section ---- */
-function scrollToTranscript(index) {
-  var target = document.getElementById('summary-' + index);
-  if (target) target.scrollIntoView({ block: 'start', behavior: 'smooth' });
-}
-
-/* ---- Scroll to a specific command + auto-expand it ---- */
-function scrollToCommand(transcriptIndex, commandIndex) {
-  var target = document.getElementById('cmd-' + transcriptIndex + '-' + commandIndex);
-  if (!target) return;
-  // Make sure it's expanded so the body is visible after scroll.
-  target.classList.add('expanded');
-  target.scrollIntoView({ block: 'start', behavior: 'smooth' });
-  target.style.outline = '1px solid #5a4a30';
-  setTimeout(function() { target.style.outline = ''; }, 1500);
-}
-
-/* ---- Render the unified view: compact rows that expand inline. ----
- * Each command renders TWO sibling elements:
- *   1. .summary-cmd          \u2014 clickable header (always visible)
- *   2. .summary-cmd-body     \u2014 assertions + output (hidden until .expanded)
- * Failed rows start expanded so the user immediately sees what went wrong.
- */
-function renderSummary() {
-  if (!testData || !testData.transcripts) return '<div class="empty-msg">No transcripts found.</div>';
-
-  var html = '';
-
-  for (var t = 0; t < testData.transcripts.length; t++) {
-    var tr = testData.transcripts[t];
-
-    html += '<div class="summary-card" id="summary-' + t + '">';
-
-    // Transcript header
-    html += '<div class="summary-card-header">';
-    html += '<div>';
-    html += '<div class="summary-card-title">' + esc(tr.title || tr.file) + '</div>';
-    if (tr.description) {
-      html += '<div class="summary-card-desc">' + esc(tr.description) + '</div>';
-    }
-    html += '</div>';
-    html += '<div class="summary-card-badges">';
-    html += '<span class="badge pass">' + tr.summary.passed + ' passed</span>';
-    if (tr.summary.failed > 0) {
-      html += '<span class="badge fail">' + tr.summary.failed + ' failed</span>';
-    }
-    if (tr.summary.skipped > 0) {
-      html += '<span class="badge skip">' + tr.summary.skipped + ' skipped</span>';
-    }
-    if (tr.summary.duration != null) {
-      html += '<span class="badge duration">' + formatDuration(tr.summary.duration) + '</span>';
-    }
-    html += '</div>';
-    html += '</div>';
-
-    // Commands \u2014 compact rows + hidden expanded bodies
-    html += '<div class="summary-commands">';
-    for (var c = 0; c < tr.commands.length; c++) {
-      var cmd = tr.commands[c];
-      var cmdFail = commandFailed(cmd);
-      var icon = cmdFail ? '\u2717' : '\u2713';
-      var iconClass = cmdFail ? 'fail' : 'pass';
-      var textClass = cmdFail ? ' fail' : '';
-      var assertCount = commandAssertionCount(cmd);
-      var rowId = 'cmd-' + t + '-' + c;
-
-      // 1. Clickable header
-      html += '<div class="summary-cmd' + (cmdFail ? ' expanded' : '') + '" id="' + rowId + '">';
-      html += '<span class="summary-cmd-expand-icon">\u25b8</span>';
-      html += '<span class="summary-cmd-icon ' + iconClass + '">' + icon + '</span>';
-      html += '<span class="summary-cmd-num">' + (c + 1) + '</span>';
-      html += '<span class="summary-cmd-prompt">&gt;</span>';
-      html += '<span class="summary-cmd-text' + textClass + '">' + esc(cmd.input) + '</span>';
-      if (assertCount > 0) {
-        var passedCount = 0;
-        for (var a = 0; a < cmd.assertions.length; a++) {
-          if (cmd.assertions[a].passed) passedCount++;
-        }
-        html += '<span class="summary-cmd-assert-count">' + passedCount + '/' + assertCount + '</span>';
-      }
-      html += '</div>';
-
-      // 2. Expanded body \u2014 assertions + output. CSS shows it iff the preceding
-      //    .summary-cmd has .expanded.
-      html += '<div class="summary-cmd-body" data-row="' + rowId + '">';
-      if (cmd.comment) {
-        html += '<div class="body-comment">' + esc(cmd.comment) + '</div>';
-      }
-      if (cmd.assertions && cmd.assertions.length > 0) {
-        html += '<div class="body-asserts">';
-        for (var a2 = 0; a2 < cmd.assertions.length; a2++) {
-          var assertion = cmd.assertions[a2];
-          var aIcon = assertion.passed ? '\u2713' : '\u2717';
-          var aClass = assertion.passed ? 'pass' : 'fail';
-          html += '<div class="body-assert">';
-          html += '<span class="assert-icon ' + aClass + '">' + aIcon + '</span>';
-          html += '<span class="assert-text' + (assertion.passed ? '' : ' fail') + '">' + esc(formatAssertion(assertion)) + '</span>';
-          html += '</div>';
-        }
-        html += '</div>';
-      }
-      // I7 extension: room / score / outcome badges
-      if (cmd.room || cmd.score || cmd.outcome) {
-        html += '<div class="body-badges">';
-        if (cmd.room) html += '<span class="body-badge room">' + esc(cmd.room) + '</span>';
-        if (cmd.score) html += '<span class="body-badge score">' + esc(cmd.score) + '</span>';
-        if (cmd.scoreDelta && cmd.scoreDelta > 0) html += '<span class="body-badge delta-up">+' + cmd.scoreDelta + '</span>';
-        if (cmd.scoreDelta && cmd.scoreDelta < 0) html += '<span class="body-badge delta-down">' + cmd.scoreDelta + '</span>';
-        if (cmd.outcome === 'win') html += '<span class="body-badge outcome-win">WIN</span>';
-        if (cmd.outcome === 'lose') html += '<span class="body-badge outcome-lose">LOSE</span>';
-        html += '</div>';
-      }
-      if (cmd.output) {
-        var outputLines = cmd.output.split('\n');
-        var outputHtml = '';
-        for (var o = 0; o < outputLines.length; o++) {
-          outputHtml += renderOutputLine(outputLines[o], o, outputLines);
-          if (o < outputLines.length - 1) outputHtml += '\n';
-        }
-        html += '<div class="body-output-label">output</div>';
-        html += '<div class="body-output">' + outputHtml + '</div>';
-      }
-      // I7 extension: drift (word-level diff vs recorded output)
-      if (cmd.drift && cmd.drift.length > 0) {
-        html += '<div class="body-extra-section">';
-        html += '<div class="body-extra-label" onclick="this.parentElement.classList.toggle(\'open\')">&#9656; drift</div>';
-        html += '<div class="body-extra-content">';
-        for (var d = 0; d < cmd.drift.length; d++) {
-          html += '<span class="drift-chunk drift-' + cmd.drift[d].kind + '">' + esc(cmd.drift[d].text) + '</span> ';
-        }
-        html += '</div></div>';
-      }
-      // I7 extension: parser errors
-      if (cmd.parserErrors && cmd.parserErrors.length > 0) {
-        html += '<div class="body-extra-section">';
-        html += '<div class="body-extra-label" onclick="this.parentElement.classList.toggle(\'open\')">&#9656; parser notes (' + cmd.parserErrors.length + ')</div>';
-        html += '<div class="body-extra-content">';
-        for (var pe = 0; pe < cmd.parserErrors.length; pe++) {
-          html += '<div class="parser-error">' + esc(cmd.parserErrors[pe]) + '</div>';
-        }
-        html += '</div></div>';
-      }
-      html += '</div>';
-    }
-    html += '</div>';
-
-    html += '</div>';
-  }
-
-  return html;
-}
-
-/* ---- Render empty/missing state ---- */
-function renderEmpty() {
-  var html = '<div class="empty-msg">';
-  html += '<h2>No test results found</h2>';
-  html += '<p>Place a <code>test-results.json</code> file in this directory ';
-  html += 'to display test results.</p>';
-  html += '<p style="margin-top:12px;">Expected format: a JSON file with transcript results, ';
-  html += 'assertions, and pass/fail status per command.</p>';
-  html += '</div>';
-  return html;
-}
-
-/* ---- Render: single unified view (compact rows that expand inline) ---- */
-function render() {
-  var wrap = document.getElementById('content-wrap');
-  wrap.innerHTML = testData ? renderSummary() : renderEmpty();
-
-  // Attach click handler \u2014 toggle .expanded on each row.
-  document.querySelectorAll('.summary-cmd').forEach(function(row) {
-    row.addEventListener('click', function() {
-      this.classList.toggle('expanded');
-    });
-  });
-
-  applyFailuresFilter();
-  clearSearch();
-  var q = document.getElementById('search').value;
-  if (q && q.length >= 2) doSearch(q);
-}
-
-/* ---- Search ---- */
-var searchHits = [];
-var currentHit = -1;
+/* ── Search ── */
+var searchHits = [], currentHit = -1;
 
 function clearSearch() {
-  document.querySelectorAll('.search-hit').forEach(function(el) {
-    el.outerHTML = el.textContent;
-  });
-  searchHits = [];
-  currentHit = -1;
+  document.querySelectorAll('.search-hit').forEach(function(el) { el.outerHTML = el.textContent; });
+  searchHits = []; currentHit = -1;
 }
 
 function highlightMatches(el, query) {
@@ -1086,58 +775,29 @@ function highlightMatches(el, query) {
   var lower = query.toLowerCase();
   var nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
-
   nodes.forEach(function(node) {
     var text = node.textContent;
     var idx = text.toLowerCase().indexOf(lower);
     if (idx === -1) return;
-
-    var before = text.slice(0, idx);
-    var match = text.slice(idx, idx + query.length);
-    var after = text.slice(idx + query.length);
-
     var span = document.createElement('span');
     span.className = 'search-hit';
-    span.textContent = match;
-
+    span.textContent = text.slice(idx, idx + query.length);
     var parent = node.parentNode;
-    if (before) parent.insertBefore(document.createTextNode(before), node);
+    if (idx > 0) parent.insertBefore(document.createTextNode(text.slice(0, idx)), node);
     parent.insertBefore(span, node);
+    var after = text.slice(idx + query.length);
     if (after) parent.insertBefore(document.createTextNode(after), node);
     parent.removeChild(node);
-
-    if (after.toLowerCase().includes(lower)) {
-      var afterNode = span.nextSibling;
-      if (afterNode && afterNode.nodeType === Node.TEXT_NODE) {
-        var temp = document.createElement('span');
-        temp.appendChild(afterNode.cloneNode(true));
-        parent.replaceChild(temp, afterNode);
-        highlightMatches(temp, query);
-        while (temp.firstChild) parent.insertBefore(temp.firstChild, temp);
-        parent.removeChild(temp);
-      }
-    }
   });
 }
 
 function doSearch(query) {
   clearSearch();
   if (!query || query.length < 2) return;
-
-  var wrap = document.getElementById('content-wrap');
-  var selectors = [
-    '.summary-card-title', '.summary-card-desc', '.summary-cmd-text',
-    '.detail-transcript-header', '.detail-transcript-desc', '.detail-cmd-text',
-    '.detail-comment', '.assert-text', '.detail-output'
-  ];
-  var els = wrap.querySelectorAll(selectors.join(', '));
-
-  els.forEach(function(el) {
-    if (el.textContent.toLowerCase().includes(query.toLowerCase())) {
-      highlightMatches(el, query);
-    }
+  var content = document.getElementById('content');
+  content.querySelectorAll('.test-name, .test-desc, .turn-cmd, .turn-response, .a-label, .turn-comment').forEach(function(el) {
+    if (el.textContent.toLowerCase().includes(query.toLowerCase())) highlightMatches(el, query);
   });
-
   searchHits = Array.from(document.querySelectorAll('.search-hit'));
   if (searchHits.length > 0) {
     currentHit = 0;
@@ -1147,7 +807,7 @@ function doSearch(query) {
 }
 
 function nextHit() {
-  if (searchHits.length === 0) return;
+  if (!searchHits.length) return;
   searchHits[currentHit].classList.remove('search-current');
   currentHit = (currentHit + 1) % searchHits.length;
   searchHits[currentHit].classList.add('search-current');
@@ -1155,109 +815,48 @@ function nextHit() {
 }
 
 function prevHit() {
-  if (searchHits.length === 0) return;
+  if (!searchHits.length) return;
   searchHits[currentHit].classList.remove('search-current');
   currentHit = (currentHit - 1 + searchHits.length) % searchHits.length;
   searchHits[currentHit].classList.add('search-current');
   searchHits[currentHit].scrollIntoView({ block: 'center' });
 }
 
-/* ---- Failures-only filter ---- */
-function applyFailuresFilter() {
-  if (!failuresOnly) {
-    document.querySelectorAll('.hidden-by-filter').forEach(function(el) {
-      el.classList.remove('hidden-by-filter');
-    });
-    return;
-  }
-
-  // Hide passing rows (and the body that follows each).
-  document.querySelectorAll('.summary-cmd').forEach(function(el) {
-    var icon = el.querySelector('.summary-cmd-icon');
-    var isPass = icon && icon.classList.contains('pass');
-    if (isPass) {
-      el.classList.add('hidden-by-filter');
-      var body = el.nextElementSibling;
-      if (body && body.classList.contains('summary-cmd-body')) {
-        body.classList.add('hidden-by-filter');
-      }
-    } else {
-      el.classList.remove('hidden-by-filter');
-      var body2 = el.nextElementSibling;
-      if (body2 && body2.classList.contains('summary-cmd-body')) {
-        body2.classList.remove('hidden-by-filter');
-      }
-    }
-  });
-  // Hide entire transcript cards if all their commands pass.
-  document.querySelectorAll('.summary-card').forEach(function(el) {
-    var cmds = el.querySelectorAll('.summary-cmd');
-    var allPass = true;
-    cmds.forEach(function(cmd) {
-      var icon = cmd.querySelector('.summary-cmd-icon');
-      if (icon && icon.classList.contains('fail')) allPass = false;
-    });
-    if (allPass) el.classList.add('hidden-by-filter');
-    else el.classList.remove('hidden-by-filter');
-  });
-}
-
-/* ---- Init ---- */
+/* ── Init ── */
 async function init() {
-  var wrap = document.getElementById('content-wrap');
-
+  var content = document.getElementById('content');
   try {
     var resp = await fetch(DATA_URL);
-    if (!resp.ok) {
-      throw { notFound: true };
-    }
+    if (!resp.ok) throw { notFound: true };
     testData = await resp.json();
   } catch (e) {
     if (e.notFound) {
-      // No test-results.json — show helpful empty state
       testData = null;
-      wrap.innerHTML = renderEmpty();
-      document.getElementById('status-banner').className = 'status-banner no-data';
-      document.getElementById('status-banner').textContent = 'No test results file found';
+      content.innerHTML = '<div class="empty-msg"><h2>No test results found</h2><p>Place a <code>test-results.json</code> file in this directory.</p></div>';
       return;
     }
-    wrap.innerHTML = '<div class="error-msg">Failed to load test results. ' + esc(e.message || String(e)) + '</div>';
+    content.innerHTML = '<div class="error-msg">Failed to load test results. ' + esc(e.message || String(e)) + '</div>';
     return;
   }
 
-  // Update page metadata
   updateTitle();
-  updateStatusBanner();
-  updateTotalBadge();
+  updateBadge();
+  content.innerHTML = renderAll();
+  applyFilter();
 
-  // Timestamp in sidebar
-  if (testData.timestamp) {
-    document.getElementById('sidebar-timestamp').textContent = formatTimestamp(testData.timestamp);
-  }
-
-  // Build sidebar
-  buildNav();
-
-  // Initial render \u2014 failed rows auto-expand, passing rows stay collapsed.
-  render();
-
-  // Expand All / Collapse All operate on the unified rows.
+  // Expand all / Collapse all
   document.getElementById('btn-expand-all').addEventListener('click', function() {
-    document.querySelectorAll('.summary-cmd').forEach(function(el) {
-      el.classList.add('expanded');
-    });
+    document.querySelectorAll('details.turn-detail').forEach(function(d) { d.open = true; });
   });
   document.getElementById('btn-collapse-all').addEventListener('click', function() {
-    document.querySelectorAll('.summary-cmd').forEach(function(el) {
-      el.classList.remove('expanded');
-    });
+    document.querySelectorAll('details.turn-detail').forEach(function(d) { d.open = false; });
   });
 
-  // Failures only filter
+  // Failures only
   document.getElementById('btn-failures-only').addEventListener('click', function() {
     failuresOnly = !failuresOnly;
     this.classList.toggle('active', failuresOnly);
-    applyFailuresFilter();
+    applyFilter();
   });
 
   // Search
@@ -1268,27 +867,12 @@ async function init() {
     var self = this;
     debounce = setTimeout(function() { doSearch(self.value); }, 200);
   });
-
   searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (e.shiftKey) prevHit(); else nextHit();
-    }
-    if (e.key === 'Escape') {
-      clearSearch();
-      this.value = '';
-      this.blur();
-    }
+    if (e.key === 'Enter') { e.preventDefault(); if (e.shiftKey) prevHit(); else nextHit(); }
+    if (e.key === 'Escape') { clearSearch(); this.value = ''; this.blur(); }
   });
-
-  // Keyboard shortcuts
   document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-      e.preventDefault();
-      searchInput.focus();
-      searchInput.select();
-      return;
-    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); searchInput.focus(); searchInput.select(); }
   });
 }
 

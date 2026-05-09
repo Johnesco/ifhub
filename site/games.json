@@ -563,6 +563,7 @@
     "sourceLabel": "larva.ni",
     "playUrl": "/larva/play.html",
     "walkthroughUrl": "/larva/walkthrough.html",
+    "testsUrl": "/larva/tests.html",
     "landingUrl": "/larva/",
     "sourceBrowser": true,
     "sourceUrl": "/larva/source.html",

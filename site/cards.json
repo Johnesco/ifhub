@@ -437,7 +437,8 @@
       "demo"
     ],
     "sourceUrl": "/larva/source.html",
-    "walkthroughUrl": "/larva/walkthrough.html"
+    "walkthroughUrl": "/larva/walkthrough.html",
+    "testsUrl": "/larva/tests.html"
   },
   {
     "id": "lostinnewyork",
