@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Versioning &mdash; IF Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  min-height: 100%;
+  background: var(--page-bg, #0a0a0a);
+  color: var(--page-fg, #d4c5a9);
+  font-family: var(--font-family, Georgia, "Times New Roman", serif);
+}
+
+.page {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+h1 {
+  font-size: 1.6em;
+  color: var(--heading-fg, #e8d8b0);
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 0.95em;
+  color: var(--dim, #806050);
+  margin-bottom: 40px;
+}
+
+.subtitle a {
+  color: var(--link-fg, #a08060);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.subtitle a:hover {
+  color: #c0a880;
+  border-bottom-color: #c0a880;
+}
+
+h2 {
+  font-size: 1.2em;
+  color: var(--accent, #e8d090);
+  margin: 40px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border, #2a2418);
+}
+
+h3 {
+  font-size: 1em;
+  color: #c4b48a;
+  margin: 28px 0 8px;
+}
+
+p {
+  line-height: 1.7;
+  margin-bottom: 12px;
+  color: #b8a888;
+}
+
+strong {
+  color: #d4c5a9;
+  font-weight: bold;
+}
+
+em {
+  color: #a09070;
+}
+
+a {
+  color: var(--link-fg, #a08060);
+}
+
+code {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.88em;
+  background: var(--code-bg, #151008);
+  border: 1px solid var(--card-border, #1e1a14);
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: var(--code-fg, #c4b48a);
+}
+
+pre {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.85em;
+  background: var(--code-bg, #0e0c08);
+  border: 1px solid var(--card-border, #1e1a14);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 12px 0 20px;
+  overflow-x: auto;
+  line-height: 1.6;
+  color: #b8a888;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+pre .comment { color: #605840; font-style: italic; }
+pre .string { color: #8bab6e; }
+pre .key { color: #c08050; }
+pre .flag { color: #7ea8b0; }
+
+ol, ul {
+  padding-left: 28px;
+  margin-bottom: 16px;
+}
+
+ul { list-style-type: disc; }
+
+ol li, ul li {
+  line-height: 1.7;
+  margin-bottom: 6px;
+  color: #b8a888;
+}
+
+table.version-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 20px;
+  font-size: 0.92em;
+}
+
+table.version-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: #c4b48a;
+  border-bottom: 1px solid #2a2418;
+  font-weight: bold;
+  background: #120e08;
+}
+
+table.version-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1a1510;
+  color: #b8a888;
+  vertical-align: top;
+}
+
+table.version-table tr:last-child td {
+  border-bottom: none;
+}
+
+table.version-table td code {
+  font-size: 0.85em;
+}
+
+.callout {
+  background: #0e0c08;
+  border-left: 3px solid #a08060;
+  border-radius: 3px;
+  padding: 12px 16px;
+  margin: 16px 0 20px;
+}
+
+.callout strong {
+  color: #d4c5a9;
+}
+
+.contract-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.contract-list li {
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  background: #0e0c08;
+  border: 1px solid #1e1a14;
+  border-radius: 3px;
+  position: relative;
+}
+
+.contract-list code {
+  display: inline-block;
+  margin-right: 8px;
+  min-width: 240px;
+}
+
+footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid #1e1a14;
+  font-size: 0.85em;
+  color: #605040;
+}
+
+footer a {
+  color: #806848;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>Versioning</h1>
+<p class="subtitle">How IF Hub keeps every milestone of a game playable &mdash; from raw port to polished release &mdash; so the progression itself becomes part of the experience. <a href="index.html">&larr; Back to Hub</a></p>
+
+<h2>Why Versions Matter Here</h2>
+
+<p>Most software ships <em>the latest version</em> and discards the rest. IF Hub does the opposite: <strong>every numbered milestone stays playable forever</strong>, side by side, on the same hub.</p>
+
+<p>The reason is that the games we host often tell a story in their version history:</p>
+
+<ul>
+<li><strong>Translation portfolios</strong> &mdash; a classic ZIL game ported to Inform 7. v0 is the original Infocom build; v1 is the faithful port; v2 fixes bugs Infocom shipped; v3 adds sound and atmosphere. Each playable, each instructive.</li>
+<li><strong>Tutorial increments</strong> &mdash; a teaching game grows feature by feature. v1 covers conversation; v2 adds inventory; v3 adds NPCs with goals. A reader of the source learns by diffing the versions.</li>
+<li><strong>Authored revisions</strong> &mdash; the author wants their 2020 release preserved alongside their 2025 director&rsquo;s cut. Players can pick either.</li>
+</ul>
+
+<p>For this to work, <strong>every feature IF Hub offers must keep working for every version</strong>, not just the current one. A user clicking "Play v2" expects the same affordances as a user clicking "Play (Current)": a game that runs, a source they can read, a walkthrough they can follow, a transcript they can download.</p>
+
+<h2>The Repo Model</h2>
+
+<p>A multi-version project is <strong>one GitHub repo per version</strong>. The main repo is the working copy ("Current"); each frozen version lives in its own repo named <code>&lt;game&gt;-vN</code>.</p>
+
+<pre>Johnesco/zork1          <span class="comment">&larr; Current (the working copy, no version number)</span>
+Johnesco/zork1-v0       <span class="comment">&larr; Original engine (ZIL / BASIC / etc.)</span>
+Johnesco/zork1-v1       <span class="comment">&larr; Frozen: faithful port</span>
+Johnesco/zork1-v2       <span class="comment">&larr; Frozen: bug fixes / enhancements</span>
+Johnesco/zork1-v3       <span class="comment">&larr; Frozen: multimedia / further enhancements</span></pre>
+
+<p>Each repo:</p>
+
+<ul>
+<li>Is <strong>self-contained</strong> &mdash; story source, compiled binary, walkthrough, tests, web player. It can build and deploy on its own.</li>
+<li>Deploys independently to its own GitHub Pages site (e.g. <code>johnesco.github.io/zork1-v2/</code>).</li>
+<li>Is registered as a separate entry in the IF Hub registry, with a <code>versionOf</code> link back to the parent game.</li>
+</ul>
+
+<p>The hub <strong>iframes</strong> each version&rsquo;s GitHub Pages site into a unified browsable experience. The hub itself doesn&rsquo;t host the games; it points at them and groups them.</p>
+
+<h2>The Version Philosophy (Common Pattern)</h2>
+
+<p>Each project defines its own promotion rules, but the recurring pattern is:</p>
+
+<table class="version-table">
+<thead><tr><th>Version</th><th>Editing policy</th><th>Typical purpose</th></tr></thead>
+<tbody>
+<tr><td><strong>v0</strong></td><td>Never touch.</td><td>The original, exactly as released. Fixes are only ever applied in v1+.</td></tr>
+<tr><td><strong>v1</strong></td><td>Bugs only.</td><td>Faithful 1:1 translation. No enhancements, no quality-of-life. Goal: gameplay matches v0.</td></tr>
+<tr><td><strong>v2</strong></td><td>Any fixes or enhancements.</td><td>First version that intentionally changes the game. Bug fixes from the original engine, translation fixes from v1.</td></tr>
+<tr><td><strong>v3</strong></td><td>Multimedia &amp; guidance.</td><td>Sound, atmosphere, additional player hints &mdash; written sparingly to match the original&rsquo;s style.</td></tr>
+<tr><td><strong>Current</strong></td><td>Default work target.</td><td>All new development. Will become the next numbered version when frozen.</td></tr>
+</tbody>
+</table>
+
+<p>Project-specific deviations belong in that project&rsquo;s own <code>CLAUDE.md</code>.</p>
+
+<h2>Change Propagation</h2>
+
+<p><strong>Changes only propagate upward, never downward.</strong> If a fix lands in vN, apply the same change to v(N+1), v(N+2), &hellip;, and Current. v1 stays "as v1 always was"; v2 inherits v1 plus its own fixes; and so on.</p>
+
+<div class="callout">
+<strong>Cascade rule:</strong> each version is a strict superset of the one below it. v2 contains everything in v1 plus its own changes; v3 contains everything in v2 plus its own; Current contains everything from the topmost frozen version plus the work in progress.
+</div>
+
+<h2>The Per-Version Feature Contract</h2>
+
+<p>For IF Hub to expose its full UI for any version, that version&rsquo;s repo must produce the following deliverables. These are the things authors need to keep up to date when patching a frozen version (rare) or when a new version is cut from Current (routine).</p>
+
+<table class="version-table">
+<thead><tr><th>Feature</th><th>What the hub does</th><th>What the version repo provides</th></tr></thead>
+<tbody>
+<tr><td><strong>Play</strong></td><td>Loads <code>play.html</code> into the hub&rsquo;s player pane.</td><td><code>play.html</code> + compiled binary + base64 wrapper (e.g. <code>lib/parchment/&lt;game&gt;-vN.ulx.js</code>).</td></tr>
+<tr><td><strong>Source browser</strong></td><td>Loads <code>source.html</code> into the source pane.</td><td><code>source.html</code> rendering this version&rsquo;s <code>story.ni</code> (or equivalent).</td></tr>
+<tr><td><strong>Walkthrough viewer</strong></td><td>Loads <code>walkthrough.html</code> &mdash; an annotated step-by-step guide.</td><td><code>walkthrough.html</code> + <code>walkthrough.txt</code> + <code>walkthrough-guide.txt</code>.</td></tr>
+<tr><td><strong>Transcript download</strong></td><td>Links the deterministic play transcript.</td><td><code>walkthrough_output.txt</code> (generated by walkthrough runner with the version&rsquo;s golden seed).</td></tr>
+<tr><td><strong>Version banner</strong></td><td>Shows the version label in the in-game banner.</td><td><code>After printing the banner text</code> rule (or equivalent) in the source: e.g. <code>say "v2: Bug Fixes &amp; Testing"</code>.</td></tr>
+<tr><td><strong>Group landing</strong></td><td>Top-level <code>johnesco.github.io/&lt;game&gt;/</code> page lists all versions newest-first.</td><td>Current repo&rsquo;s <code>landing.json</code> describes Current; each frozen version contributes its own card via the hub registry.</td></tr>
+</tbody>
+</table>
+
+<p>Compile, walkthrough, and registry generation are all driven by <code>ifhub.conf</code> in each repo plus the central <code>games-registry.json</code>. The pipeline knows how to build, test, and re-register a single version:</p>
+
+<pre>python tools/pipeline.py &lt;game&gt;-v2 compile
+python tools/pipeline.py &lt;game&gt;-v2 compile test
+python tools/pipeline.py &lt;game&gt;-v2 --ship       <span class="comment"># compile + test + register + publish + push hub</span></pre>
+
+<h2>Hub Registration</h2>
+
+<p>Every entry &mdash; Current and each frozen version &mdash; is its own row in <code>games-registry.json</code>:</p>
+
+<pre>{
+  <span class="key">"zork1"</span>: {
+    <span class="key">"path"</span>: <span class="string">"../text-games/i7/zork1"</span>,
+    <span class="key">"repo"</span>: <span class="string">"Johnesco/zork1"</span>,
+    <span class="key">"versionPrimary"</span>: true,
+    <span class="key">"versionPrimaryLabel"</span>: <span class="string">"Current"</span>
+  },
+  <span class="key">"zork1-v1"</span>: {
+    <span class="key">"path"</span>: <span class="string">"../text-games/i7/zork1-v1"</span>,
+    <span class="key">"repo"</span>: <span class="string">"Johnesco/zork1-v1"</span>,
+    <span class="key">"versionOf"</span>: <span class="string">"zork1"</span>,
+    <span class="key">"versionLabel"</span>: <span class="string">"v1 — The Port"</span>
+  },
+  <span class="key">"zork1-v2"</span>: { <span class="comment">/* &hellip; */</span> },
+  <span class="key">"zork1-v3"</span>: { <span class="comment">/* &hellip; */</span> },
+  <span class="key">"zork1-v0"</span>: {
+    <span class="key">"path"</span>: <span class="string">"../text-games/zmachine/zork1-v0"</span>,
+    <span class="key">"repo"</span>: <span class="string">"Johnesco/zork1-v0"</span>,
+    <span class="key">"versionOf"</span>: <span class="string">"zork1"</span>,
+    <span class="key">"versionLabel"</span>: <span class="string">"v0 — Original ZIL"</span>
+  }
+}</pre>
+
+<p>Key fields:</p>
+
+<ul>
+<li><code>versionOf</code> &mdash; groups this entry under a parent game on the hub UI.</li>
+<li><code>versionLabel</code> &mdash; what shows in the version dropdown and side-by-side lists (e.g. "v2 &mdash; Bug Fixes").</li>
+<li><code>versionPrimary: true</code> &mdash; marks the Current entry that represents the top of its group.</li>
+</ul>
+
+<p>Each version repo&rsquo;s <code>ifhub.conf</code> is the source of truth for its own metadata; <code>games-registry.json</code> stores the cross-cutting <code>path</code> / <code>repo</code> / <code>versionOf</code> linkage. After changes:</p>
+
+<pre>python tools/register_game.py --name &lt;game&gt;-v2   <span class="comment"># regenerates site/games.json and site/cards.json</span>
+python tools/push_hub.py                          <span class="comment"># commits + pushes hub registry</span></pre>
+
+<h2>Title Convention</h2>
+
+<p>Titles should make a version recognizable at a glance in <em>any</em> hub view &mdash; the version dropdown, the games list, search results, breadcrumbs. The recurring pattern is:</p>
+
+<pre><span class="key">title</span> = Zork I (Current)
+<span class="key">title</span> = Zork I (v0 &mdash; Original ZIL)
+<span class="key">title</span> = Zork I (v1 &mdash; The Port)
+<span class="key">title</span> = Zork I (v2 &mdash; Bug Fixes)
+<span class="key">title</span> = Zork I (v3 &mdash; Multimedia)</pre>
+
+<p>If a version&rsquo;s title lacks the <code>(vN &mdash; &hellip;)</code> marker, the entry appears in flat lists as if it were a separate top-level game &mdash; producing the appearance of a duplicate. Keep titles consistent across all version entries in a project.</p>
+
+<h2>Deploy Path</h2>
+
+<p>Each repo deploys on <code>git push</code> via its own <code>deploy-pages.yml</code> workflow. The chain looks like this:</p>
+
+<ol>
+<li>Author edits <code>story.ni</code> in the version&rsquo;s repo (or in Current, for routine work).</li>
+<li><code>pipeline.py compile</code> rebuilds the binary, base64-encodes it into <code>lib/parchment/&lt;game&gt;-vN.ulx.js</code>, regenerates <code>play.html</code> / <code>source.html</code> / <code>walkthrough.html</code>.</li>
+<li><code>pipeline.py test</code> reruns the walkthrough (deterministic via the version&rsquo;s golden seed in <code>tests/seeds.conf</code>) and regenerates <code>walkthrough_output.txt</code> + <code>walkthrough-guide.txt</code>.</li>
+<li>Commit + push to the version repo. GitHub Actions deploys to <code>johnesco.github.io/&lt;game&gt;-vN/</code> within ~30s&ndash;2 min.</li>
+<li>The hub picks up the new content automatically next page load &mdash; its iframes point at the GitHub Pages URLs.</li>
+</ol>
+
+<p>If hub registry data changed (title, description, version label), also re-run <code>register_game.py</code> and push the IF Hub repo so the hub UI sees the update.</p>
+
+<h2>What the Per-Version Repo Looks Like</h2>
+
+<p>A minimal, working per-version repo should contain:</p>
+
+<ul class="contract-list">
+<li><code>ifhub.conf</code> &mdash; engine, title (with version marker), binary name, tags, version metadata</li>
+<li><code>story.ni</code> &mdash; frozen source for this version</li>
+<li><code>&lt;game&gt;-vN.ulx</code> or <code>.gblorb</code> &mdash; compiled binary</li>
+<li><code>play.html</code> &mdash; Parchment (or engine-specific) player</li>
+<li><code>source.html</code> &mdash; source browser pointed at this <code>story.ni</code></li>
+<li><code>walkthrough.html</code> &mdash; walkthrough viewer iframe</li>
+<li><code>walkthrough.txt</code> &mdash; raw commands</li>
+<li><code>walkthrough-guide.txt</code> &mdash; annotated guide (generated)</li>
+<li><code>walkthrough_output.txt</code> &mdash; full transcript (generated)</li>
+<li><code>lib/parchment/</code> &mdash; engine files + base64 binary for the web player</li>
+<li><code>tests/project.conf</code> &mdash; test runner config</li>
+<li><code>tests/seeds.conf</code> &mdash; this version&rsquo;s golden seed (may differ between versions because RNG paths diverge)</li>
+<li><code>CLAUDE.md</code> &mdash; "this version is FROZEN" marker + reference to the central guide</li>
+<li><code>.github/workflows/deploy-pages.yml</code> &mdash; GH Pages deploy</li>
+</ul>
+
+<h2>Common Mistakes</h2>
+
+<ul>
+<li><strong>Editing a frozen version when you meant to edit Current.</strong> Default work goes into the main repo (Current). Check <code>pwd</code> before editing <code>story.ni</code>.</li>
+<li><strong>Forgetting to propagate upward.</strong> A bug fix in v2 must also be applied to v3 and Current. The cascade isn&rsquo;t automatic.</li>
+<li><strong>Editing a <code>.ulx</code> / <code>.gblorb</code> directly.</strong> Always edit <code>story.ni</code> and recompile. The base64 wrapper for the web player is regenerated by the pipeline.</li>
+<li><strong>Stale binaries.</strong> A version&rsquo;s <code>story.ni</code> and its compiled binary must match. If you change source, recompile that repo before committing.</li>
+<li><strong>Reusing one walkthrough seed.</strong> Different versions need different golden seeds; check each repo&rsquo;s <code>tests/seeds.conf</code>.</li>
+<li><strong>Inconsistent titles.</strong> If a version&rsquo;s title lacks <code>(vN &mdash; &hellip;)</code>, the entry can look like a separate top-level game in dropdowns. Match the sibling pattern.</li>
+</ul>
+
+<h2>Related Reading</h2>
+
+<ul>
+<li><a href="https://github.com/Johnesco/ifhub/blob/master/reference/multi-version-guide.md"><code>reference/multi-version-guide.md</code></a> &mdash; canonical CLI / workflow reference used by Claude Code agents</li>
+<li><a href="https://github.com/Johnesco/ifhub/blob/master/reference/project-guide.md"><code>reference/project-guide.md</code></a> &mdash; the broader build / test / publish workflow</li>
+<li><a href="importing.html">Adding Games</a> &mdash; how a new game (single-version) gets onto the hub in the first place</li>
+<li><a href="dashboard.html">Dashboard</a> &mdash; per-game build/registration status</li>
+</ul>
+
+<footer>
+<p>IF Hub &mdash; the goal is to preserve the whole arc, not just the latest commit. If you can&rsquo;t still play it, it didn&rsquo;t really ship.</p>
+</footer>
+
+</div>
+</body>
+</html>
