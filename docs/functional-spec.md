@@ -620,31 +620,17 @@ python /c/code/ifhub/tools/push_hub.py <game-name>
 
 Stages `games.json` and `cards.json`, commits with a message referencing the game name, and pushes. Skips commit if there are no staged changes. Used by both the CLI runner (`run.py`) and dashboard (`dashboard.py`) as the final step of publish-new.
 
-### 10.3e Sharpee Build + Import (`compile_sharpee.py`)
+### 10.3e Sharpee Build + Import
 
-```
-python /c/code/ifhub/tools/compile_sharpee.py <game-name> [--force]
-```
+> **Note:** Sharpee games are NOT built by IF Hub. The Sharpee workspace (`/c/code/npmsharpee/`) owns the full build chain. IF Hub provides only the intake API (register / publish / push-hub).
 
-Bridges the external Sharpee authoring workspace and the IF Hub project directory. Sharpee games are authored as npm projects at `/c/code/sharpee/<game>/` and built via the Sharpee CLI.
-
-**Steps:**
-1. Reads `tests/project.conf` for `SHARPEE_DIR` (path to npm project) and `TITLE`
-2. Runs `npm install` if `node_modules/` is missing
-3. Runs `npx sharpee build-browser` in the Sharpee source directory
-4. Calls `setup_sharpee.py` to import `dist/web/` into the ifhub project (renames `index.html` → `play.html`, injects hub theme listener)
-
-**Configuration** (`<game>/tests/project.conf`):
-```
-ENGINE=sharpee
-SHARPEE_DIR=/c/code/sharpee/<npm-project>
-TITLE="Game Title"
-PIPELINE_HUB_ID=<game_id>
+```bash
+# From the Sharpee workspace:
+cd /c/code/npmsharpee
+./ship.sh <game> hub          # build + register + publish + push hub
 ```
 
-**Output:**
-- `play.html` — Sharpee player with hub theme listener injected
-- `<game>.js` — Bundled game + engine (esbuild output)
+The pipeline's Sharpee `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`. See `/c/code/npmsharpee/CLAUDE.md` for the Sharpee build chain.
 - `styles.css` — Game-specific CSS
 - `theme-listener.js` — Hub theme integration script
 

@@ -16,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import git, paths
 import fix_mojibake
 import build_games
-import build_cards
 
 
 def main():
@@ -24,13 +23,9 @@ def main():
     parser.add_argument("game", help="Game name (for commit message)")
     args = parser.parse_args()
 
-    # Regenerate games.json from ifhub.conf files, then cards.json from
-    # games.json. ifhub.conf is the single source of truth; these outputs
-    # are build artifacts that must always agree.
-    print("Rebuilding games.json from ifhub.conf files...")
+    # Regenerate games.json + cards.json from ifhub.conf files.
+    print("Rebuilding games.json + cards.json from ifhub.conf files...")
     build_games.main()
-    print("Rebuilding cards.json from games.json...")
-    build_cards.main()
 
     repaired = fix_mojibake.repair()
     for path in repaired:

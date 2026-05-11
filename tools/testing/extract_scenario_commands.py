@@ -8,11 +8,11 @@ plain command lists (one per line).
 Promoted from zork1/tests/extract-scenario-commands.py to shared i7 tooling.
 
 Usage:
-    python extract_commands.py --regtest FILE TESTNAME
-    python extract_commands.py --regtest FILE --list
-    python extract_commands.py --regtest FILE --all --out-dir DIR
-    python extract_commands.py --config tests/project.conf TESTNAME
-    python extract_commands.py --config tests/project.conf --list
+    python extract_scenario_commands.py --regtest FILE TESTNAME
+    python extract_scenario_commands.py --regtest FILE --list
+    python extract_scenario_commands.py --regtest FILE --all --out-dir DIR
+    python extract_scenario_commands.py --config tests/project.conf TESTNAME
+    python extract_scenario_commands.py --config tests/project.conf --list
 """
 
 import argparse

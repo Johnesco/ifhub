@@ -30,9 +30,8 @@ else:
     sys.path.insert(0, str(_TOOLS_DIR.parent))
 from lib import config, process, regex
 
-# Load extract_commands from same directory (avoid collision with ifhub's extract_commands)
 _ec_spec = importlib.util.spec_from_file_location(
-    "i7_extract_commands", str(_TOOLS_DIR / "extract_commands.py"))
+    "extract_scenario_commands", str(_TOOLS_DIR / "extract_scenario_commands.py"))
 _ec_mod = importlib.util.module_from_spec(_ec_spec)
 _ec_spec.loader.exec_module(_ec_mod)
 parse_regtest = _ec_mod.parse_regtest

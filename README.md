@@ -19,8 +19,8 @@ It also owns the full build pipeline for several in-tree engines (Inform 7, Ink,
 # Create a new project
 python tools/new_project.py "My Game" mygame
 
-# Edit the source
-# (edit projects/mygame/story.ni)
+# Edit the source (tools resolve game names automatically)
+# (edit story.ni in the game directory created by new_project.py)
 
 # Compile and set up web player
 python tools/compile.py mygame
@@ -32,8 +32,8 @@ python tools/compile.py mygame --sound
 python tools/dev-server.py
 # Open http://127.0.0.1:8000/ifhub/app.html
 
-# Run tests
-python tools/testing/run_tests.py --config projects/mygame/tests/project.conf
+# Run tests (via pipeline)
+python tools/pipeline.py mygame test
 
 # Publish to GitHub Pages
 python tools/publish.py mygame
@@ -63,11 +63,6 @@ ifhub/
 │   ├── interpreters/      ← Native glulxe.exe + dfrotz.exe (built from source in MSYS2)
 │   ├── testing/           ← Generic testing framework (walkthroughs, seeds, regtests)
 │   └── web/               ← Parchment web player setup (templates, libraries)
-├── projects/              ← Game projects (each has its own git repo)
-│   ├── dracula/
-│   ├── feverdream/
-│   ├── sample/
-│   └── zork1/
 └── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
     ├── index.html         ← Landing page
     ├── app.html           ← Split-pane player (game + source viewer)
@@ -77,6 +72,8 @@ ifhub/
 ```
 
 ## Projects
+
+Game projects live **outside** this repo in engine-specific workspaces (e.g., `text-games/i7/`, `text-games/sharpee/`). Each game is its own git repo with its own GitHub Pages deployment. Tools resolve game names automatically via `workspaces.json`.
 
 | Project | Description | Sound | Pages |
 |---------|-------------|-------|-------|
@@ -145,7 +142,7 @@ Games with sound use native Glk/Blorb — audio is embedded directly in the `.gb
 python tools/compile.py zork1 --sound
 ```
 
-**Requirements**: Sound declarations in `story.ni` (`Sound of X is the file "Y.ogg"`) and `.ogg` files in `projects/<name>/Sounds/`.
+**Requirements**: Sound declarations in `story.ni` (`Sound of X is the file "Y.ogg"`) and `.ogg` files in the game's `Sounds/` directory.
 
 See `reference/sound.md` for the full architecture.
 

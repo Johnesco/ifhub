@@ -521,6 +521,7 @@
     ],
     "sourceUrl": "/zork1/story.ni",
     "walkthroughUrl": "/zork1/walkthrough.html",
+    "testsUrl": "/zork1/tests.html",
     "versions": [
       {
         "id": "zork1-v3",

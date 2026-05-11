@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.paths import IFHUB_DIR, GAMES_REGISTRY, TOOLS_DIR, I7_ROOT
-import build_cards
+import build_games
 
 
 TEMPLATE_PATH = TOOLS_DIR / "web" / "templates" / "versioned-landing.html.tmpl"
@@ -173,7 +173,7 @@ def build_for_group(base: str,
     all_members = [gid for gid, b in member_to_base.items() if b == base]
     non_primary = [m for m in all_members if m != primary_id]
     non_primary.sort(
-        key=lambda g: build_cards.version_order(g, registry.get(g, {})),
+        key=lambda g: build_games.version_order(g, registry.get(g, {})),
         reverse=True,
     )
     ordered_ids = [primary_id] + non_primary
@@ -182,7 +182,7 @@ def build_for_group(base: str,
     for gid in ordered_ids:
         entry = dict(registry.get(gid, {}))
         game = games_by_id.get(gid, {})
-        entry["_label"] = build_cards.version_label(gid, entry, game) \
+        entry["_label"] = build_games.version_label(gid, entry, game) \
             if gid != primary_id else \
             (primary_meta["primary_label"])
         members_ordered.append((gid, entry, game))
@@ -230,7 +230,7 @@ def main() -> None:
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
 
     games_by_id = {g["id"]: g for g in games}
-    member_to_base, primaries = build_cards.build_groups(registry)
+    member_to_base, primaries = build_games.build_groups(registry)
 
     if args.all:
         targets = list(primaries.keys())

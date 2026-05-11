@@ -3,8 +3,7 @@
 
 `ifhub.conf` is the single source of truth for a game's metadata. This
 script finds the game's deploy dir, ensures the conf is complete and opted
-in (`hub = yes`), then regenerates games.json + cards.json by running
-build_games.py and build_cards.py.
+in (`hub = yes`), then regenerates games.json + cards.json via build_games.py.
 
 Usage:
     python tools/register_game.py --name <game> [--title ...] [--tags ...] ...
@@ -20,7 +19,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import paths
 import build_games
-import build_cards
 
 
 CONF_KEY_FROM_ARG = {
@@ -134,9 +132,8 @@ def main():
     else:
         print(f"  no conf changes needed for {name}")
 
-    # Regenerate derived files.
+    # Regenerate derived files (games.json + cards.json).
     build_games.main()
-    build_cards.main()
 
     print(f"\nDone. Next: publish to GitHub Pages with:")
     print(f"  python tools/publish.py {name}")

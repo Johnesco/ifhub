@@ -461,58 +461,45 @@ function getTheme(id) {
     return THEMES[0];
 }
 
+var CHROME_VAR_MAP = {
+    pageBg: '--page-bg', pageFg: '--page-fg', headingFg: '--heading-fg',
+    accentFg: '--accent', mutedFg: '--muted', dimFg: '--dim',
+    cardBg: '--card-bg', cardBorder: '--card-border', toolbarBg: '--toolbar-bg',
+    border: '--border', borderHover: '--border-hover', surfaceBg: '--surface-bg',
+    btnBg: '--btn-bg', btnFg: '--btn-fg', btnHoverBg: '--btn-hover-bg',
+    inputBg: '--input-bg', inputFg: '--input-fg',
+    activeTabBg: '--active-tab-bg', activeTabFg: '--active-tab-fg',
+    badgeBg: '--badge-bg', badgeFg: '--badge-fg',
+    codeBg: '--code-bg', codeFg: '--code-fg',
+    footerFg: '--footer-fg', linkFg: '--link-fg', fontFamily: '--font-family'
+};
+
 function applyChrome(theme) {
     var s = document.documentElement.style;
     var c = theme.chrome;
-    s.setProperty('--page-bg', c.pageBg);
-    s.setProperty('--page-fg', c.pageFg);
-    s.setProperty('--heading-fg', c.headingFg);
-    s.setProperty('--accent', c.accentFg);
-    s.setProperty('--muted', c.mutedFg);
-    s.setProperty('--dim', c.dimFg);
-    s.setProperty('--card-bg', c.cardBg);
-    s.setProperty('--card-border', c.cardBorder);
-    s.setProperty('--toolbar-bg', c.toolbarBg);
-    s.setProperty('--border', c.border);
-    s.setProperty('--border-hover', c.borderHover);
-    s.setProperty('--surface-bg', c.surfaceBg);
-    s.setProperty('--btn-bg', c.btnBg);
-    s.setProperty('--btn-fg', c.btnFg);
-    s.setProperty('--btn-hover-bg', c.btnHoverBg);
-    s.setProperty('--input-bg', c.inputBg);
-    s.setProperty('--input-fg', c.inputFg);
-    s.setProperty('--active-tab-bg', c.activeTabBg);
-    s.setProperty('--active-tab-fg', c.activeTabFg);
-    s.setProperty('--badge-bg', c.badgeBg);
-    s.setProperty('--badge-fg', c.badgeFg);
-    s.setProperty('--code-bg', c.codeBg);
-    s.setProperty('--code-fg', c.codeFg);
-    s.setProperty('--footer-fg', c.footerFg);
-    s.setProperty('--link-fg', c.linkFg);
-    s.setProperty('--font-family', c.fontFamily);
+    for (var k in CHROME_VAR_MAP) s.setProperty(CHROME_VAR_MAP[k], c[k]);
     s.setProperty('--scroll-thumb', theme.scrollbar.thumb);
     s.setProperty('--scroll-track', theme.scrollbar.track);
     s.setProperty('--scroll-thumb-hover', theme.scrollbar.thumbHover);
 }
 
+var GAME_VAR_MAP = {
+    bufferBg: '--glkote-buffer-bg', bufferFg: '--glkote-buffer-fg',
+    bufferSize: '--glkote-buffer-size', bufferLineHeight: '--glkote-buffer-line-height',
+    gridBg: '--glkote-grid-bg', gridFg: '--glkote-grid-fg',
+    gridSize: '--glkote-grid-size', gridLineHeight: '--glkote-grid-line-height',
+    inputFg: '--glkote-input-fg',
+    monoFamily: '--glkote-mono-family', propFamily: '--glkote-prop-family'
+};
+
 function applyGame(theme) {
     var g = theme.game;
     var s = document.documentElement.style;
-    s.setProperty('--glkote-buffer-bg', g.bufferBg);
-    s.setProperty('--glkote-buffer-fg', g.bufferFg);
+    for (var k in GAME_VAR_MAP) s.setProperty(GAME_VAR_MAP[k], g[k]);
     s.setProperty('--glkote-buffer-reverse-bg', g.bufferFg);
     s.setProperty('--glkote-buffer-reverse-fg', g.bufferBg);
-    s.setProperty('--glkote-buffer-size', g.bufferSize);
-    s.setProperty('--glkote-buffer-line-height', g.bufferLineHeight);
-    s.setProperty('--glkote-grid-bg', g.gridBg);
-    s.setProperty('--glkote-grid-fg', g.gridFg);
     s.setProperty('--glkote-grid-reverse-bg', g.gridFg);
     s.setProperty('--glkote-grid-reverse-fg', g.gridBg);
-    s.setProperty('--glkote-grid-size', g.gridSize);
-    s.setProperty('--glkote-grid-line-height', g.gridLineHeight);
-    s.setProperty('--glkote-input-fg', g.inputFg);
-    s.setProperty('--glkote-mono-family', g.monoFamily);
-    s.setProperty('--glkote-prop-family', g.propFamily);
 
     var el = document.getElementById('theme-game-overrides');
     if (el) el.remove();

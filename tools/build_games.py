@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Rebuild site/games.json from ifhub.conf files + workspace scan + disk probing.
+"""Rebuild site/games.json and site/cards.json from ifhub.conf files.
 
 `ifhub.conf` is the single source of truth for every game's metadata. This
 script walks all registered deploy directories (discovered via workspaces.json
 plus any overrides in games-registry.json), parses each `ifhub.conf`, and
-emits one games.json entry per game. A game's conf may declare one or more
-`[target.<id>]` sections for multi-target layouts (e.g., Sharpee's familyzoo
-ships 17 tutorial versions from one repo at subpaths /v01/.../v17/).
+emits one games.json entry per game. It then collapses versioned groups into
+cards.json for the landing page.
 
 URLs (playUrl, landingUrl, sourceUrl, walkthroughUrl, testsUrl) are computed
 from the deploy directory name + optional `subpath`. Each URL is probed on
@@ -17,14 +16,14 @@ bug, not a data bug).
 Usage:
     python tools/build_games.py
 
-Idempotent: running twice produces no diff. push_hub.py runs this before
-build_cards.py so games.json and cards.json always agree.
+Idempotent: running twice produces no diff.
 """
 
 from __future__ import annotations
 
 import configparser
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -251,7 +250,7 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
         entry["engine"] = engine
     entry["tags"] = parse_tags(conf.get("tags", ""))
 
-    # Version flags (for build_cards.py grouping)
+    # Version flags (for cards.json grouping)
     if "versionOf" in conf:
         entry["versionOf"] = conf["versionOf"]
     if as_bool(conf.get("versionPrimary")):
@@ -303,10 +302,203 @@ def build_entries_for_dir(deploy_dir: Path) -> list[dict]:
     return out
 
 
+# ── Cards (version-group collapsing) ───────────────────────────────────────
+
+VERSION_SUFFIX_RE = re.compile(r"^(?P<base>.+?)-v?(?P<num>\d+)$")
+
+
+def infer_base(game_id: str) -> tuple[str, int] | None:
+    """If id looks like '<base>-v?NN', return (base, NN). Else None."""
+    m = VERSION_SUFFIX_RE.match(game_id)
+    if not m:
+        return None
+    return m.group("base"), int(m.group("num"))
+
+
+def build_groups(games_by_id: dict) -> tuple[dict[str, str], dict[str, dict]]:
+    """Compute version-group membership from games.json entries.
+
+    Returns:
+        member_to_base: dict mapping every group-member id -> base id
+        base_meta:      dict mapping base id -> {"primary_id": str,
+                                                 "primary_label": str}
+    """
+    primaries: dict[str, dict] = {}
+    explicit_members: list[tuple[str, str]] = []
+
+    for gid, entry in games_by_id.items():
+        if entry.get("versionPrimary"):
+            base = entry.get("versionOf") or gid
+            primaries[base] = {
+                "primary_id": gid,
+                "primary_label": entry.get("versionPrimaryLabel", "Current"),
+            }
+        if "versionOf" in entry:
+            explicit_members.append((gid, entry["versionOf"]))
+
+    member_to_base: dict[str, str] = {}
+    for gid, base in explicit_members:
+        member_to_base[gid] = base
+    for base, meta in primaries.items():
+        member_to_base[meta["primary_id"]] = base
+
+    for gid in games_by_id:
+        if gid in member_to_base:
+            continue
+        inferred = infer_base(gid)
+        if inferred is None:
+            continue
+        base, _ = inferred
+        if base in primaries:
+            member_to_base[gid] = base
+
+    return member_to_base, primaries
+
+
+def version_order(gid: str, entry: dict) -> int:
+    if "versionOrder" in entry:
+        return int(entry["versionOrder"])
+    inferred = infer_base(gid)
+    if inferred:
+        return inferred[1]
+    return 0
+
+
+def version_label(gid: str, entry: dict, game_meta: dict) -> str:
+    if entry.get("versionLabel"):
+        return entry["versionLabel"]
+    title = game_meta.get("title") or gid
+    inferred = infer_base(gid)
+    if inferred:
+        _, num = inferred
+        suffix = f"v{num:02d}" if num < 100 else f"v{num}"
+        if suffix.lower() in title.lower():
+            return title
+        return f"{suffix} — {title}"
+    return title
+
+
+def _build_cards(games: list[dict], cards_existing: list[dict]) -> list[dict]:
+    """Collapse versioned game groups into landing-page cards."""
+    games_by_id = {g["id"]: g for g in games}
+    cards_by_id = {c["id"]: c for c in cards_existing}
+
+    member_to_base, primaries = build_groups(games_by_id)
+
+    out_cards: list[dict] = []
+    handled_ids: set[str] = set()
+
+    for base, meta in primaries.items():
+        primary_id = meta["primary_id"]
+        if primary_id not in games_by_id:
+            print(f"  warn: primary '{primary_id}' not in games.json, skipping group")
+            continue
+
+        primary_game = games_by_id[primary_id]
+        existing = cards_by_id.get(primary_id, {})
+        members = [gid for gid, b in member_to_base.items()
+                   if b == base and gid != primary_id]
+        members_sorted = sorted(
+            members,
+            key=lambda g: version_order(g, games_by_id.get(g, {})),
+            reverse=True,
+        )
+
+        card: dict = {
+            "id": primary_id,
+            "base": primary_id,
+            "title": primary_game.get("title") or existing.get("title", primary_id),
+            "meta": existing.get("meta", "An Interactive Fiction"),
+            "description": existing.get("description", ""),
+            "primaryLabel": meta["primary_label"],
+        }
+        if primary_game.get("sound") or existing.get("sound"):
+            card["sound"] = primary_game.get("sound") or existing.get("sound")
+        card["playUrl"] = primary_game["playUrl"]
+        play_segments = primary_game["playUrl"].strip("/").split("/")
+        deploy_name = play_segments[0] if play_segments else primary_id
+        group_landing = f"/{deploy_name}/"
+        card["landingUrl"] = group_landing
+        card["engine"] = primary_game.get("engine", existing.get("engine", "inform7"))
+        card["tags"] = primary_game.get("tags", existing.get("tags", []))
+        if primary_game.get("sourceUrl"):
+            card["sourceUrl"] = primary_game["sourceUrl"]
+        if primary_game.get("walkthroughUrl"):
+            card["walkthroughUrl"] = primary_game["walkthroughUrl"]
+        if primary_game.get("testsUrl"):
+            card["testsUrl"] = primary_game["testsUrl"]
+
+        versions_list = []
+        for mid in members_sorted:
+            mgame = games_by_id.get(mid, {})
+            v = {
+                "id": mid,
+                "label": version_label(mid, mgame, mgame),
+                "playUrl": mgame.get("playUrl", f"/{mid}/play.html"),
+                "landingUrl": f"{group_landing}#{mid}",
+            }
+            if mgame.get("sound"):
+                v["sound"] = mgame["sound"]
+            if mgame.get("sourceUrl"):
+                v["sourceUrl"] = mgame["sourceUrl"]
+            if mgame.get("walkthroughUrl"):
+                v["walkthroughUrl"] = mgame["walkthroughUrl"]
+            if mgame.get("testsUrl"):
+                v["testsUrl"] = mgame["testsUrl"]
+            versions_list.append(v)
+        if versions_list:
+            card["versions"] = versions_list
+
+        out_cards.append(card)
+        handled_ids.add(primary_id)
+        handled_ids.update(members)
+
+    for game in games:
+        gid = game["id"]
+        if gid in handled_ids or gid in member_to_base:
+            continue
+
+        existing = cards_by_id.get(gid, {})
+        card = {
+            "id": gid,
+            "base": gid,
+            "title": game.get("title") or existing.get("title", gid),
+            "meta": existing.get("meta", "An Interactive Fiction"),
+            "description": existing.get("description", ""),
+        }
+        if game.get("sound") or existing.get("sound"):
+            card["sound"] = game.get("sound") or existing.get("sound")
+        card["playUrl"] = game["playUrl"]
+        if game.get("landingUrl"):
+            card["landingUrl"] = game["landingUrl"]
+        card["engine"] = game.get("engine", existing.get("engine", "inform7"))
+        card["tags"] = game.get("tags", existing.get("tags", []))
+        if game.get("sourceUrl"):
+            card["sourceUrl"] = game["sourceUrl"]
+        if game.get("walkthroughUrl"):
+            card["walkthroughUrl"] = game["walkthroughUrl"]
+        if game.get("testsUrl"):
+            card["testsUrl"] = game["testsUrl"]
+        if existing.get("sourceBrowser"):
+            card["sourceBrowser"] = True
+
+        out_cards.append(card)
+        handled_ids.add(gid)
+
+    out_cards.sort(key=lambda c: c["id"])
+    return out_cards
+
+
 # ── Main ────────────────────────────────────────────────────────────────────
+
+def _write_json(path: Path, data) -> None:
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n",
+                    encoding="utf-8")
+
 
 def main() -> None:
     games_path = IFHUB_DIR / "games.json"
+    cards_path = IFHUB_DIR / "cards.json"
 
     dirs = discover_game_dirs()
     all_entries: list[dict] = []
@@ -318,12 +510,19 @@ def main() -> None:
 
     all_entries.sort(key=lambda e: e["id"])
 
-    games_path.write_text(
-        json.dumps(all_entries, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    _write_json(games_path, all_entries)
     print(f"  games.json: wrote {len(all_entries)} entries "
           f"from {len(dirs)} deploy dir(s)")
+
+    cards_existing: list[dict] = []
+    if cards_path.exists():
+        try:
+            cards_existing = json.loads(cards_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+    cards = _build_cards(all_entries, cards_existing)
+    _write_json(cards_path, cards)
+    print(f"  cards.json: wrote {len(cards)} cards")
 
 
 if __name__ == "__main__":

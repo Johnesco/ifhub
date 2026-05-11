@@ -109,8 +109,6 @@ def run_regtest(cfg, suite, tests_dir, verbose=False):
     interp_cmd += " -q"
 
     regtest_py = _IFHUB_TOOLS / "regtest.py"
-    if not regtest_py.is_file():
-        regtest_py = _TOOLS_DIR / "regtest.py"
 
     result = process.run(
         [sys.executable, str(regtest_py),

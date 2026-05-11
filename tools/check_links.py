@@ -152,7 +152,7 @@ def main() -> None:
         print(f"\n--fix: removed {rg} URL(s) from games.json, {rc} from cards.json")
         print("Note: broken playUrl entries are never auto-fixed — they indicate missing builds.")
         if rg:
-            print("Re-run 'python tools/build_cards.py' to re-sync cards.json.")
+            print("Re-run 'python tools/build_games.py' to re-sync cards.json.")
 
 
 if __name__ == "__main__":
