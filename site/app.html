@@ -754,20 +754,27 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('games.json').then(function(r) { return r.json(); }).catch(function() { console.error('Failed to load games.json'); return []; }),
     fetch('hubs.json').then(function(r) { return r.json(); }).catch(function() { return []; })
   ]).then(function(results) {
-    var data = results[0];
+    var allGames = results[0];
     var hubs = results[1];
 
-    var hubResult = resolveHub(hubs);
-    var activeHub = hubResult.activeHub;
-
-    // Filter games by hub
-    if (activeHub) {
-      data = data.filter(function(g) { return matchesHub(g, activeHub); });
+    // Filter the game list to the hub encoded in the current URL.
+    function applyHubFilter() {
+      var activeHub = resolveHub(hubs).activeHub;
+      games = activeHub
+        ? allGames.filter(function(g) { return matchesHub(g, activeHub); })
+        : allGames.slice();
+      games.sort(function(a, b) { return a.title.localeCompare(b.title); });
+      gameMap = {};
+      games.forEach(function(g) { gameMap[g.id] = g; });
+      return activeHub;
     }
 
-    games = data;
-    games.sort(function(a, b) { return a.title.localeCompare(b.title); });
-    games.forEach(function(g) { gameMap[g.id] = g; });
+    function updateLibraryLink(activeHub) {
+      document.getElementById('library-link').href =
+        (activeHub && activeHub.id !== 'all') ? 'index.html?hub=' + activeHub.id : 'index.html';
+    }
+
+    var activeHub = applyHubFilter();
     buildDropdown();
     bindUI();
     initSoundControls();
@@ -781,15 +788,29 @@ document.addEventListener('DOMContentLoaded', function() {
       hubSelect.appendChild(opt);
     });
     hubSelect.value = activeHub ? activeHub.id : 'all';
+
+    // Collection change: re-filter the game list in place, no page reload.
+    // Keep the current game loaded if it still belongs to the new collection,
+    // otherwise fall back to the first game in the new collection.
+    //
+    // Uses replaceState (not pushState): the player iframe (Parchment) injects
+    // its own session-history entries, so top-level pushState back/forward is
+    // unreliable here. replaceState keeps the URL shareable without competing
+    // with the iframe's history; browser Back then returns to the prior page.
     hubSelect.addEventListener('change', function() {
       var v = hubSelect.value;
-      var url = 'app.html' + (v && v !== 'all' ? '?hub=' + v : '');
-      window.location.href = url;
+      history.replaceState(null, '', 'app.html' + (v && v !== 'all' ? '?hub=' + v : ''));
+      var ah = applyHubFilter();
+      buildDropdown();
+      updateLibraryLink(ah);
+      if (gameMap[currentGame]) {
+        document.getElementById('game-select').value = currentGame;
+      } else if (games.length) {
+        switchGame(games[0].id);
+      }
     });
-    // Update Library link to match hub
-    if (activeHub && activeHub.id !== 'all') {
-      document.getElementById('library-link').href = 'index.html?hub=' + activeHub.id;
-    }
+
+    updateLibraryLink(activeHub);
 
     buildStyleDropdown(null);
 
@@ -807,6 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
    ================================================================== */
 function buildDropdown() {
   var sel = document.getElementById('game-select');
+  sel.innerHTML = '';
   games.forEach(function(g) {
     var opt = document.createElement('option');
     opt.value = g.id;

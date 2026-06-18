@@ -263,30 +263,30 @@ Promise.all([
   var cards = results[0];
   var hubs = results[1];
 
-  var hubResult = resolveHub(hubs);
-  var activeHub = hubResult.activeHub || hubs[0]; // default: first hub ("all")
-
-  // Populate collection dropdown
   var collectionSelect = document.getElementById('collection-select');
+  var container = document.getElementById('games');
+  var titleEl = document.getElementById('hub-title');
+  var subtitleEl = document.getElementById('hub-subtitle');
+  var defaultTitle = titleEl.textContent;
+  var defaultSubtitle = subtitleEl.textContent;
+
+  // Populate collection dropdown once
   hubs.forEach(function(h) {
     var opt = document.createElement('option');
     opt.value = h.id;
     opt.textContent = h.title;
-    if (h.id === activeHub.id) opt.selected = true;
     collectionSelect.appendChild(opt);
   });
 
-  // Collection change navigates to filtered view
+  // Collection change: update URL + re-render in place, no page reload
   collectionSelect.addEventListener('change', function() {
     var id = this.value;
-    window.location.href = id === 'all' ? '.' : '?hub=' + id;
+    history.pushState({ hub: id }, '', id === 'all' ? location.pathname : '?hub=' + id);
+    render();
   });
 
-  // Update title/subtitle when a hub filter is active
-  if (activeHub.id !== 'all') {
-    document.getElementById('hub-title').textContent = activeHub.title;
-    document.getElementById('hub-subtitle').textContent = activeHub.description;
-  }
+  // Back/forward restores the collection encoded in the URL
+  window.addEventListener('popstate', render);
 
   // Wire up theme dropdown (element already exists in HTML)
   var themeSelect = document.getElementById('theme-select');
@@ -298,7 +298,21 @@ Promise.all([
     applyChrome(getTheme(id));
   });
 
-  var container = document.getElementById('games');
+  // Render the catalog for whichever collection the current URL selects.
+  function render() {
+  var activeHub = resolveHub(hubs).activeHub || hubs[0]; // default: first hub ("all")
+  collectionSelect.value = activeHub.id;
+
+  // Title/subtitle reflect the active collection
+  if (activeHub.id !== 'all') {
+    titleEl.textContent = activeHub.title;
+    subtitleEl.textContent = activeHub.description;
+  } else {
+    titleEl.textContent = defaultTitle;
+    subtitleEl.textContent = defaultSubtitle;
+  }
+
+  container.innerHTML = '';
   var filtered = cards.filter(function(card) { return matchesHub(card, activeHub); });
   filtered.sort(function(a, b) { return a.title.localeCompare(b.title); });
 
@@ -393,6 +407,9 @@ Promise.all([
       }
     });
   });
+  }
+
+  render();
 });
 </script>
 
