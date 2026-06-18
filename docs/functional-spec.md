@@ -55,6 +55,14 @@ The hub entry point. Fetches `cards.json` and renders a card for each game.
 - Dropdown populated from `themes.js` with 10 platform themes
 - Theme selection persisted in `localStorage` key `ifhub-theme`
 
+**Collections:**
+- A Collection dropdown (populated from `hubs.json`) filters the catalog to a curated subset (by engine or tag)
+- The active collection is encoded in the URL query string as `?hub=<id>` (the "all" collection uses the bare path), so a filtered view is shareable and bookmarkable
+- Changing the collection updates the URL via `history.pushState` and re-renders the cards **in place** — no full page reload, since `cards.json`/`hubs.json` are already in memory
+- Browser back/forward (`popstate`) restores the collection encoded in the URL
+- When a non-"all" collection is active, the page title and subtitle are replaced with the collection's `title`/`description`
+- Deep links (`index.html?hub=<id>`) load the filtered view directly
+
 **Static content sections:**
 - "What's Inside" — feature list (play, source, walkthroughs, audio, resizable layout)
 - "About" — project description and philosophy
@@ -66,6 +74,7 @@ The primary play interface. A two-pane layout with the game on the left and sour
 
 **URL parameters:**
 - `?game=<id>` — loads the specified game on startup (defaults to first game in registry)
+- `?hub=<id>` — restricts the game selector to a collection from `hubs.json` (defaults to all games)
 
 **Layout:**
 - CSS Grid with three columns: game pane, resize handle (5px), source pane
@@ -75,6 +84,7 @@ The primary play interface. A two-pane layout with the game on the left and sour
 
 **Toolbar (top, spans full width):**
 - Library link (always visible, returns to `index.html`; uses hub-filtered URL when `hub` param is active)
+- Collection selector dropdown (populated from `hubs.json`): re-filters the game selector **in place** — no page reload. Uses `history.replaceState` to keep the `?hub=` URL shareable without competing with the player iframe's session history. The currently-loaded game stays loaded if it belongs to the new collection; otherwise the first game in the collection loads
 - Game selector dropdown (populated from `games.json`)
 - Style dropdown (overlay-aware theme selector): for games with `overlayLabel`, shows the game's native overlay as the default first option, then a separator, then all platform themes; for games without overlays, shows only platform themes. Per-game style preference stored in `localStorage` key `ifhub-style-<gameId>`
 - Sound controls (mute button + volume slider) — hidden by default, shown when game iframe reports `ifhub:soundReady`

@@ -312,8 +312,11 @@ The hub supports curated collections via query-param filtering. A game can belon
 - `cards.json` / `games.json` — Each entry has `engine` (string) and `tags` (string array)
 
 **How it works:**
-- `index.html` and `app.html` fetch `hubs.json`, parse `?hub=X`, and filter games
-- Hub links are `<a href="?hub=X">` — statically shareable URLs
+- `index.html` and `app.html` fetch `hubs.json`, parse `?hub=X` from the URL, and filter games
+- A Collection `<select>` switches collections **client-side** — no full page reload:
+  - `index.html` uses `history.pushState` and re-renders the cards from the in-memory `cards.json`; browser back/forward (`popstate`) restores the collection from the URL
+  - `app.html` uses `history.replaceState` and re-filters the game selector in place (keeping the loaded game if it survives the filter). It uses replace, not push, because the player iframe injects its own session-history entries
+- `?hub=X` URLs remain directly shareable/bookmarkable as deep links
 - Play buttons pass `&hub=X` to `app.html` to maintain the filtered context
 
 **Adding a new hub:** Edit `hubs.json`:
