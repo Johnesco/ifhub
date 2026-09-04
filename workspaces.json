@@ -24,11 +24,6 @@
       "engine": "applesoft",
       "root": "../text-games/applesoft",
       "deploy": "in-place"
-    },
-    {
-      "engine": "zmachine",
-      "root": "../text-games/zmachine",
-      "deploy": "in-place"
     }
   ]
 }

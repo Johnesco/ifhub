@@ -25,7 +25,7 @@ Full details, per-engine build commands, and how to add an engine: `docs/publish
 
 ```bash
 # In the engine workspace: build, test, and lay out the game folder
-python C:/code/text-games/i7/tools/build.py <game>          # also: zmachine, ink, rez, wwwbasic, applesoft
+python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; other workspaces: ink, rez, wwwbasic, applesoft
 
 # In the hub: put the folder online and list it
 python tools/ship.py <game>              # verify contract, wrapper pages, register, publish to Pages, push hub
@@ -73,8 +73,7 @@ ifhub/
 
 | Workspace | Build command | Notes |
 |---|---|---|
-| `text-games/i7/` | `tools/build.py <game>` | compile, walkthrough + regtests + ifPlayer tests, Parchment player, tests.html. I7 language references live in `i7/reference/`; native interpreters in `i7/tools/interpreters/` |
-| `text-games/zmachine/` | `tools/build.py <game>` | wraps .z3/.z5 with Parchment using `i7/tools` |
+| `text-games/i7/` | `tools/build.py <game>` | Inform 7: compile, walkthrough + regtests + ifPlayer tests, Parchment player, tests.html. Z-machine stories (`engine = zmachine`, e.g. zork1-v0) live here too and are wrapped in the same player. I7 language references in `i7/reference/`; native interpreters in `i7/tools/interpreters/` |
 | `text-games/ink/` | `tools/build.py <game>` | compiles with inklecate when installed, else uses the committed .json |
 | `text-games/rez/` | `tools/build.py <game>` | Rez compiler in `rez/tools/bin/`; dist → play.html |
 | `text-games/wwwbasic/`, `applesoft/` | `tools/build.py <game>` | BASIC templates and the bwBASIC runtime live in `wwwbasic/tools` |
