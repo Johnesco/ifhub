@@ -41,4 +41,4 @@ Stop Portman and clean up any stale python processes.
 
 ## Note
 
-Portman itself doesn't create zombies (single process, no children). But legacy `dev-server.py` or `python -m http.server` processes from old sessions may still be lurking. This skill cleans up everything.
+Portman itself doesn't create zombies (single process, no children). But stray `python -m http.server` processes from old sessions may still be lurking. This skill cleans up everything.
