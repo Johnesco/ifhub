@@ -389,32 +389,6 @@ var THEMES = [
         scrollbar: { thumb: '#2e2644', track: '#1a1625', thumbHover: '#443860' }
     },
     {
-        id: 'sharpee', name: 'Sharpee',
-        chrome: {
-            pageBg: '#0000aa', pageFg: '#ffffff', headingFg: '#ffffff',
-            accentFg: '#00aaaa', mutedFg: '#aaaaaa', dimFg: '#888888',
-            cardBg: '#000088', cardBorder: '#00aaaa', toolbarBg: '#000077',
-            border: '#00aaaa', borderHover: '#55dddd', surfaceBg: '#000088',
-            btnBg: '#00aaaa', btnFg: '#000000', btnHoverBg: '#55dddd',
-            inputBg: '#000088', inputFg: '#00aaaa',
-            activeTabBg: '#00aaaa', activeTabFg: '#000000',
-            badgeBg: '#000088', badgeFg: '#aaaaaa',
-            codeBg: '#000088', codeFg: '#00aaaa',
-            footerFg: '#888888', linkFg: '#00aaaa',
-            fontFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace'
-        },
-        game: {
-            bodyBg: '#0000aa', bufferBg: '#0000aa', bufferFg: '#ffffff',
-            gridBg: '#00aaaa', gridFg: '#000000',
-            inputFg: '#00aaaa', emphFg: '#aaaaaa', headerFg: '#ffffff',
-            bufferSize: '16px', bufferLineHeight: '1.4',
-            gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace',
-            propFamily: '"Perfect DOS VGA 437", "Consolas", "Courier New", monospace'
-        },
-        scrollbar: { thumb: '#00aaaa', track: '#000088', thumbHover: '#55dddd' }
-    },
-    {
         id: 'solarized', name: 'Solarized',
         chrome: {
             pageBg: '#002b36', pageFg: '#839496', headingFg: '#93a1a1',
@@ -800,30 +774,6 @@ function buildBasicCSS(g, sb) {
   return 'body, html { background: ' + g.bodyBg + ' !important; color: ' + g.bufferFg + ' !important; font-family: ' + g.monoFamily + ' !important; }\n' +
     'pre, .output, .terminal, #screen { color: ' + g.bufferFg + ' !important; background: ' + g.bufferBg + ' !important; font-family: ' + g.monoFamily + ' !important; }\n' +
     'input, .input-line { color: ' + g.inputFg + ' !important; background: ' + g.bufferBg + ' !important; font-family: ' + g.monoFamily + ' !important; caret-color: ' + g.inputFg + '; }\n' +
-    buildScrollbarCSS(sb);
-}
-
-function buildSharpeeCSS(g, sb) {
-  return ':root {\n' +
-    '  --theme-bg: ' + g.bodyBg + ' !important;\n' +
-    '  --theme-bg-alt: ' + g.gridBg + ' !important;\n' +
-    '  --theme-text: ' + g.bufferFg + ' !important;\n' +
-    '  --theme-text-muted: ' + g.emphFg + ' !important;\n' +
-    '  --theme-accent: ' + g.inputFg + ' !important;\n' +
-    '  --theme-accent-text: ' + g.bodyBg + ' !important;\n' +
-    '  --theme-border: ' + g.gridBg + ' !important;\n' +
-    '  --theme-input-bg: ' + g.bufferBg + ' !important;\n' +
-    '  --theme-menu-bg: ' + g.gridBg + ' !important;\n' +
-    '  --theme-menu-hover: ' + g.bodyBg + ' !important;\n' +
-    '  --theme-font: ' + g.monoFamily + ' !important;\n' +
-    '  --theme-font-size: ' + g.bufferSize + ' !important;\n' +
-    '  --theme-line-height: ' + g.bufferLineHeight + ' !important;\n' +
-    '}\n' +
-    '#status-line { background: ' + g.gridBg + ' !important; color: ' + g.gridFg + ' !important; }\n' +
-    '#text-content p { color: ' + g.bufferFg + ' !important; }\n' +
-    '.command-echo { color: ' + g.emphFg + ' !important; }\n' +
-    '#command-input { color: ' + g.inputFg + ' !important; caret-color: ' + g.inputFg + '; }\n' +
-    '.prompt { color: ' + g.inputFg + ' !important; }\n' +
     buildScrollbarCSS(sb);
 }
 
