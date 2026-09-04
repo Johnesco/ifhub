@@ -651,7 +651,7 @@ import htm from 'https://esm.sh/htm@3.1.1';
 const html = htm.bind(h);
 
 /* ── Helpers ── */
-const ENG = {inform7:'I7',zmachine:'Z',ink:'Ink',wwwbasic:'wwwBASIC',qbjc:'qbjc',applesoft:'Apple',bwbasic:'bwBASIC',jsdos:'DOS',twine:'Twine',sharpee:'Sharpee',rez:'Rez',unknown:'?'};
+const ENG = {inform7:'I7',zmachine:'Z',ink:'Ink',wwwbasic:'wwwBASIC',qbjc:'qbjc',applesoft:'Apple',bwbasic:'bwBASIC',jsdos:'DOS',twine:'Twine',rez:'Rez',unknown:'?'};
 const BLBL = {present:'DONE',missing:'\u2014',stale:'STALE',failed:'FAIL','n/a':'n/a'};
 const BCLS = {present:'badge-present',missing:'badge-missing',stale:'badge-stale',failed:'badge-failed','n/a':'badge-na'};
 const NCLS = {present:'dag-node-present',missing:'dag-node-missing',stale:'dag-node-stale',failed:'dag-node-failed','n/a':'dag-node-na'};
@@ -968,7 +968,7 @@ function CreateModal({onClose,onCreated}){
       <div class="form-row"><label>Engine</label><select value=${engine} onChange=${e=>setEngine(e.target.value)}>
         <option value="inform7">Inform 7</option><option value="ink">Ink</option>
         <option value="wwwbasic">wwwBASIC</option><option value="qbjc">qbjc</option>
-        <option value="applesoft">Applesoft</option><option value="sharpee">Sharpee</option>
+        <option value="applesoft">Applesoft</option>
         <option value="rez">Rez</option>
       </select></div>
       <label style="font-size:.82em;color:var(--text-muted)">Source (optional)</label>

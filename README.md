@@ -2,7 +2,7 @@
 
 IF Hub displays interactive fiction games online in a browsable format. It is a **target** — engine workspaces build their games and ship them to the hub.
 
-It also owns the full build pipeline for several in-tree engines (Inform 7, Ink, Rez, BASIC dialects). For Sharpee, the build chain lives in the Sharpee workspace (`/c/code/npmsharpee/`); IF Hub provides only the intake API (register / publish / push-hub) that it calls.
+It also owns the build pipeline for the in-tree engines (Inform 7, Ink, Rez, BASIC dialects).
 
 **Live site**: [johnesco.github.io/ifhub](https://johnesco.github.io/ifhub/)
 
@@ -66,14 +66,14 @@ ifhub/
 └── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
     ├── index.html         ← Landing page
     ├── app.html           ← Split-pane player (game + source viewer)
-    ├── themes.js          ← Platform theme system (10 retro themes)
+    ├── themes.js          ← Platform theme system (15 platform themes)
     ├── games.json         ← Game registry (URLs, sound flags, overlayLabel)
     └── cards.json         ← Card metadata for landing page
 ```
 
 ## Projects
 
-Game projects live **outside** this repo in engine-specific workspaces (e.g., `text-games/i7/`, `text-games/sharpee/`). Each game is its own git repo with its own GitHub Pages deployment. Tools resolve game names automatically via `workspaces.json`.
+Game projects live **outside** this repo in engine-specific workspaces (e.g., `text-games/i7/`, `text-games/ink/`). Each game is its own git repo with its own GitHub Pages deployment. Tools resolve game names automatically via `workspaces.json`.
 
 | Project | Description | Sound | Pages |
 |---------|-------------|-------|-------|

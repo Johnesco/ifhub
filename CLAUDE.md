@@ -9,19 +9,6 @@ Game projects live **outside** this repo, each with its own git repo and engine-
 - **Intake API** (`tools/register_game.py`, `tools/publish.py`, `tools/push_hub.py`) — called by engine workspaces
 - **Pipeline orchestrator** (`tools/pipeline.py`) — for in-tree engines (I7, Ink, Rez) whose build tools still live here
 
-## Sharpee is NOT built here
-
-IF Hub does not build Sharpee games. The Sharpee workspace (`/c/code/npmsharpee/`) owns the full build chain. Use its `ship.sh` to build and ship to IF Hub:
-
-```bash
-cd /c/code/npmsharpee
-./ship.sh <game>                # local build only
-./ship.sh <game> hub-local      # build + register with on-disk IF Hub
-./ship.sh <game> hub            # build + register + publish + push hub
-```
-
-See `/c/code/npmsharpee/CLAUDE.md` for the Sharpee build chain.
-
 ## Pipeline (I7, Ink, Rez)
 
 For engines whose build tools still live in IF Hub, the pipeline orchestrates build/test/register/publish/push-hub:
@@ -32,10 +19,7 @@ python tools/pipeline.py <game> compile test      # compile + test
 python tools/pipeline.py <game> --ship            # compile + test + register + publish + push hub
 ```
 
-The pipeline auto-detects the engine from `project.conf` and chains stages. For Sharpee games, the `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`.
-
-**Known gaps:**
-- Syncing fork packages to `/c/code/sharpee/*/node_modules/` requires `python tools/sync_fork.py` — not yet integrated into the pipeline stages.
+The pipeline auto-detects the engine from `project.conf` and chains stages.
 
 ## Directory Structure
 
@@ -53,7 +37,7 @@ C:\code\ifhub\
 │   ├── register_game.py   ← Register a game in IF Hub (adds to games.json + cards.json)
 │   ├── push_hub.py        ← Push hub registry changes to GitHub
 │   ├── new_project.py     ← Create a new project scaffold
-│   ├── adapters/          ← Per-engine adapters for jukebox (inform7, ink, rez, etc. — no sharpee; that lives in npmsharpee/tools/)
+│   ├── adapters/          ← Per-engine adapters for jukebox (inform7, ink, rez, basic, zmachine)
 │   ├── regtest.py         ← Shared RegTest runner
 │   ├── testing/           ← Generic testing framework (walkthrough, seeds, regtest, guide gen)
 │   ├── interpreters/      ← Native Windows CLI interpreters (glulxe.exe, dfrotz.exe — gitignored)
@@ -67,7 +51,7 @@ C:\code\ifhub\
     ├── games.json          ← Game registry (titles, URLs, engine, tags)
     ├── cards.json          ← Card metadata for landing page
     ├── hubs.json           ← Hub/collection definitions (filter by engine/tag)
-    └── themes.js           ← Platform theme system (10 retro themes)
+    └── themes.js           ← Platform theme system (15 platform themes)
 ```
 
 ## Compiler
@@ -93,10 +77,7 @@ C:\code\text-games\
 ├── rez/              ← Rez workspace
 ├── wwwbasic/         ← WWWBasic workspace
 ├── applesoft/        ← Applesoft BASIC workspace
-├── zmachine/         ← Z-machine workspace
-└── sharpee/          ← Sharpee game workspace (each game = own git repo; familyzoo/ holds all tutorial versions)
-
-C:\code\npmsharpee\   ← Sharpee build tooling + fork mirrors only (from-fork/) — NO user games, NO build output
+└── zmachine/         ← Z-machine workspace
 ```
 
 ### Game Discovery
@@ -107,7 +88,7 @@ Three layers control game discovery (later layers override earlier):
 2. **`games-registry.json`** (committed) — explicit path + GitHub repo references (overrides)
 3. **`games-local.json`** (gitignored) — per-developer path overrides
 
-All engines build **in-place**: the game directory IS the deploy directory. For Sharpee that means `text-games/sharpee/<game>/browser/` (source at `<game>/src/`, output at `<game>/browser/`).
+All engines build **in-place**: the game directory IS the deploy directory.
 
 `games.json` entries include auto-probed URL fields: `walkthroughUrl` (from walkthrough files) and `testsUrl` (from `tests.html` in the deploy directory). Both are set by `build_games.py` when the corresponding file exists.
 
@@ -126,7 +107,6 @@ The hub is engine-agnostic — any game that produces a `play.html` works. The p
 | Engine | Source | Build owner | Tests tab |
 |--------|--------|-----------------|-----------|
 | `inform7` | `story.ni` | IF Hub pipeline (compile.py) | In progress |
-| `sharpee` | npm project at `/c/code/text-games/sharpee/<game>/` (or `/c/code/npmsharpee/from-fork/<game>/` for fork mirrors) | **Sharpee workspace** (`npmsharpee/tools/ship.py`) | Yes |
 | `wwwbasic` | `.bas` file | IF Hub pipeline | — |
 | `qbjc` | `.bas` → `.js` | IF Hub pipeline | — |
 | `applesoft` | `.bas` file | IF Hub pipeline | — |
@@ -135,18 +115,6 @@ The hub is engine-agnostic — any game that produces a `play.html` works. The p
 | `rez` | `.rez` files | IF Hub pipeline | — |
 
 Each BASIC dialect must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
-
-### Sharpee integration
-
-Sharpee games own their build chain in `/c/code/npmsharpee/`. IF Hub is a **target** they ship to via the intake API:
-
-- `python tools/register_game.py --name <game> --title … --engine sharpee` — updates games.json + cards.json
-- `python tools/publish.py <game>` — pushes the game folder to `Johnesco/<game>` Pages repo
-- `python tools/push_hub.py -m "msg"` — commits + pushes site/* registry changes
-
-The pipeline's Sharpee `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`. For hub-local or full publishing, run ship.sh from the Sharpee workspace directly.
-
-**Registry:** Sharpee games use a single `path:` field in `games-registry.json` pointing at the game folder. Path can be absolute or relative to ifhub root — games can live anywhere on disk, not just under `npmsharpee/`. Multi-version games (familyzoo) add `entry:` / `binary:` / `subpath:` fields to build distinct targets from one folder. Registration is mandatory: `tools/ship.py` does not scan filesystem, so any game without a registry entry is unknown to the hub.
 
 ## Hub Architecture
 
@@ -178,7 +146,7 @@ See `reference/project-guide.md` for detailed steps, individual scripts, and pip
 
 ### Test Results Tab
 
-The Tests tab uses ifplayer's HTML report as the universal viewer for all engines. The pipeline: engine test runner → `test-results.json` → `report_adapter.py` → ifplayer HTML (`tests.html`). The adapter converts the engine-agnostic JSON schema into ifplayer's `TestResult` objects and calls `report.emit_html()`, producing the same rich transcript-first viewer that ifplayer produces natively. Features: collapsible test cards, turn-by-turn transcript with room/score tracking, inline assertion match highlighting ("show" buttons), word-level drift diffs. Theme integration: `buildTestReportCSS()` maps all 14 IF Hub themes to ifplayer CSS variables with light/dark adaptive colors.
+The Tests tab uses ifplayer's HTML report as the universal viewer for all engines. The pipeline: engine test runner → `test-results.json` → `report_adapter.py` → ifplayer HTML (`tests.html`). The adapter converts the engine-agnostic JSON schema into ifplayer's `TestResult` objects and calls `report.emit_html()`, producing the same rich transcript-first viewer that ifplayer produces natively. Features: collapsible test cards, turn-by-turn transcript with room/score tracking, inline assertion match highlighting ("show" buttons), word-level drift diffs. Theme integration: `buildTestReportCSS()` maps all 15 IF Hub themes to ifplayer CSS variables with light/dark adaptive colors.
 
 ### Engine-Specific Testing
 
@@ -216,7 +184,6 @@ For Inform 7 syntax and conventions, see C:\code\ifhub\CLAUDE.md
 | `reference/sound.md` | Native blorb sound architecture |
 | `reference/syntax-guide.md` | Core Inform 7 syntax and structure |
 | `reference/text-formatting.md` | Text substitutions and output formatting |
-| `reference/sharpee-author-guide.md` | Sharpee authoring: stories, objects, rooms, NPCs, testing |
 | `reference/parchment-troubleshooting.md` | Web player errors, sound gotchas, binary format |
 
 <!-- SDLC WORKFLOW — Source: https://github.com/Johnesco/sdlc-baseline -->

@@ -1,7 +1,7 @@
 """Adapter: test-results.json → ifplayer HTML report.
 
-Converts the engine-agnostic test-results.json schema (used by Sharpee
-transcript-test and I7 regtest converters) into ifplayer's TestResult
+Converts the engine-agnostic test-results.json schema (produced by the
+per-engine test converters) into ifplayer's TestResult
 objects, then calls ifplayer's report.emit_html() to produce the exact
 same HTML that ifplayer produces for native .test files.
 
@@ -11,7 +11,7 @@ HTML viewer — no separate JavaScript template needed.
 Usage:
     from tools.lib.report_adapter import json_to_html
 
-    html = json_to_html(json_data, title="Tests — familyzoo-17")
+    html = json_to_html(json_data, title="Tests — zork1")
     Path("tests.html").write_text(html, encoding="utf-8")
 """
 
@@ -164,7 +164,7 @@ def _compute_assertion_matches(
 def _convert_assertion(a: dict, output: str) -> runner.AssertionResult:
     """Convert one JSON assertion to an ifplayer AssertionResult."""
     a_type = a.get("type", "ok-contains")
-    # ok-contains-any uses `values` (plural array) from @sharpee/transcript-tester
+    # ok-contains-any uses `values` (plural array)
     value = a.get("value", "") or a.get("values", "")
     passed = a.get("passed", True)
 

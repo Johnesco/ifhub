@@ -8,7 +8,6 @@ What testing means for each engine, what tools exist, and what's planned.
 |--------|-----------|---------------|-------------|-------------------|--------|
 | **Inform 7** | Yes | No | `glulxe.exe` / `dfrotz.exe` | Plain text (one command/line) | Full pipeline |
 | **Z-machine** | Yes | No | `dfrotz.exe` | Plain text (one command/line) | Full pipeline |
-| **Sharpee** | Partial | No | `npx transcript-test` | YAML `.transcript` files | In npm source only |
 | **Ink** | No | Planned | — | — | No testing yet |
 | **wwwBASIC** | No | Planned | — | — | No testing yet |
 | **qbjc** | No | Planned | — | — | No testing yet |
@@ -44,38 +43,11 @@ What testing means for each engine, what tools exist, and what's planned.
 
 **Flow:** Compile → run walkthrough → check score/death/won patterns → generate guide → run regtests
 
-## Sharpee Testing
-
-**Tools:**
-- `npx transcript-test` from `@sharpee/transcript-test` npm package
-- Integrated into `tools/compile_sharpee.py` (runs after build)
-
-**Artifacts:**
-- `walkthroughs/*.transcript` — YAML test scenarios (in external npm source at `/c/code/sharpee/<game>/`)
-- NOT in the ifhub project dir — lives in the Sharpee npm workspace
-
-**Format:**
-```yaml
-title: Complete Walkthrough
-story: game-name
-description: Full walkthrough description
-
----
-
-## Section Name
-
-> command
-[OK: contains "expected text"]
-[OK: score 5]
-```
-
-**Config:** No `project.conf` integration — runs via npm scripts in the Sharpee workspace.
-
 ## Future: Browser-Based Testing (All Web Engines)
 
 **Approach:** Playwright or Puppeteer driving the game's `play.html` in a headless browser.
 
-**Would enable testing for:** Ink, BASIC (all dialects), Rez, Twine, Sharpee (in-browser validation).
+**Would enable testing for:** Ink, BASIC (all dialects), Rez, Twine.
 
 **Walkthrough format:** Same plain text commands (one per line) stored in `tests/walkthrough.txt`. The browser test runner would type each command into the game's input field and capture the response.
 

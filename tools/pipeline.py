@@ -172,16 +172,6 @@ def stage_compile(name: str, project_dir: Path, pipeline_sound: bool,
         cmd = [sys.executable, str(paths.TOOLS_DIR / "compile_rez.py"), name]
         if force:
             cmd.append("--force")
-    elif engine_spec.build_tool == "setup_sharpee.py":
-        # Sharpee builds live in the engine workspace, not IF Hub — delegate to
-        # npmsharpee/tools/ship.py. IF Hub acts as a target, not a producer.
-        ship_script = paths.I7_ROOT.parent / "npmsharpee" / "tools" / "ship.py"
-        if not ship_script.exists():
-            output.skip(f"npmsharpee/tools/ship.py not found — skipping Sharpee build")
-            return
-        cmd = [sys.executable, str(ship_script), name, "local"]
-        if force:
-            cmd.append("--force")
     elif not engine_spec.build_tool:
         output.skip(f"No build tool for {engine_spec.label} — skipping compile")
         return

@@ -116,7 +116,7 @@ def _resolve_raw_path(raw: str) -> Path:
 
 def _resolve_game_path(entry: dict) -> Path:
     """Resolve a registry entry's deploy/path to an absolute Path."""
-    # Prefer 'deploy' (Sharpee-style), fall back to 'path' (legacy)
+    # Prefer 'deploy', fall back to 'path' (legacy)
     raw = entry.get("deploy", "") or entry.get("path", "")
     return _resolve_raw_path(raw)
 

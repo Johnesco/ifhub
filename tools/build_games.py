@@ -8,7 +8,7 @@ emits one games.json entry per game. It then collapses versioned groups into
 cards.json for the landing page.
 
 URLs (playUrl, landingUrl, sourceUrl, walkthroughUrl, testsUrl) are computed
-from the deploy directory name + optional `subpath`. Each URL is probed on
+from the deploy directory name. Each URL is probed on
 disk and only emitted if the target file exists — same logic check_links.py
 uses in reverse. `playUrl` is always emitted (a missing play.html is a build
 bug, not a data bug).
@@ -49,42 +49,26 @@ def resolve_path(raw: str) -> Path:
 
 # ── Config parsing ──────────────────────────────────────────────────────────
 
-def parse_conf(path: Path) -> tuple[dict, dict[str, dict]]:
-    """Parse ifhub.conf into (parent, targets).
+def parse_conf(path: Path) -> dict:
+    """Parse ifhub.conf (flat `key = value` lines) into a dict.
 
-    Top-level KEY=VALUE lines become the parent dict. `[target.<id>]` sections
-    become target dicts that inherit parent fields. If there are no target
-    sections, targets is empty and the game is single-target.
+    Section headers are not supported. Anything after the first `[section]`
+    line is ignored with a warning.
     """
     text = path.read_text(encoding="utf-8")
-    parent_lines: list[str] = []
-    section_lines: list[str] = []
-    in_section = False
+    body_lines: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
         if stripped.startswith("[") and stripped.endswith("]"):
-            in_section = True
-            section_lines.append(line)
-        elif in_section:
-            section_lines.append(line)
-        else:
-            parent_lines.append(line)
-
-    merged = "[DEFAULT]\n" + "\n".join(parent_lines)
-    if section_lines:
-        merged += "\n" + "\n".join(section_lines)
+            print(f"  warn: {path} has a [section] header; sections are not "
+                  f"supported and everything after it is ignored")
+            break
+        body_lines.append(line)
 
     cp = configparser.ConfigParser()
     cp.optionxform = str
-    cp.read_string(merged)
-
-    parent = {k: v for k, v in cp.defaults().items()}
-    targets: dict[str, dict] = {}
-    for section in cp.sections():
-        if section.startswith("target."):
-            tid = section[len("target."):]
-            targets[tid] = {k: v for k, v in cp[section].items()}
-    return parent, targets
+    cp.read_string("[DEFAULT]\n" + "\n".join(body_lines))
+    return dict(cp.defaults())
 
 
 # ── Game discovery ──────────────────────────────────────────────────────────
@@ -94,8 +78,8 @@ def discover_game_dirs() -> dict[str, Path]:
 
     Walks each workspace root from workspaces.json and collects any immediate
     subdirectory containing an ifhub.conf. Registry entries with non-workspace
-    paths (e.g., `../npmsharpee/from-fork/*`) are layered on top so games
-    outside the declared workspaces still get picked up.
+    paths are layered on top so games outside the declared workspaces still
+    get picked up.
     """
     dirs: dict[str, Path] = {}
 
@@ -119,8 +103,7 @@ def discover_game_dirs() -> dict[str, Path]:
             registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
             registry = {}
-        # Collect unique deploy paths (the same path may back many entries in
-        # the legacy familyzoo layout — de-dupe by resolved path).
+        # Collect unique deploy paths (de-dupe by resolved path).
         seen: set[Path] = set()
         for entry in registry.values():
             raw = entry.get("path", "")
@@ -154,7 +137,6 @@ def parse_tags(raw: str) -> list[str]:
 
 ENGINE_SOURCE_EXT = {
     "inform7": ".ni",
-    "sharpee": ".ts",
     "ink": ".ink",
     "rez": ".rez",
     "wwwbasic": ".bas",
@@ -177,8 +159,7 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
                 url_prefix: str) -> dict:
     """Turn a resolved conf dict into a games.json entry.
 
-    `url_prefix` is the path fragment prepended to per-file URLs — e.g.
-    '/familyzoo/v01' for a multi-target game, '/zork1' for a top-level one.
+    `url_prefix` is the path fragment prepended to per-file URLs, e.g. '/zork1'.
     """
     entry: dict = {
         "id": game_id,
@@ -204,11 +185,7 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
 
     entry["playUrl"] = f"{url_prefix}/play.html"
 
-    # Probe root: some engines (e.g., Sharpee) deploy assets under a
-    # `browser/` subdir that GH Pages serves at the repo root, so disk
-    # paths don't match URL paths. If browser/play.html exists, probe
-    # from there; otherwise probe the deploy dir directly.
-    probe_root = deploy_dir / "browser" if (deploy_dir / "browser" / "play.html").exists() else deploy_dir
+    probe_root = deploy_dir
 
     walkthrough_html = probe_root / "walkthrough.html"
     if walkthrough_html.exists():
@@ -265,41 +242,19 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
 
 
 def build_entries_for_dir(deploy_dir: Path) -> list[dict]:
-    """Return every games.json entry contributed by one deploy dir.
+    """Return the games.json entry contributed by one deploy dir (0 or 1).
 
-    A game (or target) must set `hub = yes` in its ifhub.conf to be listed.
-    This is the explicit opt-in that replaces games-registry.json as the
-    'which games appear in the hub' signal.
+    A game must set `hub = yes` in its ifhub.conf to be listed. This is the
+    explicit opt-in that replaces games-registry.json as the 'which games
+    appear in the hub' signal.
     """
-    conf_path = deploy_dir / "ifhub.conf"
-    parent, targets = parse_conf(conf_path)
+    conf = parse_conf(deploy_dir / "ifhub.conf")
+    if not as_bool(conf.get("hub")):
+        return []
+    # The id comes from the deploy dir name. (The conf's optional `name`
+    # field is cosmetic, left for human reference.)
     deploy_name = deploy_dir.name
-
-    if not targets:
-        if not as_bool(parent.get("hub")):
-            return []
-        # Single-target: id comes from the deploy dir name. (The conf's
-        # optional `name` field is cosmetic, left for human reference.)
-        url_prefix = f"/{deploy_name}"
-        return [build_entry(deploy_name, parent, deploy_dir, url_prefix)]
-
-    # For multi-target games, assets may live under a `browser/` subdir
-    # (e.g., Sharpee). Resolve that once so every target probes correctly.
-    asset_root = deploy_dir / "browser" if (deploy_dir / "browser").is_dir() else deploy_dir
-
-    out: list[dict] = []
-    for tid, tconf in targets.items():
-        if not as_bool(tconf.get("hub")):
-            continue
-        subpath = tconf.get("subpath", "").strip("/")
-        if subpath:
-            target_deploy = asset_root / subpath
-            url_prefix = f"/{deploy_name}/{subpath}"
-        else:
-            target_deploy = asset_root
-            url_prefix = f"/{deploy_name}"
-        out.append(build_entry(tid, tconf, target_deploy, url_prefix))
-    return out
+    return [build_entry(deploy_name, conf, deploy_dir, f"/{deploy_name}")]
 
 
 # ── Cards (version-group collapsing) ───────────────────────────────────────

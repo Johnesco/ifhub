@@ -29,16 +29,6 @@
       "engine": "zmachine",
       "root": "../text-games/zmachine",
       "deploy": "in-place"
-    },
-    {
-      "engine": "sharpee",
-      "root": "../text-games/sharpee",
-      "deploy": "in-place"
-    },
-    {
-      "engine": "sharpee",
-      "root": "../npmsharpee/from-fork",
-      "deploy": "in-place"
     }
   ]
 }

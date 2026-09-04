@@ -333,15 +333,6 @@
         </ul>
       </div>
       <div class="diagram-box">
-        <div class="box-title">Sharpee <span class="tag tag-purple">2+ games</span></div>
-        <div class="box-path">npmsharpee/</div>
-        <ul>
-          <li>npx sharpee build</li>
-          <li>npm packages</li>
-          <li>CLAUDE.md</li>
-        </ul>
-      </div>
-      <div class="diagram-box">
         <div class="box-title">Rez <span class="tag tag-pink">1 game</span></div>
         <div class="box-path">text-games/rez/</div>
         <ul>
@@ -449,7 +440,7 @@
   index.html          # Landing page
   walkthrough.txt     # Raw walkthrough commands
   lib/                # Runtime assets (Parchment, ink.js, etc.)
-  src/                # Source files (for Sharpee multi-file projects)</code></pre>
+  src/                # Source files (for multi-file projects)</code></pre>
   </div>
 
   <p>The <code>ifhub.conf</code> manifest is the only protocol between workspaces and the hub:</p>
@@ -490,12 +481,6 @@ tags = horror, classic</code></pre>
         <td><span class="cmd">python tools/build.py cloak-ink</span><br><span class="path">.ink &rarr; .json &rarr; ink.js play.html</span></td>
         <td>Open <span class="path">play.html</span> directly</td>
         <td><span class="cmd">python /c/code/ifhub/tools/ship.py cloak-ink</span></td>
-      </tr>
-      <tr>
-        <td class="engine">Sharpee</td>
-        <td><span class="cmd">npx sharpee build-browser</span><br><span class="path">TypeScript &rarr; bundle &rarr; dist/web/</span></td>
-        <td><span class="cmd">npx serve dist/web</span></td>
-        <td><span class="cmd">python /c/code/ifhub/tools/ship.py guess-the-verb-sharpee</span></td>
       </tr>
       <tr>
         <td class="engine">Rez</td>
@@ -598,21 +583,7 @@ tags = horror, classic</code></pre>
         build.py
         assets/parchment/
         templates/play-template.html
-      zork1-v0/       (.git)
-
-    deploy/                           # Sharpee deploy targets (build outputs)
-      armoured-sharpee/   (.git)
-      cloak-sharpee/      (.git)
-      ...
-
-  npmsharpee/                         # Sharpee workspace (already independent)
-    CLAUDE.md
-    games/
-      guess-the-verb/
-      no-signal-home/
-    ...
-
-  fork/sharpee/                       # Engine fork (contributions only)</code></pre>
+      zork1-v0/       (.git)</code></pre>
 </div>
 
 <hr class="divider">
@@ -739,14 +710,6 @@ python /c/code/ifhub/tools/sync_assets.py i7         # sync one workspace</code>
         <td><span class="tag tag-blue">Shared CLI</span></td>
       </tr>
       <tr>
-        <td class="engine">Sharpee</td>
-        <td><span class="tag tag-green">Independent</span></td>
-        <td><span class="tag tag-green">Independent</span></td>
-        <td><span class="tag tag-green">Independent</span></td>
-        <td><span class="tag tag-green">Independent</span></td>
-        <td><span class="tag tag-blue">Shared CLI</span></td>
-      </tr>
-      <tr>
         <td class="engine">Rez</td>
         <td><span class="tag tag-green">Independent</span></td>
         <td><span class="tag tag-green">Independent</span></td>
@@ -833,9 +796,9 @@ python /c/code/ifhub/tools/sync_assets.py i7         # sync one workspace</code>
   { "engine": "inform7",
     "root": "../text-games/i7",
     "deploy": "in-place" },
-  { "engine": "sharpee",
-    "root": "../npmsharpee/games",
-    "deploy": "../text-games/deploy" }
+  { "engine": "ink",
+    "root": "../text-games/ink",
+    "deploy": "in-place" }
 ]}</code></pre>
     </div>
     <div class="card">
@@ -875,11 +838,6 @@ python /c/code/ifhub/tools/sync_assets.py i7         # sync one workspace</code>
         <td class="engine">I7, Z-machine</td>
         <td><span class="tag tag-red">No</span> (WASM/fetch)</td>
         <td><span class="cmd">python -m http.server -d &lt;game&gt;/</span></td>
-      </tr>
-      <tr>
-        <td class="engine">Sharpee</td>
-        <td><span class="tag tag-red">No</span> (ES modules)</td>
-        <td><span class="cmd">npx serve dist/web</span></td>
       </tr>
       <tr>
         <td class="engine">Rez</td>
@@ -933,7 +891,7 @@ python /c/code/ifhub/tools/sync_assets.py i7         # sync one workspace</code>
 
 <div class="section" style="text-align: center; color: var(--text-dim); font-size: 0.82rem; padding: 1rem 0;">
   <p>IF Hub Multi-Engine Architecture &mdash; Generated 2026-04-08</p>
-  <p>30 games across 7 engines. Each workspace builds independently. One CLI ships to the showcase.</p>
+  <p>21 games across 6 engines. Each workspace builds independently. One CLI ships to the showcase.</p>
 </div>
 
 </body>
