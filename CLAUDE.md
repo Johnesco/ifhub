@@ -25,7 +25,7 @@ Full details, per-engine build commands, and how to add an engine: `docs/publish
 
 ```bash
 # In the engine workspace: build, test, and lay out the game folder
-python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; other workspaces: ink, rez, wwwbasic, applesoft
+python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; other workspaces: ink, rez, basic
 
 # In the hub: put the folder online and list it
 python tools/ship.py <game>              # verify contract, wrapper pages, register, publish to Pages, push hub
@@ -76,9 +76,9 @@ ifhub/
 | `text-games/i7/` | `tools/build.py <game>` | Inform 7: compile, walkthrough + regtests + ifPlayer tests, Parchment player, tests.html. Z-machine stories (`engine = zmachine`, e.g. zork1-v0) live here too and are wrapped in the same player. I7 language references in `i7/reference/`; native interpreters in `i7/tools/interpreters/` |
 | `text-games/ink/` | `tools/build.py <game>` | compiles with inklecate when installed, else uses the committed .json |
 | `text-games/rez/` | `tools/build.py <game>` | Rez compiler in `rez/tools/bin/`; dist → play.html |
-| `text-games/wwwbasic/`, `applesoft/` | `tools/build.py <game>` | BASIC templates and the bwBASIC runtime live in `wwwbasic/tools` |
+| `text-games/basic/` | `tools/build.py <game>` | every BASIC dialect (wwwbasic, applesoft, bwbasic, qbjc, jsdos); `engine =` in ifhub.conf picks the player template; bwBASIC runtime in `basic/tools` |
 
-Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling; the game folders inside it are ignored because every game is its own repo. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
+Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling (GitHub: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace`); the game folders inside it are ignored because every game is its own repo. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
 
 ## Instructions for Claude
 

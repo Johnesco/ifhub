@@ -44,7 +44,7 @@ Each engine workspace under `C:/code/text-games/` has a `tools/build.py` that tu
 | Z-machine | `python C:/code/text-games/i7/tools/build.py <game>` | same workspace as Inform 7 (`engine = zmachine` in ifhub.conf): wraps the `.z3/.z5` (or an already encoded `.js`) named by `binary =` in Parchment. No compile, no tests |
 | Ink | `python C:/code/text-games/ink/tools/build.py <game>` | compiles the `.ink` with inklecate when Inky is installed, otherwise uses the committed `.json`; ink.js player with the story inlined; copies `theme-listener.js` |
 | Rez | `python C:/code/text-games/rez/tools/build.py <game>` | `rez compile` from the game root (compiler: `rez` on PATH or `rez/tools/bin/rez_windows.exe`), then `dist/index.html` → `play.html` with the theme listener. `--no-compile` reuses `dist/` |
-| wwwBASIC, Applesoft | `python C:/code/text-games/wwwbasic/tools/build.py <game>` or `.../applesoft/tools/build.py <game>` | inlines the `.BAS` named by `source =` into the engine's player template. Also handles `bwbasic`, `qbjc`, `jsdos` |
+| BASIC (wwwbasic, applesoft, bwbasic, qbjc, jsdos) | `python C:/code/text-games/basic/tools/build.py <game>` | inlines the `.BAS` named by `source =` into the dialect's player template; `engine =` in ifhub.conf picks the dialect |
 
 `--force` overwrites an existing `play.html`. Games with a hand-tuned player keep a `play-template.html` in their folder; the build scripts prefer it over the generic template, which makes `--force` safe.
 
@@ -88,8 +88,8 @@ The hub itself does not need to know the engine name; `build_games.py` copies wh
 
 | Thing | Location |
 |---|---|
-| Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo). Workspaces: `i7` (Inform 7 + Z-machine), `ink`, `rez`, `wwwbasic`, `applesoft` |
-| Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. GitHub remotes are not created yet |
+| Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo). Workspaces: `i7` (Inform 7 + Z-machine), `ink`, `rez`, `basic` (all BASIC dialects) |
+| Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. Remotes: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace` |
 | Inform 7 language references, interpreters, test framework | `C:/code/text-games/i7/reference/`, `i7/tools/interpreters/`, `i7/tools/` |
 | ifPlayer (I7 test runner and report format) | `C:/code/text-games/ifPlayer/` — repo `Johnesco/ifplayer` |
 | Portman (local multi-site server) | `C:/code/portman/` |
