@@ -100,11 +100,6 @@ ENGINE_REGISTRY: dict[str, EngineSpec] = {
         source_extensions=(".tw", ".twee"),
         build_tool="",
     ),
-    "sharpee": EngineSpec(
-        name="sharpee", label="Sharpee",
-        source_extensions=(".ts",),
-        build_tool="setup_sharpee.py",
-    ),
     "rez": EngineSpec(
         name="rez", label="Rez",
         source_extensions=(".rez",),
@@ -121,7 +116,6 @@ def get_engine_spec(engine: str) -> EngineSpec | None:
 # Map engine folder names to engine identifiers
 _FOLDER_TO_ENGINE = {
     "i7": "inform7", "inform7": "inform7",
-    "sharpee": "sharpee",
     "ink": "ink",
     "rez": "rez",
     "wwwbasic": "wwwbasic",

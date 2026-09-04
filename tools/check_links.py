@@ -35,7 +35,7 @@ def resolve_path(raw: str) -> Path:
 
 
 def build_segment_index() -> dict[str, list[Path]]:
-    """Map URL first-segment (e.g., 'familyzoo') to candidate deploy-dir paths.
+    """Map URL first-segment (e.g., 'zork1') to candidate deploy-dir paths.
 
     Uses the same workspace scanner build_games.py uses, so the resolver
     always matches what the build pipeline actually publishes.
@@ -68,11 +68,10 @@ def resolve_local(url: str, seg_idx: dict[str, list[Path]]) -> tuple[Path | None
         if target_rest.endswith("/"):
             target_rest += "index.html"
 
-        for candidate in (repo_path / target_rest,
-                          repo_path / "browser" / target_rest):
-            tried.append(candidate)
-            if candidate.exists():
-                return candidate, tried
+        candidate = repo_path / target_rest
+        tried.append(candidate)
+        if candidate.exists():
+            return candidate, tried
     return None, tried
 
 

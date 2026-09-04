@@ -1,6 +1,6 @@
 """Shared utilities for web player setup scripts.
 
-Used by setup_web.py, setup_basic.py, setup_ink.py, and setup_sharpee.py
+Used by the setup_*.py web player scripts
 to avoid duplicating output-directory creation, play.html overwrite checks,
 and common argparse arguments.
 """

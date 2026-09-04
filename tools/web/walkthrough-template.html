@@ -597,7 +597,7 @@ function parseTranscript(transcriptText, commandsText) {
     var responseLines = lines.slice(startLine, endLine);
 
     // Build response — skip immediateText if it matches the command
-    // (Sharpee transcripts embed command on the > line: ">north")
+    // (some transcript formats embed the command on the > line: ">north")
     var fullResponse = [];
     var cmd = (commands[cmdIdx] || '').trim();
     if (immediateText && immediateText.toLowerCase() !== cmd.toLowerCase()) {

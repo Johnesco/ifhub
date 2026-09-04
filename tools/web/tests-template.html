@@ -582,7 +582,7 @@ function renderTurn(cmd, idx) {
     h += '<pre class="turn-response">' + renderOutput(cmd.output) + '</pre>';
   }
 
-  // Comment (from Sharpee .transcript files)
+  // Optional per-turn comment
   if (cmd.comment) {
     h += '<div class="turn-comment">' + esc(cmd.comment) + '</div>';
   }
