@@ -20,7 +20,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import IFHUB_DIR, I7_ROOT
+from lib.paths import SITE_DIR, HUB_ROOT
 import build_games
 
 
@@ -30,7 +30,7 @@ FIELDS = ("playUrl", "landingUrl", "sourceUrl", "walkthroughUrl")
 def resolve_path(raw: str) -> Path:
     p = Path(raw)
     if not p.is_absolute():
-        p = (I7_ROOT / p).resolve()
+        p = (HUB_ROOT / p).resolve()
     return p
 
 
@@ -121,8 +121,8 @@ def main() -> None:
                         help="Remove broken sourceUrl/walkthroughUrl/landingUrl entries")
     args = parser.parse_args()
 
-    games_path = IFHUB_DIR / "games.json"
-    cards_path = IFHUB_DIR / "cards.json"
+    games_path = SITE_DIR / "games.json"
+    cards_path = SITE_DIR / "cards.json"
     games = json.loads(games_path.read_text(encoding="utf-8"))
     cards = json.loads(cards_path.read_text(encoding="utf-8"))
 

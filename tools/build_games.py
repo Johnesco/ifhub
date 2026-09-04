@@ -29,7 +29,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.paths import (
-    IFHUB_DIR, GAMES_REGISTRY, WORKSPACES_FILE, I7_ROOT,
+    SITE_DIR, GAMES_REGISTRY, WORKSPACES_FILE, HUB_ROOT,
 )
 
 
@@ -43,7 +43,7 @@ def as_bool(val: str | None) -> bool:
 def resolve_path(raw: str) -> Path:
     p = Path(raw)
     if not p.is_absolute():
-        p = (I7_ROOT / p).resolve()
+        p = (HUB_ROOT / p).resolve()
     return p
 
 
@@ -452,8 +452,8 @@ def _write_json(path: Path, data) -> None:
 
 
 def main() -> None:
-    games_path = IFHUB_DIR / "games.json"
-    cards_path = IFHUB_DIR / "cards.json"
+    games_path = SITE_DIR / "games.json"
+    cards_path = SITE_DIR / "cards.json"
 
     dirs = discover_game_dirs()
     all_entries: list[dict] = []

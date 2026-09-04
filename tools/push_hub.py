@@ -32,9 +32,9 @@ def main():
         print(f"WARNING: repaired mojibake in {path.name} before pushing. "
               f"Investigate upstream — some tool wrote double-encoded UTF-8.")
 
-    cwd = paths.I7_ROOT
-    git.add([paths.IFHUB_DIR / "games.json", paths.IFHUB_DIR / "cards.json",
-             paths.IFHUB_DIR / "hubs.json", paths.GAMES_REGISTRY], cwd=cwd)
+    cwd = paths.HUB_ROOT
+    git.add([paths.SITE_DIR / "games.json", paths.SITE_DIR / "cards.json",
+             paths.SITE_DIR / "hubs.json", paths.GAMES_REGISTRY], cwd=cwd)
 
     if not git.diff_cached_quiet(cwd=cwd):
         print("No hub registry changes to push.")

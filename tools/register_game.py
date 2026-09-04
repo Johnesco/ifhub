@@ -17,7 +17,6 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import paths
 import build_games
 
 
@@ -40,10 +39,10 @@ def find_deploy_dir(name: str) -> Path | None:
     dirs = build_games.discover_game_dirs()
     if name in dirs:
         return dirs[name]
-    # Fallback: check PROJECTS_DIR
-    candidate = paths.PROJECTS_DIR / name
+    # Accept a path to a game folder too
+    candidate = Path(name)
     if (candidate / "ifhub.conf").exists():
-        return candidate
+        return candidate.resolve()
     return None
 
 
@@ -128,15 +127,14 @@ def main():
         new_text += "\n"
     if new_text != conf_path.read_text(encoding="utf-8"):
         conf_path.write_text(new_text, encoding="utf-8")
-        print(f"  updated {conf_path.relative_to(paths.I7_ROOT)}")
+        print(f"  updated {conf_path}")
     else:
         print(f"  no conf changes needed for {name}")
 
     # Regenerate derived files (games.json + cards.json).
     build_games.main()
 
-    print(f"\nDone. Next: publish to GitHub Pages with:")
-    print(f"  python tools/publish.py {name}")
+    print(f"\nDone. To publish and push the hub in one step: python tools/ship.py {name}")
 
 
 if __name__ == "__main__":

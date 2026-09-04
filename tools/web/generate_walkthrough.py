@@ -35,7 +35,9 @@ WALKTHROUGH_FILES = ("walkthrough.txt", "walkthrough-guide.txt", "walkthrough_ou
 
 
 def find_source_dir(out_dir: Path) -> Path | None:
-    """Look for walkthrough source files under <out>/tests/{<engine>/,}/."""
+    """Look for walkthrough.txt in <out>/ itself, then under <out>/tests/{<engine>/,}/."""
+    if (out_dir / "walkthrough.txt").exists():
+        return out_dir
     tests = out_dir / "tests"
     if not tests.exists():
         return None
@@ -77,6 +79,8 @@ def main() -> int:
         if not src.exists():
             continue
         dst = out_dir / name
+        if src.resolve() == dst.resolve():
+            continue
         if dst.exists() and not args.force:
             print(f"  {name}: exists (use --force to overwrite)")
             continue
