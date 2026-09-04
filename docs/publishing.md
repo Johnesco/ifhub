@@ -89,7 +89,7 @@ The hub itself does not need to know the engine name; `build_games.py` copies wh
 | Thing | Location |
 |---|---|
 | Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo) |
-| Workspace tooling | `C:/code/text-games/<engine>/tools/` — **not yet under version control**; the hub's git history has the pre-move copies |
+| Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. GitHub remotes are not created yet |
 | Inform 7 language references, interpreters, test framework | `C:/code/text-games/i7/reference/`, `i7/tools/interpreters/`, `i7/tools/` |
 | ifPlayer (I7 test runner and report format) | `C:/code/text-games/ifPlayer/` — repo `Johnesco/ifplayer` |
 | Portman (local multi-site server) | `C:/code/portman/` |

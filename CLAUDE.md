@@ -79,7 +79,7 @@ ifhub/
 | `text-games/rez/` | `tools/build.py <game>` | Rez compiler in `rez/tools/bin/`; dist → play.html |
 | `text-games/wwwbasic/`, `applesoft/` | `tools/build.py <game>` | BASIC templates and the bwBASIC runtime live in `wwwbasic/tools` |
 
-Each workspace has its own `CLAUDE.md` with authoring rules. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
+Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling; the game folders inside it are ignored because every game is its own repo. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
 
 ## Instructions for Claude
 
