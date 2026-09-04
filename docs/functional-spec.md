@@ -229,7 +229,7 @@ Each entry is an object with these fields:
 | `playUrl` | string | Yes | Absolute URL path to game's play page (e.g., `"/zork1-v3/play.html"`) |
 | `sourceUrl` | string | Yes | Absolute URL path to source file or source browser (e.g., `"/zork1-v3/source.html"`) |
 | `walkthroughUrl` | string | No | Absolute URL path to walkthrough HTML page |
-| `testsUrl` | string | No | Absolute URL path to the tests.html viewer page (e.g., `"/familyzoo/v01/tests.html"`). When present, the Tests toggle button appears in the toolbar. `build_games.py` auto-detects `tests.html` on disk and sets this field automatically. |
+| `testsUrl` | string | No | Absolute URL path to the tests.html viewer page (e.g., `"/zork1/tests.html"`). When present, the Tests toggle button appears in the toolbar. `build_games.py` auto-detects `tests.html` on disk and sets this field automatically. |
 | `landingUrl` | string | No | Absolute URL path to game's landing page (e.g., `"/zork1/"`) |
 | `sound` | string | No | Sound mode: `"blorb"` for native Glk sound, absent for no sound |
 | `versionLabel` | string | No | Label shown in version lists (e.g., `"v2 — Bug Fixes"`) |
@@ -264,7 +264,6 @@ Card metadata for the hub homepage is maintained in `cards.json`. Each card repr
 | `dracula` | Dracula's Castle (Current) | No | `/dracula/play.html` | |
 | `feverdream` | Fever Dream | Blorb | `/feverdream/play.html` | |
 | `sample` | Sample | No | `/sample/play.html` | `sourceBrowser: true` |
-| `guess-the-verb-sharpee` | Guess the Verb (Sharpee) | No | `/guess-the-verb-sharpee/play.html` | Engine: Sharpee |
 
 ---
 
@@ -629,20 +628,6 @@ python /c/code/ifhub/tools/push_hub.py <game-name>
 ```
 
 Stages `games.json` and `cards.json`, commits with a message referencing the game name, and pushes. Skips commit if there are no staged changes. Used by both the CLI runner (`run.py`) and dashboard (`dashboard.py`) as the final step of publish-new.
-
-### 10.3e Sharpee Build + Import
-
-> **Note:** Sharpee games are NOT built by IF Hub. The Sharpee workspace (`/c/code/npmsharpee/`) owns the full build chain. IF Hub provides only the intake API (register / publish / push-hub).
-
-```bash
-# From the Sharpee workspace:
-cd /c/code/npmsharpee
-./ship.sh <game> hub          # build + register + publish + push hub
-```
-
-The pipeline's Sharpee `compile` stage delegates to `npmsharpee/tools/ship.py <game> local`. See `/c/code/npmsharpee/CLAUDE.md` for the Sharpee build chain.
-- `styles.css` — Game-specific CSS
-- `theme-listener.js` — Hub theme integration script
 
 ### 10.4 Project Scaffolding (`new_project.py`)
 

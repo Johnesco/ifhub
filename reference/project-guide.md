@@ -16,7 +16,6 @@ python tools/pipeline.py game-name --ship         # compile + test + register + 
 | Step | Script | What it produces |
 |------|--------|-----------------|
 | Compile (I7) | `tools/compile.py <name>` | `.ulx`, `play.html`, `walkthrough.html`, `index.html`, `source.html`, transcript, guide |
-| Compile (Sharpee) | `tools/compile_sharpee.py <name>` | `play.html`, `*.js` bundle, `styles.css`, `theme-listener.js` |
 | Extract commands | `tools/extract_commands.py` | `walkthrough.txt` from transcript or source |
 | Generate pages | `tools/web/generate_pages.py` | `index.html`, `source.html` (manual override) |
 | Register | `tools/register_game.py` | `games.json` + `cards.json` entries |
@@ -39,38 +38,6 @@ python /c/code/ifhub/tools/compile.py <name> --source <path/to/story.ni> --compi
 ```
 
 If `tests/inform7/walkthrough.txt` exists, compile.py automatically runs the walkthrough, generates the transcript and guide, and copies all walkthrough files to the web root. It also auto-generates `index.html` and `source.html` from `story.ni` metadata if they don't exist.
-
-### Sharpee (built outside IF Hub)
-
-Sharpee builds are owned by the **`/c/code/npmsharpee/`** workspace, not IF Hub. IF Hub is the *target* a Sharpee game ships to via the intake API. The game is authored, built, and tested **in-place inside its own folder**, then registered/published into IF Hub from there.
-
-Game source lives in:
-- `/c/code/text-games/sharpee/<game>/` — user-authored games
-- `/c/code/npmsharpee/from-fork/<game>/` — pristine upstream mirrors
-
-Each game folder builds **in-place** into `<game>/browser/` (or `<game>/browser/<subpath>/` for multi-version projects). The `browser/` directory IS the deployable artifact: `play.html`, the bundled `*.js`, `styles.css`, plus `source.html` and `walkthrough.html` (rendered from IF Hub's shared `tools/web/source-template.html` and `walkthrough-template.html`).
-
-**Build + ship a Sharpee game** (run from `/c/code/npmsharpee/`):
-
-```bash
-./ship.sh <game>                  # build only — open <game>/browser/play.html
-./ship.sh <game> hub-local        # build + register with on-disk IF Hub
-./ship.sh <game> hub              # build + register + publish + push hub registry
-```
-
-`ship.sh` orchestrates `tools/build.py` (esbuild + transcript tests + asset install) and the IF Hub intake scripts (`register_game.py`, `publish.py`, `push_hub.py`). It does NOT use `tests/project.conf`; Sharpee config is declared in `<game>/ifhub.conf` plus per-version overrides in IF Hub's `games-registry.json` (e.g. `entry`, `binary`, `subpath`, `walkthrough` for multi-version projects).
-
-**Scaffolding a new Sharpee game:**
-```bash
-cd /c/code/text-games/sharpee
-npx @sharpee/sharpee init <game-name> -y
-cd <game-name> && npx @sharpee/sharpee init-browser && npm install
-# Add an ifhub.conf next to package.json (title, source, walkthrough, tags)
-# Add a registry entry to /c/code/ifhub/games-registry.json
-cd /c/code/npmsharpee && ./ship.sh <game-name> hub-local
-```
-
-For details on the npmsharpee build chain and authoring conventions see `/c/code/npmsharpee/CLAUDE.md` and `reference/sharpee-author-guide.md`.
 
 ### Pipeline (all engines)
 
@@ -157,7 +124,6 @@ Source lives where the engine's toolchain naturally expects it. Web deliverables
 | wwwbasic | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
 | applesoft | `<game>/*.bas` | `SOURCE=<file>` in project.conf | `setup_basic.py` (via pipeline) |
 | Ink | `<game>/*.ink` | `SOURCE=<file>` in project.conf | `setup_ink.py` (via pipeline) |
-| Sharpee | `text-games/sharpee/<game>/` or `npmsharpee/from-fork/<game>/` | `<game>/ifhub.conf` + `games-registry.json` | `npmsharpee/tools/ship.sh` (in-place build to `<game>/browser/`) |
 
 Each BASIC dialect (wwwbasic, qbjc, applesoft, bwbasic) must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
 
@@ -186,27 +152,6 @@ python /c/code/ifhub/tools/pipeline.py <name> compile test
 
 - **Native Windows** (preferred): `tools/interpreters/glulxe.exe` + `dfrotz.exe` — built via MSYS2, auto-detected by `project.conf`
 - **WSL fallback**: `~/glulxe/glulxe` + `~/frotz-install/usr/games/dfrotz`
-
-### Sharpee Testing
-
-Sharpee uses its own transcript-based test system (`@sharpee/transcript-tester`). Tests live in the game folder (same folder that holds `src/` and `browser/`), not in IF Hub.
-
-```bash
-cd /c/code/text-games/sharpee/<game>     # or /c/code/npmsharpee/from-fork/<game>
-
-# Build + run all transcript tests:
-npx sharpee build --test
-
-# Interactive play (REPL with debug commands):
-npx transcript-test --play
-
-# Run specific transcript file:
-npx transcript-test walkthroughs/wt-01.transcript
-```
-
-`./ship.sh <game>` (from `/c/code/npmsharpee/`) runs the transcript tests automatically as part of the build; the single walkthrough selected via the rules in `sharpee_adapter.pick_walkthrough()` is used to generate `walkthrough.html` alongside `play.html`.
-
-Transcript files use `> command` / `[OK: contains "text"]` assertions. See `/c/code/fork/sharpee/docs/testing/README.md` for the full format spec.
 
 ## Creating a Walkthrough
 
@@ -299,7 +244,6 @@ python -m http.server 8000 --directory ../text-games/i7/<name>
 | Web player setup | `C:\code\ifhub\tools\web\` |
 | Native interpreters | `C:\code\ifhub\tools\interpreters\` |
 | RegTest runner | `C:\code\ifhub\tools\regtest.py` |
-| Sharpee build + import | `C:\code\ifhub\tools\compile_sharpee.py` |
 | Pipeline orchestrator | `C:\code\ifhub\tools\pipeline.py` |
 | Parchment troubleshooting | `C:\code\ifhub\reference\parchment-troubleshooting.md` |
 
@@ -332,7 +276,6 @@ python tools/register_game.py --name game-id --title "Title" --engine ink --tags
 ## Key Rules
 
 - `story.ni` is the single source of truth for each Inform 7 project
-- Sharpee game source lives in `/c/code/sharpee/<game>/`, not in the ifhub projects directory
 - Do NOT create `.inform/` IDE bundles — compile directly using `-source` and `-o` flags
 - For Inform 7 syntax and conventions, see `C:\code\ifhub\CLAUDE.md`
 - The hub serves games in-place via iframe from each game's own GitHub Pages URL
