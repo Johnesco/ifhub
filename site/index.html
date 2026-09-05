@@ -395,13 +395,13 @@ Promise.all([
       var action = actionSelect.value;
       var fullscreen = document.getElementById('fs-' + cardIdx).checked;
 
-      var directUrl = opt.playUrl;
       var view = 'game';
-      if (action === 'source') { directUrl = opt.sourceUrl; view = 'source'; }
-      else if (action === 'walkthrough') { directUrl = opt.walkthroughUrl; view = 'walkthrough'; }
+      if (action === 'source') view = 'source';
+      else if (action === 'walkthrough') view = 'walkthrough';
 
-      if (fullscreen) {
-        window.location.href = directUrl;
+      // Fullscreen opens the game's own page; source and walkthrough are hub views.
+      if (fullscreen && action === 'play') {
+        window.location.href = opt.playUrl;
       } else {
         window.location.href = 'app.html?game=' + opt.id + '&view=' + view + hubQuery;
       }

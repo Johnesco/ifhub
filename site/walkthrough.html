@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>__TITLE__</title>
+<title>Walkthrough — IF Hub</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -457,7 +457,7 @@ html, body {
 <div class="container">
   <div class="sidebar">
     <div class="sidebar-header">
-      <h1>__HEADER__</h1>
+      <h1 id="wt-title">Walkthrough</h1>
     </div>
     <div class="nav" id="nav"></div>
   </div>
@@ -467,8 +467,8 @@ html, body {
       <button class="toggle-btn" id="btn-transcript">Game Text</button>
       <button class="toggle-btn" id="btn-replay">Replay</button>
       <input type="text" class="search-box" id="search" placeholder="Search... (Ctrl+F)">
-      <a class="dl-link" href="walkthrough.txt" download>Commands</a>
-      <a class="dl-link" href="walkthrough-guide.txt" download>Guide</a>
+      <a class="dl-link" id="dl-commands" href="#" download>Commands</a>
+      <a class="dl-link" id="dl-guide" href="#" download>Guide</a>
       <span class="step-count" id="step-count"></span>
     </div>
     <div id="replay-controls" class="replay-controls" style="display:none;">
@@ -491,9 +491,12 @@ html, body {
 </div>
 
 <script>
-var GUIDE_URL = 'walkthrough-guide.txt';
-var RAW_URL = 'walkthrough.txt';
-var TRANSCRIPT_URL = 'walkthrough_output.txt';
+// The hub renders a game's walkthrough from the raw files at the game root.
+// ?game=<id> is looked up in games.json; walkthroughUrl names the game's walkthrough.txt.
+var GAME_ID = new URLSearchParams(location.search).get('game') || '';
+var GUIDE_URL = '';
+var RAW_URL = '';
+var TRANSCRIPT_URL = '';
 
 var guideData = null;
 var rawData = null;
@@ -505,7 +508,7 @@ var currentView = 'commands';
 var replayPlaying = false;
 var replayStep = -1;  // -1 = preamble, 0..N-1 = steps
 var replayTimer = null;
-var replaySpeed = parseFloat(localStorage.getItem('__STORAGE_KEY__-replay-speed') || '1');
+var replaySpeed = parseFloat(localStorage.getItem('ifhub-wt-' + GAME_ID + '-replay-speed') || '1');
 var replayPhase = 'idle'; // 'idle' | 'typing' | 'response' | 'pause'
 var replayTypingIndex = 0;
 var replayResponseIndex = 0;
@@ -965,7 +968,7 @@ function replayJumpTo(stepIndex) {
 
 function setReplaySpeed(speed) {
   replaySpeed = speed;
-  localStorage.setItem('__STORAGE_KEY__-replay-speed', String(speed));
+  localStorage.setItem('ifhub-wt-' + GAME_ID + '-replay-speed', String(speed));
   document.querySelectorAll('.speed-btn').forEach(function(btn) {
     btn.classList.toggle('active', parseFloat(btn.dataset.speed) === speed);
   });
@@ -1205,6 +1208,20 @@ async function init() {
   var wrap = document.getElementById('content-wrap');
 
   try {
+    var games = await fetch('games.json').then(function(r) { return r.ok ? r.json() : []; });
+    var entry = null;
+    for (var gi = 0; gi < games.length; gi++) { if (games[gi].id === GAME_ID) { entry = games[gi]; break; } }
+    if (!entry || !entry.walkthroughUrl) {
+      wrap.innerHTML = '<div class="error-msg">No walkthrough for this game.</div>';
+      return;
+    }
+    var base = entry.walkthroughUrl.replace(/[^\/]*$/, '');
+    GUIDE_URL = base + 'walkthrough-guide.txt';
+    RAW_URL = base + 'walkthrough.txt';
+    TRANSCRIPT_URL = base + 'walkthrough_output.txt';
+    document.title = 'Walkthrough \u2014 ' + entry.title;
+    document.getElementById('dl-commands').href = RAW_URL;
+    document.getElementById('dl-guide').href = GUIDE_URL;
     var results = await Promise.all([
       fetch(GUIDE_URL).then(function(r) { return r.ok ? r.text() : null; }),
       fetch(RAW_URL).then(function(r) { return r.ok ? r.text() : null; }),
@@ -1229,7 +1246,7 @@ async function init() {
     // Hide sidebar and guide download if no guide data
     if (!guideData) {
       document.querySelector('.sidebar').style.display = 'none';
-      var guideLink = document.querySelector('a[href="walkthrough-guide.txt"]');
+      var guideLink = document.getElementById('dl-guide');
       if (guideLink) guideLink.style.display = 'none';
     }
 

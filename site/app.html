@@ -1058,13 +1058,71 @@ function highlightRez(line) {
   return out;
 }
 
+/* ==================================================================
+   INK SYNTAX HIGHLIGHTER
+   ================================================================== */
+var INK_KNOT_RE = /^\s*={2,}\s*(?:function\s+)?([\w()\s,]+?)\s*=*\s*$/;
+var INK_STITCH_RE = /^\s*=\s*([\w()\s,]+?)\s*$/;
+
+function highlightInk(line) {
+  var trimmed = line.trimStart();
+  var indent = esc(line.slice(0, line.length - trimmed.length));
+  if (trimmed.startsWith('//')) return indent + '<span class="syn-cmt">' + esc(trimmed) + '</span>';
+  if (INK_KNOT_RE.test(line) || INK_STITCH_RE.test(line)) return '<span class="syn-head">' + esc(line) + '</span>';
+  if (/^\s*~/.test(line)) return indent + '<span class="syn-num">' + esc(trimmed) + '</span>';
+  var html = esc(line);
+  html = html.replace(/^(\s*)([*+]+|-+)(\s)/, '$1<span class="syn-kw">$2</span>$3');
+  html = html.replace(/-&gt;\s*[\w.]+|&lt;-\s*[\w.]+|\b(END|DONE)\b/g, '<span class="syn-sub">$&</span>');
+  html = html.replace(/\{[^}]*\}/g, '<span class="syn-str">$&</span>');
+  html = html.replace(/#[^#<]*/g, '<span class="syn-tbl">$&</span>');
+  return html;
+}
+
+/* ==================================================================
+   BASIC SYNTAX HIGHLIGHTER (wwwbasic, applesoft, bwbasic, qbjc)
+   ================================================================== */
+var BASIC_ENGINES = { wwwbasic: 1, applesoft: 1, bwbasic: 1, qbjc: 1 };
+var BASIC_REM_RE = /^\s*\d*\s*(REM\b|')/i;
+var BASIC_KEYWORDS = /\b(PRINT|INPUT|IF|THEN|ELSE|ELSEIF|GOTO|GOSUB|RETURN|FOR|TO|STEP|NEXT|LET|DIM|READ|DATA|END|STOP|ON|GET|HOME|CLS|LOCATE|COLOR|POKE|PEEK|CALL|DEF|FN|AND|OR|NOT|XOR|MOD|TAB|LEN|VAL|STR\$|MID\$|LEFT\$|RIGHT\$|CHR\$|ASC|INT|RND|ABS|SGN|SQR|INKEY\$|WHILE|WEND|DO|LOOP|UNTIL|SELECT|CASE|SUB|FUNCTION|DECLARE|SHARED|CONST|TYPE|OPEN|CLOSE|RESTORE|RANDOMIZE|TIMER|SLEEP|WAIT|SWAP|LINE|SCREEN|WIDTH|HTAB|VTAB|INVERSE|NORMAL|FLASH|SPEED|TEXT|GR|HGR|PLOT|HLIN|VLIN|CLEAR|NEW|RUN|USING|WRITE|LPRINT|BEEP|SOUND|PLAY|KEY|IS|EXIT|ERASE|REDIM|OPTION|BASE|STRING\$|SPACE\$|UCASE\$|LCASE\$|INSTR|LTRIM\$|RTRIM\$|HEX\$|CINT|CLNG|CSNG|CDBL|FIX|ATN|COS|SIN|TAN|EXP|LOG|POS|CSRLIN|DEFINT|DEFSTR|DEFSNG|DEFDBL|DEFLNG|RESUME|ERROR|ERR|ERL|SYSTEM|PUT|EOF)\b/gi;
+
+function highlightBasic(line) {
+  var m = line.match(/^(\s*)(\d+)(\s*)([\s\S]*)$/);
+  var prefix = '', rest = line;
+  if (m) {
+    prefix = esc(m[1]) + '<span class="syn-num">' + esc(m[2]) + '</span>' + esc(m[3]);
+    rest = m[4];
+  }
+  if (/^\s*(REM\b|')/i.test(rest)) return prefix + '<span class="syn-cmt">' + esc(rest) + '</span>';
+  function code(s) { return esc(s).replace(BASIC_KEYWORDS, '<span class="syn-kw">$1</span>'); }
+  var out = '', buf = '', i = 0;
+  while (i < rest.length) {
+    if (rest[i] === '"') {
+      out += code(buf); buf = '';
+      var j = rest.indexOf('"', i + 1);
+      if (j < 0) j = rest.length - 1;
+      out += '<span class="syn-str">' + esc(rest.slice(i, j + 1)) + '</span>';
+      i = j + 1;
+    } else {
+      buf += rest[i]; i++;
+    }
+  }
+  return prefix + out + code(buf);
+}
+
+/* ==================================================================
+   ENGINE-AWARE HIGHLIGHTER DISPATCH
+   ================================================================== */
 function highlightLine(line, engine) {
   if (engine === 'rez') return highlightRez(line);
+  if (engine === 'ink') return highlightInk(line);
+  if (BASIC_ENGINES[engine]) return highlightBasic(line);
   return highlightInform(line);
 }
 
 function isHeadingLine(line, engine) {
   if (engine === 'rez') return REZ_ELEMENT_RE.test(line);
+  if (engine === 'ink') return INK_KNOT_RE.test(line) || INK_STITCH_RE.test(line);
+  if (BASIC_ENGINES[engine]) return BASIC_REM_RE.test(line);
   return I7_HEADING.test(line);
 }
 
@@ -1099,6 +1157,18 @@ function buildNav(lines, engine) {
       if (tag === 'game' || tag === 'scene') cls += ' nav-part';
       else cls += ' nav-chapter';
       items.push('<a class="' + cls + '" data-line="' + num + '">' + esc('@' + tag + ' ' + rest) + '</a>');
+    }
+  } else if (engine === 'ink') {
+    for (var i = 0; i < lines.length; i++) {
+      var km = lines[i].match(INK_KNOT_RE);
+      if (km) { items.push('<a class="nav-item nav-part" data-line="' + (i + 1) + '">' + esc(km[1].trim()) + '</a>'); continue; }
+      var sm = lines[i].match(INK_STITCH_RE);
+      if (sm) items.push('<a class="nav-item nav-chapter" data-line="' + (i + 1) + '">' + esc(sm[1].trim()) + '</a>');
+    }
+  } else if (BASIC_ENGINES[engine]) {
+    for (var i = 0; i < lines.length; i++) {
+      var bm = lines[i].match(/^\s*\d*\s*(?:REM\b|')\s*(.*)$/i);
+      if (bm && bm[1].trim()) items.push('<a class="nav-item nav-section" data-line="' + (i + 1) + '">' + esc(bm[1].trim().slice(0, 60)) + '</a>');
     }
   } else {
     for (var i = 0; i < lines.length; i++) {
@@ -1206,7 +1276,7 @@ function initSearch() {
    DISPLAY SOURCE — render + nav + search + line count
    ================================================================== */
 function displaySource(text, engine) {
-  var lines = text.replace(/^\n/, '').replace(/\n$/, '').split('\n');
+  var lines = text.replace(/\r\n?/g, '\n').replace(/^\n/, '').replace(/\n$/, '').split('\n');
   renderSource(lines, engine);
   buildNav(lines, engine);
   initSearch();
@@ -1258,7 +1328,7 @@ function loadSourceForGame(gameId) {
   if (!g) return;
 
   var browserFrame = document.getElementById('source-browser-frame');
-  document.getElementById('source-filepath').textContent = g.sourceLabel || g.id + '.ni';
+  document.getElementById('source-filepath').textContent = g.sourceLabel || (g.sourceUrl || '').split('/').pop() || g.id;
 
   if (g.sourceBrowser) {
     setSourcePaneMode('browser');
@@ -1404,7 +1474,8 @@ function loadWalkthroughForGame(gameId) {
   var status = document.getElementById('wt-status');
 
   if (g && g.walkthroughUrl) {
-    frame.src = g.walkthroughUrl;
+    // The hub renders walkthroughs itself; the game only ships the raw txt files.
+    frame.src = 'walkthrough.html?game=' + encodeURIComponent(gameId);
     frame.style.display = '';
     msg.style.display = 'none';
     status.textContent = '';
