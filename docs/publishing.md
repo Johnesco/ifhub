@@ -59,15 +59,16 @@ python tools/ship.py <game>                   # full: verify, wrapper pages, reg
 python tools/ship.py <game> --local           # register only; preview the hub on disk
 python tools/ship.py <game> --refresh-pages   # rewrite index/source/walkthrough.html from current templates
 python tools/ship.py <game> --message "msg"   # commit message for the game repo
+python tools/ship.py <game> --unlist          # hide the game (hub = no) and push the registry
 ```
 
 Steps, in order:
 
 1. **Contract check** — `ifhub.conf` with `engine` and `title`, `play.html` present, `source =` (if given) exists.
 2. **Wrapper pages** — `index.html` and `source.html` via `tools/web/generate_pages.py`; `walkthrough.html` via `tools/web/generate_walkthrough.py` when a `walkthrough.txt` exists (copies the txt files to the root).
-3. **Register** — sets `hub = yes` in `ifhub.conf` and runs `tools/build_games.py`, which regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. URL fields (`sourceUrl`, `walkthroughUrl`, `testsUrl`, `landingUrl`) are only emitted when the file exists.
+3. **Register** — sets `hub = yes` in `ifhub.conf` and runs `tools/build_games.py`, which regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. Title, author (the card subtitle), description, tags, and version fields come from the conf; URL fields (`sourceUrl`, `walkthroughUrl`, `testsUrl`, `landingUrl`) are only emitted when the file exists.
 4. **Publish** — `tools/publish.py` commits everything in the game folder and pushes to `Johnesco/<game>`; on first use it creates the repo, adds the Pages workflow, and enables Pages.
-5. **Push hub** — `tools/push_hub.py` regenerates the registry once more, repairs any mojibake, commits `site/games.json`, `cards.json`, `hubs.json`, and pushes. The hub redeploys from `master`.
+5. **Push hub** — `tools/push_hub.py` regenerates the registry once more, commits `site/games.json`, `cards.json`, `hubs.json`, and pushes. The hub redeploys from `master`.
 
 `--local` stops after step 3. Steps 4 and 5 are the only ones that touch GitHub.
 

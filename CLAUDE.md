@@ -31,6 +31,7 @@ python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; 
 python tools/ship.py <game>              # verify contract, wrapper pages, register, publish to Pages, push hub
 python tools/ship.py <game> --local      # register only (local preview)
 python tools/ship.py <game> --refresh-pages   # regenerate the wrapper pages from the current templates
+python tools/ship.py <game> --unlist          # hide a game from the hub (hub = no) and push the registry
 
 # Maintenance
 python tools/build_games.py              # regenerate site/games.json + site/cards.json from every ifhub.conf
@@ -44,16 +45,14 @@ python tools/build_landing.py --all      # regenerate landing pages for versione
 ifhub/
 ├── CLAUDE.md, README.md
 ├── workspaces.json          ← roots scanned for game folders: ../text-games/<engine>
-├── games-registry.json      ← optional per-game path overrides (normally {})
 ├── site/                    ← the static hub: index.html (cards), app.html (split-pane player),
 │                              play.html, themes.js, games.json, cards.json, hubs.json, lib/parchment/
 ├── tools/
 │   ├── ship.py              ← intake: contract check → wrapper pages → register → publish → push hub
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
-│   ├── register_game.py     ← set hub = yes (+ optional conf fields) and rebuild the registry
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
-│   ├── check_links.py, build_landing.py, fix_mojibake.py
+│   ├── check_links.py, build_landing.py
 │   ├── web/                 ← templates for the wrapper pages: source, walkthrough, landing, versioned landing
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (site behaviour), sdlc/
@@ -61,7 +60,7 @@ ifhub/
 └── .claude/                 ← skills: serve, kill-servers (Portman local preview); launch.json: hub-site
 ```
 
-**Game discovery:** `build_games.py` scans each root in `workspaces.json` for subfolders containing an `ifhub.conf`. A game is listed when its conf says `hub = yes`. `games-registry.json` and the gitignored `games-local.json` can override a game's path.
+**Game discovery:** `build_games.py` scans each root in `workspaces.json` for subfolders containing an `ifhub.conf`. A game is listed when its conf says `hub = yes`; `ship.py <game> --unlist` sets it back to `no`. Card text (title, subtitle from `author`, description) comes from the same conf, so nothing in `games.json` or `cards.json` is hand-maintained.
 
 ## Hub behaviour worth knowing
 
