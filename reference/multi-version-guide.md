@@ -70,8 +70,6 @@ Every version repo is **self-contained** — it can build and deploy on its own:
 ├── story.ni              ← Frozen source for this version
 ├── <game>-vN.ulx         ← Compiled binary (or .gblorb for sound versions)
 ├── play.html             ← Parchment player
-├── source.html           ← Source browser
-├── walkthrough.html      ← Walkthrough viewer
 ├── walkthrough.txt       ← Raw commands
 ├── walkthrough-guide.txt ← Annotated guide
 ├── walkthrough_output.txt ← Generated transcript

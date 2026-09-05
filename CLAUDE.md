@@ -14,10 +14,10 @@ A game folder that IF Hub can receive contains:
 |---|---|---|
 | `ifhub.conf` | yes | `engine`, `title`, `description`, `tags`, `source`, `walkthrough`, `sound`, and `hub = yes` to be listed |
 | `play.html` | yes | self-contained web player, with the libs it needs (`lib/parchment/`, `theme-listener.js`, ...) |
-| source file(s) | no | named by `source =`; shown in the hub's source pane |
-| `walkthrough.txt`, `walkthrough_output.txt`, `walkthrough-guide.txt` | no | shown in the walkthrough pane |
+| source file | no | the raw file named by `source =`; the hub highlights it (Inform 7, Rez, Ink, BASIC). `sourceBrowser = yes` means the game ships its own `source.html` |
+| `walkthrough.txt`, `walkthrough_output.txt`, `walkthrough-guide.txt` | no | at the game root; the hub renders them in `site/walkthrough.html` |
 | `tests.html` | no | a test report page; its presence turns on the Tests tab |
-| `index.html`, `source.html`, `walkthrough.html` | generated | hub wrapper pages; `tools/ship.py` writes them when they are missing |
+| `index.html` | generated | the game's landing page, the only file `tools/ship.py` writes into a game folder |
 
 Full details, per-engine build commands, and how to add an engine: `docs/publishing.md`.
 
@@ -30,7 +30,8 @@ python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; 
 # In the hub: put the folder online and list it
 python tools/ship.py <game>              # verify contract, wrapper pages, register, publish to Pages, push hub
 python tools/ship.py <game> --local      # register only (local preview)
-python tools/ship.py <game> --refresh-pages   # regenerate the wrapper pages from the current templates
+python tools/ship.py <game> --refresh-pages   # rewrite the landing page from the current template
+python tools/ship.py <game> --clean-wrappers  # delete source.html / walkthrough.html an older hub generated
 python tools/ship.py <game> --unlist          # hide a game from the hub (hub = no) and push the registry
 
 # Maintenance
@@ -45,15 +46,15 @@ python tools/build_landing.py --all      # regenerate landing pages for versione
 ifhub/
 ├── CLAUDE.md, README.md
 ├── workspaces.json          ← roots scanned for game folders: ../text-games/<engine>
-├── site/                    ← the static hub: index.html (cards), app.html (split-pane player), themes.js,
-│                              games.json, cards.json, hubs.json
+├── site/                    ← the static hub: index.html (cards), app.html (split-pane player),
+│                              walkthrough.html (walkthrough viewer), themes.js, games.json, cards.json, hubs.json
 ├── tools/
-│   ├── ship.py              ← intake: contract check → wrapper pages → register → publish → push hub
+│   ├── ship.py              ← intake: contract check → landing page → register → publish → push hub
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
 │   ├── check_links.py, build_landing.py
-│   ├── web/                 ← templates for the wrapper pages: source, walkthrough, landing, versioned landing
+│   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (site behaviour), sdlc/
 ├── reference/               ← css-overlay.md (theming), multi-version-guide.md (versioned games)
@@ -64,7 +65,7 @@ ifhub/
 
 ## Hub behaviour worth knowing
 
-- `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
+- `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
 - Versioned games (zork1 v0..v3, dracula): `versionOf` / `versionPrimary` in `ifhub.conf` collapse a group into one card. See `reference/multi-version-guide.md`.
 - Local preview: `/serve` starts Portman (port 9000) and registers the site plus every game folder; `/kill-servers` stops it.
 

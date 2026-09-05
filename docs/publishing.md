@@ -10,10 +10,10 @@ Every game is a folder that is its own git repo and is published to `https://joh
 |---|---|---|
 | `ifhub.conf` | yes | flat `key = value` lines, see below |
 | `play.html` | yes | a self-contained web player. Everything it loads must be in the folder (`lib/parchment/`, `theme-listener.js`, the story data) or on a public CDN |
-| source file(s) | no | the file named by `source =`. The hub highlights Inform 7 and Rez source itself; other engines can ship a `source.html` browser and set `sourceBrowser = yes` |
-| `walkthrough.txt` | no | one command per line. Optional companions: `walkthrough_output.txt` (transcript) and `walkthrough-guide.txt` (annotated guide). They may live at the root or under `tests/<anything>/` |
+| source file | no | the raw file named by `source =`. The hub highlights it in the source pane (Inform 7, Rez, Ink, BASIC). A game with a multi-file or custom source view ships its own `source.html` and sets `sourceBrowser = yes` |
+| `walkthrough.txt` | no | one command per line, at the game root. Optional companions next to it: `walkthrough_output.txt` (transcript) and `walkthrough-guide.txt` (annotated guide). The hub renders them in its own walkthrough viewer |
 | `tests.html` | no | any self-contained test report page. When present the hub shows a Tests tab. Inform 7 games get one from ifPlayer |
-| `index.html`, `source.html`, `walkthrough.html` | generated | the hub's wrapper pages. `tools/ship.py` writes them when missing; `--refresh-pages` rewrites them |
+| `index.html` | generated | the game's landing page, the only file the hub writes into the folder. `tools/ship.py` writes it when missing; `--refresh-pages` rewrites it |
 
 ### ifhub.conf
 
@@ -57,7 +57,8 @@ From the hub repo:
 ```bash
 python tools/ship.py <game>                   # full: verify, wrapper pages, register, publish, push hub
 python tools/ship.py <game> --local           # register only; preview the hub on disk
-python tools/ship.py <game> --refresh-pages   # rewrite index/source/walkthrough.html from current templates
+python tools/ship.py <game> --refresh-pages   # rewrite index.html from the current template
+python tools/ship.py <game> --clean-wrappers  # delete source.html / walkthrough.html an older hub generated
 python tools/ship.py <game> --message "msg"   # commit message for the game repo
 python tools/ship.py <game> --unlist          # hide the game (hub = no) and push the registry
 ```
@@ -65,7 +66,7 @@ python tools/ship.py <game> --unlist          # hide the game (hub = no) and pus
 Steps, in order:
 
 1. **Contract check** — `ifhub.conf` with `engine` and `title`, `play.html` present, `source =` (if given) exists.
-2. **Wrapper pages** — `index.html` and `source.html` via `tools/web/generate_pages.py`; `walkthrough.html` via `tools/web/generate_walkthrough.py` when a `walkthrough.txt` exists (copies the txt files to the root).
+2. **Landing page** — `index.html` via `tools/web/generate_pages.py` when missing. Source and walkthrough views are not files in the game folder; the hub renders them from the raw source and the walkthrough txt files.
 3. **Register** — sets `hub = yes` in `ifhub.conf` and runs `tools/build_games.py`, which regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. Title, author (the card subtitle), description, tags, and version fields come from the conf; URL fields (`sourceUrl`, `walkthroughUrl`, `testsUrl`, `landingUrl`) are only emitted when the file exists.
 4. **Publish** — `tools/publish.py` commits everything in the game folder and pushes to `Johnesco/<game>`; on first use it creates the repo, adds the Pages workflow, and enables Pages.
 5. **Push hub** — `tools/push_hub.py` regenerates the registry once more, commits `site/games.json`, `cards.json`, `hubs.json`, and pushes. The hub redeploys from `master`.
@@ -80,7 +81,7 @@ Publish whenever the game is worth showing; `ship.py` is idempotent. To keep an 
 
 1. Make a workspace `C:/code/text-games/<engine>/` and add its root to `workspaces.json`.
 2. Give it `tools/build.py <game>` that produces the folder in section 1. Copy `theme-listener.js` from an existing workspace into the player so hub themes apply.
-3. If the hub should highlight the source, add a highlighter to `site/app.html`; otherwise ship a `source.html` and set `sourceBrowser = yes`.
+3. Add a highlighter for the engine's source to `site/app.html` (Inform 7, Rez, Ink and BASIC exist), or have games ship their own `source.html` and set `sourceBrowser = yes`.
 4. Add a `<engine>/CLAUDE.md` with the authoring rules, and a row to the table in section 2.
 
 The hub itself does not need to know the engine name; `build_games.py` copies whatever `engine =` says into `games.json`, and `hubs.json` can filter on it.
