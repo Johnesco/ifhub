@@ -5,11 +5,9 @@
       "name": "hub-site",
       "runtimeExecutable": "python",
       "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8892",
-        "-d",
-        "site"
+        "tools/serve.py",
+        "--port",
+        "8892"
       ],
       "port": 8892
     }

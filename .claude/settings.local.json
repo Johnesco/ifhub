@@ -249,7 +249,17 @@
       "Bash(npx -y which esbuild)",
       "Bash(npm exec:*)",
       "Bash(npx -y esbuild --version)",
-      "Bash(tee /tmp/tsc.log)"
+      "Bash(tee /tmp/tsc.log)",
+      "Bash(cp site/cards.json /tmp/cards1.json)",
+      "Read(//tmp/**)",
+      "Bash(cp C:/code/ifhub/site/games.json /tmp/games.snapshot.json)",
+      "Bash(cp C:/code/ifhub/site/cards.json /tmp/cards.snapshot.json)",
+      "Bash(cp site/games.json /tmp/games.before.json)",
+      "Bash(cp site/games.json /tmp/games.built.json)",
+      "Bash([ -f \"$d/play.html\" ])",
+      "Bash(cygpath -w /tmp/confbackup/registry.json)",
+      "Bash(cp /tmp/confbackup/registry.json /c/tmp_registry.json)",
+      "Read(//c//**)"
     ]
   }
 }
