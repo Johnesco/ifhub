@@ -6,6 +6,7 @@ engine workspace (text-games/<engine>/tools/build.py) and then shipped here.
 
 Usage:
     python tools/ship.py <game> [--local] [--refresh-pages] [--message "commit message"]
+    python tools/ship.py <game> --unlist [--local]
 
 <game> is the folder name of a game under one of the workspaces.json roots, or a path.
 
@@ -24,6 +25,9 @@ Steps:
     3. register: set `hub = yes` in ifhub.conf, rebuild site/games.json + site/cards.json
     4. publish the folder to https://johnesco.github.io/<game>/       (skipped with --local)
     5. commit and push the hub registry so the live hub lists it       (skipped with --local)
+
+--unlist sets `hub = no` instead, rebuilds the registry, and pushes the hub (unless --local).
+The game's own repo and Pages site are left alone; it just disappears from the hub.
 """
 
 import argparse
@@ -34,7 +38,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import output, paths
 import build_games
-import register_game
 
 
 def resolve_game(arg: str) -> Path:
@@ -112,15 +115,41 @@ def generate_pages(game_dir: Path, conf: dict, refresh: bool) -> None:
         print("  no walkthrough.txt: skipping walkthrough.html")
 
 
-def register(game_dir: Path) -> None:
+def upsert_conf_field(lines: list[str], key: str, value: str) -> list[str]:
+    """Set `key = value` in ifhub.conf lines (before any [section]); append if absent."""
+    out: list[str] = []
+    found = False
+    in_section = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_section = True
+        if not in_section and not found and "=" in line and line.split("=", 1)[0].strip() == key:
+            out.append(f"{key} = {value}")
+            found = True
+            continue
+        out.append(line)
+    if not found:
+        insert_at = next((i for i, l in enumerate(out) if l.strip().startswith("[")), len(out))
+        out.insert(insert_at, f"{key} = {value}")
+    return out
+
+
+def set_hub_flag(game_dir: Path, value: str) -> None:
+    """Write `hub = yes|no` into the game's ifhub.conf, preserving everything else."""
     conf_path = game_dir / "ifhub.conf"
-    lines = register_game.upsert_conf_field(register_game.read_conf_lines(conf_path), "hub", "yes")
+    text = conf_path.read_text(encoding="utf-8")
+    lines = upsert_conf_field(text.splitlines(), "hub", value)
     new_text = "\n".join(lines)
-    if not new_text.endswith("\n"):
-        new_text += "\n"
-    if new_text != conf_path.read_text(encoding="utf-8"):
+    if text.endswith("\n") or not new_text.endswith("\n"):
+        new_text += "\n" if not new_text.endswith("\n") else ""
+    if new_text != text:
         conf_path.write_text(new_text, encoding="utf-8")
-        print("  ifhub.conf: set hub = yes")
+        print(f"  ifhub.conf: set hub = {value}")
+
+
+def register(game_dir: Path) -> None:
+    set_hub_flag(game_dir, "yes")
     build_games.main()
 
 
@@ -131,10 +160,25 @@ def main() -> None:
     parser.add_argument("--refresh-pages", action="store_true",
                         help="Regenerate index.html, source.html, walkthrough.html from the current templates")
     parser.add_argument("--message", default="", help="Commit message for the game repo")
+    parser.add_argument("--unlist", action="store_true",
+                        help="Set hub = no so the game disappears from the hub (repo and Pages untouched)")
     args = parser.parse_args()
 
     game_dir = resolve_game(args.game)
     name = game_dir.name
+
+    if args.unlist:
+        print(output.bold(f"=== unlist {name} ==="))
+        set_hub_flag(game_dir, "no")
+        build_games.main()
+        if args.local:
+            output.skip("--local: hub registry rebuilt on disk only")
+            return
+        if run([sys.executable, paths.TOOLS_DIR / "push_hub.py", name]):
+            print(output.red("=== unlist failed at push hub ==="))
+            sys.exit(1)
+        print(output.green(f"=== {name} is no longer listed on the hub ==="))
+        return
     print(output.bold(f"=== ship {name} ==="))
 
     print(output.bold("1. contract"))

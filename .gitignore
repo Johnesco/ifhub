@@ -1,6 +1,5 @@
 # Game folders live outside ifhub at C:/code/text-games/<engine>/<game>/
-# (discovered via workspaces.json + ifhub.conf). games-local.json holds per-developer path overrides.
-games-local.json
+# and are discovered through workspaces.json + ifhub.conf.
 
 # Python bytecode
 __pycache__/

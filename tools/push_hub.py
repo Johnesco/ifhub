@@ -14,7 +14,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import git, paths
-import fix_mojibake
 import build_games
 
 
@@ -27,14 +26,9 @@ def main():
     print("Rebuilding games.json + cards.json from ifhub.conf files...")
     build_games.main()
 
-    repaired = fix_mojibake.repair()
-    for path in repaired:
-        print(f"WARNING: repaired mojibake in {path.name} before pushing. "
-              f"Investigate upstream — some tool wrote double-encoded UTF-8.")
-
     cwd = paths.HUB_ROOT
     git.add([paths.SITE_DIR / "games.json", paths.SITE_DIR / "cards.json",
-             paths.SITE_DIR / "hubs.json", paths.GAMES_REGISTRY], cwd=cwd)
+             paths.SITE_DIR / "hubs.json"], cwd=cwd)
 
     if not git.diff_cached_quiet(cwd=cwd):
         print("No hub registry changes to push.")

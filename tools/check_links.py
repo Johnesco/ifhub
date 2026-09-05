@@ -2,7 +2,7 @@
 """Scan every link in site/games.json and site/cards.json; report 404s.
 
 For each URL, resolves to a local file in the game's own repo via
-games-registry.json and checks whether the file exists on disk.
+the workspaces.json scan and checks whether the file exists on disk.
 
 By default only reports. With --fix, removes broken URLs from games.json
 and cards.json (only sourceUrl/walkthroughUrl/landingUrl — playUrl is never

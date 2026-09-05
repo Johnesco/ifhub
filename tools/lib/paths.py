@@ -6,8 +6,9 @@ Layout:
     ifhub/tools/           TOOLS_DIR
     ifhub/tools/web/       WEB_DIR — templates for the wrapper pages the hub generates
     ifhub/workspaces.json  roots scanned for game folders that contain an ifhub.conf
-    ifhub/games-registry.json  optional per-game path overrides (normally empty)
-    ifhub/games-local.json     per-developer overrides (gitignored)
+
+Game discovery is the workspace scan and nothing else: a game is a subfolder of a
+workspace root that contains an ifhub.conf, and its id is the folder name.
 """
 
 import json
@@ -19,44 +20,14 @@ TOOLS_DIR = Path(__file__).resolve().parent.parent
 HUB_ROOT = TOOLS_DIR.parent
 SITE_DIR = HUB_ROOT / "site"
 WEB_DIR = TOOLS_DIR / "web"
-
-GAMES_REGISTRY = HUB_ROOT / "games-registry.json"
-GAMES_LOCAL = HUB_ROOT / "games-local.json"
 WORKSPACES_FILE = HUB_ROOT / "workspaces.json"
 
 # GitHub account that owns the game Pages repos — override with IFHUB_GH_ORG
 GH_ORG = os.environ.get("IFHUB_GH_ORG", "Johnesco")
 
 
-# --- Registry overrides ----------------------------------------------------
-
-_registry_cache: dict | None = None
-
-
-def _load_registry() -> dict:
-    """Merged games-registry.json + games-local.json (local wins per game)."""
-    global _registry_cache
-    if _registry_cache is not None:
-        return _registry_cache
-    registry: dict = {}
-    for file, merge in ((GAMES_REGISTRY, False), (GAMES_LOCAL, True)):
-        if not file.exists():
-            continue
-        try:
-            data = json.loads(file.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            continue
-        for name, entry in data.items():
-            if merge and name in registry:
-                registry[name].update(entry)
-            else:
-                registry[name] = entry
-    _registry_cache = registry
-    return registry
-
-
-def _resolve_raw_path(raw: str) -> Path:
-    """Absolute, or relative to HUB_ROOT. Accepts /c/... posix paths."""
+def resolve_root(raw: str) -> Path:
+    """A workspaces.json root: absolute, or relative to HUB_ROOT. Accepts /c/... posix paths."""
     if not raw:
         return Path()
     if raw.startswith("/") and len(raw) > 2 and raw[2] == "/":
@@ -67,20 +38,14 @@ def _resolve_raw_path(raw: str) -> Path:
     return p
 
 
-def _resolve_game_path(entry: dict) -> Path:
-    return _resolve_raw_path(entry.get("deploy", "") or entry.get("path", ""))
+_cache: dict[str, Path] | None = None
 
 
-# --- Workspace discovery ---------------------------------------------------
-
-_workspace_cache: dict[str, Path] | None = None
-
-
-def _discover_from_workspaces() -> dict[str, Path]:
-    """Scan every root in workspaces.json for subfolders that contain an ifhub.conf."""
-    global _workspace_cache
-    if _workspace_cache is not None:
-        return dict(_workspace_cache)
+def discover_games() -> dict[str, Path]:
+    """folder name -> game folder, for every subfolder with an ifhub.conf under a workspace root."""
+    global _cache
+    if _cache is not None:
+        return dict(_cache)
     result: dict[str, Path] = {}
     if WORKSPACES_FILE.exists():
         try:
@@ -88,7 +53,7 @@ def _discover_from_workspaces() -> dict[str, Path]:
         except (json.JSONDecodeError, OSError):
             data = {}
         for ws in data.get("workspaces", []):
-            root = _resolve_raw_path(ws.get("root", ""))
+            root = resolve_root(ws.get("root", ""))
             if root == Path() or not root.is_dir():
                 continue
             try:
@@ -98,34 +63,17 @@ def _discover_from_workspaces() -> dict[str, Path]:
             for subdir in entries:
                 if subdir.is_dir() and (subdir / "ifhub.conf").exists():
                     result[subdir.name] = subdir
-    _workspace_cache = result
+    _cache = result
     return dict(result)
 
 
-def registered_games() -> dict[str, Path]:
-    """name -> game folder for every discoverable game (registry overrides win)."""
-    result = _discover_from_workspaces()
-    for name, entry in _load_registry().items():
-        resolved = _resolve_game_path(entry)
-        if resolved != Path() and resolved.is_dir():
-            result[name] = resolved
-    return result
-
-
 def project_dir(name: str | Path) -> Path | None:
-    """Resolve a game folder by name (registry, then workspace scan) or by path. None if unknown."""
+    """Resolve a game folder by name (workspace scan) or by path. None if unknown."""
     p = Path(str(name))
     if (p / "ifhub.conf").exists():
         return p.resolve()
-    entry = _load_registry().get(str(name))
-    if entry:
-        resolved = _resolve_game_path(entry)
-        if resolved != Path():
-            return resolved
-    return _discover_from_workspaces().get(str(name))
+    return discover_games().get(str(name))
 
-
-# --- Path conversion -------------------------------------------------------
 
 def to_posix(path: str | Path) -> str:
     """C:\\code\\ifhub -> /c/code/ifhub"""
