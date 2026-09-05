@@ -8,6 +8,7 @@ These scripts run on the receive side only. They never compile, run, or test a g
 | `build_games.py` | Regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. Title, author, description, tags, and version fields all come from the conf. Idempotent; run by ship and push_hub |
 | `publish.py <game> ["message"]` | Commits and pushes a game folder to `Johnesco/<game>`. First run creates the repo, adds the Pages workflow, enables Pages |
 | `push_hub.py <game>` | Rebuilds the registry, commits and pushes `site/games.json`, `cards.json`, `hubs.json` |
+| `serve.py [--port 8892]` | Local preview: serves `site/` at `/ifhub/` and every game folder at `/<game>/` on one port, the GitHub Pages layout. The `hub-site` launch config runs it |
 | `check_links.py [--fix]` | Verifies every URL in the registry resolves to a file on disk; `--fix` drops broken optional URLs |
 | `build_landing.py --all` or `<base>` | Regenerates the landing page of a versioned group (zork1, dracula) from the group data in `games.json` and the primary folder's `landing.json` |
 | `web/generate_pages.py` | Writes a game's landing page (index.html) from `web/landing-template.html`; used by ship. The only file the hub writes into a game folder |

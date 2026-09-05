@@ -202,7 +202,7 @@ def main() -> None:
     if args.local:
         print()
         output.skip("--local: not publishing. The game is registered in the on-disk hub.")
-        print(f"  Preview:  /serve (Portman), then http://127.0.0.1:9000/ifhub/app.html?game={name}")
+        print(f"  Preview:  python tools/serve.py, then http://127.0.0.1:8892/ifhub/app.html?game={name}")
         return
 
     print(output.bold("4. publish"))

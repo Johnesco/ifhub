@@ -48,7 +48,7 @@ Each engine workspace under `C:/code/text-games/` has a `tools/build.py` that tu
 
 `--force` overwrites an existing `play.html`. Games with a hand-tuned player keep a `play-template.html` in their folder; the build scripts prefer it over the generic template, which makes `--force` safe.
 
-Preview any game locally with `python -m http.server 8000 --directory <game>` or through Portman (`/serve` in the hub).
+Preview any game locally with `python -m http.server 8000 --directory <game>`, or run `python tools/serve.py` in the hub and open `http://127.0.0.1:8892/ifhub/app.html?game=<game>` to see it inside the hub.
 
 ## 3. Ship to the hub
 
@@ -94,5 +94,5 @@ The hub itself does not need to know the engine name; `build_games.py` copies wh
 | Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. Remotes: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace` |
 | Inform 7 language references, interpreters, test framework | `C:/code/text-games/i7/reference/`, `i7/tools/interpreters/`, `i7/tools/` |
 | ifPlayer (I7 test runner and report format) | `C:/code/text-games/ifPlayer/` — repo `Johnesco/ifplayer` |
-| Portman (local multi-site server) | `C:/code/portman/` |
+| Local preview server | `tools/serve.py` in the hub: `site/` at `/ifhub/`, every game folder at `/<game>/`, one port |
 | The hub | `C:/code/ifhub/` — repo `Johnesco/ifhub`, site deployed from `site/` |

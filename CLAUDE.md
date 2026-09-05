@@ -53,12 +53,12 @@ ifhub/
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
-│   ├── check_links.py, build_landing.py
+│   ├── check_links.py, build_landing.py, serve.py (local preview: hub + games on one port)
 │   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (site behaviour), sdlc/
 ├── reference/               ← css-overlay.md (theming), multi-version-guide.md (versioned games)
-└── .claude/                 ← skills: serve, kill-servers (Portman local preview); launch.json: hub-site
+└── .claude/launch.json      ← hub-site: tools/serve.py on port 8892 (what the Browser pane's preview runs)
 ```
 
 **Game discovery:** `build_games.py` scans each root in `workspaces.json` for subfolders containing an `ifhub.conf`. A game is listed when its conf says `hub = yes`; `ship.py <game> --unlist` sets it back to `no`. Card text (title, subtitle from `author`, description) comes from the same conf, so nothing in `games.json` or `cards.json` is hand-maintained.
@@ -67,7 +67,7 @@ ifhub/
 
 - `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
 - Versioned games (zork1 v0..v3, dracula): `versionOf` / `versionPrimary` in `ifhub.conf` collapse a group into one card. See `reference/multi-version-guide.md`.
-- Local preview: `/serve` starts Portman (port 9000) and registers the site plus every game folder; `/kill-servers` stops it.
+- Local preview: `python tools/serve.py` (or the `hub-site` launch config) serves `site/` at `/ifhub/` and every game folder at `/<game>/` on one port, the same URL layout as GitHub Pages. Zero configuration, nothing to install.
 
 ## Engine workspaces (outside this repo)
 

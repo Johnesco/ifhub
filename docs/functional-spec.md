@@ -314,7 +314,7 @@ Before March 2026 a deploy step copied binaries and generated pages into the hub
 
 ### 6.4 Local Development
 
-Use the `/serve` skill: it starts Portman on port 9000 and registers `site/` plus every game folder so the hub and the games load at production-equivalent URLs (`/ifhub/app.html`, `/<game>/play.html`). `/kill-servers` stops it. For the hub pages alone, `.claude/launch.json` defines `hub-site`, a plain `http.server` on port 8892 serving `site/`.
+`python tools/serve.py` (port 8892) serves `site/` at `/ifhub/` and every game folder found under the `workspaces.json` roots at `/<game>/`, so the hub and the games load at production-equivalent URLs (`/ifhub/app.html`, `/<game>/play.html`) on one origin. `.claude/launch.json` points the Browser pane's `hub-site` preview at it. Nothing to install or register.
 
 ### 6.5 Publishing a Game
 
@@ -375,7 +375,7 @@ Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId
 
 - Hub deployed to **GitHub Pages** from the ifhub repo
 - Games deployed to GitHub Pages from their own repos (e.g., `johnesco.github.io/zork1/`)
-- Local development: `/serve` (Portman, hub + all games) or the `hub-site` launch config (see 6.4)
+- Local development: `python tools/serve.py` (hub + all games on one port; see 6.4)
 - No build or deploy step — the hub is always up to date (games serve from their own repos)
 - `file://` protocol does not work (CORS restrictions on JSONP script loading)
 
