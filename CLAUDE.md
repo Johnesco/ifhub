@@ -45,8 +45,8 @@ python tools/build_landing.py --all      # regenerate landing pages for versione
 ifhub/
 ├── CLAUDE.md, README.md
 ├── workspaces.json          ← roots scanned for game folders: ../text-games/<engine>
-├── site/                    ← the static hub: index.html (cards), app.html (split-pane player),
-│                              play.html, themes.js, games.json, cards.json, hubs.json, lib/parchment/
+├── site/                    ← the static hub: index.html (cards), app.html (split-pane player), themes.js,
+│                              games.json, cards.json, hubs.json
 ├── tools/
 │   ├── ship.py              ← intake: contract check → wrapper pages → register → publish → push hub
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)

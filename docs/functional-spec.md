@@ -21,8 +21,8 @@ Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment)
 - Games are separate repositories at `C:/code/text-games/<engine>/<game>/`, built and tested by their engine workspace; the hub discovers them through `workspaces.json` and each game's `ifhub.conf`
 
 **Section map:**
-- Sections 2–9: The web player application (pages, registry, source viewer, sound, binary format, visual design, hosting)
-- Section 10: Building and publishing (the engine workspaces build; the hub ships)
+- Sections 2–8: The hub site (pages, registry, source viewer, sound, visual design, hosting)
+- Section 9: Building and publishing (the engine workspaces build; the hub ships)
 
 ---
 
@@ -34,7 +34,6 @@ IF Hub consists of four page types:
 |------|------|---------|
 | Landing page | `index.html` | Game catalog with cards, descriptions, and links |
 | Split-pane player | `app.html` | Game + source viewer + walkthrough in a resizable layout |
-| Shared play page | `play.html` | Parchment game player (loaded in iframes or standalone) |
 | Per-game pages | `/<game>/play.html` | Served in-place from game repos via GitHub Pages |
 
 ### 2.1 Landing Page (`index.html`)
@@ -139,55 +138,7 @@ A fourth view alongside Game, Source, and Walkthrough. Loads the game's `testsUr
 - Below 1024px: sidebar hidden
 - Below 800px: single-column layout, resize handle hidden
 
-### 2.3 Shared Play Page (`play.html`)
-
-A Parchment player page for standalone use. In the serve-in-place architecture, `app.html` iframes each game's own play page directly — this shared page is a fallback for direct access.
-
-**URL parameters:**
-- `?binary=<path>` — path to the `.ulx.js` or `.gblorb.js` binary
-- `?title=<title>` — game title (used for page title and loading display)
-
-**Parchment configuration:**
-- `default_story`: binary path from URL parameter
-- `lib_path`: `lib/parchment/`
-- `story_name`: derived from binary path (filename only) — required for Parchment's file type detection
-- `use_proxy`: 0 (disabled)
-- `do_vm_autosave`: 1 (enabled)
-
-**CSS theming:**
-- Base dark theme with Glk variable overrides (buffer, grid, input colors)
-- Serif font stack: Iowan Old Style, Palatino, Georgia, Times New Roman
-- Monospace font stack: SF Mono, Fira Code, Cascadia Code, Consolas
-- Custom scrollbar styling (dark track, subtle thumb)
-- Glk style overrides: `.Input` (bold gold), `.Style_user1` (hidden), `.Style_header`, `.Style_alert`, `.Style_note`
-
-**Version-gated CSS effects (Zork I v3+):**
-
-When the binary path matches `zork1-v(\d+)` with version >= 3 (or unversioned current), the page activates `body.zork1-enhanced` with:
-- Mood palette system: CSS custom properties (`--mood-*`) updated dynamically via JS based on the current room's zone
-- Smooth 1.2s color transitions between zones using CSS `@property` registered custom properties
-- CRT terminal intro effect on first load
-- Reversed status bar styling
-- "Up a Tree" visual effects (canopy glow, falling leaves)
-- Egg taken golden explosion flash
-- Larger font sizes (19px buffer, 17px grid)
-- Text fade-in on new content
-- Sword blue glow vignette effect
-
-**Sound integration:**
-- When embedded in `app.html`, responds to `ifhub:setMute` and `ifhub:setVolume` postMessage commands
-- Posts `ifhub:soundReady` to parent when sound is available
-
-**Page lifecycle:**
-- `pageshow` event handler: reloads on back/forward navigation (`e.persisted`) to prevent stale game state
-
-**Platform theme support:**
-- Loads `themes.js` and calls `initTheme('game')` to apply the current theme
-- Theme listener responds to `ifhub:applyTheme` and `ifhub:restoreOverlay` postMessage events
-- On `ifhub:applyTheme`: injects a `<style id="platform-theme-override">` element with `!important` rules for game colors
-- On `ifhub:restoreOverlay`: removes the `<style id="platform-theme-override">` element to restore the native appearance
-
-### 2.4 Per-Game Pages (served in-place)
+### 2.3 Per-Game Pages (served in-place)
 
 Each game project owns its own pages (`play.html`, `source.html`, `walkthrough.html`, `index.html`) and deploys them via GitHub Pages. The hub references these pages by URL — no copying or generation needed.
 
@@ -334,7 +285,6 @@ The split-pane player provides centralized sound controls in the toolbar:
 
 | `ifhub:applyTheme` | parent → iframe | `type`, `game` (object with colors/fonts), `scrollbar` (object) | Apply platform theme colors, suppress overlay |
 | `ifhub:restoreOverlay` | parent → iframe | `type` | Remove platform theme, restore native overlay |
-| `ifhub:themeChange` | parent → iframe | `type`, `themeId` (string) | Live theme switch (hub's play.html only) |
 
 Controls are hidden until `ifhub:soundReady` is received. On receipt, the parent pushes the current mute/volume state to the iframe.
 
@@ -372,50 +322,9 @@ Games are built and tested in their engine workspace, then shipped with `python 
 
 ---
 
-## 7. Binary Format
+## 7. Visual Design
 
-### 7.1 `.ulx.js` / `.gblorb.js` Wrapping
-
-Parchment loads game binaries via JSONP-style `<script>` tags. The binary file must be a single-line JavaScript file:
-
-```
-processBase64Zcode('BASE64_ENCODED_BINARY')
-```
-
-**Requirements:**
-- Single quotes around the base64 string
-- No `var` declaration, no semicolons
-- Entire file must be exactly one line (no interior newlines)
-- `processBase64Zcode` is defined by Parchment's `parchment.js`
-
-**Why JSONP?** Avoids CORS restrictions that would block `fetch()` on `file://` URLs.
-
-### 7.2 Parchment Library Files
-
-Each deployment needs 12 files in `lib/parchment/`:
-
-| File | Role |
-|------|------|
-| `jquery.min.js` | DOM library |
-| `main.js` | Game loader |
-| `main.css` | Layout styling |
-| `parchment.css` | Engine styling |
-| `parchment.js` | Engine (with AudioContext sound support) |
-| `quixe.js` | JS Glulx interpreter |
-| `glulxe.js` | WASM Glulx interpreter |
-| `ie.js` | IE compatibility (nomodule) |
-| `bocfel.js` | Z-machine interpreter |
-| `resourcemap.js` | Resource mapping |
-| `zvm.js` | Z-machine VM |
-| `waiting.gif` | Loading indicator |
-
-IF Hub keeps its own copy at `site/lib/parchment/` for `site/play.html`. The copy that gets installed into Inform 7 and Z-machine games lives in the Inform 7 workspace (`C:/code/text-games/i7/tools/web/parchment/`).
-
----
-
-## 8. Visual Design
-
-### 8.1 Color Palette
+### 7.1 Color Palette
 
 Dark theme throughout:
 
@@ -430,14 +339,14 @@ Dark theme throughout:
 | Borders | `#2a2418` / `#1e1a14` | Cards, grid window, dividers |
 | Status bar | `#1c1810` bg, `#aa9966` fg | Grid window (Glk) |
 
-### 8.2 Typography
+### 7.2 Typography
 
 - **Body:** Georgia, "Times New Roman", serif
 - **Code:** SF Mono, Fira Code, Cascadia Code, Consolas, Courier New, monospace
 - **Code font size:** 13px with 1.55 line-height
 - **Buffer text:** 16px with 1.6 line-height (19px in Zork I v3+ enhanced mode)
 
-### 8.3 Platform Themes
+### 7.3 Platform Themes
 
 The hub supports 10 retro platform themes modeled after systems Infocom shipped Z-machine games on. Themes are defined in `themes.js` and each contains three property groups:
 
@@ -449,7 +358,7 @@ Theme selection persists in `localStorage` key `ifhub-theme`. The landing page a
 
 **Available themes:** Classic (default), MS-DOS, Apple II, Commodore 64, Amiga, Macintosh, Atari ST, CP/M (Kaypro), Atari 800, TRS-80
 
-### 8.4 Overlay Selector
+### 7.4 Overlay Selector
 
 Games with CSS overlays (mood palettes, atmospheric effects) have their overlay listed as a selectable style option alongside platform themes. The style dropdown in `app.html` shows:
 
@@ -462,7 +371,7 @@ Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId
 
 ---
 
-## 9. Hosting and Serving
+## 8. Hosting and Serving
 
 - Hub deployed to **GitHub Pages** from the ifhub repo
 - Games deployed to GitHub Pages from their own repos (e.g., `johnesco.github.io/zork1/`)
@@ -472,6 +381,6 @@ Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId
 
 ---
 
-## 10. Building and Publishing
+## 9. Building and Publishing
 
 IF Hub does not build or test games. Each engine workspace under `C:/code/text-games/<engine>/` has a `tools/build.py` that compiles, tests, and lays out the game folder. The hub's `tools/ship.py` verifies the folder contract (`ifhub.conf` + `play.html`), generates the wrapper pages (`index.html`, `source.html`, `walkthrough.html`) when missing, sets `hub = yes`, rebuilds `games.json` + `cards.json`, publishes the folder to its GitHub Pages repo, and pushes the hub registry. See `docs/publishing.md`.
