@@ -7,27 +7,31 @@ engine workspace (text-games/<engine>/tools/build.py) and then shipped here.
 Usage:
     python tools/ship.py <game> [--local] [--refresh-pages] [--message "commit message"]
     python tools/ship.py <game> --unlist [--local]
+    python tools/ship.py <game> --clean-wrappers [--local]
 
 <game> is the folder name of a game under one of the workspaces.json roots, or a path.
 
 The contract (what the folder must contain):
     ifhub.conf      engine, title (plus description, tags, source, walkthrough, sound...)
     play.html       a self-contained web player, with any libs it needs (lib/parchment/, ...)
-Optional, picked up when present:
-    <source>        the file named by `source =` in ifhub.conf (shown in the hub's source pane)
-    walkthrough.txt, walkthrough_output.txt, walkthrough-guide.txt   (root or tests/*/)
+Optional, picked up when present (the hub renders these itself):
+    <source>        the raw file named by `source =` in ifhub.conf (highlighted in the source pane;
+                    or set sourceBrowser = yes and ship your own source.html)
+    walkthrough.txt, walkthrough_output.txt, walkthrough-guide.txt   at the game root
     tests.html      a test report page; the hub shows a Tests tab when it exists
 
 Steps:
     1. verify the contract
-    2. generate the hub's wrapper pages when missing: index.html, source.html, walkthrough.html
-       (--refresh-pages regenerates them from the current templates)
+    2. write the game's landing page (index.html) when missing
+       (--refresh-pages rewrites it from the current template)
     3. register: set `hub = yes` in ifhub.conf, rebuild site/games.json + site/cards.json
     4. publish the folder to https://johnesco.github.io/<game>/       (skipped with --local)
     5. commit and push the hub registry so the live hub lists it       (skipped with --local)
 
 --unlist sets `hub = no` instead, rebuilds the registry, and pushes the hub (unless --local).
 The game's own repo and Pages site are left alone; it just disappears from the hub.
+--clean-wrappers deletes source.html / walkthrough.html that an older hub generated into the
+folder (source.html is kept when the conf says sourceBrowser = yes), then continues shipping.
 """
 
 import argparse
@@ -70,49 +74,34 @@ def verify_contract(game_dir: Path) -> tuple[dict, list[str]]:
     return conf, problems
 
 
-def has_walkthrough(game_dir: Path) -> bool:
-    if (game_dir / "walkthrough.txt").exists():
-        return True
-    tests = game_dir / "tests"
-    if tests.is_dir():
-        if (tests / "walkthrough.txt").exists():
-            return True
-        return any((sub / "walkthrough.txt").exists() for sub in tests.iterdir() if sub.is_dir())
-    return False
-
-
 def run(cmd: list) -> int:
     return subprocess.run([str(c) for c in cmd]).returncode
 
 
-def generate_pages(game_dir: Path, conf: dict, refresh: bool) -> None:
-    py = sys.executable
-    if refresh or not (game_dir / "index.html").exists() or not (game_dir / "source.html").exists():
-        cmd = [py, paths.WEB_DIR / "generate_pages.py",
-               "--title", conf["title"],
-               "--meta", conf.get("meta", "An Interactive Fiction"),
-               "--description", conf.get("description", "An interactive fiction game."),
-               "--id", game_dir.name, "--out", game_dir]
-        if conf.get("source"):
-            cmd += ["--source-file", conf["source"]]
-        if refresh:
-            cmd.append("--force")
-        if run(cmd):
-            raise RuntimeError("generate_pages.py failed")
-    else:
-        print("  index.html, source.html: present")
+def generate_landing(game_dir: Path, conf: dict, refresh: bool) -> None:
+    """index.html is the only file the hub writes into a game folder."""
+    if not refresh and (game_dir / "index.html").exists():
+        print("  index.html: present")
+        return
+    cmd = [sys.executable, paths.WEB_DIR / "generate_pages.py",
+           "--title", conf["title"],
+           "--meta", conf.get("author", "An Interactive Fiction"),
+           "--description", conf.get("description", "An interactive fiction game."),
+           "--id", game_dir.name, "--out", game_dir]
+    if refresh:
+        cmd.append("--force")
+    if run(cmd):
+        raise RuntimeError("generate_pages.py failed")
 
-    if has_walkthrough(game_dir):
-        if refresh or not (game_dir / "walkthrough.html").exists():
-            cmd = [py, paths.WEB_DIR / "generate_walkthrough.py", "--title", conf["title"], "--out", game_dir]
-            if refresh:
-                cmd.append("--force")
-            if run(cmd):
-                raise RuntimeError("generate_walkthrough.py failed")
-        else:
-            print("  walkthrough.html: present")
-    else:
-        print("  no walkthrough.txt: skipping walkthrough.html")
+
+def stale_wrappers(game_dir: Path, conf: dict) -> list[Path]:
+    """Pages an older hub generated into the folder; the hub renders these views itself now."""
+    stale = []
+    if (game_dir / "walkthrough.html").exists():
+        stale.append(game_dir / "walkthrough.html")
+    if (game_dir / "source.html").exists() and not build_games.as_bool(conf.get("sourceBrowser")):
+        stale.append(game_dir / "source.html")
+    return stale
 
 
 def upsert_conf_field(lines: list[str], key: str, value: str) -> list[str]:
@@ -162,6 +151,8 @@ def main() -> None:
     parser.add_argument("--message", default="", help="Commit message for the game repo")
     parser.add_argument("--unlist", action="store_true",
                         help="Set hub = no so the game disappears from the hub (repo and Pages untouched)")
+    parser.add_argument("--clean-wrappers", action="store_true",
+                        help="Delete source.html / walkthrough.html left behind by the old hub-generated pages")
     args = parser.parse_args()
 
     game_dir = resolve_game(args.game)
@@ -189,10 +180,19 @@ def main() -> None:
         print("\nSee the docstring of this script (or docs/publishing.md) for what a game folder needs.")
         sys.exit(1)
     output.ok(f"{conf['engine']} game '{conf['title']}' at {game_dir}")
+    if not (game_dir / "walkthrough.txt").exists() and list(game_dir.glob("tests/*/walkthrough.txt")):
+        output.warn("walkthrough.txt exists under tests/ but not at the game root; the hub only reads the root")
+    stale = stale_wrappers(game_dir, conf)
+    if stale and args.clean_wrappers:
+        for f in stale:
+            f.unlink()
+            print(f"  removed stale {f.name}")
+    elif stale:
+        output.warn("old generated " + ", ".join(f.name for f in stale) + " present; the hub renders these now. Remove with --clean-wrappers")
 
     try:
-        print(output.bold("2. wrapper pages"))
-        generate_pages(game_dir, conf, args.refresh_pages)
+        print(output.bold("2. landing page"))
+        generate_landing(game_dir, conf, args.refresh_pages)
         print(output.bold("3. register"))
         register(game_dir)
     except RuntimeError as e:

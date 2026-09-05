@@ -142,9 +142,13 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
 
     probe_root = deploy_dir
 
-    walkthrough_html = probe_root / "walkthrough.html"
-    if walkthrough_html.exists():
-        entry["walkthroughUrl"] = f"{url_prefix}/walkthrough.html"
+    # The hub renders walkthroughs itself (site/walkthrough.html) from the raw
+    # files at the game root; walkthroughUrl names the commands file (or the guide
+    # when a game only ships the annotated guide).
+    for wt_name in ("walkthrough.txt", "walkthrough-guide.txt"):
+        if (probe_root / wt_name).exists():
+            entry["walkthroughUrl"] = f"{url_prefix}/{wt_name}"
+            break
 
     tests_html = probe_root / "tests.html"
     if tests_html.exists():
@@ -154,28 +158,17 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
     if landing_html.exists():
         entry["landingUrl"] = f"{url_prefix}/"
 
-    # sourceBrowser defaults ON. Absent ifhub.conf key = default. Explicit
-    # `sourceBrowser = no` turns it off (raw-source URL like /zork1/story.ni).
-    raw_sb = conf.get("sourceBrowser")
-    if raw_sb is None:
-        source_browser = True
-    else:
-        source_browser = as_bool(raw_sb)
-
+    # The hub renders source itself from the raw file named by `source =`.
+    # `sourceBrowser = yes` is an explicit opt-in for games that ship their own
+    # source.html (e.g. a multi-file ZIL browser); it is never inferred.
     source_html = probe_root / "source.html"
-    if source_browser and source_html.exists():
+    if as_bool(conf.get("sourceBrowser")) and source_html.exists():
         entry["sourceBrowser"] = True
         entry["sourceUrl"] = f"{url_prefix}/source.html"
     elif conf.get("source"):
-        # Keep the full relative path (e.g. src/cloak_of_darkness.rez) — some
-        # engines point at a subfolder source; the URL must match.
         src_rel = conf["source"].replace("\\", "/").strip("/")
-        src_path = probe_root / src_rel
-        if src_path.exists():
+        if (probe_root / src_rel).is_file():
             entry["sourceUrl"] = f"{url_prefix}/{src_rel}"
-        elif source_html.exists():
-            entry["sourceBrowser"] = True
-            entry["sourceUrl"] = f"{url_prefix}/source.html"
 
     engine = conf.get("engine", "")
     if engine:
