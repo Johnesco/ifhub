@@ -475,24 +475,20 @@ function populateThemeOptions(select) {
 }
 
 // Resolve hub from URL params: returns { activeHub, hubParam }
-function resolveHub(hubs) {
-    var params = new URLSearchParams(window.location.search);
-    var hubParam = params.get('hub');
-    var activeHub = null;
-    if (hubParam) {
-        for (var i = 0; i < hubs.length; i++) {
-            if (hubs[i].id === hubParam) { activeHub = hubs[i]; break; }
-        }
-    }
-    return { activeHub: activeHub, hubParam: hubParam };
-}
 
 // Filter a data entry by hub filter criteria
-function matchesHub(entry, hub) {
-    if (!hub || !hub.filter) return true;
-    if (hub.filter.engine && entry.engine !== hub.filter.engine) return false;
-    if (hub.filter.tag && (!entry.tags || entry.tags.indexOf(hub.filter.tag) === -1)) return false;
-    return true;
+
+/* Fill a <select> with the platform themes, select the saved one, and apply the chrome on
+   change. Used by createThemeDropdown() and by the landing page's own select. The player's
+   style dropdown adds a per-game overlay option on top of populateThemeOptions(). */
+function wireThemeSelect(select) {
+    populateThemeOptions(select);
+    select.value = getThemeId();
+    select.addEventListener('change', function() {
+        setThemeId(this.value);
+        applyChrome(getTheme(this.value));
+    });
+    return select;
 }
 
 function createThemeDropdown(containerId) {
@@ -507,14 +503,7 @@ function createThemeDropdown(containerId) {
     var select = document.createElement('select');
     select.id = 'theme-select';
     select.style.cssText = THEME_SELECT_STYLE;
-    populateThemeOptions(select);
-    select.value = getThemeId();
-
-    select.addEventListener('change', function() {
-        var id = this.value;
-        setThemeId(id);
-        applyChrome(getTheme(id));
-    });
+    wireThemeSelect(select);
 
     container.appendChild(label);
     container.appendChild(select);

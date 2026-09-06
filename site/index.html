@@ -229,6 +229,7 @@ footer a {
 }
 </style>
 <script src="themes.js"></script>
+<script src="hub.js"></script>
 <script>initTheme('library');</script>
 </head>
 <body>
@@ -256,12 +257,9 @@ footer a {
 <div id="games"></div>
 
 <script>
-Promise.all([
-  fetch('cards.json').then(function(r) { return r.json(); }),
-  fetch('hubs.json').then(function(r) { return r.json(); })
-]).then(function(results) {
-  var cards = results[0];
-  var hubs = results[1];
+loadHubData('cards.json').then(function(data) {
+  var cards = data.entries;
+  var hubs = data.hubs;
 
   var collectionSelect = document.getElementById('collection-select');
   var container = document.getElementById('games');
@@ -288,15 +286,8 @@ Promise.all([
   // Back/forward restores the collection encoded in the URL
   window.addEventListener('popstate', render);
 
-  // Wire up theme dropdown (element already exists in HTML)
-  var themeSelect = document.getElementById('theme-select');
-  populateThemeOptions(themeSelect);
-  themeSelect.value = getThemeId();
-  themeSelect.addEventListener('change', function() {
-    var id = this.value;
-    setThemeId(id);
-    applyChrome(getTheme(id));
-  });
+  // Theme dropdown (element already exists in HTML)
+  wireThemeSelect(document.getElementById('theme-select'));
 
   // Render the catalog for whichever collection the current URL selects.
   function render() {
@@ -410,6 +401,8 @@ Promise.all([
   }
 
   render();
+}).catch(function(err) {
+  showLoadError('games', err);
 });
 </script>
 
