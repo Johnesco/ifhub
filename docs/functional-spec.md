@@ -1,386 +1,123 @@
 # IF Hub — Functional Specification
 
-> **Status:** Living document. This is the authoritative specification for IF Hub application behavior. It supersedes CLAUDE.md for all feature and behavior descriptions.
+> What the hub site does today. How games get here is in `docs/publishing.md`; how work happens is in `docs/sdlc.md`.
 
----
+## 1. What IF Hub is
 
-## 1. Overview
+IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interactive fiction games next to their source code and walkthroughs. It is receive-only: games are built and tested in their engine workspaces and published to their own GitHub Pages repos (`johnesco.github.io/<game>/`); the hub lists and displays them.
 
-IF Hub is a development hub and web player for Inform 7 interactive fiction. It provides:
-
-- **A shared toolchain** — compilation, testing, web player setup, and project scaffolding
-- **A multi-game web player** — the `site/` static site where users play games, read source code, and follow walkthroughs (serves games in-place from their own repos)
-- **Inform 7 reference documentation** — syntax guides, formatting, world model, and more
-
-Games run in-browser via [Parchment](https://github.com/curiousdannii/parchment), a JavaScript interpreter for the Glulx and Z-machine virtual machines. Sound-enabled games embed audio in native blorb format.
-
-**Key constraints:**
-- Pure static site — no server, no accounts, no tracking
-- All game binaries and assets are committed to the repo
-- Deployed to GitHub Pages from the repo directly
-- Games are separate repositories at `C:/code/text-games/<engine>/<game>/`, built and tested by their engine workspace; the hub discovers them through `workspaces.json` and each game's `ifhub.conf`
-
-**Section map:**
-- Sections 2–8: The hub site (pages, registry, source viewer, sound, visual design, hosting)
-- Section 9: Building and publishing (the engine workspaces build; the hub ships)
-
----
+- Pure static site: no server, accounts or tracking. Deployed by GitHub Actions from `site/` on every push to `master` that touches it.
+- Nothing from a game is copied into the hub. Every game asset loads from the game's own URL. All repos live under `johnesco.github.io`, so iframes, `fetch()` and `postMessage` are same-origin.
+- The data files (`games.json`, `cards.json`) are generated from each game's `ifhub.conf`; nothing in them is edited by hand.
 
 ## 2. Pages
 
-IF Hub consists of four page types:
-
 | Page | File | Purpose |
-|------|------|---------|
-| Landing page | `index.html` | Game catalog with cards, descriptions, and links |
-| Split-pane player | `app.html` | Game + source viewer + walkthrough in a resizable layout |
-| Per-game pages | `/<game>/play.html` | Served in-place from game repos via GitHub Pages |
-
-### 2.1 Landing Page (`index.html`)
-
-The hub entry point. Fetches `cards.json` and renders a card for each game.
-
-**Behavior:**
-- Renders game cards in document order (same order as `cards.json`)
-- Each card shows: title, meta text, description, and links
-- Links per card: "Play fullscreen" (the game's own `playUrl`), "Play in IF Hub" (`app.html?game=<id>`), "Source" and "Walkthrough" (hub views: `app.html?game=<id>&view=source|walkthrough`)
-- Sound-enabled games show "(with sound)" after the play label
-- Versioned games show additional version links below the main card links
-- Card metadata is maintained in `cards.json`
-
-**Theme picker:**
-- A `.title-row` flex container next to the h1 title holds a theme dropdown
-- Dropdown populated from `themes.js` with 10 platform themes
-- Theme selection persisted in `localStorage` key `ifhub-theme`
-
-**Collections:**
-- A Collection dropdown (populated from `hubs.json`) filters the catalog to a curated subset (by engine or tag)
-- The active collection is encoded in the URL query string as `?hub=<id>` (the "all" collection uses the bare path), so a filtered view is shareable and bookmarkable
-- Changing the collection updates the URL via `history.pushState` and re-renders the cards **in place** — no full page reload, since `cards.json`/`hubs.json` are already in memory
-- Browser back/forward (`popstate`) restores the collection encoded in the URL
-- When a non-"all" collection is active, the page title and subtitle are replaced with the collection's `title`/`description`
-- Deep links (`index.html?hub=<id>`) load the filtered view directly
-
-**Static content sections:**
-- "What's Inside" — feature list (play, source, walkthroughs, audio, resizable layout)
-- "About" — project description and philosophy
-- Footer with Inform 7 and Parchment attribution
+|---|---|---|
+| Landing page | `index.html` | catalog of game cards, collection picker, theme picker |
+| Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
+| Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
-### 2.2 Split-Pane Player (`app.html`)
+### 2.1 Landing page
 
-The primary play interface. A two-pane layout with the game on the left and source/walkthrough on the right.
+- Fetches `cards.json` and `hubs.json` and renders one card per entry, in file order. A card shows the title, the subtitle (the game's author line), the description, and a version picker for versioned groups.
+- Card actions: Play (the game's own `playUrl`), Source and Walkthrough (hub views in the player). The fullscreen checkbox applies to Play only: it opens the game's own page instead of the player.
+- Collections: a dropdown built from `hubs.json` filters the cards by engine or tag. The active collection is in the URL as `?hub=<id>` (bare path for "all"). Switching uses `history.pushState` and re-renders in place; back and forward restore it; a collection other than "all" replaces the page title and subtitle with its own.
+- Theme picker (§5.1), persisted in `localStorage` under `ifhub-theme`.
+- Static sections: "How It Works" and "Thank You" credits.
 
-**URL parameters:**
-- `?game=<id>` — loads the specified game on startup (defaults to first game in registry)
-- `?hub=<id>` — restricts the game selector to a collection from `hubs.json` (defaults to all games)
+### 2.2 Player (`app.html`)
 
-**Layout:**
-- CSS Grid with three columns: game pane, resize handle (5px), source pane
-- Game pane width stored in `--game-width` CSS variable, initialized from computed width
-- Resize handle supports mouse and touch drag to rebalance panes
-- Minimum pane width: 200px on each side
+URL parameters: `?game=<id>` (default: first game), `?hub=<id>` (restrict the game selector to a collection), `?view=<panes>` (for example `game+source`, `walkthrough`), `?theme=<id>`.
 
-**Toolbar (top, spans full width):**
-- Library link (always visible, returns to `index.html`; uses hub-filtered URL when `hub` param is active)
-- Collection selector dropdown (populated from `hubs.json`): re-filters the game selector **in place** — no page reload. Uses `history.replaceState` to keep the `?hub=` URL shareable without competing with the player iframe's session history. The currently-loaded game stays loaded if it belongs to the new collection; otherwise the first game in the collection loads
-- Game selector dropdown (populated from `games.json`)
-- Style dropdown (overlay-aware theme selector): for games with `overlayLabel`, shows the game's native overlay as the default first option, then a separator, then all platform themes; for games without overlays, shows only platform themes. Per-game style preference stored in `localStorage` key `ifhub-style-<gameId>`
-- Sound controls (mute button + volume slider) — hidden by default, shown when game iframe reports `ifhub:soundReady`
-- View toggle buttons: Game, Source, Walk, Tests (see **View switching** below)
-
-**View switching:**
-
-The toolbar displays four toggle buttons — Game, Source, Walk, and Tests — that control which panes are visible. The buttons follow two rules:
+Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2), sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests.
 
-- **Game** is independent: clicking it toggles the game pane on or off regardless of the other buttons.
-- **Source, Walk, and Tests** are mutually exclusive (radio behavior): clicking one activates it and deactivates the other two. Clicking the already-active button deactivates it (collapses the right pane).
-
-The active view combination is reflected in the URL query string as `?view=<panes>`, where panes are joined with `+`. Examples: `?view=game+tests`, `?view=game+source`, `?view=tests`. This allows bookmarkable links to specific view states.
-
-The Tests button is only visible for games that have `testsUrl` in `games.json`.
-
-**Pane visibility states:**
-- Default: both panes visible (game + source)
-- Source/right pane collapsed: `body.source-collapsed` — game fills full width
-- Game collapsed: `body.game-collapsed` — right pane fills full width
-- Toggle buttons: "Hide Game" / "Show Game" and dismiss (x) button
-- Clicking an active right-pane tab collapses the right pane; clicking an inactive tab expands and switches
-
-**Game pane:**
-- Iframe loading the game's own play page via `playUrl` from `games.json`
-- Updates when game selector changes
-
-**Source pane (source view):**
-- Toolbar: file path label, search box, line count, toggle/dismiss buttons
-- Navigation sidebar (220px, left): hierarchical outline from Part/Chapter/Section headings
-- Code area: syntax-highlighted Inform 7 source rendered as an HTML table
-- Source fetched from `sourceUrl` in `games.json`, cached per game ID
-- For ZIL source (`sourceBrowser: true`), loads an iframe instead of the code viewer
+View switching: Game toggles independently. Source, Walk and Tests are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl`.
 
-**Source pane (walkthrough view):**
-- Loads walkthrough HTML in an iframe from `walkthroughUrl` in `games.json`
-- Shows "Not yet available" message if no walkthrough defined for the game
+Layout: CSS grid with the game pane, a 5px resize handle (mouse and touch) and the side pane; each pane at least 200px. Below 1024px the source sidebar is hidden; below 800px the layout is a single column.
 
-**Source pane (tests view):**
+Panes:
 
-A fourth view alongside Game, Source, and Walkthrough. Loads the game's `testsUrl` in an iframe, following the same pattern as the walkthrough frame.
-
-- **Viewer page (`tests.html`):** A self-contained HTML page that reads `test-results.json` from its own directory. Each game version that has test results gets its own `tests.html` and `test-results.json` pair.
-- **Data format (`test-results.json`):** A compact JSON format produced by `slim-test-results.js` from full `transcript-test` output. Contains only the fields needed for display (pass/fail status, assertion details, command sequences).
-- **Summary view:** Shows pass/fail cards for each transcript — a quick overview of test health across the game's transcripts.
-- **Detail view:** Collapsible per-command sections showing individual assertions and their results.
-- **Visibility:** The Tests toggle button in the toolbar only appears for games that have `testsUrl` in `games.json`. `build_games.py` auto-detects `tests.html` on disk and sets `testsUrl` automatically when building the registry.
+- Game: iframe of `playUrl`.
+- Source: §4.
+- Walkthrough: iframe of `walkthrough.html?game=<id>` when the game has `walkthroughUrl`, otherwise "Not available".
+- Tests: iframe of `testsUrl`, whatever report page the workspace produced (Inform 7 games ship an ifPlayer report).
 
-**Keyboard shortcuts:**
-- Ctrl+F / Cmd+F: focus search box (when source pane is visible)
+Ctrl+F or Cmd+F focuses the source search while the source pane is visible.
 
-**Responsive breakpoints:**
-- Below 1024px: sidebar hidden
-- Below 800px: single-column layout, resize handle hidden
+### 2.3 Walkthrough viewer (`walkthrough.html`)
 
-### 2.3 Per-Game Pages (served in-place)
+Looks `?game=<id>` up in `games.json`, takes the game folder from `walkthroughUrl`, and fetches `walkthrough.txt`, `walkthrough_output.txt` and `walkthrough-guide.txt` from it. Three views: Commands (with guide sections and a navigation sidebar when a guide exists), Game Text (the transcript), and Replay (typed playback at 0.5x to 4x; Space, arrow keys and 1 to 4 control it). Game Text and Replay are disabled without a transcript; a game that ships only the guide still gets Commands. Download links for the commands and the guide. Replay speed is stored per game under `ifhub-wt-<id>-replay-speed`.
 
-Each game project owns its own `play.html` and `index.html` (landing page) and ships its raw source file and walkthrough txt files, all deployed via GitHub Pages. The hub references them by URL and never copies them; it renders the source and walkthrough views itself.
+### 2.4 Per-game pages (served in place)
 
-**Game page locations (served from game repos):**
-- Zork I: `johnesco.github.io/zork1/` — v0–v3 versioned pages, landing page
-- Dracula: `johnesco.github.io/dracula/` — current + v0 BASIC, landing page
-- Fever Dream: `johnesco.github.io/feverdream/` — play, source, walkthrough
-- Sample: `johnesco.github.io/sample/` — play, source, walkthrough
+A game repo publishes `play.html` (its own player), `index.html` (a landing page the hub writes once, linking Play plus the hub's Source and Walkthrough views), its raw source file, and its walkthrough text files. Player pages include `theme-listener.js` so hub themes apply (§5.3). The full contract is in `docs/publishing.md`.
 
-Each game has 4 standard pages at its root (or version directory):
-- `play.html` — Parchment game player
-- the raw source file named by `source =` in ifhub.conf, rendered by the hub's source pane (or the game's own `source.html` when `sourceBrowser = yes`)
-- `walkthrough.txt` (+ `walkthrough_output.txt`, `walkthrough-guide.txt`) at the game root, rendered by the hub's `walkthrough.html?game=<id>`
-- `index.html` — landing page with Play, Source, and Walkthrough links
+## 3. Data
 
-**Landing page link pattern:** Each game's `index.html` links to its own `play.html` and to the hub's source and walkthrough views for that game.
+### 3.1 `games.json`
 
-**Theme listener:**
-- All Parchment-based game `play.html` files include a theme listener script that handles `ifhub:applyTheme` and `ifhub:restoreOverlay` postMessage events
-- Games with CSS overlays additionally include suppression CSS for `body.platform-theme-active` — the body class hides game-specific visual effects (particles, scanlines, vignettes, pseudo-elements, animations) while the mood engine continues running in the background so that restoring the overlay gives correct room-state colors immediately
+One entry per game, generated from its `ifhub.conf`. URL fields are emitted only when the file exists at build time.
 
----
+| Field | Meaning |
+|---|---|
+| `id` | the game folder name, e.g. `zork1-v3` |
+| `title`, `author`, `description` | from the conf; `author` is the card subtitle |
+| `engine`, `tags` | used by collections and by the source highlighter |
+| `playUrl` | `/<game>/play.html`, always present |
+| `sourceUrl`, `sourceLabel`, `sourceBrowser` | the raw source file, or the game's own `source.html` when `sourceBrowser` is true (only when the conf says `sourceBrowser = yes`); the label shows in the pane toolbar |
+| `walkthroughUrl` | `/<game>/walkthrough.txt`, or `walkthrough-guide.txt` when only the guide exists; its folder is where the viewer reads from |
+| `testsUrl` | `/<game>/tests.html` when the file exists |
+| `landingUrl` | `/<game>/` when the game has an `index.html` |
+| `sound` | `blorb` for games with embedded audio |
+| `overlayLabel` | the name of the game's own CSS overlay (§5.2) |
+| `versionOf`, `versionLabel`, `versionOrder`, `versionPrimary`, `versionPrimaryLabel` | version-group data (§3.2) |
 
-## 3. Game Registry (`games.json`)
+### 3.2 `cards.json`
 
-The central data file that drives the landing page, game selector, source viewer, and player.
+Generated from `games.json`: one card per game or version group. Fields: `id`, `base`, `title`, `meta` (the author), `description`, `playUrl`, `landingUrl`, `engine`, `tags`, and when present `sound`, `sourceUrl`, `walkthroughUrl`, `testsUrl`. A group card adds `primaryLabel` and a `versions` list (`id`, `label`, `playUrl`, `landingUrl`, plus the optional URL fields). Membership comes from `versionOf` and `versionPrimary`, or from an id of the form `<base>-vN` when the base has a primary.
 
-### 3.1 Schema
+### 3.3 `hubs.json`
 
-Each entry is an object with these fields:
+The list of collections: `id`, `title`, `description`, and `filter`, which is `{ "engine": ... }`, `{ "tag": ... }`, both (AND), or `null` for everything.
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | Yes | Unique identifier (e.g., `"zork1-v3"`, `"sample"`) |
-| `title` | string | Yes | Display title shown in dropdown and page titles |
-| `author` | string | No | From `author =` in ifhub.conf; becomes the card subtitle |
-| `description` | string | No | From `description =` in ifhub.conf; becomes the card text |
-| `sourceLabel` | string | No | Label shown in source pane toolbar (e.g., `"zork1-v3.ni"`) |
-| `sourceBrowser` | boolean | No | True only when the game's ifhub.conf says `sourceBrowser = yes` and it ships a `source.html`; the source pane then iframes that page instead of rendering the raw file |
-| `playUrl` | string | Yes | Absolute URL path to game's play page (e.g., `"/zork1-v3/play.html"`) |
-| `sourceUrl` | string | No | Absolute URL path to the raw source file (e.g., `"/zork1/story.ni"`), or to the game's own `source.html` when `sourceBrowser` is true |
-| `walkthroughUrl` | string | No | Absolute URL path to the game's `walkthrough.txt`; the hub's `walkthrough.html?game=<id>` reads it and its companion files from the same folder |
-| `testsUrl` | string | No | Absolute URL path to the tests.html viewer page (e.g., `"/zork1/tests.html"`). When present, the Tests toggle button appears in the toolbar. `build_games.py` auto-detects `tests.html` on disk and sets this field automatically. |
-| `landingUrl` | string | No | Absolute URL path to game's landing page (e.g., `"/zork1/"`) |
-| `sound` | string | No | Sound mode: `"blorb"` for native Glk sound, absent for no sound |
-| `versionLabel` | string | No | Label shown in version lists (e.g., `"v2 — Bug Fixes"`) |
-| `overlayLabel` | string | No | Display label for the game's native CSS overlay (e.g., `"Fever Dream Overlay"`). When present, the style dropdown shows this as the default option. |
+## 4. Source viewer
 
-### 3.2 Card Metadata (`cards.json`)
+- Fetches `sourceUrl` (cached per game), normalises line endings, and renders a numbered table with syntax highlighting.
+- Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments).
+- Navigation sidebar (220px, hidden below 1024px): Inform 7 Volume/Book/Part/Chapter/Section headings, Rez elements, Ink knots and stitches, BASIC REM lines. Clicking scrolls to the line and marks it active.
+- Search: Ctrl+F, at least two characters, 200ms debounce, highlighted hits with a current-hit marker; Enter and Shift+Enter step through, Escape clears. It walks text nodes, so highlighting is preserved.
+- Browser mode: when `sourceBrowser` is true the pane iframes the game's own `source.html` instead. Used by zork1-v0 (multi-file ZIL browser) and dracula-v0 (annotated BASIC).
 
-`cards.json` is generated by `tools/build_games.py` from `games.json`; nothing in it is hand-maintained. Each card represents a game (grouping versions) with:
+## 5. Themes
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Game ID (primary entry, e.g., `"zork1-v3"`) |
-| `base` | string | Base ID (e.g., `"zork1"`) |
-| `title` | string | Display title for the card |
-| `meta` | string | Subtitle: the game's `author` from ifhub.conf |
-| `description` | string | The game's `description` from ifhub.conf |
-| `sound` | string | Sound mode (if present) |
-| `playUrl` | string | Absolute URL to play page |
-| `landingUrl` | string | Absolute URL to landing page |
-| `versions` | array | Version entries with `id`, `label`, optional `sound`, and `playUrl` |
+### 5.1 Platform themes
 
-### 3.3 Current Games
+Fifteen themes live in `themes.js`: classic (default), dos, apple2, c64, amiga, mac, atarist, cpm, atari8, trs80, sepia, midnight, forest, lavender, solarized. Each defines `chrome` (hub UI colours and font), `game` (colours, fonts and sizes pushed into game pages) and `scrollbar`. The choice persists in `localStorage` under `ifhub-theme`; pages apply the chrome by setting CSS custom properties on the root element. Retro fonts load from Google Fonts on demand.
 
-The live list is `site/games.json`, regenerated by `tools/build_games.py` from every `ifhub.conf` found under the `workspaces.json` roots. Landing-page cards are collapsed into `site/cards.json` (versioned groups become one card).
+### 5.2 Style dropdown and overlays
 
----
+In the player the Style dropdown lists the platform themes. For a game with `overlayLabel` its own overlay is the first and default option, then a separator, then the themes; the per-game choice is stored under `ifhub-style-<id>`. Choosing a platform theme injects a style block into the same-origin game, source-browser, walkthrough and tests iframes, using engine-specific CSS builders (Parchment, Ink, BASIC, Rez, test report), and posts `ifhub:applyTheme` to the game. Choosing the overlay posts `ifhub:restoreOverlay`.
 
-## 4. Source Viewer
-
-The source viewer fetches the game's raw source file and renders it with syntax highlighting, navigation, and search. Highlighters exist for Inform 7, Rez, Ink, and BASIC; a game with `sourceBrowser: true` is shown through its own `source.html` in an iframe instead.
-
-### 4.1 Syntax Highlighting
-
-Line-by-line highlighting with these token classes:
-
-| Class | Color | Matches |
-|-------|-------|---------|
-| `.syn-head` | `#e0c8a0` bold | Part/Chapter/Section/Volume/Book headings |
-| `.syn-tbl` | `#9090b0` | Table declarations |
-| `.syn-str` | `#8bab6e` | String literals (`"..."`) |
-| `.syn-sub` | `#7ea8b0` | Text substitutions (`[...]` inside strings) |
-| `.syn-cmt` | `#605840` italic | Comments (`[...]` outside strings) |
-| `.syn-kw` | `#c08050` | Keywords (Understand, Instead, After, Before, etc.) |
-| `.syn-num` | `#b08a70` | Numeric literals |
-| `.syn-rule` | `#b89860` | Rule names |
-
-**Highlighting precedence:** Headings and table lines are highlighted as a whole line. Otherwise, the highlighter tracks state across the line: normal → string → substitution → comment, with bracket depth counting for nested `[...]`.
-
-### 4.2 Navigation Sidebar
-
-- Parses heading lines matching `^(Volume|Book|Part|Chapter|Section)\s+(.+)`
-- Renders as a hierarchical list: Part/Volume/Book at top level, Chapter indented, Section further indented
-- Clicking a nav item scrolls the corresponding line into view and marks it as active
-- Hidden below 1024px viewport width
-
-### 4.3 Search
-
-- Activated by Ctrl+F or clicking the search box
-- Minimum 2 characters to trigger search
-- 200ms debounce on input
-- Highlights matches with `.search-hit` class (gold background)
-- Current match highlighted with `.search-current` (brighter, with outline)
-- Enter: next match; Shift+Enter: previous match; Escape: clear and blur
-- Uses TreeWalker to find text nodes, preserving existing syntax highlight spans
-
-### 4.4 Source Browser Mode
-
-For games with `sourceBrowser: true`, the source pane loads a standalone HTML page in an iframe instead of the built-in Inform 7 code viewer. Currently used by:
-- `zork1-v0` — ZIL source browser with custom syntax highlighting and annotation features
-- `dracula-v0` — BASIC source browser with annotation toggle
-- `zork1-v0` — multi-file ZIL source browser shipped by the game itself
-
----
-
-## 5. Sound System
-
-### 5.1 Architecture
-
-Sound-enabled games use **native Glk/blorb sound**. Audio files (`.ogg`) are embedded in the `.gblorb` binary at compile time. Parchment's Emglken WASM engine plays sounds via AudioContext when the game issues Glk sound channel calls.
-
-There is no JavaScript overlay or separate audio file loading. The game binary is self-contained.
-
-### 5.2 Hub Sound Controls (`app.html`)
-
-The split-pane player provides centralized sound controls in the toolbar:
-
-- **Mute button** — SVG speaker icon, toggles between speaker and muted state
-- **Volume slider** — range input (0-100), default 70
-
-**Persistence:** Mute state and volume are stored in `localStorage`:
-- `ifhub-audio-muted`: `"1"` or `"0"`
-- `ifhub-audio-volume`: integer 0-100
-
-**postMessage protocol:**
+### 5.3 Message protocol
 
 | Message | Direction | Fields | Purpose |
-|---------|-----------|--------|---------|
-| `ifhub:soundReady` | iframe → parent | `type` | Game has sound capability; show controls |
-| `ifhub:setMute` | parent → iframe | `type`, `muted` (boolean) | Toggle mute |
-| `ifhub:setVolume` | parent → iframe | `type`, `volume` (0.0-1.0) | Set volume |
+|---|---|---|---|
+| `ifhub:applyTheme` | hub → game | `game`, `scrollbar` | apply the theme colours; the game adds `body.platform-theme-active` and hides its own effects |
+| `ifhub:restoreOverlay` | hub → game | | remove the theme and restore the game's own overlay |
+| `ifhub:soundReady` | game → hub | | the game has audio; show the sound controls |
+| `ifhub:setMute` | hub → game | `muted` | |
+| `ifhub:setVolume` | hub → game | `volume` (0 to 1) | |
 
-| `ifhub:applyTheme` | parent → iframe | `type`, `game` (object with colors/fonts), `scrollbar` (object) | Apply platform theme colors, suppress overlay |
-| `ifhub:restoreOverlay` | parent → iframe | `type` | Remove platform theme, restore native overlay |
+## 6. Sound controls
 
-Controls are hidden until `ifhub:soundReady` is received. On receipt, the parent pushes the current mute/volume state to the iframe.
+Games with embedded blorb audio play it through their own Parchment copy. Once a game posts `ifhub:soundReady`, the player shows a mute button and a 0 to 100 volume slider, pushes the stored state to the game, and persists it under `ifhub-audio-muted` and `ifhub-audio-volume`.
 
----
+## 7. Hosting and local development
 
-## 6. Serve-in-Place Architecture
+- The hub deploys to GitHub Pages from `site/` through the Actions workflow on every push to `master` that touches `site/**`. Games deploy from their own repos.
+- Locally, `python tools/serve.py` serves `site/` at `/ifhub/` and every game folder at `/<game>/` on port 8892; the `hub-site` launch config runs it. Opening the files over `file://` does not work.
 
-The hub serves games **in-place** from their own GitHub Pages deployments. There is no deploy pipeline that copies files into the hub — each game project is the single source of truth for its own assets.
+## 8. Building and publishing
 
-### 6.1 How It Works
-
-- Each game repo deploys to `johnesco.github.io/<game>/` via GitHub Pages
-- `games.json` contains absolute URL paths (`playUrl`, `sourceUrl`, `walkthroughUrl`, `landingUrl`)
-- `app.html` loads `iframe.src = game.playUrl` — one line, no construction
-- Source viewer fetches `game.sourceUrl` directly (same origin = works)
-- Walkthrough viewer iframes `game.walkthroughUrl`
-
-All repos deploy under `johnesco.github.io/*`, making everything same-origin. This means iframes, `fetch()`, and `postMessage` all work freely between the hub and game pages.
-
-### 6.2 Adding a Game
-
-Build the game in its engine workspace (`C:/code/text-games/<engine>/tools/build.py <game>`), then run `python tools/ship.py <game>` from the hub. Ship verifies the folder (`ifhub.conf` + `play.html`), writes the wrapper pages, sets `hub = yes`, regenerates `games.json` and `cards.json`, publishes the game repo (creating it and enabling Pages on first use), and pushes the hub. `games.json` and `cards.json` are never edited by hand.
-
-### 6.3 Serve-in-Place History
-
-Before March 2026 a deploy step copied binaries and generated pages into the hub (`site/games/`, a `deploy` object per entry). All of that is gone: the hub holds URLs only.
-
-### 6.4 Local Development
-
-`python tools/serve.py` (port 8892) serves `site/` at `/ifhub/` and every game folder found under the `workspaces.json` roots at `/<game>/`, so the hub and the games load at production-equivalent URLs (`/ifhub/app.html`, `/<game>/play.html`) on one origin. `.claude/launch.json` points the Browser pane's `hub-site` preview at it. Nothing to install or register.
-
-### 6.5 Publishing a Game
-
-Games are built and tested in their engine workspace, then shipped with `python tools/ship.py <game>`. The contract and the per-engine build commands are in `docs/publishing.md`.
-
----
-
-## 7. Visual Design
-
-### 7.1 Color Palette
-
-Dark theme throughout:
-
-| Element | Color | Usage |
-|---------|-------|-------|
-| Page background | `#0a0a0a` | HTML background |
-| Content background | `#111` | Cards, game area, buffer window |
-| Primary text | `#d4c5a9` | Body text, buffer text |
-| Heading text | `#e8d8b0` / `#c4b48a` | h1 / h2 |
-| Accent / links | `#e8d090` | Links, input caret, active nav |
-| Muted text | `#aa9966` / `#887755` | Subtitles, meta, footer |
-| Borders | `#2a2418` / `#1e1a14` | Cards, grid window, dividers |
-| Status bar | `#1c1810` bg, `#aa9966` fg | Grid window (Glk) |
-
-### 7.2 Typography
-
-- **Body:** Georgia, "Times New Roman", serif
-- **Code:** SF Mono, Fira Code, Cascadia Code, Consolas, Courier New, monospace
-- **Code font size:** 13px with 1.55 line-height
-- **Buffer text:** 16px with 1.6 line-height (19px in Zork I v3+ enhanced mode)
-
-### 7.3 Platform Themes
-
-The hub supports 10 retro platform themes modeled after systems Infocom shipped Z-machine games on. Themes are defined in `themes.js` and each contains three property groups:
-
-- **`chrome`** — Hub UI colors (page background, text, cards, toolbar, borders, buttons, input fields, font family)
-- **`game`** — Game iframe colors (buffer/grid backgrounds, text colors, input, font sizes, font families)
-- **`scrollbar`** — Scrollbar thumb, track, and hover colors
-
-Theme selection persists in `localStorage` key `ifhub-theme`. The landing page and app page both apply themes by setting CSS custom properties on `document.documentElement`.
-
-**Available themes:** Classic (default), MS-DOS, Apple II, Commodore 64, Amiga, Macintosh, Atari ST, CP/M (Kaypro), Atari 800, TRS-80
-
-### 7.4 Overlay Selector
-
-Games with CSS overlays (mood palettes, atmospheric effects) have their overlay listed as a selectable style option alongside platform themes. The style dropdown in `app.html` shows:
-
-- For games WITH `overlayLabel`: the overlay as the default first option, then a separator, then all platform themes
-- For games WITHOUT `overlayLabel`: only platform themes (default from localStorage)
-
-When a platform theme is selected, the hub sends `ifhub:applyTheme` to the game iframe with the theme's game colors. The game's play.html adds `body.platform-theme-active` which suppresses overlay visual effects via CSS rules. The mood engine keeps running in the background so that restoring the overlay gives correct room-state colors immediately.
-
-Style preferences are stored per-game in `localStorage` key `ifhub-style-<gameId>`.
-
----
-
-## 8. Hosting and Serving
-
-- Hub deployed to **GitHub Pages** from the ifhub repo
-- Games deployed to GitHub Pages from their own repos (e.g., `johnesco.github.io/zork1/`)
-- Local development: `python tools/serve.py` (hub + all games on one port; see 6.4)
-- No build or deploy step — the hub is always up to date (games serve from their own repos)
-- `file://` protocol does not work (CORS restrictions on JSONP script loading)
-
----
-
-## 9. Building and Publishing
-
-IF Hub does not build or test games. Each engine workspace under `C:/code/text-games/<engine>/` has a `tools/build.py` that compiles, tests, and lays out the game folder. The hub's `tools/ship.py` verifies the folder contract (`ifhub.conf` + `play.html`), writes the landing page (`index.html`) when missing, sets `hub = yes`, rebuilds `games.json` + `cards.json`, publishes the folder to its GitHub Pages repo, and pushes the hub registry. See `docs/publishing.md`.
+The hub does not build or test games. Each engine workspace has a `tools/build.py`; the hub's `tools/ship.py` verifies the folder, writes the landing page, sets `hub = yes`, regenerates the data files, publishes the game repo and pushes the hub. See `docs/publishing.md`.

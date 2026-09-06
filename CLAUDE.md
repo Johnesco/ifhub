@@ -56,7 +56,7 @@ ifhub/
 │   ├── check_links.py, build_landing.py, serve.py (local preview: hub + games on one port)
 │   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
-├── docs/                    ← publishing.md (the contract), functional-spec.md (site behaviour), sdlc/
+├── docs/                    ← publishing.md (the contract), functional-spec.md (what the site does), sdlc.md (how work happens)
 ├── reference/               ← css-overlay.md (theming), multi-version-guide.md (versioned games)
 └── .claude/launch.json      ← hub-site: tools/serve.py on port 8892 (what the Browser pane's preview runs)
 ```
@@ -82,7 +82,7 @@ Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo th
 
 ## Instructions for Claude
 
-> Full SDLC details are in `docs/sdlc/`. The key rules:
+> The process fits on one page: `docs/sdlc.md`. The key rules:
 
 **Claude cannot QA its own work.** The Verify column is always human-owned.
 
