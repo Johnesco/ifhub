@@ -122,7 +122,7 @@ def main():
         print("  Adding all files...")
         git.add_all(cwd=project_dir)
         git.commit(
-            f"Initial commit: {args.game}\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>",
+            f"Initial commit: {args.game}\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>",
             cwd=project_dir,
         )
 
@@ -148,7 +148,7 @@ def main():
             return
 
         git.commit(
-            f"{msg}\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>",
+            f"{msg}\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>",
             cwd=project_dir,
         )
         git.push(cwd=project_dir)
