@@ -4,228 +4,256 @@
 <meta charset="utf-8">
 <title>IF Hub &mdash; Interactive Fiction Player</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Colours and the typeface come from the platform theme tokens set by themes.js on <html>;
+   the fallbacks are the Classic theme. */
+*, *::before, *::after { box-sizing: border-box; }
 
-html {
-  height: 100%;
+html { color-scheme: dark light; }
+body {
+  margin: 0;
+  padding: 36px 24px 56px;
   background: var(--page-bg, #0a0a0a);
   color: var(--page-fg, #d4c5a9);
   font-family: var(--font-family, Georgia, "Times New Roman", serif);
+  line-height: 1.55;
+}
+a { color: var(--link-fg, #e8d090); }
+a:focus-visible, button:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent, #e8d090);
+  outline-offset: 2px;
 }
 
-body {
-  min-height: 100%;
-  max-width: 740px;
-  margin: 0 auto;
-  padding: 60px 24px 80px;
-  line-height: 1.7;
-}
+.page { max-width: 1120px; margin: 0 auto; }
 
-h1 {
-  font-size: 1.8em;
+/* ---------- masthead ---------- */
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.masthead h1 {
+  margin: 0;
+  font-size: 1.9em;
+  line-height: 1.1;
   color: var(--heading-fg, #e8d8b0);
-  letter-spacing: 1px;
-  margin-bottom: 6px;
+  text-wrap: balance;
 }
-
-.subtitle {
-  font-style: italic;
+.masthead .thesis {
+  margin: 6px 0 0;
+  max-width: 62ch;
   color: var(--muted, #aa9966);
-  margin-bottom: 40px;
+  font-style: italic;
+}
+.look {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dim, #887755);
+  white-space: nowrap;
+}
+.look select {
+  font: inherit;
+  font-family: var(--font-family, Georgia, "Times New Roman", serif);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+  padding: 5px 8px;
+  background: var(--input-bg, #1a1610);
+  color: var(--input-fg, #d4c5a9);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
 }
 
-h2 {
-  font-size: 1.2em;
-  color: var(--heading-fg, #c4b48a);
-  margin-top: 48px;
-  margin-bottom: 16px;
-  padding-bottom: 6px;
+/* ---------- collection rail: the page's spine ---------- */
+.rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border, #2a2418);
   border-bottom: 1px solid var(--border, #2a2418);
 }
-
-p {
-  margin-bottom: 16px;
-}
-
-a {
-  color: var(--accent, #e8d090);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border-hover, #5a4a30);
-  transition: color 0.15s, border-color 0.15s;
-}
-
-a:hover {
-  color: var(--btn-hover-bg, #ffe8a0);
-  border-bottom-color: var(--muted, #aa9966);
-}
-
-.filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
-  padding: 14px 18px;
-  background: var(--card-bg, #111);
-  border: 1px solid var(--card-border, #1e1a14);
-  border-radius: 6px;
-}
-
-.filter-bar label {
+.chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 6px 12px;
+  font: inherit;
   font-size: 0.88em;
-  color: var(--muted, #aa9966);
-  white-space: nowrap;
-}
-
-.filter-bar select {
-  padding: 6px 10px;
-  font-size: 0.9em;
-  font-family: var(--font-family, Georgia, "Times New Roman", serif);
-  background: var(--surface-bg, #1a1610);
   color: var(--page-fg, #d4c5a9);
+  background: var(--surface-bg, #1a1610);
   border: 1px solid var(--border, #2a2418);
-  border-radius: 4px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.chip:hover { border-color: var(--border-hover, #4a4030); }
+.chip[aria-pressed="true"] {
+  background: var(--active-tab-bg, #e8d090);
+  color: var(--active-tab-fg, #0a0a0a);
+  border-color: var(--active-tab-bg, #e8d090);
+}
+.chip-count {
+  font-size: 0.78em;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.blurb {
+  margin: 12px 0 26px;
+  min-height: 1.5em;
+  color: var(--muted, #aa9966);
 }
 
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* ---------- card grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
 }
-
 .game-card {
-  margin-bottom: 28px;
-  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px 16px;
   background: var(--card-bg, #111);
   border: 1px solid var(--card-border, #1e1a14);
   border-radius: 6px;
 }
-
-.game-card h3 {
-  color: var(--heading-fg, #c4b48a);
-  font-size: 1.05em;
-  margin-bottom: 4px;
-}
-
-.game-card .game-meta {
-  font-size: 0.85em;
-  color: var(--badge-fg, #887755);
-  font-style: italic;
-  margin-bottom: 10px;
-}
-
-.game-card p {
-  font-size: 0.95em;
-  color: var(--page-fg, #b0a080);
-  margin-bottom: 14px;
-}
-
-.card-controls {
+.card-head {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
-
-.card-controls select {
-  flex: 1;
-  padding: 8px 10px;
-  font-size: 0.95em;
-  font-family: var(--font-family, Georgia, "Times New Roman", serif);
-  background: var(--surface-bg, #1a1610);
-  color: var(--page-fg, #d4c5a9);
-  border: 1px solid var(--border, #2a2418);
-  border-radius: 4px;
-  cursor: pointer;
+.card-head h3 {
+  margin: 0;
+  font-size: 1.15em;
+  line-height: 1.25;
+  color: var(--heading-fg, #e8d8b0);
+  text-wrap: balance;
 }
-
-.card-controls label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.85em;
-  color: var(--muted, #aa9966);
+.card-head h3 a { color: inherit; text-decoration: none; }
+.card-head h3 a:hover { text-decoration: underline; }
+.badges { display: flex; gap: 6px; flex-shrink: 0; }
+.badge {
+  font-size: 0.68em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--badge-bg, #1e1a14);
+  color: var(--badge-fg, #aa9966);
   white-space: nowrap;
+}
+.game-meta {
+  margin: -4px 0 0;
+  font-size: 0.85em;
+  font-style: italic;
+  color: var(--muted, #aa9966);
+}
+.game-desc { margin: 0; font-size: 0.93em; max-width: 60ch; }
+
+.versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+.versions .label {
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim, #887755);
+  align-self: center;
+  margin-right: 2px;
+}
+.vchip {
+  font: inherit;
+  font-size: 0.78em;
+  padding: 3px 9px;
+  color: var(--page-fg, #d4c5a9);
+  background: var(--surface-bg, #1a1610);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 999px;
   cursor: pointer;
 }
-
-.card-controls input[type="checkbox"] {
-  accent-color: var(--accent, #e8d090);
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
+.vchip[aria-pressed="true"] {
+  background: var(--active-tab-bg, #e8d090);
+  color: var(--active-tab-fg, #0a0a0a);
+  border-color: var(--active-tab-bg, #e8d090);
 }
 
-.card-controls button {
-  padding: 8px 22px;
-  font-size: 0.95em;
-  font-family: var(--font-family, Georgia, "Times New Roman", serif);
+.launch {
+  margin-top: auto;
+  padding-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.btn {
+  display: inline-block;
+  padding: 7px 16px;
+  font-size: 0.88em;
   font-weight: bold;
-  letter-spacing: 1px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+.btn-primary {
   background: var(--btn-bg, #e8d090);
   color: var(--btn-fg, #0a0a0a);
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.15s;
 }
-
-.card-controls button:hover {
-  background: var(--btn-hover-bg, #ffe8a0);
+.btn-primary:hover { background: var(--btn-hover-bg, #ffe8a0); }
+.btn-secondary {
+  color: var(--accent, #e8d090);
+  border-color: var(--border-hover, #4a4030);
+  background: transparent;
 }
-
-.tech-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 16px 0;
+.btn-secondary:hover { border-color: var(--accent, #e8d090); }
+.views {
+  font-size: 0.82em;
+  color: var(--dim, #887755);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
+.views a { color: var(--muted, #aa9966); text-decoration: none; }
+.views a:hover { color: var(--accent, #e8d090); text-decoration: underline; }
+.empty { color: var(--muted, #aa9966); font-style: italic; }
 
-.tech-card {
-  padding: 16px 18px;
-  background: var(--card-bg, #111);
-  border: 1px solid var(--card-border, #1e1a14);
-  border-radius: 6px;
+/* ---------- footer ---------- */
+.about {
+  margin-top: 44px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border, #2a2418);
+  max-width: 68ch;
+  font-size: 0.93em;
+  color: var(--muted, #aa9966);
 }
-
-.tech-card strong {
-  color: var(--heading-fg, #c4b48a);
-  font-size: 0.95em;
-}
-
-.tech-card p {
-  font-size: 0.88em;
-  color: var(--badge-fg, #998870);
-  margin-bottom: 0;
-  margin-top: 4px;
-}
-
-footer {
-  margin-top: 60px;
-  padding-top: 20px;
-  border-top: 1px solid var(--card-border, #1e1a14);
+.about p { margin: 0 0 10px; }
+.credits {
   font-size: 0.85em;
-  color: var(--footer-fg, #665a40);
+  color: var(--footer-fg, #887755);
 }
-
-footer a {
-  color: var(--badge-fg, #887755);
-  border-bottom-color: var(--border-hover, #3a3020);
-}
+.credits a { color: var(--muted, #aa9966); }
 
 @media (max-width: 600px) {
-  body { padding: 30px 14px 60px; }
-  h1 { font-size: 1.4em; }
-  .tech-grid { grid-template-columns: 1fr; }
-  .card-controls { flex-wrap: wrap; }
-  .card-controls select { min-width: 0; flex-basis: 100%; }
-  .card-controls button { width: 100%; }
+  body { padding: 24px 14px 48px; }
+  .masthead h1 { font-size: 1.55em; }
   .game-card { padding: 16px; }
-  .filter-bar { gap: 10px; padding: 12px 14px; }
-  .filter-group { flex-basis: 100%; }
+  .launch .btn { flex: 1 1 auto; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chip { transition: none; }
 }
 </style>
 <script src="themes.js"></script>
@@ -233,171 +261,144 @@ footer a {
 <script>initTheme('library');</script>
 </head>
 <body>
+<div class="page">
 
-<h1 id="hub-title">IF Hub</h1>
-<p class="subtitle" id="hub-subtitle">An Interactive Fiction Player &amp; Source Browser</p>
-
-<p>
-  IF Hub plays text adventures in the browser. Pick a game, play it online, and
-  read the source code side by side &mdash; all in one interface. Choose from
-  10 retro platform themes to play in the style of classic home computers.
-  No downloads, no plugins.
-</p>
-
-<div class="filter-bar">
-  <div class="filter-group">
-    <label for="collection-select">Collection:</label>
-    <select id="collection-select"></select>
+<header class="masthead">
+  <div>
+    <h1 id="hub-title">IF Hub</h1>
+    <p class="thesis">Text adventures in the browser, with their source and walkthroughs beside them.</p>
   </div>
-  <div class="filter-group">
-    <label for="theme-select">Theme:</label>
-    <select id="theme-select"></select>
-  </div>
+  <label class="look">Look <select id="theme-select" aria-label="Visual theme"></select></label>
+</header>
+
+<nav class="rail" id="rail" aria-label="Collections"></nav>
+<p class="blurb" id="blurb"></p>
+
+<div class="grid" id="games"></div>
+
+<section class="about">
+  <p>Every game runs in your browser through its engine's own web player, from Inform 7 and the original Infocom Z-machine to Ink, Rez and 1980s BASIC. Each game is its own site on GitHub Pages; the hub loads it in place and shows its source and walkthrough beside it. Pick a look to restyle the whole hub after a classic home computer.</p>
+  <p class="credits">Built on <a href="http://inform7.com/">Inform 7</a>, <a href="https://github.com/curiousdannii/parchment">Parchment</a>, <a href="https://www.inklestudios.com/ink/">Ink</a>, <a href="https://rez-lang.com/">Rez</a>, <a href="https://github.com/nickg/nern/tree/master/glulxe">Glulxe</a> &amp; <a href="https://gitlab.com/DavidGriffith/frotz">Frotz</a>, <a href="https://foss.heptapod.net/zilf/zilf">ZILF</a>, <a href="https://www.eblong.com/zarf/blorb/">Blorb</a> and <a href="https://pages.github.com/">GitHub Pages</a>, with <a href="https://claude.ai/">Claude</a>. <a href="https://github.com/Johnesco/ifhub">Source</a>.</p>
+</section>
+
 </div>
-<div id="games"></div>
 
 <script>
 loadHubData('cards.json').then(function(data) {
   var cards = data.entries;
   var hubs = data.hubs;
+  var rail = document.getElementById('rail');
+  var blurb = document.getElementById('blurb');
+  var grid = document.getElementById('games');
+  var defaultBlurb = 'Every game listed here, across every engine.';
 
-  var collectionSelect = document.getElementById('collection-select');
-  var container = document.getElementById('games');
-  var titleEl = document.getElementById('hub-title');
-  var subtitleEl = document.getElementById('hub-subtitle');
-  var defaultTitle = titleEl.textContent;
-  var defaultSubtitle = subtitleEl.textContent;
+  var ENGINE_NAMES = { inform7: 'Inform 7', zmachine: 'Z-machine', ink: 'Ink', rez: 'Rez',
+                       wwwbasic: 'BASIC', applesoft: 'Applesoft', bwbasic: 'BASIC', qbjc: 'BASIC' };
 
-  // Populate collection dropdown once
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Collection rail: one chip per collection, with how many games it holds.
   hubs.forEach(function(h) {
-    var opt = document.createElement('option');
-    opt.value = h.id;
-    opt.textContent = h.title;
-    collectionSelect.appendChild(opt);
+    var n = cards.filter(function(c) { return matchesHub(c, h); }).length;
+    var chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.dataset.hub = h.id;
+    chip.setAttribute('aria-pressed', 'false');
+    chip.innerHTML = esc(h.title) + ' <span class="chip-count">' + n + '</span>';
+    chip.addEventListener('click', function() {
+      history.pushState({ hub: h.id }, '', h.id === 'all' ? location.pathname : '?hub=' + h.id);
+      render();
+    });
+    rail.appendChild(chip);
   });
 
-  // Collection change: update URL + re-render in place, no page reload
-  collectionSelect.addEventListener('change', function() {
-    var id = this.value;
-    history.pushState({ hub: id }, '', id === 'all' ? location.pathname : '?hub=' + id);
-    render();
-  });
-
-  // Back/forward restores the collection encoded in the URL
   window.addEventListener('popstate', render);
-
-  // Theme dropdown (element already exists in HTML)
   wireThemeSelect(document.getElementById('theme-select'));
 
-  // Render the catalog for whichever collection the current URL selects.
+  function versionOptions(card) {
+    var opts = [{ id: card.id, label: card.primaryLabel || 'Current', playUrl: card.playUrl,
+                  sourceUrl: card.sourceUrl || '', walkthroughUrl: card.walkthroughUrl || '',
+                  testsUrl: card.testsUrl || '', sound: !!card.sound }];
+    (card.versions || []).forEach(function(v) {
+      opts.push({ id: v.id, label: v.label, playUrl: v.playUrl, sourceUrl: v.sourceUrl || '',
+                  walkthroughUrl: v.walkthroughUrl || '', testsUrl: v.testsUrl || '', sound: !!v.sound });
+    });
+    return opts;
+  }
+
   function render() {
-  var activeHub = resolveHub(hubs).activeHub || hubs[0]; // default: first hub ("all")
-  collectionSelect.value = activeHub.id;
+    var activeHub = resolveHub(hubs).activeHub || hubs[0];
+    var hubQuery = activeHub.id !== 'all' ? '&hub=' + encodeURIComponent(activeHub.id) : '';
 
-  // Title/subtitle reflect the active collection
-  if (activeHub.id !== 'all') {
-    titleEl.textContent = activeHub.title;
-    subtitleEl.textContent = activeHub.description;
-  } else {
-    titleEl.textContent = defaultTitle;
-    subtitleEl.textContent = defaultSubtitle;
-  }
-
-  container.innerHTML = '';
-  var filtered = cards.filter(function(card) { return matchesHub(card, activeHub); });
-  filtered.sort(function(a, b) { return a.title.localeCompare(b.title); });
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<p style="color:#605840;font-style:italic;">No games match this collection.</p>';
-    return;
-  }
-
-  var hubQuery = activeHub.id !== 'all' ? '&hub=' + activeHub.id : '';
-
-  filtered.forEach(function(card, cardIdx) {
-    // Build options list: primary + versions. Each option carries its own
-    // source/walkthrough URLs so the action dropdown can adapt per version.
-    var options = [];
-    var soundTag = card.sound ? ' (sound)' : '';
-    var primaryLabel = card.primaryLabel || card.title;
-    options.push({
-      id: card.id,
-      label: primaryLabel + soundTag,
-      playUrl: card.playUrl,
-      sourceUrl: card.sourceUrl || '',
-      walkthroughUrl: card.walkthroughUrl || ''
+    rail.querySelectorAll('.chip').forEach(function(chip) {
+      chip.setAttribute('aria-pressed', chip.dataset.hub === activeHub.id ? 'true' : 'false');
     });
+    blurb.textContent = activeHub.id === 'all' ? defaultBlurb : activeHub.description;
+    document.title = (activeHub.id === 'all' ? 'IF Hub' : activeHub.title + ' — IF Hub');
 
-    if (card.versions) {
-      card.versions.forEach(function(v) {
-        var vSound = v.sound ? ' (sound)' : '';
-        options.push({
-          id: v.id,
-          label: v.label + vSound,
-          playUrl: v.playUrl,
-          sourceUrl: v.sourceUrl || '',
-          walkthroughUrl: v.walkthroughUrl || ''
+    var shown = cards.filter(function(c) { return matchesHub(c, activeHub); });
+    shown.sort(function(a, b) { return a.title.localeCompare(b.title); });
+    grid.innerHTML = '';
+    if (!shown.length) {
+      grid.innerHTML = '<p class="empty">No games in this collection yet.</p>';
+      return;
+    }
+
+    shown.forEach(function(card) {
+      var opts = versionOptions(card);
+      var anySound = opts.some(function(o) { return o.sound; });
+      var anyTests = opts.some(function(o) { return o.testsUrl; });
+      var badges = '<span class="badge">' + esc(ENGINE_NAMES[card.engine] || card.engine) + '</span>' +
+                   (anySound ? '<span class="badge">sound</span>' : '') +
+                   (anyTests ? '<span class="badge">tests</span>' : '');
+      var versions = opts.length > 1
+        ? '<div class="versions" role="group" aria-label="Versions"><span class="label">Version</span>' +
+          opts.map(function(o, i) {
+            return '<button type="button" class="vchip" data-idx="' + i + '" aria-pressed="' + (i === 0) + '">' + esc(o.label) + '</button>';
+          }).join('') + '</div>'
+        : '';
+
+      var el = document.createElement('article');
+      el.className = 'game-card';
+      el.innerHTML =
+        '<header class="card-head">' +
+          '<h3><a href="' + esc(card.landingUrl || card.playUrl) + '">' + esc(card.title) + '</a></h3>' +
+          '<div class="badges">' + badges + '</div>' +
+        '</header>' +
+        '<p class="game-meta">' + esc(card.meta) + '</p>' +
+        '<p class="game-desc">' + esc(card.description) + '</p>' +
+        versions +
+        '<div class="launch">' +
+          '<a class="btn btn-primary" data-role="play" href="#">Play</a>' +
+          '<a class="btn btn-secondary" data-role="hub" href="#">Open in Hub</a>' +
+          '<span class="views"></span>' +
+        '</div>';
+      grid.appendChild(el);
+
+      // Launch controls follow the selected version. Play opens the game's own page
+      // (fullscreen); everything else lands in the hub player on that view.
+      function target(idx) {
+        var o = opts[idx];
+        var app = 'app.html?game=' + encodeURIComponent(o.id) + hubQuery;
+        el.querySelector('[data-role="play"]').href = o.playUrl;
+        el.querySelector('[data-role="hub"]').href = app + '&view=game+source';
+        var views = [];
+        if (o.sourceUrl) views.push('<a href="' + app + '&view=source">Source</a>');
+        if (o.walkthroughUrl) views.push('<a href="' + app + '&view=walkthrough">Walkthrough</a>');
+        if (o.testsUrl) views.push('<a href="' + app + '&view=tests">Tests</a>');
+        el.querySelector('.views').innerHTML = views.join('<span aria-hidden="true">·</span>');
+        el.querySelectorAll('.vchip').forEach(function(b) {
+          b.setAttribute('aria-pressed', String(parseInt(b.dataset.idx, 10) === idx));
         });
+      }
+      target(0);
+      el.querySelectorAll('.vchip').forEach(function(b) {
+        b.addEventListener('click', function() { target(parseInt(b.dataset.idx, 10)); });
       });
-    }
-
-    var versionOptionsHtml = options.map(function(o, i) {
-      return '<option value="' + o.id + '" data-idx="' + i + '">' + o.label + '</option>';
-    }).join('');
-
-    var cardHtml =
-      '<div class="game-card">' +
-        '<h3><a href="' + (card.landingUrl || card.playUrl) + '">' + card.title + '</a></h3>' +
-        '<p class="game-meta">' + card.meta + '</p>' +
-        '<p>' + card.description + '</p>' +
-        '<div class="card-controls">' +
-          '<select id="pick-' + cardIdx + '">' + versionOptionsHtml + '</select>' +
-          '<select id="action-' + cardIdx + '"></select>' +
-          '<label><input type="checkbox" id="fs-' + cardIdx + '"> Fullscreen</label>' +
-          '<button data-card="' + cardIdx + '">PLAY</button>' +
-        '</div>' +
-      '</div>';
-
-    container.insertAdjacentHTML('beforeend', cardHtml);
-
-    var versionSelect = document.getElementById('pick-' + cardIdx);
-    var actionSelect = document.getElementById('action-' + cardIdx);
-
-    function rebuildActions() {
-      var idx = parseInt(versionSelect.options[versionSelect.selectedIndex].getAttribute('data-idx'), 10);
-      var opt = options[idx];
-      var prev = actionSelect.value;
-      var actions = [{ value: 'play', label: 'Play Game' }];
-      if (opt.sourceUrl) actions.push({ value: 'source', label: 'View Source' });
-      if (opt.walkthroughUrl) actions.push({ value: 'walkthrough', label: 'View Walkthrough' });
-      actionSelect.innerHTML = actions.map(function(a) {
-        return '<option value="' + a.value + '">' + a.label + '</option>';
-      }).join('');
-      if (actions.some(function(a) { return a.value === prev; })) {
-        actionSelect.value = prev;
-      }
-    }
-    rebuildActions();
-    versionSelect.addEventListener('change', rebuildActions);
-
-    container.querySelector('button[data-card="' + cardIdx + '"]').addEventListener('click', function() {
-      var idx = parseInt(versionSelect.options[versionSelect.selectedIndex].getAttribute('data-idx'), 10);
-      var opt = options[idx];
-      var action = actionSelect.value;
-      var fullscreen = document.getElementById('fs-' + cardIdx).checked;
-
-      var view = 'game';
-      if (action === 'source') view = 'source';
-      else if (action === 'walkthrough') view = 'walkthrough';
-
-      // Fullscreen opens the game's own page; source and walkthrough are hub views.
-      if (fullscreen && action === 'play') {
-        window.location.href = opt.playUrl;
-      } else {
-        window.location.href = 'app.html?game=' + opt.id + '&view=' + view + hubQuery;
-      }
     });
-  });
   }
 
   render();
@@ -405,77 +406,5 @@ loadHubData('cards.json').then(function(data) {
   showLoadError('games', err);
 });
 </script>
-
-<h2>How It Works</h2>
-
-<p>
-  Every game runs entirely in your browser. Source code is compiled to a
-  virtual machine binary, wrapped in JavaScript, and played through an
-  in-browser interpreter. No downloads, no server, no plugins.
-</p>
-
-<p>
-  Each game is its own static site hosted on
-  <a href="https://pages.github.com/">GitHub Pages</a>.
-  The hub loads them in an iframe &mdash; one page per game,
-  nothing shared between them.
-</p>
-
-<p>
-  Every game has a source browser so you can read the code while you play.
-  10 retro platform themes let you restyle the whole interface to look
-  like classic home computers.
-</p>
-
-<p>
-  Built with <a href="https://claude.ai/">Claude</a> by
-  <a href="https://www.anthropic.com/">Anthropic</a>.
-</p>
-
-<h2>Thank You</h2>
-
-<p>
-  IF Hub is built on the work of many open-source projects and communities:
-</p>
-
-<div class="tech-grid">
-  <div class="tech-card">
-    <strong><a href="http://inform7.com/">Inform 7</a></strong>
-    <p>Natural-language IF authoring system by Graham Nelson</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://github.com/curiousdannii/parchment">Parchment</a></strong>
-    <p>Browser-based IF interpreter by Dannii Willis</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://www.inklestudios.com/ink/">Ink</a></strong>
-    <p>Narrative scripting language by Inkle Studios</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://github.com/nickg/nern/tree/master/glulxe">Glulxe</a> &amp; <a href="https://gitlab.com/DavidGriffith/frotz">Frotz</a></strong>
-    <p>CLI interpreters for Glulx and Z-machine</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://foss.heptapod.net/zilf/zilf">ZILF</a></strong>
-    <p>Modern compiler for Infocom&rsquo;s ZIL language</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://www.eblong.com/zarf/blorb/">Blorb</a></strong>
-    <p>IF resource packaging format by Andrew Plotkin</p>
-  </div>
-  <div class="tech-card">
-    <strong><a href="https://pages.github.com/">GitHub Pages</a></strong>
-    <p>Free static hosting for every game</p>
-  </div>
-</div>
-
-<footer>
-  <p>
-    Built with <a href="http://inform7.com/">Inform 7</a>.
-    Playable via <a href="https://github.com/curiousdannii/parchment">Parchment</a>.
-    <a href="https://github.com/Johnesco/ifhub">Source on GitHub</a>.
-  </p>
-</footer>
-
 </body>
 </html>
