@@ -2,15 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "test-viewer",
-      "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8891", "-d", "C:\\Users\\letme\\AppData\\Local\\Temp\\test-viewer"],
-      "port": 8891
-    },
-    {
       "name": "hub-site",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "8892", "-d", "site"],
+      "runtimeArgs": [
+        "tools/serve.py",
+        "--port",
+        "8892"
+      ],
       "port": 8892
     }
   ]

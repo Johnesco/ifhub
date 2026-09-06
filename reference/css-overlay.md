@@ -6,7 +6,7 @@ How to add themed color palettes, atmospheric effects, and visual events to a Pa
 
 Minimal example — two zones, palette transitions on room change:
 
-1. Copy `tools/web/templates/play-mood.html` to `projects/<game>/play-template.html`
+1. Copy `C:/code/text-games/i7/tools/web/templates/play-mood.html` to `<game>/play-template.html`
 2. Add a `<script>` block before `</body>`:
 
 ```html
@@ -27,7 +27,7 @@ MoodEngine.init({
 </script>
 ```
 
-3. Build: `python tools/compile.py <game> --force`
+3. Build: `python C:/code/text-games/i7/tools/build.py <game> --force`
 
 The engine detects `mood-engine.js` in the template and copies it automatically.
 
@@ -84,7 +84,7 @@ Each game only includes rules for its own overlay elements. The suppression CSS 
 ### File Layout
 
 ```
-tools/web/
+text-games/i7/tools/web/          (the Inform 7 workspace)
 ├── parchment/
 │   ├── mood-engine.js           ← Shared mood engine library
 │   └── (12 Parchment files)     ← jQuery, parchment.js, quixe.js, etc.
@@ -272,22 +272,22 @@ container.appendChild(flake);
 
 ### Creating a mood project from scratch
 
-1. Copy `tools/web/templates/play-mood.html` → `projects/<game>/play-template.html`
+1. Copy `C:/code/text-games/i7/tools/web/templates/play-mood.html` → `<game>/play-template.html`
 2. Adjust initial colors in `@property` declarations and `:root` to match your first zone
 3. Add game-specific CSS (particle `@keyframes`, body class toggles, etc.)
 4. Add a `<script>` block before `</body>` that calls `MoodEngine.init({...})`
-5. Build: `python tools/compile.py <game> --force`
+5. Build: `python C:/code/text-games/i7/tools/build.py <game> --force`
 
 ### How templates survive rebuilds
 
-The overlay lives in `play-template.html` (input). `compile.py` detects it and passes `--template` to `setup_web.py`, which generates `play.html` (output) with placeholders substituted. The template is never overwritten by builds.
+The overlay lives in `play-template.html` (input). The workspace's `compile.py` (run by `build.py`) detects it and passes `--template` to `setup_web.py`, which generates `play.html` (output) with placeholders substituted. The template is never overwritten by builds.
 
 If the template references `mood-engine.js`, `compile.py` auto-detects it and passes `--mood` to copy the library alongside the Parchment files.
 
 ### Manual setup with `setup_web.py`
 
 ```bash
-python tools/web/setup_web.py \
+python C:/code/text-games/i7/tools/web/setup_web.py \
     --title "My Game" --ulx path/to/game.ulx --out path/to/project \
     --template path/to/play-template.html --mood --force
 ```

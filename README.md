@@ -1,179 +1,32 @@
 # IF Hub
 
-IF Hub displays interactive fiction games online in a browsable format. It is a **target** — engine workspaces build their games and ship them to the hub.
+A small static site that shows interactive fiction games online, each with its source code and walkthrough side by side. It exists so finished games can be put in front of people quickly.
 
-It also owns the build pipeline for the in-tree engines (Inform 7, Ink, Rez, BASIC dialects).
+**Live site:** [johnesco.github.io/ifhub](https://johnesco.github.io/ifhub/) · **Player:** [app.html](https://johnesco.github.io/ifhub/app.html)
 
-**Live site**: [johnesco.github.io/ifhub](https://johnesco.github.io/ifhub/)
+## How a game gets here
 
-### Online Documentation
+IF Hub is receive-only. Games are written, built, and tested in their own engine workspaces; the hub only publishes and displays the result.
 
-- **[IF Hub](https://johnesco.github.io/ifhub/)** — Browse and play all games
-- **[Split-Pane Player](https://johnesco.github.io/ifhub/app.html)** — Play with side-by-side source code and walkthrough
-- **[Publishing Guide](https://johnesco.github.io/ifhub/importing.html)** — Step-by-step guide for adding a new game to the hub
-- **[Dashboard Guide](https://johnesco.github.io/ifhub/dashboard.html)** — Local web GUI for the build pipeline
+1. **Build in the workspace** — `python C:/code/text-games/<engine>/tools/build.py <game>` compiles the game, runs its tests, and lays out a folder with `ifhub.conf`, `play.html`, and (optionally) source, walkthrough, and a `tests.html` report.
+2. **Ship to the hub** — `python tools/ship.py <game>` checks that folder, adds the hub's wrapper pages, registers the game in `site/games.json`, publishes the folder to its own GitHub Pages repo (`johnesco.github.io/<game>/`), and pushes the hub.
+3. **Play** — the hub iframes the game from its own URL. Nothing is copied into the hub.
 
-## Quick Start
+The folder contract and the per-engine commands are in [docs/publishing.md](docs/publishing.md).
 
-```bash
-# Create a new project
-python tools/new_project.py "My Game" mygame
+## Engines
 
-# Edit the source (tools resolve game names automatically)
-# (edit story.ni in the game directory created by new_project.py)
+Inform 7 and Z-machine (Parchment), Ink (ink.js), Rez, wwwBASIC and Applesoft BASIC. Each has a workspace under `C:/code/text-games/` with its own tooling and `CLAUDE.md`.
 
-# Compile and set up web player
-python tools/compile.py mygame
-
-# Compile with embedded sound (requires Sounds/*.ogg at project root)
-python tools/compile.py mygame --sound
-
-# Play locally (hub + all games at production URLs)
-python tools/dev-server.py
-# Open http://127.0.0.1:8000/ifhub/app.html
-
-# Run tests (via pipeline)
-python tools/pipeline.py mygame test
-
-# Publish to GitHub Pages
-python tools/publish.py mygame
-
-# Interactive pipeline runner (arrow-key menus)
-python tools/run.py
-```
-
-## Directory Structure
+## Layout
 
 ```
-ifhub/
-├── README.md              ← You are here
-├── CLAUDE.md              ← AI assistant instructions and full conventions
-├── reference/             ← Inform 7 language reference docs
-├── tools/                 ← Shared scripts (see tools/README.md)
-│   ├── compile.py         ← Compile I7 → I6 → Glulx → optional blorb → web player
-│   ├── new_project.py     ← Scaffold a new project with build, test, and deploy infra
-│   ├── publish.py         ← Publish a project to GitHub Pages
-│   ├── pipeline.py        ← Orchestrator: compile → test → snapshot → push
-│   ├── snapshot.py        ← Freeze/update version snapshots
-│   ├── build_site.py      ← Assemble _site/ for deployment
-│   ├── lib/               ← Shared Python library
-│   ├── run.py             ← Interactive pipeline runner (pip install InquirerPy)
-│   ├── dev-server.py      ← Multi-root dev server (hub + all games)
-│   ├── regtest.py         ← Shared RegTest runner
-│   ├── interpreters/      ← Native glulxe.exe + dfrotz.exe (built from source in MSYS2)
-│   ├── testing/           ← Generic testing framework (walkthroughs, seeds, regtests)
-│   └── web/               ← Parchment web player setup (templates, libraries)
-└── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
-    ├── index.html         ← Landing page
-    ├── app.html           ← Split-pane player (game + source viewer)
-    ├── themes.js          ← Platform theme system (15 platform themes)
-    ├── games.json         ← Game registry (URLs, sound flags, overlayLabel)
-    └── cards.json         ← Card metadata for landing page
+site/        the hub: index.html (cards), app.html (split-pane player), themes.js, games.json, cards.json, hubs.json
+tools/       ship.py (intake), build_games.py (registry), publish.py, push_hub.py, check_links.py, build_landing.py
+docs/        publishing.md (the contract), functional-spec.md, sdlc/
+reference/   css-overlay.md (theming), multi-version-guide.md (versioned games such as Zork I v0..v3)
 ```
 
-## Projects
+## Built with
 
-Game projects live **outside** this repo in engine-specific workspaces (e.g., `text-games/i7/`, `text-games/ink/`). Each game is its own git repo with its own GitHub Pages deployment. Tools resolve game names automatically via `workspaces.json`.
-
-| Project | Description | Sound | Pages |
-|---------|-------------|-------|-------|
-| **[zork1](https://johnesco.github.io/zork1/)** | Zork I — The Great Underground Empire (ZIL-to-I7 translation, 4 versions) | v3+: 25 sounds (blorb) | [Play](https://johnesco.github.io/ifhub/app.html?game=zork1) |
-| **[dracula](https://johnesco.github.io/dracula/)** | Dracula's Castle — 1980s BASIC text adventure + Inform 7 translation | — | [Play](https://johnesco.github.io/ifhub/app.html?game=dracula) |
-| **[feverdream](https://johnesco.github.io/feverdream/)** | Fever Dream — A Perceptual Horror | blorb | [Play](https://johnesco.github.io/ifhub/app.html?game=feverdream) |
-| **[sample](https://johnesco.github.io/sample/)** | Sample — Inform 7 practice game | — | [Play](https://johnesco.github.io/ifhub/app.html?game=sample) |
-
-Each project has its own `story.ni` source file, test suite, web player, and GitHub Pages deployment. The hub serves games in-place — it iframes each game's own pages directly from GitHub Pages.
-
-## Three Game Formats
-
-IF Hub plays games spanning three eras of text adventure technology:
-
-- **ZIL → Z-machine** — Infocom's original language (1980s). Zork I v0 is the unmodified open-source Infocom release, compiled with ZILF to a .z3 binary and run via Parchment's Z-machine interpreter.
-- **BASIC → Inform 7** — Dracula's Castle preserves the original 1980s BASIC source with annotations; the playable version is a faithful Inform 7 translation.
-- **Inform 7 → Glulx** — A natural-English programming language. Source compiles to Glulx bytecode, optionally packaged with .ogg audio in a Blorb binary. Parchment executes via WASM.
-
-## Tools Overview
-
-All scripts live in `tools/`. See [`tools/README.md`](tools/README.md) for full documentation.
-
-| Script | Purpose |
-|--------|---------|
-| `compile.py` | Compile a project (I7 → I6 → Glulx → optional blorb → web player → walkthrough) |
-| `extract_commands.py` | Extract walkthrough commands from a TRANSCRIPT file or `Test me` in source |
-| `register_game.py` | Register a game in IF Hub (adds to `games.json` + `cards.json`) |
-| `push_hub.py` | Push hub registry changes (`games.json` + `cards.json`) to GitHub |
-| `new_project.py` | Scaffold a new project with build, test, and deploy infrastructure |
-| `publish.py` | Publish a project to GitHub Pages (creates repo on first run) |
-| `pipeline.py` | Orchestrator: compile → test → snapshot → push |
-| `snapshot.py` | Freeze/update version snapshots (recompiles from frozen source) |
-| `build_site.py` | Assemble `_site/` from project root + version directories |
-| `run.py` | Interactive pipeline runner — arrow-key menus for common tasks |
-| `dev-server.py` | Multi-root dev server (serves hub + all games at production URLs) |
-| `regtest.py` | Shared RegTest runner for regression testing |
-
-### Testing Framework (`tools/testing/`)
-
-Deterministic walkthrough-based testing with native CLI interpreters built from source:
-
-| Script | Purpose |
-|--------|---------|
-| `run_walkthrough.py` | Run a walkthrough with RNG seeding and diagnostics |
-| `find_seeds.py` | Sweep RNG seeds to find deterministic golden seeds |
-| `run_tests.py` | Run RegTest regression tests for a project |
-
-**Interpreters**: `glulxe.exe` (Glulx) and `dfrotz.exe` (Z-machine) built from source in MSYS2 UCRT64. These are gitignored — each developer builds locally with `bash tools/interpreters/build.sh`. Tests auto-detect native interpreters and fall back to WSL.
-
-### Web Player (`tools/web/`)
-
-| File | Purpose |
-|------|---------|
-| `setup_web.py` | Bootstrap a Parchment web player for any project |
-| `generate_pages.py` | Generate `index.html` + `source.html` from templates |
-| `play-template.html` | HTML template for player pages |
-| `landing-template.html` | Template for project landing pages |
-| `source-template.html` | Template for source browser pages |
-| `parchment/` | Shared Parchment 2025.1 library files (12 files) |
-
-## Sound (Native Blorb)
-
-Games with sound use native Glk/Blorb — audio is embedded directly in the `.gblorb` binary. Parchment 2025.1 plays sounds via AudioContext when the game issues Glk sound channel calls.
-
-```bash
-python tools/compile.py zork1 --sound
-```
-
-**Requirements**: Sound declarations in `story.ni` (`Sound of X is the file "Y.ogg"`) and `.ogg` files in the game's `Sounds/` directory.
-
-See `reference/sound.md` for the full architecture.
-
-## Compiler
-
-Inform 7 is installed system-wide. CLI compilation uses `-source` and `-o` flags — no `.inform/` IDE bundles needed.
-
-```bash
-python tools/compile.py <game-name>                    # standard
-python tools/compile.py <game-name> --sound             # with blorb sound
-python tools/compile.py <game-name> --source PATH       # alternate story.ni
-python tools/compile.py <game-name> --compile-only      # skip web player update
-```
-
-## Reference Docs
-
-The `reference/` directory contains Inform 7 language reference:
-
-- **syntax-guide.md** — Core syntax, kinds, properties, rooms, actions
-- **text-formatting.md** — Text substitutions and output formatting
-- **world-model.md** — Kinds, properties, rooms/regions/backdrops, relations
-- **understanding.md** — Understand command, parser tokens, grammar
-- **rulebooks.md** — Action processing, rules, going, persuasion, senses
-- **activities-phrases.md** — Activities, phrase definitions, control flow
-- **sound.md** — Sound architecture, native blorb, Parchment integration
-- **parchment-troubleshooting.md** — Web player errors and debugging
-
-## Built With
-
-- [Inform 7](http://inform7.com/) — interactive fiction authoring
-- [Parchment](https://github.com/curiousdannii/parchment) — browser-based IF interpreter
-- [ZILF](https://foss.heptapod.net/zilf/zilf) — ZIL compiler (for Zork I v0)
-- [MSYS2](https://www.msys2.org/) — native interpreter builds (glulxe, frotz)
-- [Claude](https://claude.ai/) by [Anthropic](https://www.anthropic.com/) — AI-assisted development
+[Parchment](https://github.com/curiousdannii/parchment), [Inform 7](http://inform7.com/), [Ink](https://www.inklestudios.com/ink/), [Rez](https://rez-lang.com/), [ZILF](https://foss.heptapod.net/zilf/zilf), and [Claude](https://claude.ai/).

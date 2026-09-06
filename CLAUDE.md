@@ -1,237 +1,95 @@
-# IF Hub — Registry, Hub UI & Intake API
+# IF Hub — where finished games get published
 
-IF Hub's job is to **easily display games online in a browsable format**. It is a target that engine workspaces ship to — not a producer of game builds.
+IF Hub is **receive-only**. It displays a game, its source, and its walkthrough (plus a test report when the game ships one). It does not build, compile, or test games. Every engine has its own workspace under `C:\code\text-games\<engine>\` with a `tools/build.py`; the hub takes the folder that produces and puts it online.
 
-Game projects live **outside** this repo, each with its own git repo and engine-specific build chain. IF Hub provides:
+- Live site: https://johnesco.github.io/ifhub/ — deployed from `site/` by GitHub Actions on every push to `master` that touches `site/**`.
+- Each game is its own git repo, published to `https://johnesco.github.io/<game>/`. The hub iframes it from there; nothing is copied into the hub.
+- This is a personal showcase for getting games in front of people quickly, not a product.
 
-- **Hub site** (`site/`) — the browsable landing page and split-pane player
-- **Registry** (`games-registry.json`, `site/games.json`, `site/cards.json`, `site/hubs.json`)
-- **Intake API** (`tools/register_game.py`, `tools/publish.py`, `tools/push_hub.py`) — called by engine workspaces
-- **Pipeline orchestrator** (`tools/pipeline.py`) — for in-tree engines (I7, Ink, Rez) whose build tools still live here
+## The contract
 
-## Pipeline (I7, Ink, Rez)
+A game folder that IF Hub can receive contains:
 
-For engines whose build tools still live in IF Hub, the pipeline orchestrates build/test/register/publish/push-hub:
+| File | Required | What it is for |
+|---|---|---|
+| `ifhub.conf` | yes | `engine`, `title`, `description`, `tags`, `source`, `walkthrough`, `sound`, and `hub = yes` to be listed |
+| `play.html` | yes | self-contained web player, with the libs it needs (`lib/parchment/`, `theme-listener.js`, ...) |
+| source file | no | the raw file named by `source =`; the hub highlights it (Inform 7, Rez, Ink, BASIC). `sourceBrowser = yes` means the game ships its own `source.html` |
+| `walkthrough.txt`, `walkthrough_output.txt`, `walkthrough-guide.txt` | no | at the game root; the hub renders them in `site/walkthrough.html` |
+| `tests.html` | no | a test report page; its presence turns on the Tests tab |
+| `index.html` | generated | the game's landing page, the only file `tools/ship.py` writes into a game folder |
+
+Full details, per-engine build commands, and how to add an engine: `docs/publishing.md`.
+
+## Commands
 
 ```bash
-python tools/pipeline.py <game> compile          # compile only
-python tools/pipeline.py <game> compile test      # compile + test
-python tools/pipeline.py <game> --ship            # compile + test + register + publish + push hub
+# In the engine workspace: build, test, and lay out the game folder
+python C:/code/text-games/i7/tools/build.py <game>          # I7 and Z-machine; other workspaces: ink, rez, basic
+
+# In the hub: put the folder online and list it
+python tools/ship.py <game>              # verify contract, wrapper pages, register, publish to Pages, push hub
+python tools/ship.py <game> --local      # register only (local preview)
+python tools/ship.py <game> --refresh-pages   # rewrite the landing page from the current template
+python tools/ship.py <game> --clean-wrappers  # delete source.html / walkthrough.html an older hub generated
+python tools/ship.py <game> --unlist          # hide a game from the hub (hub = no) and push the registry
+
+# Maintenance
+python tools/build_games.py              # regenerate site/games.json + site/cards.json from every ifhub.conf
+python tools/check_links.py [--fix]      # verify every URL in the registry resolves on disk
+python tools/build_landing.py --all      # regenerate landing pages for versioned groups (zork1)
 ```
 
-The pipeline auto-detects the engine from `project.conf` and chains stages.
-
-## Directory Structure
+## Layout
 
 ```
-C:\code\ifhub\
-├── CLAUDE.md              ← You are here
-├── .claude/skills/        ← bash-pitfalls, kill-servers, serve, web-player-debug
-├── reference/             ← I7 syntax, text formatting, world model, sound, CSS overlay, etc.
+ifhub/
+├── CLAUDE.md, README.md
+├── workspaces.json          ← roots scanned for game folders: ../text-games/<engine>
+├── site/                    ← the static hub: index.html (cards), app.html (split-pane player),
+│                              walkthrough.html (walkthrough viewer), themes.js, games.json, cards.json, hubs.json
 ├── tools/
-│   ├── lib/               ← Shared Python modules (paths, output, process, config, web, git, regex)
-│   ├── pipeline.py        ← Unified build pipeline orchestrator
-│   ├── compile.py         ← I7→I6→Glulx→Blorb→web player compilation
-│   ├── jukebox.py         ← Universal game import/publish CLI (I7, Ink, Rez, Z-machine, BASIC)
-│   ├── publish.py         ← Publish a project to its own GitHub Pages repo
-│   ├── register_game.py   ← Register a game in IF Hub (adds to games.json + cards.json)
-│   ├── push_hub.py        ← Push hub registry changes to GitHub
-│   ├── new_project.py     ← Create a new project scaffold
-│   ├── adapters/          ← Per-engine adapters for jukebox (inform7, ink, rez, basic, zmachine)
-│   ├── regtest.py         ← Shared RegTest runner
-│   ├── testing/           ← Generic testing framework (walkthrough, seeds, regtest, guide gen)
-│   ├── interpreters/      ← Native Windows CLI interpreters (glulxe.exe, dfrotz.exe — gitignored)
-│   ├── rez/               ← Rez compiler (pre-built binary — gitignored)
-│   └── web/               ← Web player setup, templates (per engine), Parchment 2025.1 library
-├── workspaces.json        ← Engine workspace roots (convention-based game discovery)
-├── games-registry.json    ← Game path overrides + GitHub repo references
-└── site/                  ← IF Hub web UI (static site deployed to GitHub Pages)
-    ├── index.html         ← Landing page (renders cards from cards.json)
-    ├── app.html           ← Split-pane player (game + source viewer)
-    ├── games.json          ← Game registry (titles, URLs, engine, tags)
-    ├── cards.json          ← Card metadata for landing page
-    ├── hubs.json           ← Hub/collection definitions (filter by engine/tag)
-    └── themes.js           ← Platform theme system (15 platform themes)
+│   ├── ship.py              ← intake: contract check → landing page → register → publish → push hub
+│   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
+│   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
+│   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
+│   ├── check_links.py, build_landing.py, serve.py (local preview: hub + games on one port)
+│   ├── web/                 ← landing-page generator + templates (single game, versioned group)
+│   └── lib/                 ← paths, git, output, process, web (template substitution)
+├── docs/                    ← publishing.md (the contract), functional-spec.md (what the site does), sdlc.md (how work happens)
+├── reference/               ← css-overlay.md (theming), multi-version-guide.md (versioned games)
+└── .claude/launch.json      ← hub-site: tools/serve.py on port 8892 (what the Browser pane's preview runs)
 ```
 
-## Compiler
+**Game discovery:** `build_games.py` scans each root in `workspaces.json` for subfolders containing an `ifhub.conf`. A game is listed when its conf says `hub = yes`; `ship.py <game> --unlist` sets it back to `no`. Card text (title, subtitle from `author`, description) comes from the same conf, so nothing in `games.json` or `cards.json` is hand-maintained.
 
-Inform 7 is installed system-wide via the GUI installer:
+## Hub behaviour worth knowing
 
-- **I7 compiler**: `C:\Program Files\Inform7IDE\Compilers\inform7.exe`
-- **I6 compiler**: `C:\Program Files\Inform7IDE\Compilers\inform6.exe`
-- **Internal**: `C:\Program Files\Inform7IDE\Internal`
+- `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
+- Versioned games (zork1 v0..v3, dracula): `versionOf` / `versionPrimary` in `ifhub.conf` collapse a group into one card. See `reference/multi-version-guide.md`.
+- Local preview: `python tools/serve.py` (or the `hub-site` launch config) serves `site/` at `/ifhub/` and every game folder at `/<game>/` on one port, the same URL layout as GitHub Pages. Zero configuration, nothing to install.
 
-Do NOT create `.inform/` IDE project bundles — the `-source` and `-o` flags let us compile without them.
+## Engine workspaces (outside this repo)
 
-## Game Projects (External)
+| Workspace | Build command | Notes |
+|---|---|---|
+| `text-games/i7/` | `tools/build.py <game>` | Inform 7: compile, walkthrough + regtests + ifPlayer tests, Parchment player, tests.html. Z-machine stories (`engine = zmachine`, e.g. zork1-v0) live here too and are wrapped in the same player. I7 language references in `i7/reference/`; native interpreters in `i7/tools/interpreters/` |
+| `text-games/ink/` | `tools/build.py <game>` | compiles with inklecate when installed, else uses the committed .json |
+| `text-games/rez/` | `tools/build.py <game>` | Rez compiler in `rez/tools/bin/`; dist → play.html |
+| `text-games/basic/` | `tools/build.py <game>` | every BASIC dialect (wwwbasic, applesoft, bwbasic, qbjc, jsdos); `engine =` in ifhub.conf picks the player template; bwBASIC runtime in `basic/tools` |
 
-Game projects live **outside** this repo in engine-specific workspaces. Each game is its own git repo with its own GitHub Pages deployment. Each engine workspace has its own CLAUDE.md with engine-specific authoring rules.
-
-### Workspace Layout
-
-```
-C:\code\text-games\
-├── i7/               ← Inform 7 workspace (each game = own git repo)
-├── ink/              ← Ink workspace
-├── rez/              ← Rez workspace
-├── wwwbasic/         ← WWWBasic workspace
-├── applesoft/        ← Applesoft BASIC workspace
-└── zmachine/         ← Z-machine workspace
-```
-
-### Game Discovery
-
-Three layers control game discovery (later layers override earlier):
-
-1. **`workspaces.json`** (committed) — workspace roots scanned for `ifhub.conf` files (convention-based)
-2. **`games-registry.json`** (committed) — explicit path + GitHub repo references (overrides)
-3. **`games-local.json`** (gitignored) — per-developer path overrides
-
-All engines build **in-place**: the game directory IS the deploy directory.
-
-`games.json` entries include auto-probed URL fields: `walkthroughUrl` (from walkthrough files) and `testsUrl` (from `tests.html` in the deploy directory). Both are set by `build_games.py` when the corresponding file exists.
-
-Tools resolve game names via `paths.project_dir(name)` which checks: registry → workspace scan → legacy `projects/` fallback.
-
-### Project-Local Play Templates
-
-Games with custom `play.html` requirements can provide a `play-template.html` in their project root. Build scripts check for it before falling back to the generic template. This makes `--force` rebuilds safe.
-
-Placeholders substituted: `__TITLE__`, `__BASIC_SOURCE__` (BASIC engines), `__STORY_FILE__`/`__STORY_PATH__` (I7).
-
-## Supported Engines
-
-The hub is engine-agnostic — any game that produces a `play.html` works. The pipeline handles all engines automatically via `ENGINE=` in `project.conf`.
-
-| Engine | Source | Build owner | Tests tab |
-|--------|--------|-----------------|-----------|
-| `inform7` | `story.ni` | IF Hub pipeline (compile.py) | In progress |
-| `wwwbasic` | `.bas` file | IF Hub pipeline | — |
-| `qbjc` | `.bas` → `.js` | IF Hub pipeline | — |
-| `applesoft` | `.bas` file | IF Hub pipeline | — |
-| `jsdos` | `.jsdos` bundle | IF Hub pipeline | — |
-| `ink` | `.ink` file | IF Hub pipeline | — |
-| `rez` | `.rez` files | IF Hub pipeline | — |
-
-Each BASIC dialect must be specified explicitly via `ENGINE=` in `project.conf` — there is no generic "basic" fallback.
-
-## Hub Architecture
-
-The hub serves games **in-place** — it iframes each game's own play page directly from the game's GitHub Pages URL. No files are copied into the hub; each game project is the single source of truth for its own assets. All games deploy to `johnesco.github.io/<game>/`.
-
-**Local development:** Use `/serve` to start Portman, `/kill-servers` to stop it. See the serve skill for details.
-
-**CSS overlay theming:** Three tiers — Parchment base → static overlay → dynamic mood system. See `reference/css-overlay.md`.
-
-**Multi-hub collections:** Games can belong to curated collections via `hubs.json` filtering. See `reference/project-guide.md` § Hub Collections.
-
-**Tests pane:** The split-pane player (`app.html`) has a standard Tests frame alongside Source and Walkthrough. Games opt in by placing a `tests.html` file in their browser/deploy directory — `build_games.py` auto-detects it and sets `testsUrl` in `games.json`. When `testsUrl` is present, the IF Hub toolbar shows a checkmark Tests toggle button. All engines use ifplayer's HTML report format via `report_adapter.py` (converts `test-results.json` → ifplayer `TestResult` objects → `report.emit_html()`). The tests pane is theme-aware: `buildTestReportCSS()` in `themes.js` maps IF Hub chrome properties to ifplayer CSS variables, with adaptive pass/fail colors for dark vs light themes.
-
-## New Game Publish Flow
-
-```bash
-python tools/new_project.py "Title" game-name    # scaffold
-# ... edit story.ni, create walkthrough ...
-python tools/pipeline.py game-name --ship         # compile + test + register + publish + push hub
-```
-
-`compile.py` auto-generates `index.html` + `source.html` from `story.ni` metadata when they don't exist. The `register` stage reads title/description from `story.ni` — no CLI args needed. All steps are idempotent. No colons in game titles (Windows filename limitation).
-
-**GitHub Pages:** `publish.py` automatically enables Pages (workflow deployment) on every publish. If the repo was created manually before running the pipeline, Pages is still detected and enabled. Do NOT create repos or init git manually — let `publish.py` handle first-time setup end-to-end.
-
-See `reference/project-guide.md` for detailed steps, individual scripts, and pipeline stages.
-
-## Testing
-
-### Test Results Tab
-
-The Tests tab uses ifplayer's HTML report as the universal viewer for all engines. The pipeline: engine test runner → `test-results.json` → `report_adapter.py` → ifplayer HTML (`tests.html`). The adapter converts the engine-agnostic JSON schema into ifplayer's `TestResult` objects and calls `report.emit_html()`, producing the same rich transcript-first viewer that ifplayer produces natively. Features: collapsible test cards, turn-by-turn transcript with room/score tracking, inline assertion match highlighting ("show" buttons), word-level drift diffs. Theme integration: `buildTestReportCSS()` maps all 15 IF Hub themes to ifplayer CSS variables with light/dark adaptive colors.
-
-### Engine-Specific Testing
-
-Testing tools live per-engine at `/c/code/text-games/<engine>/tools/` (e.g., `i7/tools/run_walkthrough.py`). See `reference/engine-testing.md` for per-engine test capabilities.
-
-Key points:
-- All test scripts take `--config PATH` pointing to a project's `tests/project.conf`
-- Native interpreters (`glulxe.exe`, `dfrotz.exe`) auto-detected; WSL fallback available
-- Pipeline test stage auto-syncs walkthrough files between `tests/` and project root
-
-## Inform 7 Authoring Rules
-
-See `reference/syntax-guide.md` for full I7 syntax reference. See `reference/text-formatting.md` for text substitutions. See `reference/verb-help.md` for the verb help system template.
-
-Key rules: first line must be `"Title" by "Author"`. Use `[apostrophe]` not `'` in strings. Use `After printing the banner text` for custom attribution (never `When play begins`). No colons in game titles (Windows filename limitation).
-
-## Windows Notes
-
-All tooling is Python — no bash dependency for build, test, or deploy workflows. Native interpreters (`glulxe.exe`, `dfrotz.exe`) are built via MSYS2 (see `tools/interpreters/build.sh`). Original bash scripts are archived in `tools/archive/bash/` for reference.
-
-## Reference from Other Projects
-
-Other project CLAUDE.md files can reference this hub:
-```markdown
-For Inform 7 syntax and conventions, see C:\code\ifhub\CLAUDE.md
-```
-
-## Reference Docs
-
-| Doc | Contents |
-|-----|----------|
-| `reference/project-guide.md` | Build, test, publish workflows; pipeline stages; source patterns; hub collections |
-| `reference/build-pipeline.md` | Manual I7 compilation steps; web player binary format |
-| `reference/css-overlay.md` | Three-tier theming; mood engine; platform theme override |
-| `reference/sound.md` | Native blorb sound architecture |
-| `reference/syntax-guide.md` | Core Inform 7 syntax and structure |
-| `reference/text-formatting.md` | Text substitutions and output formatting |
-| `reference/parchment-troubleshooting.md` | Web player errors, sound gotchas, binary format |
-
-<!-- SDLC WORKFLOW — Source: https://github.com/Johnesco/sdlc-baseline -->
+Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling (GitHub: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace`); the game folders inside it are ignored because every game is its own repo. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
 
 ## Instructions for Claude
 
-> Full SDLC details (roles, 7-step workflow, board columns, automations, commit/branch conventions, severity matrix, idea-to-ship cycle) are in `docs/sdlc/`. The key rules are summarized below.
+> The process fits on one page: `docs/sdlc.md`. The key rules:
 
-**The most important rule: Claude cannot QA its own work.** The Verify column is always human-owned.
+**Claude cannot QA its own work.** The Verify column is always human-owned.
 
-### When Making Changes
-1. **Ticket first** — Create a GitHub Issue before any code. Add to project board: `gh project item-add 3 --owner Johnesco --url [ISSUE_URL]`
-2. **Read before editing** — Always read files before modifying them
-3. **Follow existing patterns** — Match the coding style already in use
-4. **Keep it simple** — Avoid over-engineering
+1. **Ticket first** — create a GitHub Issue before code, then `gh project item-add 3 --owner Johnesco --url [ISSUE_URL]`
+2. **Read before editing.** Follow existing patterns. Keep it simple.
+3. **Docs are part of done** — update `docs/functional-spec.md` for behaviour or data-format changes, this file for structure changes, `README.md` for public-facing changes, `docs/publishing.md` when the contract or a build command changes.
+4. **Commits:** `#XX: description`. Branches: `[type]/[short-description]` (feature/, fix/, docs/, task/, spike/). `Fixes #XX` in the PR body.
+5. **Never do game work in this repo.** Compiling, testing, and scaffolding belong in the engine workspaces.
 
-### Maintaining Documentation
-
-**UPDATE the project spec** (`docs/functional-spec.md`) when you:
-- Add, modify, or remove any feature
-- Fix a bug that changes observable behavior
-- Change data formats or API contracts
-- Alter UI behavior, states, or interactions
-
-**UPDATE CLAUDE.md** when you:
-- Add new features or pages
-- Change the file structure
-- Modify architectural patterns
-- Make significant design decisions
-
-**UPDATE README.md** when changes affect:
-- Public-facing feature descriptions
-- Setup or usage instructions
-- Project overview
-
-A change without a corresponding documentation update is considered **incomplete**.
-
-### Commit Convention
-
-```
-#XX: description
-```
-
-Where `XX` is the GitHub Issue number. Use `Fixes #XX` in PR body for auto-close. Branch naming: `[type]/[short-description]` (feature/, fix/, docs/, task/, spike/).
-
-### Project Board Reference
-
-- **Board URL:** https://github.com/users/Johnesco/projects/3
-- **Project number:** 3
-- **Owner:** Johnesco
-- **Add issue to board:** `gh project item-add 3 --owner Johnesco --url [ISSUE_URL]`
+Board: https://github.com/users/Johnesco/projects/3 (project 3, owner Johnesco).

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish an Inform 7 project to GitHub Pages.
+"""Publish a game folder to its own GitHub Pages repo.
 
 First run:  creates the GitHub repo, enables Pages, pushes everything.
 Later runs: commits changes and pushes to trigger redeployment.
@@ -16,7 +16,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import config, git, paths, process
+from lib import git, paths
+import build_games
 
 WORKFLOW_CONTENT = """\
 name: Deploy to GitHub Pages
@@ -93,6 +94,9 @@ def main():
     args = parser.parse_args()
 
     project_dir = paths.project_dir(args.game)
+    if project_dir is None:
+        print(f"ERROR: '{args.game}' is not under any workspace root (see workspaces.json).", file=sys.stderr)
+        sys.exit(1)
     msg = args.message or f"Update {args.game}"
 
     if not (project_dir / "play.html").exists():
@@ -108,10 +112,9 @@ def main():
         git.init(cwd=project_dir)
 
         print("  Creating GitHub repo...")
-        conf_fields = config.parse_conf_fields(project_dir)
-        engine = config.detect_engine(project_dir, conf_fields)
-        engine_spec = config.get_engine_spec(engine)
-        repo_desc = engine_spec.repo_description(args.game) if engine_spec else f"{args.game} -- An Interactive Fiction"
+        conf_path = project_dir / "ifhub.conf"
+        conf = build_games.parse_conf(conf_path) if conf_path.exists() else {}
+        repo_desc = f"{conf.get('title', args.game)} -- {conf.get('engine', 'interactive fiction')} game"
         git.gh_repo_create(args.game, repo_desc, cwd=project_dir)
 
         ensure_workflow(project_dir)

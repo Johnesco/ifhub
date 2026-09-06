@@ -12,7 +12,7 @@
       "classic",
       "basic"
     ],
-    "sourceUrl": "/apple-adventure/source.html"
+    "sourceUrl": "/apple-adventure/src/basic/ADVENTURE.BAS"
   },
   {
     "id": "babel",
@@ -27,15 +27,15 @@
       "classic",
       "puzzle"
     ],
-    "sourceUrl": "/babel/source.html",
-    "walkthroughUrl": "/babel/walkthrough.html"
+    "sourceUrl": "/babel/story.ni",
+    "walkthroughUrl": "/babel/walkthrough.txt"
   },
   {
     "id": "cloak-inform7",
     "base": "cloak-inform7",
     "title": "Cloak of Darkness (Inform 7)",
     "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "description": "The classic IF engine test, implemented in Inform 7.",
     "playUrl": "/cloak-inform7/play.html",
     "landingUrl": "/cloak-inform7/",
     "engine": "inform7",
@@ -43,8 +43,8 @@
       "cloak",
       "demo"
     ],
-    "sourceUrl": "/cloak-inform7/source.html",
-    "walkthroughUrl": "/cloak-inform7/walkthrough.html",
+    "sourceUrl": "/cloak-inform7/story.ni",
+    "walkthroughUrl": "/cloak-inform7/walkthrough.txt",
     "testsUrl": "/cloak-inform7/tests.html"
   },
   {
@@ -52,7 +52,7 @@
     "base": "cloak-ink",
     "title": "Cloak of Darkness (Ink)",
     "meta": "An Interactive Fiction",
-    "description": "An interactive fiction game.",
+    "description": "The classic IF engine test, implemented in Ink.",
     "playUrl": "/cloak-ink/play.html",
     "landingUrl": "/cloak-ink/",
     "engine": "ink",
@@ -61,7 +61,7 @@
       "demo",
       "classic"
     ],
-    "sourceUrl": "/cloak-ink/source.html"
+    "sourceUrl": "/cloak-ink/cloak-of-darkness.ink"
   },
   {
     "id": "cloak-rez",
@@ -77,7 +77,7 @@
       "demo"
     ],
     "sourceUrl": "/cloak-rez/src/cloak_of_darkness.rez",
-    "walkthroughUrl": "/cloak-rez/walkthrough.html"
+    "walkthroughUrl": "/cloak-rez/walkthrough.txt"
   },
   {
     "id": "disenchantment12",
@@ -91,8 +91,8 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/disenchantment12/source.html",
-    "walkthroughUrl": "/disenchantment12/walkthrough.html"
+    "sourceUrl": "/disenchantment12/story.ni",
+    "walkthroughUrl": "/disenchantment12/walkthrough.txt"
   },
   {
     "id": "dracula",
@@ -110,15 +110,14 @@
       "basic"
     ],
     "sourceUrl": "/dracula/story.ni",
-    "walkthroughUrl": "/dracula/walkthrough.html",
+    "walkthroughUrl": "/dracula/walkthrough.txt",
     "versions": [
       {
         "id": "dracula-v0",
         "label": "v0 — Original BASIC",
         "playUrl": "/dracula-v0/play.html",
         "landingUrl": "/dracula/#dracula-v0",
-        "sourceUrl": "/dracula-v0/source.html",
-        "walkthroughUrl": "/dracula-v0/walkthrough.html"
+        "sourceUrl": "/dracula-v0/source.html"
       }
     ]
   },
@@ -137,7 +136,7 @@
       "horror"
     ],
     "sourceUrl": "/feverdream/story.ni",
-    "walkthroughUrl": "/feverdream/walkthrough.html"
+    "walkthroughUrl": "/feverdream/walkthrough.txt"
   },
   {
     "id": "guess-the-verb-inform7",
@@ -153,8 +152,8 @@
       "parser-lab",
       "disambiguation"
     ],
-    "sourceUrl": "/guess-the-verb-inform7/source.html",
-    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.html"
+    "sourceUrl": "/guess-the-verb-inform7/story.ni",
+    "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.txt"
   },
   {
     "id": "haunted-house",
@@ -170,7 +169,7 @@
       "basic",
       "classic"
     ],
-    "sourceUrl": "/haunted-house/source.html"
+    "sourceUrl": "/haunted-house/src/basic/HAUNTED.BAS"
   },
   {
     "id": "ink-story",
@@ -184,8 +183,8 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/ink-story/source.html",
-    "walkthroughUrl": "/ink-story/walkthrough.html"
+    "sourceUrl": "/ink-story/farmers_heart.ink",
+    "walkthroughUrl": "/ink-story/walkthrough-guide.txt"
   },
   {
     "id": "larva",
@@ -199,8 +198,8 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/larva/source.html",
-    "walkthroughUrl": "/larva/walkthrough.html",
+    "sourceUrl": "/larva/story.ni",
+    "walkthroughUrl": "/larva/walkthrough.txt",
     "testsUrl": "/larva/tests.html"
   },
   {
@@ -215,7 +214,7 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/lostinnewyork/source.html"
+    "sourceUrl": "/lostinnewyork/lostinnewyork.ink"
   },
   {
     "id": "sample",
@@ -229,8 +228,8 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/sample/source.html",
-    "walkthroughUrl": "/sample/walkthrough.html"
+    "sourceUrl": "/sample/story.ni",
+    "walkthroughUrl": "/sample/walkthrough.txt"
   },
   {
     "id": "seasons",
@@ -244,8 +243,8 @@
     "tags": [
       "demo"
     ],
-    "sourceUrl": "/seasons/source.html",
-    "walkthroughUrl": "/seasons/walkthrough.html"
+    "sourceUrl": "/seasons/story.ni",
+    "walkthroughUrl": "/seasons/walkthrough.txt"
   },
   {
     "id": "zork1",
@@ -264,7 +263,7 @@
       "zork"
     ],
     "sourceUrl": "/zork1/story.ni",
-    "walkthroughUrl": "/zork1/walkthrough.html",
+    "walkthroughUrl": "/zork1/walkthrough.txt",
     "testsUrl": "/zork1/tests.html",
     "versions": [
       {
@@ -273,8 +272,8 @@
         "playUrl": "/zork1-v3/play.html",
         "landingUrl": "/zork1/#zork1-v3",
         "sound": "blorb",
-        "sourceUrl": "/zork1-v3/source.html",
-        "walkthroughUrl": "/zork1-v3/walkthrough.html"
+        "sourceUrl": "/zork1-v3/story.ni",
+        "walkthroughUrl": "/zork1-v3/walkthrough.txt"
       },
       {
         "id": "zork1-v2",
@@ -282,15 +281,15 @@
         "playUrl": "/zork1-v2/play.html",
         "landingUrl": "/zork1/#zork1-v2",
         "sourceUrl": "/zork1-v2/story.ni",
-        "walkthroughUrl": "/zork1-v2/walkthrough.html"
+        "walkthroughUrl": "/zork1-v2/walkthrough.txt"
       },
       {
         "id": "zork1-v1",
         "label": "v1 — The Port",
         "playUrl": "/zork1-v1/play.html",
         "landingUrl": "/zork1/#zork1-v1",
-        "sourceUrl": "/zork1-v1/source.html",
-        "walkthroughUrl": "/zork1-v1/walkthrough.html"
+        "sourceUrl": "/zork1-v1/story.ni",
+        "walkthroughUrl": "/zork1-v1/walkthrough.txt"
       },
       {
         "id": "zork1-v0",
@@ -298,7 +297,7 @@
         "playUrl": "/zork1-v0/play.html",
         "landingUrl": "/zork1/#zork1-v0",
         "sourceUrl": "/zork1-v0/source.html",
-        "walkthroughUrl": "/zork1-v0/walkthrough.html"
+        "walkthroughUrl": "/zork1-v0/walkthrough.txt"
       }
     ]
   }

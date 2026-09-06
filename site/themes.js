@@ -416,8 +416,6 @@ var THEMES = [
     }
 ];
 
-var _themeContext = null;
-
 function getThemeId() {
     try { return localStorage.getItem('ifhub-theme') || 'classic'; }
     catch (e) { return 'classic'; }
@@ -457,82 +455,9 @@ function applyChrome(theme) {
     s.setProperty('--scroll-thumb-hover', theme.scrollbar.thumbHover);
 }
 
-var GAME_VAR_MAP = {
-    bufferBg: '--glkote-buffer-bg', bufferFg: '--glkote-buffer-fg',
-    bufferSize: '--glkote-buffer-size', bufferLineHeight: '--glkote-buffer-line-height',
-    gridBg: '--glkote-grid-bg', gridFg: '--glkote-grid-fg',
-    gridSize: '--glkote-grid-size', gridLineHeight: '--glkote-grid-line-height',
-    inputFg: '--glkote-input-fg',
-    monoFamily: '--glkote-mono-family', propFamily: '--glkote-prop-family'
-};
-
-function applyGame(theme) {
-    var g = theme.game;
-    var s = document.documentElement.style;
-    for (var k in GAME_VAR_MAP) s.setProperty(GAME_VAR_MAP[k], g[k]);
-    s.setProperty('--glkote-buffer-reverse-bg', g.bufferFg);
-    s.setProperty('--glkote-buffer-reverse-fg', g.bufferBg);
-    s.setProperty('--glkote-grid-reverse-bg', g.gridFg);
-    s.setProperty('--glkote-grid-reverse-fg', g.gridBg);
-
-    var el = document.getElementById('theme-game-overrides');
-    if (el) el.remove();
-
-    // Classic theme: just set CSS vars, don't inject override style
-    // (the game's own CSS already has the right look)
-    if (theme.id === 'classic') {
-        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 50);
-        return;
-    }
-
-    var style = document.createElement('style');
-    style.id = 'theme-game-overrides';
-    style.textContent =
-        'body, html { background: ' + g.bodyBg + ' !important; }\n' +
-        '.BufferWindow { color: ' + g.bufferFg + ' !important; background-color: ' + g.bufferBg + ' !important; font-family: ' + g.monoFamily + ' !important; font-size: ' + g.bufferSize + ' !important; line-height: ' + g.bufferLineHeight + ' !important; }\n' +
-        '.BufferWindow span { color: ' + g.bufferFg + ' !important; }\n' +
-        '.BufferWindow span.reverse { color: ' + g.bufferBg + ' !important; background-color: ' + g.bufferFg + ' !important; }\n' +
-        '.BufferWindow .Style_input { color: ' + g.inputFg + ' !important; }\n' +
-        '.BufferWindow .Style_emphasized { color: ' + g.emphFg + ' !important; }\n' +
-        '.BufferWindow .Style_header { color: ' + g.headerFg + ' !important; }\n' +
-        '.BufferWindow .Style_subheader,\n' +
-        '.BufferWindow .Style_alert { color: ' + g.headerFg + ' !important; }\n' +
-        '.BufferWindow .Input,\n' +
-        '.BufferWindow textarea.Input { color: ' + g.inputFg + ' !important; caret-color: ' + g.inputFg + '; font-family: ' + g.monoFamily + ' !important; }\n' +
-        '.GridWindow { color: ' + g.gridFg + ' !important; background-color: ' + g.gridBg + ' !important; padding: 4px 12px !important; border: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; box-sizing: border-box !important; }\n' +
-        '.GridWindow span { color: ' + g.gridFg + ' !important; background-color: ' + g.gridBg + ' !important; }\n' +
-        '.GridWindow span.reverse { color: ' + g.gridFg + ' !important; background-color: ' + g.gridBg + ' !important; }\n' +
-        '#loadingpane { color: ' + g.bufferFg + '; background: ' + g.bodyBg + '; font-family: ' + g.monoFamily + '; }\n' +
-        '.WindowFrame { background: transparent !important; }\n' +
-        'div#gameport { background: linear-gradient(to bottom, ' + g.gridBg + ' 0px, ' + g.gridBg + ' ' + ((parseInt(g.gridLineHeight) || 20) + 10) + 'px, ' + g.bufferBg + ' ' + ((parseInt(g.gridLineHeight) || 20) + 10) + 'px) !important; }\n' +
-        '* { scrollbar-color: ' + theme.scrollbar.thumb + ' ' + theme.scrollbar.track + '; }\n' +
-        '::-webkit-scrollbar { width: 10px; background: ' + theme.scrollbar.track + '; }\n' +
-        '::-webkit-scrollbar-thumb { background: ' + theme.scrollbar.thumb + '; border-radius: 4px; }\n' +
-        '::-webkit-scrollbar-thumb:hover { background: ' + theme.scrollbar.thumbHover + '; }\n';
-    document.head.appendChild(style);
-
-    setTimeout(function() {
-        window.dispatchEvent(new Event('resize'));
-    }, 50);
-}
-
 function initTheme(context) {
-    _themeContext = context;
-    var theme = getTheme(getThemeId());
-    if (context === 'game') {
-        applyGame(theme);
-        window.addEventListener('message', function(e) {
-            if (e.data && e.data.type === 'ifhub:themeChange') {
-                var t = getTheme(e.data.themeId);
-                if (t) {
-                    setThemeId(e.data.themeId);
-                    applyGame(t);
-                }
-            }
-        });
-    } else {
-        applyChrome(theme);
-    }
+    // context is kept for callers ('app', 'library'); every page gets the chrome theme.
+    applyChrome(getTheme(getThemeId()));
 }
 
 // Shared style for theme select elements (used by createThemeDropdown and app.html buildStyleDropdown)
@@ -588,16 +513,7 @@ function createThemeDropdown(containerId) {
     select.addEventListener('change', function() {
         var id = this.value;
         setThemeId(id);
-        var theme = getTheme(id);
-        if (_themeContext === 'game') {
-            applyGame(theme);
-        } else {
-            applyChrome(theme);
-        }
-        var frame = document.getElementById('game-frame');
-        if (frame && frame.contentWindow) {
-            frame.contentWindow.postMessage({ type: 'ifhub:themeChange', themeId: id }, '*');
-        }
+        applyChrome(getTheme(id));
     });
 
     container.appendChild(label);

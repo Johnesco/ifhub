@@ -395,13 +395,13 @@ Promise.all([
       var action = actionSelect.value;
       var fullscreen = document.getElementById('fs-' + cardIdx).checked;
 
-      var directUrl = opt.playUrl;
       var view = 'game';
-      if (action === 'source') { directUrl = opt.sourceUrl; view = 'source'; }
-      else if (action === 'walkthrough') { directUrl = opt.walkthroughUrl; view = 'walkthrough'; }
+      if (action === 'source') view = 'source';
+      else if (action === 'walkthrough') view = 'walkthrough';
 
-      if (fullscreen) {
-        window.location.href = directUrl;
+      // Fullscreen opens the game's own page; source and walkthrough are hub views.
+      if (fullscreen && action === 'play') {
+        window.location.href = opt.playUrl;
       } else {
         window.location.href = 'app.html?game=' + opt.id + '&view=' + view + hubQuery;
       }
@@ -480,8 +480,6 @@ Promise.all([
   <p>
     Built with <a href="http://inform7.com/">Inform 7</a>.
     Playable via <a href="https://github.com/curiousdannii/parchment">Parchment</a>.
-    <a href="importing.html">Adding games</a>.
-    <a href="dashboard.html">Dashboard</a>.
     <a href="https://github.com/Johnesco/ifhub">Source on GitHub</a>.
   </p>
 </footer>

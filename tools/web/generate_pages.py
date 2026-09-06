@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generate project web pages (landing page + source browser) from templates.
+"""Write a game's landing page (index.html) from tools/web/landing-template.html.
 
 Usage:
-    python tools/web/generate_pages.py \
-        --title "Game Title" \
-        --meta "Subtitle" \
-        --description "Game description" \
-        --out /path/to/project
+    python tools/web/generate_pages.py --title "Game Title" --meta "Subtitle" \
+        --description "Game description" --id <game> --out /path/to/game
+
+The landing page is the only file IF Hub writes into a game folder. Source and
+walkthrough views are rendered by the hub itself from the game's raw files.
 """
 
 import argparse
@@ -18,65 +18,30 @@ from lib.web import substitute_template
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate project web pages from templates.")
+    parser = argparse.ArgumentParser(description="Write a game's landing page from the hub template.")
     parser.add_argument("--title", required=True, help="Game title")
     parser.add_argument("--meta", default="An Interactive Fiction", help="Subtitle")
     parser.add_argument("--description", default="An interactive fiction game.", help="Description")
-    parser.add_argument("--id", default="", help="Game ID (for IF Hub links; defaults to output dir name)")
-    parser.add_argument("--out", required=True, help="Output directory")
-    parser.add_argument("--source-file", default="story.ni", help="Source filename (e.g. story.ni, game.bas)")
-    parser.add_argument("--source-files", default="", help="Comma-separated list of source files (for multi-file projects)")
-    parser.add_argument("--force", action="store_true", help="Overwrite existing files")
+    parser.add_argument("--id", default="", help="Game ID (for IF Hub links; defaults to the output dir name)")
+    parser.add_argument("--out", required=True, help="Game folder")
+    parser.add_argument("--force", action="store_true", help="Overwrite an existing index.html")
     args = parser.parse_args()
 
-    script_dir = Path(__file__).resolve().parent
+    template = Path(__file__).resolve().parent / "landing-template.html"
+    if not template.exists():
+        print(f"ERROR: landing template not found: {template}", file=sys.stderr)
+        sys.exit(1)
+
     out_dir = Path(args.out)
-    generated = 0
-
-    # Landing page (index.html)
-    landing_template = script_dir / "landing-template.html"
-    if not landing_template.exists():
-        print(f"ERROR: Landing template not found: {landing_template}", file=sys.stderr)
-        sys.exit(1)
-
     index_out = out_dir / "index.html"
-    if not index_out.exists() or args.force:
-        print("Generating index.html...")
-        game_id = args.id or Path(args.out).name
-        substitute_template(
-            landing_template, index_out,
-            {"__TITLE__": args.title, "__META__": args.meta, "__DESCRIPTION__": args.description, "__ID__": game_id},
-        )
-        generated += 1
-    else:
+    if index_out.exists() and not args.force:
         print("  index.html already exists (use --force to overwrite)")
-
-    # Source browser (source.html)
-    source_template = script_dir / "source-template.html"
-    if not source_template.exists():
-        print(f"ERROR: Source template not found: {source_template}", file=sys.stderr)
-        sys.exit(1)
-
-    source_out = out_dir / "source.html"
-    if not source_out.exists() or args.force:
-        import json
-        print("Generating source.html...")
-        # Build source manifest: multi-file list or single file
-        if args.source_files:
-            files = [f.strip() for f in args.source_files.split(",") if f.strip()]
-            manifest = json.dumps(files)
-        else:
-            manifest = json.dumps(args.source_file)
-        substitute_template(source_template, source_out, {
-            "__TITLE__": args.title,
-            "__SOURCE_FILE__": args.source_file,
-            "__SOURCE_MANIFEST__": manifest,
-        })
-        generated += 1
-    else:
-        print("  source.html already exists (use --force to overwrite)")
-
-    print(f"\nGenerated {generated} page(s) in {out_dir}")
+        return
+    print("Generating index.html...")
+    substitute_template(template, index_out, {
+        "__TITLE__": args.title, "__META__": args.meta, "__DESCRIPTION__": args.description,
+        "__ID__": args.id or out_dir.name,
+    })
 
 
 if __name__ == "__main__":

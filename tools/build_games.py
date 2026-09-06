@@ -2,10 +2,10 @@
 """Rebuild site/games.json and site/cards.json from ifhub.conf files.
 
 `ifhub.conf` is the single source of truth for every game's metadata. This
-script walks all registered deploy directories (discovered via workspaces.json
-plus any overrides in games-registry.json), parses each `ifhub.conf`, and
-emits one games.json entry per game. It then collapses versioned groups into
-cards.json for the landing page.
+script walks every game folder under the workspaces.json roots, parses each
+`ifhub.conf`, and emits one games.json entry per game (title, author,
+description, tags, URLs). It then collapses versioned groups into cards.json
+for the landing page. Nothing in either file is hand-maintained.
 
 URLs (playUrl, landingUrl, sourceUrl, walkthroughUrl, testsUrl) are computed
 from the deploy directory name. Each URL is probed on
@@ -28,9 +28,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import (
-    IFHUB_DIR, GAMES_REGISTRY, WORKSPACES_FILE, I7_ROOT,
-)
+from lib import paths
+from lib.paths import SITE_DIR
 
 
 TRUE_VALUES = {"yes", "true", "1", "on"}
@@ -38,13 +37,6 @@ TRUE_VALUES = {"yes", "true", "1", "on"}
 
 def as_bool(val: str | None) -> bool:
     return (val or "").strip().lower() in TRUE_VALUES
-
-
-def resolve_path(raw: str) -> Path:
-    p = Path(raw)
-    if not p.is_absolute():
-        p = (I7_ROOT / p).resolve()
-    return p
 
 
 # ── Config parsing ──────────────────────────────────────────────────────────
@@ -74,49 +66,8 @@ def parse_conf(path: Path) -> dict:
 # ── Game discovery ──────────────────────────────────────────────────────────
 
 def discover_game_dirs() -> dict[str, Path]:
-    """Return dict mapping the deploy-dir basename to its absolute path.
-
-    Walks each workspace root from workspaces.json and collects any immediate
-    subdirectory containing an ifhub.conf. Registry entries with non-workspace
-    paths are layered on top so games outside the declared workspaces still
-    get picked up.
-    """
-    dirs: dict[str, Path] = {}
-
-    if WORKSPACES_FILE.exists():
-        try:
-            ws_data = json.loads(WORKSPACES_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            ws_data = {"workspaces": []}
-        for ws in ws_data.get("workspaces", []):
-            root = resolve_path(ws.get("root", ""))
-            if not root.is_dir():
-                continue
-            for sub in sorted(root.iterdir()):
-                if not sub.is_dir():
-                    continue
-                if (sub / "ifhub.conf").exists():
-                    dirs[sub.name] = sub
-
-    if GAMES_REGISTRY.exists():
-        try:
-            registry = json.loads(GAMES_REGISTRY.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            registry = {}
-        # Collect unique deploy paths (de-dupe by resolved path).
-        seen: set[Path] = set()
-        for entry in registry.values():
-            raw = entry.get("path", "")
-            if not raw:
-                continue
-            resolved = resolve_path(raw)
-            if resolved in seen or not resolved.is_dir():
-                continue
-            seen.add(resolved)
-            if (resolved / "ifhub.conf").exists():
-                dirs.setdefault(resolved.name, resolved)
-
-    return dirs
+    """folder name -> game folder for every ifhub.conf under the workspaces.json roots."""
+    return paths.discover_games()
 
 
 # ── Entry building ──────────────────────────────────────────────────────────
@@ -165,6 +116,10 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
         "id": game_id,
         "title": conf.get("title", game_id),
     }
+    if conf.get("author"):
+        entry["author"] = conf["author"]
+    if conf.get("description"):
+        entry["description"] = conf["description"]
 
     # sourceLabel: explicit override > derived from source field
     src_label = conf.get("sourceLabel") or derive_source_label(conf, game_id)
@@ -187,9 +142,13 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
 
     probe_root = deploy_dir
 
-    walkthrough_html = probe_root / "walkthrough.html"
-    if walkthrough_html.exists():
-        entry["walkthroughUrl"] = f"{url_prefix}/walkthrough.html"
+    # The hub renders walkthroughs itself (site/walkthrough.html) from the raw
+    # files at the game root; walkthroughUrl names the commands file (or the guide
+    # when a game only ships the annotated guide).
+    for wt_name in ("walkthrough.txt", "walkthrough-guide.txt"):
+        if (probe_root / wt_name).exists():
+            entry["walkthroughUrl"] = f"{url_prefix}/{wt_name}"
+            break
 
     tests_html = probe_root / "tests.html"
     if tests_html.exists():
@@ -199,28 +158,17 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
     if landing_html.exists():
         entry["landingUrl"] = f"{url_prefix}/"
 
-    # sourceBrowser defaults ON. Absent ifhub.conf key = default. Explicit
-    # `sourceBrowser = no` turns it off (raw-source URL like /zork1/story.ni).
-    raw_sb = conf.get("sourceBrowser")
-    if raw_sb is None:
-        source_browser = True
-    else:
-        source_browser = as_bool(raw_sb)
-
+    # The hub renders source itself from the raw file named by `source =`.
+    # `sourceBrowser = yes` is an explicit opt-in for games that ship their own
+    # source.html (e.g. a multi-file ZIL browser); it is never inferred.
     source_html = probe_root / "source.html"
-    if source_browser and source_html.exists():
+    if as_bool(conf.get("sourceBrowser")) and source_html.exists():
         entry["sourceBrowser"] = True
         entry["sourceUrl"] = f"{url_prefix}/source.html"
     elif conf.get("source"):
-        # Keep the full relative path (e.g. src/cloak_of_darkness.rez) — some
-        # engines point at a subfolder source; the URL must match.
         src_rel = conf["source"].replace("\\", "/").strip("/")
-        src_path = probe_root / src_rel
-        if src_path.exists():
+        if (probe_root / src_rel).is_file():
             entry["sourceUrl"] = f"{url_prefix}/{src_rel}"
-        elif source_html.exists():
-            entry["sourceBrowser"] = True
-            entry["sourceUrl"] = f"{url_prefix}/source.html"
 
     engine = conf.get("engine", "")
     if engine:
@@ -244,9 +192,8 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
 def build_entries_for_dir(deploy_dir: Path) -> list[dict]:
     """Return the games.json entry contributed by one deploy dir (0 or 1).
 
-    A game must set `hub = yes` in its ifhub.conf to be listed. This is the
-    explicit opt-in that replaces games-registry.json as the 'which games
-    appear in the hub' signal.
+    A game must set `hub = yes` in its ifhub.conf to be listed; that flag is
+    the only 'which games appear in the hub' signal.
     """
     conf = parse_conf(deploy_dir / "ifhub.conf")
     if not as_bool(conf.get("hub")):
@@ -333,10 +280,9 @@ def version_label(gid: str, entry: dict, game_meta: dict) -> str:
     return title
 
 
-def _build_cards(games: list[dict], cards_existing: list[dict]) -> list[dict]:
-    """Collapse versioned game groups into landing-page cards."""
+def _build_cards(games: list[dict]) -> list[dict]:
+    """Collapse versioned game groups into landing-page cards (fully derived from games)."""
     games_by_id = {g["id"]: g for g in games}
-    cards_by_id = {c["id"]: c for c in cards_existing}
 
     member_to_base, primaries = build_groups(games_by_id)
 
@@ -350,7 +296,6 @@ def _build_cards(games: list[dict], cards_existing: list[dict]) -> list[dict]:
             continue
 
         primary_game = games_by_id[primary_id]
-        existing = cards_by_id.get(primary_id, {})
         members = [gid for gid, b in member_to_base.items()
                    if b == base and gid != primary_id]
         members_sorted = sorted(
@@ -362,20 +307,20 @@ def _build_cards(games: list[dict], cards_existing: list[dict]) -> list[dict]:
         card: dict = {
             "id": primary_id,
             "base": primary_id,
-            "title": primary_game.get("title") or existing.get("title", primary_id),
-            "meta": existing.get("meta", "An Interactive Fiction"),
-            "description": existing.get("description", ""),
+            "title": primary_game.get("title", primary_id),
+            "meta": primary_game.get("author") or "An Interactive Fiction",
+            "description": primary_game.get("description", ""),
             "primaryLabel": meta["primary_label"],
         }
-        if primary_game.get("sound") or existing.get("sound"):
-            card["sound"] = primary_game.get("sound") or existing.get("sound")
+        if primary_game.get("sound"):
+            card["sound"] = primary_game["sound"]
         card["playUrl"] = primary_game["playUrl"]
         play_segments = primary_game["playUrl"].strip("/").split("/")
         deploy_name = play_segments[0] if play_segments else primary_id
         group_landing = f"/{deploy_name}/"
         card["landingUrl"] = group_landing
-        card["engine"] = primary_game.get("engine", existing.get("engine", "inform7"))
-        card["tags"] = primary_game.get("tags", existing.get("tags", []))
+        card["engine"] = primary_game.get("engine", "inform7")
+        card["tags"] = primary_game.get("tags", [])
         if primary_game.get("sourceUrl"):
             card["sourceUrl"] = primary_game["sourceUrl"]
         if primary_game.get("walkthroughUrl"):
@@ -413,29 +358,26 @@ def _build_cards(games: list[dict], cards_existing: list[dict]) -> list[dict]:
         if gid in handled_ids or gid in member_to_base:
             continue
 
-        existing = cards_by_id.get(gid, {})
         card = {
             "id": gid,
             "base": gid,
-            "title": game.get("title") or existing.get("title", gid),
-            "meta": existing.get("meta", "An Interactive Fiction"),
-            "description": existing.get("description", ""),
+            "title": game.get("title", gid),
+            "meta": game.get("author") or "An Interactive Fiction",
+            "description": game.get("description", ""),
         }
-        if game.get("sound") or existing.get("sound"):
-            card["sound"] = game.get("sound") or existing.get("sound")
+        if game.get("sound"):
+            card["sound"] = game["sound"]
         card["playUrl"] = game["playUrl"]
         if game.get("landingUrl"):
             card["landingUrl"] = game["landingUrl"]
-        card["engine"] = game.get("engine", existing.get("engine", "inform7"))
-        card["tags"] = game.get("tags", existing.get("tags", []))
+        card["engine"] = game.get("engine", "inform7")
+        card["tags"] = game.get("tags", [])
         if game.get("sourceUrl"):
             card["sourceUrl"] = game["sourceUrl"]
         if game.get("walkthroughUrl"):
             card["walkthroughUrl"] = game["walkthroughUrl"]
         if game.get("testsUrl"):
             card["testsUrl"] = game["testsUrl"]
-        if existing.get("sourceBrowser"):
-            card["sourceBrowser"] = True
 
         out_cards.append(card)
         handled_ids.add(gid)
@@ -452,8 +394,8 @@ def _write_json(path: Path, data) -> None:
 
 
 def main() -> None:
-    games_path = IFHUB_DIR / "games.json"
-    cards_path = IFHUB_DIR / "cards.json"
+    games_path = SITE_DIR / "games.json"
+    cards_path = SITE_DIR / "cards.json"
 
     dirs = discover_game_dirs()
     all_entries: list[dict] = []
@@ -469,13 +411,7 @@ def main() -> None:
     print(f"  games.json: wrote {len(all_entries)} entries "
           f"from {len(dirs)} deploy dir(s)")
 
-    cards_existing: list[dict] = []
-    if cards_path.exists():
-        try:
-            cards_existing = json.loads(cards_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
-            pass
-    cards = _build_cards(all_entries, cards_existing)
+    cards = _build_cards(all_entries)
     _write_json(cards_path, cards)
     print(f"  cards.json: wrote {len(cards)} cards")
 

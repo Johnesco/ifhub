@@ -196,7 +196,8 @@ document.addEventListener('click', function(ev) {
   var view = action === 'source' ? 'source'
            : action === 'walkthrough' ? 'walkthrough'
            : 'game';
-  window.location.href = fullscreen ? url : ('/ifhub/app.html?game=' + gid + '&view=' + view);
+  // Fullscreen opens the game's own play page; source and walkthrough are hub views.
+  window.location.href = (fullscreen && action === 'play') ? url : ('/ifhub/app.html?game=' + gid + '&view=' + view);
 });
 </script>
 
