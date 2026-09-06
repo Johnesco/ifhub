@@ -18,6 +18,8 @@ IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interact
 | Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
 | Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
+Shared scripts: `themes.js` (themes, §5) and `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page). The player's code is in `app.js` and `app.css`.
+
 ### 2.1 Landing page
 
 - Fetches `cards.json` and `hubs.json` and renders one card per entry, in file order. A card shows the title, the subtitle (the game's author line), the description, and a version picker for versioned groups.
