@@ -14,7 +14,7 @@ IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interact
 
 | Page | File | Purpose |
 |---|---|---|
-| Landing page | `index.html` | catalog of game cards, collection picker, theme picker |
+| Landing page | `index.html` | collection rail, game cards with explicit launch modes, theme picker |
 | Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
 | Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
@@ -22,11 +22,11 @@ Shared scripts: `themes.js` (themes, §5) and `hub.js` (loading `games.json`/`ca
 
 ### 2.1 Landing page
 
-- Fetches `cards.json` and `hubs.json` and renders one card per entry, in file order. A card shows the title, the subtitle (the game's author line), the description, and a version picker for versioned groups.
-- Card actions: Play (the game's own `playUrl`), Source and Walkthrough (hub views in the player). The fullscreen checkbox applies to Play only: it opens the game's own page instead of the player.
-- Collections: a dropdown built from `hubs.json` filters the cards by engine or tag. The active collection is in the URL as `?hub=<id>` (bare path for "all"). Switching uses `history.pushState` and re-renders in place; back and forward restore it; a collection other than "all" replaces the page title and subtitle with its own.
-- Theme picker (§5.1), persisted in `localStorage` under `ifhub-theme`.
-- Static sections: "How It Works" and "Thank You" credits.
+- Fetches `cards.json` and `hubs.json`. The masthead holds the title, a one-line description and the "Look" theme picker (§5.1, persisted in `localStorage` under `ifhub-theme`).
+- Collections are the primary navigation: a rail of chips built from `hubs.json`, one per collection, each showing how many games it holds. The active collection's description appears under the rail and the page title becomes "<collection> — IF Hub". The active collection is in the URL as `?hub=<id>` (bare path for "all"); switching uses `history.pushState` and re-renders in place, and back and forward restore it.
+- Cards fill a responsive grid (columns of at least 320px), sorted by title. A card shows the title (linking to the game's landing page), badges for the engine and, when any version has them, sound and tests, the author line, the description, and for versioned groups a row of version chips.
+- Launch controls follow the selected version: **Play** opens the game's own `playUrl` fullscreen; **Open in Hub** opens the player on `game+source`; Source, Walkthrough and Tests links open the player on that view and appear only when the version has the file. Player links carry `&hub=<id>` so the player's game selector stays within the collection.
+- A short "about" paragraph and a one-line credits row close the page.
 
 ### 2.2 Player (`app.html`)
 
