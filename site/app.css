@@ -1,0 +1,631 @@
+/* IF Hub — split-pane player styles (app.html). */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--page-bg, #0a0a0a);
+  color: var(--page-fg, #d4c5a9);
+  font-family: var(--font-family, Georgia, "Times New Roman", serif);
+  overflow: hidden;
+}
+
+body {
+  display: grid;
+  --game-width: 55%;
+  grid-template-columns: var(--game-width) 5px 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+body.source-collapsed {
+  grid-template-columns: 1fr;
+}
+
+body.source-collapsed #resize-handle,
+body.source-collapsed #source-pane {
+  display: none;
+}
+
+body.game-collapsed {
+  grid-template-columns: 1fr;
+}
+
+body.game-collapsed #game-pane,
+body.game-collapsed #resize-handle {
+  display: none;
+}
+
+/* --- Source Pane --- */
+#source-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid var(--border, #2a2418);
+  background: var(--page-bg, #0a0a0a);
+}
+
+/* Source pane modes — driven by data-source-mode attribute */
+#source-pane .source-with-nav,
+#source-pane #source-browser-frame,
+#source-pane #walkthrough-content,
+#source-pane #tests-content { display: none; }
+
+#source-pane[data-source-mode="inline"] .source-with-nav { display: flex; }
+#source-pane[data-source-mode="inline"] .sidebar-toggle { display: flex; }
+#source-pane[data-source-mode="browser"] #source-browser-frame { display: flex; }
+#source-pane[data-source-mode="browser"] .sidebar-toggle { display: none; }
+#source-pane[data-source-mode="walkthrough"] #walkthrough-content { display: flex; }
+#source-pane[data-source-mode="walkthrough"] .sidebar-toggle { display: none; }
+#source-pane[data-source-mode="tests"] #tests-content { display: flex; }
+#source-pane[data-source-mode="tests"] .sidebar-toggle { display: none; }
+
+#source-browser-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--page-bg, #0a0a0a);
+}
+
+/* --- Source toolbar (above code area, always visible) --- */
+.source-toolbar {
+  padding: 6px 12px;
+  background: var(--toolbar-bg, #0e0e0c);
+  border-bottom: 1px solid var(--card-border, #1e1a14);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82em;
+  color: var(--muted, #806050);
+  flex-shrink: 0;
+}
+
+.source-toolbar .file-path {
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.95em;
+  color: var(--muted, #a08060);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.source-toolbar .line-count {
+  font-size: 0.9em;
+  color: var(--dim, #605040);
+  margin-left: auto;
+}
+
+
+.sidebar .search-box {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 6px 8px;
+  background: var(--input-bg, #110a08);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  color: var(--page-fg, #d4c5a9);
+  font-family: "SF Mono", "Fira Code", Consolas, "Courier New", monospace;
+  font-size: 0.82em;
+  padding: 4px 8px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.sidebar .search-box:focus { border-color: var(--border-hover, #5a4a30); }
+.sidebar .search-box::placeholder { color: var(--dim, #4a3a28); }
+
+/* --- Source with nav sidebar --- */
+.source-with-nav {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
+}
+
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--toolbar-bg, #0c0a08);
+  border-right: 1px solid var(--card-border, #1a1810);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar.collapsed { display: none; }
+.sidebar.sidebar-open { display: flex; }
+
+/* --- Sidebar toggle --- */
+.sidebar-toggle {
+  background: none;
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  color: var(--muted, #887755);
+  font-size: 1em;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+  padding: 0;
+  line-height: 1;
+  font-family: inherit;
+}
+
+.sidebar-toggle:hover {
+  color: var(--heading-fg, #c4b48a);
+  border-color: var(--border-hover, #5a4a30);
+}
+
+.nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.nav::-webkit-scrollbar { width: 6px; }
+.nav::-webkit-scrollbar-track { background: var(--toolbar-bg, #0c0a08); }
+.nav::-webkit-scrollbar-thumb { background: var(--border, #2a2418); border-radius: 3px; }
+
+.nav-item {
+  display: block;
+  padding: 4px 12px;
+  font-size: 0.82em;
+  color: var(--muted, #886850);
+  text-decoration: none;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.1s, color 0.1s;
+}
+
+.nav-item:hover {
+  background: var(--surface-bg, #151008);
+  color: var(--heading-fg, #c0a880);
+}
+
+.nav-item.active {
+  background: var(--surface-bg, #18100a);
+  color: var(--heading-fg, #e0c8a0);
+  border-left-color: var(--accent, #e8d090);
+}
+
+.nav-part {
+  font-weight: bold;
+  color: var(--heading-fg, #c0a880);
+  padding-top: 10px;
+  font-size: 0.85em;
+}
+
+.nav-chapter { padding-left: 20px; }
+.nav-section { padding-left: 32px; font-size: 0.78em; color: var(--dim, #705840); }
+
+/* --- Source main (code area) --- */
+.source-main {
+  flex: 1;
+  overflow: auto;
+  padding: 12px 0;
+  min-height: 0;
+}
+
+.source-main::-webkit-scrollbar { width: 8px; }
+.source-main::-webkit-scrollbar-track { background: var(--scroll-track, #0a0a0a); }
+.source-main::-webkit-scrollbar-thumb { background: var(--scroll-thumb, #2a2418); border-radius: 4px; }
+.source-main::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover, #3a3020); }
+
+/* --- Code table --- */
+table.code {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+table.code td { vertical-align: top; }
+
+td.ln {
+  min-width: 40px;
+  padding: 0 12px 0 16px;
+  text-align: right;
+  color: var(--badge-fg, #221a10);
+  opacity: 0.45;
+  user-select: none;
+  white-space: nowrap;
+}
+
+td.lc {
+  white-space: pre-wrap;
+  word-break: break-all;
+  padding: 0 16px 0 0;
+}
+
+tr.heading-line td { padding-top: 8px; }
+tr.heading-line td.lc { font-weight: bold; color: var(--heading-fg, #e0c8a0); font-size: 14px; }
+tr.heading-line td.ln { color: var(--dim, #5a4030); }
+
+tr:target td, tr.highlight td { background: var(--surface-bg, #1a1008); }
+tr:target td.ln, tr.highlight td.ln { color: var(--muted, #806050); }
+
+/* --- Inform 7 syntax colors --- */
+.syn-str  { color: #8bab6e; }
+.syn-cmt  { color: #605840; font-style: italic; }
+.syn-sub  { color: #7ea8b0; }
+.syn-kw   { color: #c08050; }
+.syn-head { color: #e0c8a0; font-weight: bold; }
+.syn-rule { color: #b89860; }
+.syn-num  { color: #b08a70; }
+.syn-tbl  { color: #9090b0; }
+
+/* --- Search highlights --- */
+.search-hit {
+  background: #4a3a10;
+  color: #ffe0a0;
+  border-radius: 2px;
+}
+
+.search-current {
+  background: #6a4a10;
+  outline: 1px solid #aa8030;
+}
+
+/* view-tabs replaced by #view-select dropdown */
+
+/* --- Walkthrough status in sidebar --- */
+.walkthrough-context {
+  display: contents;
+}
+
+/* --- Walkthrough content area --- */
+#walkthrough-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#walkthrough-content iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--page-bg, #0a0a0a);
+}
+
+#walkthrough-unavailable {
+  padding: 20px;
+  color: var(--muted, #605840);
+  font-style: italic;
+}
+
+/* --- Tests content area --- */
+#tests-content {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#tests-content iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--page-bg, #0a0a0a);
+}
+
+#tests-unavailable {
+  padding: 20px;
+  color: var(--muted, #605840);
+  font-style: italic;
+}
+
+/* --- Resize Handle --- */
+#resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background: var(--card-border, #1a1810);
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+#resize-handle:hover,
+#resize-handle.dragging {
+  background: var(--border, #3a3020);
+}
+
+body.source-collapsed #resize-handle {
+  display: none;
+}
+
+body.resizing iframe {
+  pointer-events: none;
+}
+
+/* --- Game Pane --- */
+#game-pane {
+  overflow: hidden;
+  background: var(--page-bg, #0a0a0a);
+}
+
+.game-toolbar {
+  grid-column: 1 / -1;
+  padding: 4px 10px;
+  padding-right: 40px; /* room for pinned hamburger */
+  background: var(--toolbar-bg, #0e0a08);
+  border-bottom: 1px solid var(--border, #2a2418);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
+}
+
+.game-toolbar .spacer { flex: 1; min-width: 0; }
+
+.toolbar-selectors {
+  display: flex;
+  align-items: center;
+  gap: 4px 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  color: var(--dim, #5a4a30);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+
+/* --- Game Selector --- */
+#game-select {
+  background: var(--input-bg, #110a08);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  color: var(--accent, #e8d090);
+  font-family: inherit;
+  font-size: 0.9em;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+#game-select:focus { border-color: var(--border-hover, #5a4a30); }
+
+/* --- View toggle buttons --- */
+.view-toggles {
+  display: flex;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.view-toggle {
+  background: var(--input-bg, #110a08);
+  border: 1px solid var(--border, #2a2418);
+  color: var(--dim, #5a4a30);
+  font-family: inherit;
+  font-size: 0.82em;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.view-toggle:first-child { border-radius: 4px 0 0 4px; }
+.view-toggle:last-child { border-radius: 0 4px 4px 0; }
+
+.view-toggle:hover {
+  color: var(--page-fg, #d4c5a9);
+  border-color: var(--border-hover, #5a4a30);
+}
+
+.view-toggle.active {
+  background: var(--surface-bg, #1a1410);
+  color: var(--accent, #e8d090);
+  border-color: var(--border-hover, #5a4a30);
+}
+
+#game-select option {
+  background: var(--input-bg, #110a08);
+  color: var(--page-fg, #d4c5a9);
+}
+
+#game-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: var(--card-bg, #111);
+}
+
+/* --- Sound Controls --- */
+#sound-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#mute-btn {
+  background: none;
+  border: 1px solid var(--border-hover, #3a2a18);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 3px 6px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s;
+}
+
+#mute-btn:hover { border-color: var(--muted, #6a5a40); }
+#mute-btn svg { width: 16px; height: 16px; fill: var(--muted, #aa9966); }
+#mute-btn.muted svg .sound-wave { display: none; }
+#mute-btn.muted svg .mute-x { display: inline; }
+#mute-btn:not(.muted) svg .mute-x { display: none; }
+
+#volume-slider {
+  width: 80px;
+  height: 4px;
+  accent-color: var(--muted, #aa9966);
+  cursor: pointer;
+}
+
+/* --- Toolbar icon buttons --- */
+.tb-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border-hover, #3a2a18);
+  border-radius: 4px;
+  color: var(--muted, #806050);
+  font-size: 14px;
+  cursor: pointer;
+  background: none;
+  transition: color 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+  padding: 0;
+}
+
+.tb-icon-btn:hover {
+  color: var(--accent, #e8d090);
+  border-color: var(--muted, #6a5a40);
+}
+
+/* --- Hub selector --- */
+#hub-select {
+  background: var(--input-bg, #110a08);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  color: var(--link-fg, #aa9966);
+  font-family: inherit;
+  font-size: 0.85em;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+#hub-select:focus {
+  border-color: var(--border-hover, #5a4a30);
+}
+
+#hub-select option {
+  background: var(--input-bg, #110a08);
+  color: var(--accent, #e8d090);
+}
+
+/* --- Hamburger menu --- */
+.hamburger-wrap {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 10;
+}
+
+.hamburger-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-bg, #111);
+  border: 1px solid var(--border, #2a2418);
+  border-radius: 4px;
+  min-width: 140px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.hamburger-menu.open { display: block; }
+
+.hamburger-menu a {
+  display: block;
+  padding: 8px 14px;
+  color: var(--page-fg, #d4c5a9);
+  text-decoration: none;
+  font-size: 0.88em;
+  transition: background 0.1s;
+}
+
+.hamburger-menu a:hover {
+  background: var(--surface-bg, #1a1410);
+  color: var(--accent, #e8d090);
+}
+
+.hamburger-menu a + a {
+  border-top: 1px solid var(--border, #2a2418);
+}
+
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .sidebar { display: none; }
+
+  /* Overlay sidebar when toggled open on narrow screens */
+  .sidebar.sidebar-open {
+    display: flex;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 15;
+    box-shadow: 4px 0 12px rgba(0,0,0,0.5);
+  }
+}
+
+@media (max-width: 800px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr 1fr;
+  }
+
+  body.source-collapsed {
+    grid-template-rows: auto 1fr;
+  }
+
+  #resize-handle { display: none; }
+  .sidebar { display: none; }
+
+  .game-toolbar {
+    gap: 4px 8px;
+    padding: 6px 8px;
+    padding-right: 40px;
+    font-size: 12px;
+  }
+
+  .toolbar-label { display: none; }
+
+  .toolbar-selectors {
+    width: 100%;
+    gap: 4px 6px;
+  }
+
+  #game-select {
+    min-width: 0;
+    max-width: 45vw;
+  }
+
+  #volume-slider { width: 50px; }
+
+  .view-toggle .vt-label { display: none; }
+}
+
+@media (max-width: 480px) {
+  .game-toolbar {
+    font-size: 11px;
+    gap: 4px 6px;
+  }
+
+  #game-select { max-width: 55vw; font-size: 0.85em; }
+
+  #hub-select { font-size: 0.85em; }
+
+  .sidebar-header .line-count { display: none; }
+}
