@@ -1,5 +1,17 @@
 [
   {
+    "id": "adj",
+    "base": "adj",
+    "title": "Adj",
+    "meta": "An Interactive Fiction",
+    "description": "An interactive fiction game.",
+    "playUrl": "/adj/play.html",
+    "landingUrl": "/adj/",
+    "engine": "ink",
+    "tags": [],
+    "sourceUrl": "/adj/adj.ink"
+  },
+  {
     "id": "apple-adventure",
     "base": "apple-adventure",
     "title": "Apple Adventure",
@@ -203,6 +215,18 @@
     "testsUrl": "/larva/tests.html"
   },
   {
+    "id": "life",
+    "base": "life",
+    "title": "Life",
+    "meta": "An Inform 7 Demo",
+    "description": "Conway's Game of Life in Inform 7.",
+    "playUrl": "/life/play.html",
+    "landingUrl": "/life/",
+    "engine": "inform7",
+    "tags": [],
+    "sourceUrl": "/life/story.ni"
+  },
+  {
     "id": "lostinnewyork",
     "base": "lostinnewyork",
     "title": "Lost in New York",
@@ -215,6 +239,18 @@
       "demo"
     ],
     "sourceUrl": "/lostinnewyork/lostinnewyork.ink"
+  },
+  {
+    "id": "mood",
+    "base": "mood",
+    "title": "Mood",
+    "meta": "An Inform 7 Demo",
+    "description": "A mood-palette demo.",
+    "playUrl": "/mood/play.html",
+    "landingUrl": "/mood/",
+    "engine": "inform7",
+    "tags": [],
+    "sourceUrl": "/mood/story.ni"
   },
   {
     "id": "sample",
