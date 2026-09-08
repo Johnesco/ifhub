@@ -101,7 +101,7 @@ Fifteen themes live in `themes.js`: classic (default), dos, apple2, c64, amiga, 
 
 ### 5.2 Style dropdown and overlays
 
-In the player the Style dropdown lists the platform themes. For a game with `overlayLabel` its own overlay is the first and default option, then a separator, then the themes; the per-game choice is stored under `ifhub-style-<id>`. Choosing a platform theme injects a style block into the same-origin game, source-browser, walkthrough and tests iframes, using engine-specific CSS builders (Parchment, Ink, BASIC, Rez, test report), and posts `ifhub:applyTheme` to the game. Choosing the overlay posts `ifhub:restoreOverlay`.
+In the player the Style dropdown lists the platform themes. For a game with `overlayLabel` its own overlay is the first and default option, then a separator, then the themes; the per-game choice is stored under `ifhub-style-<id>`. Choosing a platform theme injects a style block into the same-origin game, source-browser, walkthrough and tests iframes, using engine-specific CSS builders chosen by the game's `engine` (Parchment for Inform 7 and Z-machine, Ink, BASIC for every BASIC dialect, Rez, Sharpee, and the test report; Sharpee pages are themed through their `--theme-*` variables plus explicit rules for the menu bar, dropdowns, status bar, input line and dialogs), and posts `ifhub:applyTheme` to the game. Choosing the overlay posts `ifhub:restoreOverlay`.
 
 ### 5.3 Message protocol
 

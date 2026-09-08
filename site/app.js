@@ -1064,10 +1064,12 @@ function themeGameIframe() {
   var css;
   if (engine === 'ink') {
     css = buildInkCSS(theme.game, theme.scrollbar);
-  } else if (engine === 'basic') {
+  } else if (BASIC_ENGINES[engine]) {
     css = buildBasicCSS(theme.game, theme.scrollbar);
   } else if (engine === 'rez') {
     css = buildRezCSS(theme.game, theme.scrollbar);
+  } else if (engine === 'sharpee') {
+    css = buildSharpeeCSS(theme.game, theme.scrollbar);
   } else {
     // inform7, zmachine, or unknown — Parchment rules
     css = buildParchmentCSS(theme.game, theme.scrollbar);
