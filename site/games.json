@@ -289,6 +289,26 @@
     ]
   },
   {
+    "id": "no-signal-home-sharpee",
+    "title": "No Signal Home",
+    "author": "John Googol",
+    "description": "A sci-fi salvage horror text adventure on a derelict corporate freighter.",
+    "sourceLabel": "no-signal-home-sharpee.story",
+    "playUrl": "/no-signal-home-sharpee/play.html",
+    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.txt",
+    "testsUrl": "/no-signal-home-sharpee/tests.html",
+    "landingUrl": "/no-signal-home-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "sci-fi",
+      "horror",
+      "salvage",
+      "chord"
+    ]
+  },
+  {
     "id": "sample",
     "title": "Sample",
     "author": "An Inform 7 Demo",

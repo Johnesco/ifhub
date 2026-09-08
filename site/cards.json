@@ -272,6 +272,25 @@
     "sourceUrl": "/lostinnewyork/lostinnewyork.ink"
   },
   {
+    "id": "no-signal-home-sharpee",
+    "base": "no-signal-home-sharpee",
+    "title": "No Signal Home",
+    "meta": "John Googol",
+    "description": "A sci-fi salvage horror text adventure on a derelict corporate freighter.",
+    "playUrl": "/no-signal-home-sharpee/play.html",
+    "landingUrl": "/no-signal-home-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "sci-fi",
+      "horror",
+      "salvage",
+      "chord"
+    ],
+    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.txt",
+    "testsUrl": "/no-signal-home-sharpee/tests.html"
+  },
+  {
     "id": "sample",
     "base": "sample",
     "title": "Sample",
