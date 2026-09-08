@@ -174,6 +174,25 @@
     "walkthroughUrl": "/guess-the-verb-inform7/walkthrough.txt"
   },
   {
+    "id": "guess-the-verb-sharpee",
+    "base": "guess-the-verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "meta": "A Parser Puzzle Laboratory",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language.",
+    "playUrl": "/guess-the-verb-sharpee/play.html",
+    "landingUrl": "/guess-the-verb-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "parser-lab",
+      "disambiguation",
+      "guess-the-verb",
+      "chord"
+    ],
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.txt",
+    "testsUrl": "/guess-the-verb-sharpee/tests.html"
+  },
+  {
     "id": "haunted-house",
     "base": "haunted-house",
     "title": "Haunted House",

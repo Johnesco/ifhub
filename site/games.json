@@ -189,6 +189,26 @@
     ]
   },
   {
+    "id": "guess-the-verb-sharpee",
+    "title": "Guess the Verb (Sharpee)",
+    "author": "A Parser Puzzle Laboratory",
+    "description": "A Sharpee game about reducing guess-the-verb frustration. Explore your grandmother's old house using natural language.",
+    "sourceLabel": "guess-the-verb-sharpee.story",
+    "playUrl": "/guess-the-verb-sharpee/play.html",
+    "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.txt",
+    "testsUrl": "/guess-the-verb-sharpee/tests.html",
+    "landingUrl": "/guess-the-verb-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "parser-lab",
+      "disambiguation",
+      "guess-the-verb",
+      "chord"
+    ]
+  },
+  {
     "id": "haunted-house",
     "title": "Haunted House",
     "author": "1983 Usborne Classic",
