@@ -30,8 +30,17 @@ document.addEventListener('DOMContentLoaded', function() {
     var hubs = data.hubs;
 
     // Filter the game list to the hub encoded in the current URL.
-    function applyHubFilter() {
-      var activeHub = resolveHub(hubs).activeHub;
+    // Narrow the game list to one collection. The change handler passes the selector's
+    // value; on first load the collection comes from ?hub= in the URL.
+    function applyHubFilter(hubId) {
+      var activeHub = null;
+      if (hubId) {
+        for (var i = 0; i < hubs.length; i++) {
+          if (hubs[i].id === hubId) { activeHub = hubs[i]; break; }
+        }
+      } else {
+        activeHub = resolveHub(hubs).activeHub;
+      }
       games = activeHub
         ? allGames.filter(function(g) { return matchesHub(g, activeHub); })
         : allGames.slice();
@@ -70,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // unreliable here. replaceState keeps the URL shareable without competing
     // with the iframe's history; browser Back then returns to the prior page.
     hubSelect.addEventListener('change', function() {
-      var ah = applyHubFilter();
+      var ah = applyHubFilter(hubSelect.value);
       buildDropdown();
       updateLibraryLink(ah);
       if (gameMap[currentGame]) {
@@ -218,6 +227,7 @@ function shareableTheme() {
   var val = sel ? sel.value : '';
   if (val === 'overlay') return urlTheme;
   if (!val || val === 'classic') return '';
+  urlTheme = val;   // remember it for the next overlay game, wherever it came from
   return val;
 }
 
