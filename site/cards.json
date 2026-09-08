@@ -122,6 +122,24 @@
     ]
   },
   {
+    "id": "fever-dream-sharpee",
+    "base": "fever-dream-sharpee",
+    "title": "Fever Dream (Sharpee)",
+    "meta": "John Googol",
+    "description": "A perceptual horror. Three items alter your perception. The world stays the same. You do not.",
+    "playUrl": "/fever-dream-sharpee/play.html",
+    "landingUrl": "/fever-dream-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "horror",
+      "perceptual",
+      "chord"
+    ],
+    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "walkthroughUrl": "/fever-dream-sharpee/walkthrough.txt",
+    "testsUrl": "/fever-dream-sharpee/tests.html"
+  },
+  {
     "id": "feverdream",
     "base": "feverdream",
     "title": "Fever Dream",
