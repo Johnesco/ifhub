@@ -682,6 +682,40 @@ function buildBasicCSS(g, sb) {
     buildScrollbarCSS(sb);
 }
 
+/* Sharpee (Chord) pages style their chrome through --theme-* variables (engine.css), and the
+   page's own theme listener maps a hub theme onto the same variables when it gets the
+   ifhub:applyTheme message. These rules win on specificity (html:root) and add explicit
+   element rules so the chrome stays legible whatever the game's own theme set: the buffer
+   pair for the bars, dropdowns, input line and dialogs; the grid pair (inverse video) for
+   the status bar, hovers and buttons. */
+function buildSharpeeCSS(g, sb) {
+  return 'html:root {' +
+    ' --theme-bg: ' + g.bodyBg + ' !important;' +
+    ' --theme-bg-alt: ' + g.bufferBg + ' !important;' +
+    ' --theme-desktop-bg: ' + g.bodyBg + ' !important;' +
+    ' --theme-text: ' + g.bufferFg + ' !important;' +
+    ' --theme-text-muted: ' + g.bufferFg + ' !important;' +
+    ' --theme-accent: ' + g.gridBg + ' !important;' +
+    ' --theme-accent-text: ' + g.gridFg + ' !important;' +
+    ' --theme-border: ' + g.gridBg + ' !important;' +
+    ' --theme-input-bg: ' + g.bufferBg + ' !important;' +
+    ' --theme-menu-bg: ' + g.bufferBg + ' !important;' +
+    ' --theme-menu-hover: ' + g.gridBg + ' !important;' +
+    ' --theme-font: ' + g.monoFamily + ' !important;' +
+    ' --theme-font-body: ' + g.propFamily + ' !important;' +
+    ' --theme-font-chrome: ' + g.monoFamily + ' !important;' +
+    ' --theme-font-size: ' + g.bufferSize + ' !important;' +
+    ' --theme-line-height: ' + g.bufferLineHeight + ' !important; }\n' +
+    'body, html { background: ' + g.bodyBg + ' !important; color: ' + g.bufferFg + ' !important; }\n' +
+    '.sharpee-window-title-bar, .sharpee-menu-bar, .sharpee-menu-dropdown, .sharpee-input-bar, .sharpee-dialog { background: ' + g.bufferBg + ' !important; color: ' + g.bufferFg + ' !important; border-color: ' + g.gridBg + ' !important; }\n' +
+    '.sharpee-window-title, .sharpee-menu-bar-trigger, .sharpee-menu-option, .sharpee-input-prompt { color: ' + g.bufferFg + ' !important; }\n' +
+    '.sharpee-menu-bar-trigger:hover, .sharpee-menu-bar-item--open > .sharpee-menu-bar-trigger, .sharpee-menu-option:hover, .sharpee-status-bar, .sharpee-dialog-title, .sharpee-dialog-button { background: ' + g.gridBg + ' !important; color: ' + g.gridFg + ' !important; }\n' +
+    '.sharpee-input-field { background: ' + g.bufferBg + ' !important; color: ' + g.inputFg + ' !important; caret-color: ' + g.inputFg + '; }\n' +
+    '.sharpee-prose-pane .command-echo { color: ' + g.inputFg + ' !important; }\n' +
+    '.sharpee-prose-pane .system-message { color: ' + g.emphFg + ' !important; }\n' +
+    buildScrollbarCSS(sb);
+}
+
 function buildRezCSS(g, sb) {
   return 'body, html { background: ' + g.bodyBg + ' !important; color: ' + g.bufferFg + ' !important; font-family: ' + g.propFamily + ' !important; }\n' +
     '#game-container, .box, .card, .content, .section { background: ' + g.bufferBg + ' !important; color: ' + g.bufferFg + ' !important; }\n' +
