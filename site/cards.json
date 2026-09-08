@@ -172,6 +172,24 @@
     "sourceUrl": "/haunted-house/src/basic/HAUNTED.BAS"
   },
   {
+    "id": "hello-chord",
+    "base": "hello-chord",
+    "title": "Hello Chord",
+    "meta": "John Googol",
+    "description": "A locked loft, three bell ropes, and one chord to ring before the rain stops.",
+    "playUrl": "/hello-chord/play.html",
+    "landingUrl": "/hello-chord/",
+    "engine": "sharpee",
+    "tags": [
+      "chord",
+      "puzzle",
+      "demo"
+    ],
+    "sourceUrl": "/hello-chord/source.html",
+    "walkthroughUrl": "/hello-chord/walkthrough.txt",
+    "testsUrl": "/hello-chord/tests.html"
+  },
+  {
     "id": "ink-story",
     "base": "ink-story",
     "title": "Farmer's Heart",

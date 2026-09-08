@@ -186,6 +186,25 @@
     ]
   },
   {
+    "id": "hello-chord",
+    "title": "Hello Chord",
+    "author": "John Googol",
+    "description": "A locked loft, three bell ropes, and one chord to ring before the rain stops.",
+    "sourceLabel": "hello-chord.story",
+    "playUrl": "/hello-chord/play.html",
+    "walkthroughUrl": "/hello-chord/walkthrough.txt",
+    "testsUrl": "/hello-chord/tests.html",
+    "landingUrl": "/hello-chord/",
+    "sourceBrowser": true,
+    "sourceUrl": "/hello-chord/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "chord",
+      "puzzle",
+      "demo"
+    ]
+  },
+  {
     "id": "ink-story",
     "title": "Farmer's Heart",
     "author": "An Ink Story",
