@@ -70,8 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // unreliable here. replaceState keeps the URL shareable without competing
     // with the iframe's history; browser Back then returns to the prior page.
     hubSelect.addEventListener('change', function() {
-      var v = hubSelect.value;
-      history.replaceState(null, '', 'app.html' + (v && v !== 'all' ? '?hub=' + v : ''));
       var ah = applyHubFilter();
       buildDropdown();
       updateLibraryLink(ah);
@@ -80,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (games.length) {
         switchGame(games[0].id);
       }
+      syncUrl();
     });
 
     updateLibraryLink(activeHub);
@@ -87,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     buildStyleDropdown(null);
 
     var params = new URLSearchParams(window.location.search);
+    urlTheme = params.get('theme') || '';
     var initGame = params.get('game') || (games.length ? games[0].id : '');
     if (!gameMap[initGame] && games.length) initGame = games[0].id;
     if (initGame) switchGame(initGame);
@@ -204,6 +204,39 @@ function bindUI() {
       window.location.href = url;
     }
   });
+}
+
+/* ==================================================================
+   URL SYNC — the address bar is always a shareable link to what is on screen
+   ================================================================== */
+// The platform theme the URL carries. An overlay game shows its own overlay
+// instead, but the theme is kept so switching to a non-overlay game applies it.
+var urlTheme = '';
+
+function shareableTheme() {
+  var sel = document.getElementById('style-select');
+  var val = sel ? sel.value : '';
+  if (val === 'overlay') return urlTheme;
+  if (!val || val === 'classic') return '';
+  return val;
+}
+
+// Rewrite ?game, ?view, ?theme and ?hub from the current state. Defaults stay
+// out of the URL: game-only view, the Classic theme, all games.
+// replaceState, not pushState: the player iframe (Parchment) injects its own
+// session-history entries, so top-level pushState back/forward is unreliable;
+// replaceState keeps the URL shareable and Back returns to the prior page.
+function syncUrl() {
+  var params = new URLSearchParams();
+  if (currentGame) params.set('game', currentGame);
+  var view = getViewMode();
+  if (view && view !== 'game') params.set('view', view);
+  var theme = shareableTheme();
+  if (theme) params.set('theme', theme);
+  var hubSel = document.getElementById('hub-select');
+  if (hubSel && hubSel.value && hubSel.value !== 'all') params.set('hub', hubSel.value);
+  var q = params.toString().replace(/%2B/g, '+');
+  history.replaceState(null, '', window.location.pathname + (q ? '?' + q : ''));
 }
 
 /* ==================================================================
@@ -728,14 +761,7 @@ function applyView(mode) {
 
   currentView = sidePane || 'source';
 
-  // Update URL
-  var params = new URLSearchParams(window.location.search);
-  if (mode !== 'game') {
-    params.set('view', mode);
-  } else {
-    params.delete('view');
-  }
-  history.replaceState(null, '', '?' + params.toString());
+  syncUrl();
 }
 
 /* ==================================================================
@@ -849,13 +875,8 @@ function getStylePref() {
 }
 
 function setStylePref(gameId, val) {
-  var params = new URLSearchParams(window.location.search);
-  if (val && val !== 'classic') {
-    params.set('theme', val);
-  } else {
-    params.delete('theme');
-  }
-  history.replaceState(null, '', '?' + params.toString());
+  urlTheme = (val && val !== 'classic' && val !== 'overlay') ? val : '';
+  syncUrl();
 }
 
 function buildStyleDropdown(gameId) {
@@ -1105,6 +1126,8 @@ function switchGame(gameId) {
 
   // Rebuild style dropdown for this game
   buildStyleDropdown(gameId);
+
+  syncUrl();
 
   // Re-apply style after iframe loads
   iframe.onload = function() {
