@@ -304,6 +304,25 @@
     ]
   },
   {
+    "id": "sample-sharpee",
+    "title": "Sample (Sharpee)",
+    "author": "A Sharpee Demo",
+    "description": "A practice game for learning Chord: rooms, objects, and interactions.",
+    "sourceLabel": "sample-sharpee.story",
+    "playUrl": "/sample-sharpee/play.html",
+    "walkthroughUrl": "/sample-sharpee/walkthrough.txt",
+    "testsUrl": "/sample-sharpee/tests.html",
+    "landingUrl": "/sample-sharpee/",
+    "sourceBrowser": true,
+    "sourceUrl": "/sample-sharpee/source.html",
+    "engine": "sharpee",
+    "tags": [
+      "demo",
+      "sample",
+      "chord"
+    ]
+  },
+  {
     "id": "seasons",
     "title": "Seasons",
     "author": "An Inform 7 Demo",

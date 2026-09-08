@@ -287,6 +287,24 @@
     "walkthroughUrl": "/sample/walkthrough.txt"
   },
   {
+    "id": "sample-sharpee",
+    "base": "sample-sharpee",
+    "title": "Sample (Sharpee)",
+    "meta": "A Sharpee Demo",
+    "description": "A practice game for learning Chord: rooms, objects, and interactions.",
+    "playUrl": "/sample-sharpee/play.html",
+    "landingUrl": "/sample-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "demo",
+      "sample",
+      "chord"
+    ],
+    "sourceUrl": "/sample-sharpee/source.html",
+    "walkthroughUrl": "/sample-sharpee/walkthrough.txt",
+    "testsUrl": "/sample-sharpee/tests.html"
+  },
+  {
     "id": "seasons",
     "base": "seasons",
     "title": "Seasons",
