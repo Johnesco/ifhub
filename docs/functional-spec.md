@@ -32,6 +32,8 @@ Shared scripts: `themes.js` (themes, §5) and `hub.js` (loading `games.json`/`ca
 
 URL parameters: `?game=<id>` (default: first game), `?hub=<id>` (restrict the game selector to a collection), `?view=<panes>` (for example `game+source`, `walkthrough`), `?theme=<id>`.
 
+The address bar is always a shareable link to what is on screen: every game, view, style or collection change rewrites those four parameters with `history.replaceState` (not `pushState`, because the game iframe adds its own history entries). Defaults stay out of the URL: the game-only view, the Classic theme, and the "all" collection. An overlay game shows its own overlay but keeps the `theme` it arrived with, so switching to a non-overlay game applies it.
+
 Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2), sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests.
 
 View switching: Game toggles independently. Source, Walk and Tests are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl`.
