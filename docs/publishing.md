@@ -45,6 +45,7 @@ Each engine workspace under `C:/code/text-games/` has a `tools/build.py` that tu
 | Ink | `python C:/code/text-games/ink/tools/build.py <game>` | compiles the `.ink` with inklecate when Inky is installed, otherwise uses the committed `.json`; ink.js player with the story inlined; copies `theme-listener.js` |
 | Rez | `python C:/code/text-games/rez/tools/build.py <game>` | `rez compile` from the game root (compiler: `rez` on PATH or `rez/tools/bin/rez_windows.exe`), then `dist/index.html` → `play.html` with the theme listener. `--no-compile` reuses `dist/` |
 | BASIC (wwwbasic, applesoft, bwbasic, qbjc, jsdos) | `python C:/code/text-games/basic/tools/build.py <game>` | inlines the `.BAS` named by `source =` into the dialect's player template; `engine =` in ifhub.conf picks the dialect |
+| Sharpee (Chord) | `python C:/code/text-games/sharpee/tools/build.py <game>` | `sharpee compose --check` (the load gates), `sharpee build`, `sharpee test` on `<id>.tests.json`; then `play.html` from the built page with the theme listener, `game.js` + CSS at the root, themes under `lib/themes/`, `source.html` (`sourceBrowser = yes`), `tests.html`, `walkthrough.txt` + `walkthrough_output.txt`. `--force`, `--no-test`. Games still on the 0.9.x pipeline are re-laid from `browser/` |
 
 `--force` overwrites an existing `play.html`. Games with a hand-tuned player keep a `play-template.html` in their folder; the build scripts prefer it over the generic template, which makes `--force` safe.
 
@@ -90,7 +91,7 @@ The hub itself does not need to know the engine name; `build_games.py` copies wh
 
 | Thing | Location |
 |---|---|
-| Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo). Workspaces: `i7` (Inform 7 + Z-machine), `ink`, `rez`, `basic` (all BASIC dialects) |
+| Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo). Workspaces: `i7` (Inform 7 + Z-machine), `ink`, `rez`, `basic` (all BASIC dialects), `sharpee` (Chord and TypeScript) |
 | Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. Remotes: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace` |
 | Inform 7 language references, interpreters, test framework | `C:/code/text-games/i7/reference/`, `i7/tools/interpreters/`, `i7/tools/` |
 | ifPlayer (I7 test runner and report format) | `C:/code/text-games/ifPlayer/` — repo `Johnesco/ifplayer` |

@@ -16,7 +16,7 @@ The folder contract and the per-engine commands are in [docs/publishing.md](docs
 
 ## Engines
 
-Inform 7 and Z-machine (Parchment), Ink (ink.js), Rez, wwwBASIC and Applesoft BASIC. Each has a workspace under `C:/code/text-games/` with its own tooling and `CLAUDE.md`.
+Inform 7 and Z-machine (Parchment), Ink (ink.js), Rez, wwwBASIC and Applesoft BASIC, and Sharpee (Chord). Each has a workspace under `C:/code/text-games/` with its own tooling and `CLAUDE.md`.
 
 ## Layout
 

@@ -78,8 +78,9 @@ ifhub/
 | `text-games/ink/` | `tools/build.py <game>` | compiles with inklecate when installed, else uses the committed .json |
 | `text-games/rez/` | `tools/build.py <game>` | Rez compiler in `rez/tools/bin/`; dist → play.html |
 | `text-games/basic/` | `tools/build.py <game>` | every BASIC dialect (wwwbasic, applesoft, bwbasic, qbjc, jsdos); `engine =` in ifhub.conf picks the player template; bwBASIC runtime in `basic/tools` |
+| `text-games/sharpee/` | `tools/build.py <game>` | Sharpee (Chord): `sharpee compose --check`, `build`, `test`; play.html from the built page with the theme listener, own `source.html` (`sourceBrowser = yes`), tests.html, walkthrough files |
 
-Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling (GitHub: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace`); the game folders inside it are ignored because every game is its own repo. Sharpee (Chord) is not integrated yet; when it is, it gets a workspace and a `build.py` like the others.
+Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo that holds only the tooling (GitHub: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace`; the Sharpee workspace is not a git repo yet); the game folders inside it are ignored because every game is its own repo.
 
 ## Instructions for Claude
 

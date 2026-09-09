@@ -19,6 +19,11 @@
       "engine": "basic",
       "root": "../text-games/basic",
       "deploy": "in-place"
+    },
+    {
+      "engine": "sharpee",
+      "root": "../text-games/sharpee",
+      "deploy": "in-place"
     }
   ]
 }
