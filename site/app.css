@@ -586,7 +586,9 @@ body.resizing iframe {
     grid-template-rows: auto 1fr 1fr;
   }
 
-  body.source-collapsed {
+  /* A lone pane (game alone, or source / walkthrough / tests alone) takes the whole height. */
+  body.source-collapsed,
+  body.game-collapsed {
     grid-template-rows: auto 1fr;
   }
 

@@ -38,7 +38,7 @@ Toolbar: Library link (keeps the collection filter), Collection selector (re-fil
 
 View switching: Game toggles independently. Source, Walk and Tests are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl`.
 
-Layout: CSS grid with the game pane, a 5px resize handle (mouse and touch) and the side pane; each pane at least 200px. Below 1024px the source sidebar is hidden; below 800px the layout is a single column.
+Layout: CSS grid with the game pane, a 5px resize handle (mouse and touch) and the side pane; each pane at least 200px. Below 1024px the source sidebar is hidden; below 800px the layout is a single column with the game above the side pane. At any width a lone pane (the game alone, or Source, Walkthrough or Tests alone) fills the whole area below the toolbar.
 
 Panes:
 
