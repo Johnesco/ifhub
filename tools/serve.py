@@ -37,7 +37,7 @@ class HubHandler(http.server.SimpleHTTPRequestHandler):
     extensions_map = {
         **http.server.SimpleHTTPRequestHandler.extensions_map,
         ".ni": TEXT, ".rez": TEXT, ".ink": TEXT, ".bas": TEXT, ".txt": TEXT,
-        ".transcript": TEXT, ".conf": TEXT, ".md": TEXT,
+        ".transcript": TEXT, ".conf": TEXT, ".md": TEXT, ".story": TEXT,
         ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json",
         ".wasm": "application/wasm",
         ".z3": BINARY, ".z5": BINARY, ".z8": BINARY, ".ulx": BINARY, ".gblorb": BINARY,

@@ -135,7 +135,7 @@
       "perceptual",
       "chord"
     ],
-    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "sourceUrl": "/fever-dream-sharpee/fever-dream-sharpee.story",
     "walkthroughUrl": "/fever-dream-sharpee/walkthrough.txt",
     "testsUrl": "/fever-dream-sharpee/tests.html"
   },
@@ -188,7 +188,7 @@
       "guess-the-verb",
       "chord"
     ],
-    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "sourceUrl": "/guess-the-verb-sharpee/guess-the-verb-sharpee.story",
     "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.txt",
     "testsUrl": "/guess-the-verb-sharpee/tests.html"
   },
@@ -222,7 +222,7 @@
       "puzzle",
       "demo"
     ],
-    "sourceUrl": "/hello-chord/source.html",
+    "sourceUrl": "/hello-chord/hello-chord.story",
     "walkthroughUrl": "/hello-chord/walkthrough.txt",
     "testsUrl": "/hello-chord/tests.html"
   },
@@ -286,7 +286,7 @@
       "salvage",
       "chord"
     ],
-    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "sourceUrl": "/no-signal-home-sharpee/no-signal-home-sharpee.story",
     "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.txt",
     "testsUrl": "/no-signal-home-sharpee/tests.html"
   },
@@ -319,7 +319,7 @@
       "sample",
       "chord"
     ],
-    "sourceUrl": "/sample-sharpee/source.html",
+    "sourceUrl": "/sample-sharpee/sample-sharpee.story",
     "walkthroughUrl": "/sample-sharpee/walkthrough.txt",
     "testsUrl": "/sample-sharpee/tests.html"
   },
