@@ -31,9 +31,9 @@ var THEMES = [
             btnBg: '#e8d090', btnFg: '#0a0a0a', btnHoverBg: '#f0d890',
             inputBg: '#110a08', inputFg: '#e8d090',
             activeTabBg: '#e8d090', activeTabFg: '#0a0a0a',
-            badgeBg: '#1a1814', badgeFg: '#7a6a4a',
+            badgeBg: '#1a1814', badgeFg: '#938059',
             codeBg: '#1a1410', codeFg: '#e8d090',
-            footerFg: '#665a40', linkFg: '#aa9966',
+            footerFg: '#887856', linkFg: '#aa9966',
             fontFamily: 'Georgia, "Times New Roman", serif'
         },
         game: {
@@ -50,28 +50,28 @@ var THEMES = [
     {
         id: 'dos', name: 'MS-DOS',
         chrome: {
-            pageBg: '#0a0a0a', pageFg: '#d4c5a9', headingFg: '#e8d8b0',
-            accentFg: '#e8d090', mutedFg: '#aa9966', dimFg: '#9a8a6a',
-            cardBg: '#111', cardBorder: '#1e1a14', toolbarBg: '#0e0a08',
-            border: '#2a2418', borderHover: '#3a2a18', surfaceBg: '#1a1410',
-            btnBg: '#e8d090', btnFg: '#0a0a0a', btnHoverBg: '#f0d890',
-            inputBg: '#110a08', inputFg: '#e8d090',
-            activeTabBg: '#e8d090', activeTabFg: '#0a0a0a',
-            badgeBg: '#1a1814', badgeFg: '#7a6a4a',
-            codeBg: '#1a1410', codeFg: '#e8d090',
-            footerFg: '#665a40', linkFg: '#aa9966',
+            pageBg: '#000000', pageFg: '#aaaaaa', headingFg: '#ffffff',
+            accentFg: '#55ffff', mutedFg: '#9a9a9a', dimFg: '#767676',
+            cardBg: '#0000aa', cardBorder: '#aaaaaa', toolbarBg: '#0000aa',
+            border: '#555555', borderHover: '#aaaaaa', surfaceBg: '#0000aa',
+            btnBg: '#aaaaaa', btnFg: '#000000', btnHoverBg: '#ffffff',
+            inputBg: '#000000', inputFg: '#aaaaaa',
+            activeTabBg: '#aaaaaa', activeTabFg: '#000000',
+            badgeBg: '#0000aa', badgeFg: '#ffff55',
+            codeBg: '#0000aa', codeFg: '#ffff55',
+            footerFg: '#767676', linkFg: '#55ffff',
             fontFamily: '"VT323", "Consolas", "Courier New", monospace'
         },
         game: {
             bodyBg: '#000', bufferBg: '#000', bufferFg: '#aaa',
             gridBg: '#aaa', gridFg: '#000',
-            inputFg: '#ccc', emphFg: '#ccc', headerFg: '#fff',
+            inputFg: '#ffffff', emphFg: '#ffff55', headerFg: '#ffffff',
             bufferSize: '20px', bufferLineHeight: '1.25',
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"VT323", "Consolas", "Courier New", monospace',
             propFamily: '"VT323", "Consolas", "Courier New", monospace'
         },
-        scrollbar: { thumb: '#333', track: '#000', thumbHover: '#444' }
+        scrollbar: { thumb: '#555555', track: '#000000', thumbHover: '#aaaaaa' }
     },
     {
         id: 'apple2', name: 'Apple II',
@@ -102,42 +102,42 @@ var THEMES = [
     {
         id: 'c64', name: 'Commodore 64',
         chrome: {
-            pageBg: '#40318d', pageFg: '#70a4b2', headingFg: '#87bfcc',
-            accentFg: '#70a4b2', mutedFg: '#6080a0', dimFg: '#506888',
-            cardBg: '#352878', cardBorder: '#504090', toolbarBg: '#382b80',
-            border: '#504090', borderHover: '#6050a0', surfaceBg: '#382b80',
-            btnBg: '#70a4b2', btnFg: '#40318d', btnHoverBg: '#87bfcc',
-            inputBg: '#352878', inputFg: '#70a4b2',
-            activeTabBg: '#70a4b2', activeTabFg: '#40318d',
-            badgeBg: '#352878', badgeFg: '#6080a0',
-            codeBg: '#352878', codeFg: '#70a4b2',
-            footerFg: '#506888', linkFg: '#87bfcc',
+            pageBg: '#40318d', pageFg: '#bbbbbb', headingFg: '#ffffff',
+            accentFg: '#aaffee', mutedFg: '#b6aeee', dimFg: '#b6aeee',
+            cardBg: '#352879', cardBorder: '#7869c4', toolbarBg: '#352879',
+            border: '#7869c4', borderHover: '#aaffee', surfaceBg: '#352879',
+            btnBg: '#aaffee', btnFg: '#40318d', btnHoverBg: '#ffffff',
+            inputBg: '#352879', inputFg: '#bbbbbb',
+            activeTabBg: '#aaffee', activeTabFg: '#40318d',
+            badgeBg: '#352879', badgeFg: '#b6aeee',
+            codeBg: '#352879', codeFg: '#aaffee',
+            footerFg: '#b6aeee', linkFg: '#aaffee',
             fontFamily: '"Sixtyfour", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#40318d', bufferBg: '#40318d', bufferFg: '#70a4b2',
-            gridBg: '#70a4b2', gridFg: '#40318d',
-            inputFg: '#87bfcc', emphFg: '#87bfcc', headerFg: '#a0d4e0',
+            bodyBg: '#40318d', bufferBg: '#40318d', bufferFg: '#bbbbbb',
+            gridBg: '#7869c4', gridFg: '#000000',
+            inputFg: '#aaffee', emphFg: '#eeee77', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Sixtyfour", "Courier New", monospace',
             propFamily: '"Sixtyfour", "Courier New", monospace'
         },
-        scrollbar: { thumb: '#6050a0', track: '#40318d', thumbHover: '#7060b0' }
+        scrollbar: { thumb: '#7869c4', track: '#40318d', thumbHover: '#aaffee' }
     },
     {
         id: 'amiga', name: 'Amiga',
         chrome: {
             pageBg: '#0055aa', pageFg: '#fff', headingFg: '#fff',
-            accentFg: '#ff8800', mutedFg: '#aaccee', dimFg: '#88aacc',
+            accentFg: '#ffffff', mutedFg: '#cce0f4', dimFg: '#b4d2ee',
             cardBg: '#004488', cardBorder: '#3377bb', toolbarBg: '#003d7a',
             border: '#3377bb', borderHover: '#4488cc', surfaceBg: '#004488',
             btnBg: '#ff8800', btnFg: '#000', btnHoverBg: '#ffaa33',
             inputBg: '#004488', inputFg: '#fff',
             activeTabBg: '#ff8800', activeTabFg: '#000',
-            badgeBg: '#004488', badgeFg: '#aaccee',
-            codeBg: '#004488', codeFg: '#ff8800',
-            footerFg: '#88aacc', linkFg: '#ffaa33',
+            badgeBg: '#004488', badgeFg: '#cce0f4',
+            codeBg: '#004488', codeFg: '#ffaa00',
+            footerFg: '#b4d2ee', linkFg: '#ffffff',
             fontFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
         },
         game: {
@@ -155,7 +155,7 @@ var THEMES = [
         id: 'mac', name: 'Macintosh',
         chrome: {
             pageBg: '#fff', pageFg: '#000', headingFg: '#000',
-            accentFg: '#000', mutedFg: '#555', dimFg: '#777',
+            accentFg: '#000', mutedFg: '#555', dimFg: '#707070',
             cardBg: '#f0f0f0', cardBorder: '#ccc', toolbarBg: '#e8e8e8',
             border: '#ccc', borderHover: '#999', surfaceBg: '#e8e8e8',
             btnBg: '#000', btnFg: '#fff', btnHoverBg: '#333',
@@ -163,7 +163,7 @@ var THEMES = [
             activeTabBg: '#000', activeTabFg: '#fff',
             badgeBg: '#e8e8e8', badgeFg: '#555',
             codeBg: '#e8e8e8', codeFg: '#000',
-            footerFg: '#777', linkFg: '#333',
+            footerFg: '#707070', linkFg: '#333',
             fontFamily: '"Geneva", "Lucida Grande", Helvetica, sans-serif'
         },
         game: {
@@ -181,15 +181,15 @@ var THEMES = [
         id: 'atarist', name: 'Atari ST',
         chrome: {
             pageBg: '#fff', pageFg: '#000', headingFg: '#000',
-            accentFg: '#008800', mutedFg: '#555', dimFg: '#777',
+            accentFg: '#008800', mutedFg: '#555', dimFg: '#707070',
             cardBg: '#f0f0f0', cardBorder: '#ccc', toolbarBg: '#e8e8e8',
             border: '#ccc', borderHover: '#999', surfaceBg: '#e8e8e8',
-            btnBg: '#008800', btnFg: '#fff', btnHoverBg: '#00aa00',
+            btnBg: '#008800', btnFg: '#fff', btnHoverBg: '#006600',
             inputBg: '#fff', inputFg: '#000',
             activeTabBg: '#008800', activeTabFg: '#fff',
             badgeBg: '#e8e8e8', badgeFg: '#555',
-            codeBg: '#e8e8e8', codeFg: '#008800',
-            footerFg: '#777', linkFg: '#006600',
+            codeBg: '#e8e8e8', codeFg: '#006600',
+            footerFg: '#707070', linkFg: '#006600',
             fontFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
         game: {
@@ -206,48 +206,48 @@ var THEMES = [
     {
         id: 'cpm', name: 'CP/M (Kaypro)',
         chrome: {
-            pageBg: '#000', pageFg: '#ffb000', headingFg: '#ffc033',
-            accentFg: '#ffb000', mutedFg: '#aa7700', dimFg: '#886600',
-            cardBg: '#0a0a00', cardBorder: '#332200', toolbarBg: '#050500',
-            border: '#332200', borderHover: '#554400', surfaceBg: '#1a1100',
-            btnBg: '#ffb000', btnFg: '#000', btnHoverBg: '#ffc033',
-            inputBg: '#0a0a00', inputFg: '#ffb000',
-            activeTabBg: '#ffb000', activeTabFg: '#000',
-            badgeBg: '#1a1100', badgeFg: '#aa7700',
-            codeBg: '#1a1100', codeFg: '#ffb000',
-            footerFg: '#886600', linkFg: '#ffb000',
+            pageBg: '#000000', pageFg: '#5cff8f', headingFg: '#8affb0',
+            accentFg: '#5cff8f', mutedFg: '#3fbf68', dimFg: '#35a058',
+            cardBg: '#0a1a0f', cardBorder: '#1e4a2c', toolbarBg: '#0a1a0f',
+            border: '#1e4a2c', borderHover: '#3fbf68', surfaceBg: '#0a1a0f',
+            btnBg: '#5cff8f', btnFg: '#000000', btnHoverBg: '#8affb0',
+            inputBg: '#0a1a0f', inputFg: '#5cff8f',
+            activeTabBg: '#5cff8f', activeTabFg: '#000000',
+            badgeBg: '#0a1a0f', badgeFg: '#3fbf68',
+            codeBg: '#0a1a0f', codeFg: '#5cff8f',
+            footerFg: '#35a058', linkFg: '#5cff8f',
             fontFamily: '"VT323", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#000', bufferBg: '#000', bufferFg: '#ffb000',
-            gridBg: '#ffb000', gridFg: '#000',
-            inputFg: '#ffc033', emphFg: '#ffc033', headerFg: '#ffd066',
+            bodyBg: '#000000', bufferBg: '#000000', bufferFg: '#5cff8f',
+            gridBg: '#5cff8f', gridFg: '#000000',
+            inputFg: '#8affb0', emphFg: '#8affb0', headerFg: '#b0ffc8',
             bufferSize: '20px', bufferLineHeight: '1.25',
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"VT323", "Courier New", monospace',
             propFamily: '"VT323", "Courier New", monospace'
         },
-        scrollbar: { thumb: '#554400', track: '#000', thumbHover: '#776600' }
+        scrollbar: { thumb: '#1e4a2c', track: '#000000', thumbHover: '#3fbf68' }
     },
     {
         id: 'atari8', name: 'Atari 800',
         chrome: {
-            pageBg: '#2a3c86', pageFg: '#5494d4', headingFg: '#6aade8',
-            accentFg: '#5494d4', mutedFg: '#4070a0', dimFg: '#365e8a',
+            pageBg: '#2a3c86', pageFg: '#a8c8ff', headingFg: '#e0ecff',
+            accentFg: '#a8c8ff', mutedFg: '#94b4ec', dimFg: '#92b2ee',
             cardBg: '#233270', cardBorder: '#3a5090', toolbarBg: '#26377a',
             border: '#3a5090', borderHover: '#4a60a0', surfaceBg: '#26377a',
-            btnBg: '#5494d4', btnFg: '#2a3c86', btnHoverBg: '#6aade8',
-            inputBg: '#233270', inputFg: '#5494d4',
-            activeTabBg: '#5494d4', activeTabFg: '#2a3c86',
-            badgeBg: '#233270', badgeFg: '#4070a0',
-            codeBg: '#233270', codeFg: '#5494d4',
-            footerFg: '#365e8a', linkFg: '#6aade8',
+            btnBg: '#a8c8ff', btnFg: '#1a2860', btnHoverBg: '#e0ecff',
+            inputBg: '#233270', inputFg: '#a8c8ff',
+            activeTabBg: '#a8c8ff', activeTabFg: '#1a2860',
+            badgeBg: '#233270', badgeFg: '#94b4ec',
+            codeBg: '#233270', codeFg: '#a8c8ff',
+            footerFg: '#92b2ee', linkFg: '#e0ecff',
             fontFamily: '"Press Start 2P", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#2a3c86', bufferBg: '#2a3c86', bufferFg: '#5494d4',
-            gridBg: '#5494d4', gridFg: '#2a3c86',
-            inputFg: '#6aade8', emphFg: '#6aade8', headerFg: '#88c8f0',
+            bodyBg: '#2a3c86', bufferBg: '#2a3c86', bufferFg: '#a8c8ff',
+            gridBg: '#a8c8ff', gridFg: '#1a2860',
+            inputFg: '#e0ecff', emphFg: '#ffffff', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.6',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Press Start 2P", "Courier New", monospace',
@@ -258,28 +258,28 @@ var THEMES = [
     {
         id: 'trs80', name: 'TRS-80',
         chrome: {
-            pageBg: '#003000', pageFg: '#b0ffb0', headingFg: '#c0ffc0',
-            accentFg: '#b0ffb0', mutedFg: '#60aa60', dimFg: '#408840',
-            cardBg: '#002800', cardBorder: '#1a5a1a', toolbarBg: '#002400',
-            border: '#1a5a1a', borderHover: '#2a7a2a', surfaceBg: '#003800',
-            btnBg: '#b0ffb0', btnFg: '#003000', btnHoverBg: '#c0ffc0',
-            inputBg: '#002800', inputFg: '#b0ffb0',
-            activeTabBg: '#b0ffb0', activeTabFg: '#003000',
-            badgeBg: '#003800', badgeFg: '#60aa60',
-            codeBg: '#003800', codeFg: '#b0ffb0',
-            footerFg: '#408840', linkFg: '#b0ffb0',
+            pageBg: '#000000', pageFg: '#d8d8d8', headingFg: '#ffffff',
+            accentFg: '#ffffff', mutedFg: '#a0a0a0', dimFg: '#8a8a8a',
+            cardBg: '#101010', cardBorder: '#333333', toolbarBg: '#101010',
+            border: '#333333', borderHover: '#666666', surfaceBg: '#101010',
+            btnBg: '#d8d8d8', btnFg: '#000000', btnHoverBg: '#ffffff',
+            inputBg: '#101010', inputFg: '#d8d8d8',
+            activeTabBg: '#d8d8d8', activeTabFg: '#000000',
+            badgeBg: '#181818', badgeFg: '#a0a0a0',
+            codeBg: '#181818', codeFg: '#d8d8d8',
+            footerFg: '#8a8a8a', linkFg: '#ffffff',
             fontFamily: '"Tiny5", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#003000', bufferBg: '#003000', bufferFg: '#b0ffb0',
-            gridBg: '#b0ffb0', gridFg: '#003000',
-            inputFg: '#c0ffc0', emphFg: '#c0ffc0', headerFg: '#d0ffd0',
+            bodyBg: '#000000', bufferBg: '#000000', bufferFg: '#d8d8d8',
+            gridBg: '#d8d8d8', gridFg: '#000000',
+            inputFg: '#ffffff', emphFg: '#ffffff', headerFg: '#ffffff',
             bufferSize: '20px', bufferLineHeight: '1.4',
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"Tiny5", "Courier New", monospace',
             propFamily: '"Tiny5", "Courier New", monospace'
         },
-        scrollbar: { thumb: '#1a5a1a', track: '#003000', thumbHover: '#2a7a2a' }
+        scrollbar: { thumb: '#555555', track: '#000000', thumbHover: '#888888' }
     },
 
     // ── Reading Themes (non-OS) ──
@@ -288,15 +288,15 @@ var THEMES = [
         id: 'sepia', name: 'Sepia',
         chrome: {
             pageBg: '#f4ecd8', pageFg: '#5b4636', headingFg: '#3e2c1c',
-            accentFg: '#8b5e3c', mutedFg: '#8a7560', dimFg: '#a08e78',
+            accentFg: '#8b5e3c', mutedFg: '#72614f', dimFg: '#776854',
             cardBg: '#ede0c8', cardBorder: '#d4c4a8', toolbarBg: '#e8d8be',
             border: '#d4c4a8', borderHover: '#baa888', surfaceBg: '#ede0c8',
-            btnBg: '#8b5e3c', btnFg: '#f4ecd8', btnHoverBg: '#a0714a',
+            btnBg: '#8b5e3c', btnFg: '#f4ecd8', btnHoverBg: '#6b4426',
             inputBg: '#ede0c8', inputFg: '#5b4636',
             activeTabBg: '#8b5e3c', activeTabFg: '#f4ecd8',
-            badgeBg: '#e8d8be', badgeFg: '#8a7560',
-            codeBg: '#ede0c8', codeFg: '#8b5e3c',
-            footerFg: '#a08e78', linkFg: '#8b5e3c',
+            badgeBg: '#e8d8be', badgeFg: '#6c5b4b',
+            codeBg: '#ede0c8', codeFg: '#6b4426',
+            footerFg: '#776854', linkFg: '#8b5e3c',
             fontFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif'
         },
         game: {
@@ -314,15 +314,15 @@ var THEMES = [
         id: 'midnight', name: 'Midnight',
         chrome: {
             pageBg: '#0d1b2a', pageFg: '#c8d6e5', headingFg: '#e2ecf5',
-            accentFg: '#e0a050', mutedFg: '#6b8299', dimFg: '#506a80',
+            accentFg: '#e0a050', mutedFg: '#7a8fa3', dimFg: '#6886a0',
             cardBg: '#132638', cardBorder: '#1e3a52', toolbarBg: '#0f2233',
             border: '#1e3a52', borderHover: '#2a5070', surfaceBg: '#132638',
             btnBg: '#e0a050', btnFg: '#0d1b2a', btnHoverBg: '#f0b868',
             inputBg: '#132638', inputFg: '#c8d6e5',
             activeTabBg: '#e0a050', activeTabFg: '#0d1b2a',
-            badgeBg: '#132638', badgeFg: '#6b8299',
+            badgeBg: '#132638', badgeFg: '#7a8fa3',
             codeBg: '#132638', codeFg: '#e0a050',
-            footerFg: '#506a80', linkFg: '#e0a050',
+            footerFg: '#6886a0', linkFg: '#e0a050',
             fontFamily: 'Georgia, "Times New Roman", serif'
         },
         game: {
@@ -340,15 +340,15 @@ var THEMES = [
         id: 'forest', name: 'Forest',
         chrome: {
             pageBg: '#0f1a12', pageFg: '#b8c9a8', headingFg: '#d0e0c0',
-            accentFg: '#d4a050', mutedFg: '#708060', dimFg: '#586850',
+            accentFg: '#d4a050', mutedFg: '#7a8c69', dimFg: '#738868',
             cardBg: '#142218', cardBorder: '#1e3422', toolbarBg: '#0c1610',
             border: '#1e3422', borderHover: '#2e4a32', surfaceBg: '#142218',
             btnBg: '#d4a050', btnFg: '#0f1a12', btnHoverBg: '#e4b868',
             inputBg: '#142218', inputFg: '#b8c9a8',
             activeTabBg: '#d4a050', activeTabFg: '#0f1a12',
-            badgeBg: '#142218', badgeFg: '#708060',
+            badgeBg: '#142218', badgeFg: '#7a8c69',
             codeBg: '#142218', codeFg: '#d4a050',
-            footerFg: '#586850', linkFg: '#d4a050',
+            footerFg: '#738868', linkFg: '#d4a050',
             fontFamily: 'Georgia, "Times New Roman", serif'
         },
         game: {
@@ -366,15 +366,15 @@ var THEMES = [
         id: 'lavender', name: 'Lavender',
         chrome: {
             pageBg: '#1a1625', pageFg: '#d0c4e8', headingFg: '#e4daf4',
-            accentFg: '#c898d0', mutedFg: '#8070a0', dimFg: '#685888',
+            accentFg: '#c898d0', mutedFg: '#8e7faa', dimFg: '#897aa9',
             cardBg: '#201a30', cardBorder: '#2e2644', toolbarBg: '#161220',
             border: '#2e2644', borderHover: '#443860', surfaceBg: '#201a30',
             btnBg: '#c898d0', btnFg: '#1a1625', btnHoverBg: '#d8ade0',
             inputBg: '#201a30', inputFg: '#d0c4e8',
             activeTabBg: '#c898d0', activeTabFg: '#1a1625',
-            badgeBg: '#201a30', badgeFg: '#8070a0',
+            badgeBg: '#201a30', badgeFg: '#8e7faa',
             codeBg: '#201a30', codeFg: '#c898d0',
-            footerFg: '#685888', linkFg: '#c898d0',
+            footerFg: '#897aa9', linkFg: '#c898d0',
             fontFamily: 'Georgia, "Times New Roman", serif'
         },
         game: {
@@ -391,22 +391,22 @@ var THEMES = [
     {
         id: 'solarized', name: 'Solarized',
         chrome: {
-            pageBg: '#002b36', pageFg: '#839496', headingFg: '#93a1a1',
-            accentFg: '#b58900', mutedFg: '#657b83', dimFg: '#586e75',
+            pageBg: '#002b36', pageFg: '#93a1a1', headingFg: '#93a1a1',
+            accentFg: '#b58900', mutedFg: '#839496', dimFg: '#839496',
             cardBg: '#073642', cardBorder: '#094555', toolbarBg: '#01313d',
             border: '#094555', borderHover: '#0b5a6e', surfaceBg: '#073642',
             btnBg: '#b58900', btnFg: '#002b36', btnHoverBg: '#cb9a00',
-            inputBg: '#073642', inputFg: '#839496',
+            inputBg: '#073642', inputFg: '#93a1a1',
             activeTabBg: '#b58900', activeTabFg: '#002b36',
-            badgeBg: '#073642', badgeFg: '#657b83',
-            codeBg: '#073642', codeFg: '#b58900',
-            footerFg: '#586e75', linkFg: '#2aa198',
+            badgeBg: '#073642', badgeFg: '#93a1a1',
+            codeBg: '#073642', codeFg: '#93a1a1',
+            footerFg: '#839496', linkFg: '#2aa198',
             fontFamily: '"Menlo", "SF Mono", "Fira Code", Consolas, monospace'
         },
         game: {
-            bodyBg: '#002b36', bufferBg: '#002b36', bufferFg: '#839496',
-            gridBg: '#073642', gridFg: '#b58900',
-            inputFg: '#b58900', emphFg: '#cb4b16', headerFg: '#93a1a1',
+            bodyBg: '#002b36', bufferBg: '#002b36', bufferFg: '#93a1a1',
+            gridBg: '#073642', gridFg: '#93a1a1',
+            inputFg: '#b58900', emphFg: '#93a1a1', headerFg: '#93a1a1',
             bufferSize: '16px', bufferLineHeight: '1.5',
             gridSize: '15px', gridLineHeight: '20px',
             monoFamily: '"Menlo", "SF Mono", "Fira Code", Consolas, "Courier New", monospace',
