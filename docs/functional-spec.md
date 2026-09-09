@@ -88,7 +88,7 @@ The list of collections: `id`, `title`, `description`, and `filter`, which is `{
 ## 4. Source viewer
 
 - Fetches `sourceUrl` (cached per game), normalises line endings, and renders a numbered table with syntax highlighting.
-- Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments).
+- Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments), Chord for sharpee (`##` comments, header fields and phrase keys, `create` headings, structural keywords, kinds, traits and states, strings, numbers; a line is coloured only when its opening words read as code, so prose paragraphs stay plain apart from `{markers}`).
 - Navigation sidebar (220px, hidden below 1024px): Inform 7 Volume/Book/Part/Chapter/Section headings, Rez elements, Ink knots and stitches, BASIC REM lines. Clicking scrolls to the line and marks it active.
 - Search: Ctrl+F, at least two characters, 200ms debounce, highlighted hits with a current-hit marker; Enter and Shift+Enter step through, Escape clears. It walks text nodes, so highlighting is preserved.
 - Browser mode: when `sourceBrowser` is true the pane iframes the game's own `source.html` instead. Used by zork1-v0 (multi-file ZIL browser) and dracula-v0 (annotated BASIC).
@@ -98,6 +98,8 @@ The list of collections: `id`, `title`, `description`, and `filter`, which is `{
 ### 5.1 Platform themes
 
 Fifteen themes live in `themes.js`: classic (default), dos, apple2, c64, amiga, mac, atarist, cpm, atari8, trs80, sepia, midnight, forest, lavender, solarized. Each defines `chrome` (hub UI colours and font), `game` (colours, fonts and sizes pushed into game pages) and `scrollbar`. The choice persists in `localStorage` under `ifhub-theme`; pages apply the chrome by setting CSS custom properties on the root element. Retro fonts load from Google Fonts on demand.
+
+Every text pairing a theme draws (page, cards, toolbar, buttons, chips, badges, code, and the game panes' text, input, emphasis, headers and status line) meets WCAG AA contrast of 4.5:1, with one deliberate exception: Solarized's muted text on its card background stays at Solarized's own 4.1:1. A theme named after a system uses that system's palette: MS-DOS is CGA light grey on black with the Norton blue for fills, Commodore 64 uses the C64 palette (light grey text, light blue borders and status line, cyan and yellow accents), Amiga is Workbench 1.3 blue, white and orange fills, Atari 800 is GRAPHICS 0 light blue on blue, TRS-80 is the Model III's white-grey phosphor on black, CP/M (Kaypro) is green phosphor on black, Apple II is green phosphor, Macintosh and Atari ST are black on white.
 
 ### 5.2 Style dropdown and overlays
 
