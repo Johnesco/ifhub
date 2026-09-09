@@ -14,7 +14,7 @@ A game folder that IF Hub can receive contains:
 |---|---|---|
 | `ifhub.conf` | yes | `engine`, `title`, `description`, `tags`, `source`, `walkthrough`, `sound`, and `hub = yes` to be listed |
 | `play.html` | yes | self-contained web player, with the libs it needs (`lib/parchment/`, `theme-listener.js`, ...) |
-| source file | no | the raw file named by `source =`; the hub highlights it (Inform 7, Rez, Ink, BASIC). `sourceBrowser = yes` means the game ships its own `source.html` |
+| source file | no | the raw file named by `source =`; the hub highlights it (Inform 7, Rez, Ink, BASIC, Chord). `sourceBrowser = yes` means the game ships its own `source.html` |
 | `walkthrough.txt`, `walkthrough_output.txt`, `walkthrough-guide.txt` | no | at the game root; the hub renders them in `site/walkthrough.html` |
 | `tests.html` | no | a test report page; its presence turns on the Tests tab |
 | `index.html` | generated | the game's landing page, the only file `tools/ship.py` writes into a game folder |
@@ -66,7 +66,7 @@ ifhub/
 
 ## Hub behaviour worth knowing
 
-- `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
+- `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC, Chord; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
 - Versioned games (zork1 v0..v3, dracula): `versionOf` / `versionPrimary` in `ifhub.conf` collapse a group into one card. See `reference/multi-version-guide.md`.
 - Local preview: `python tools/serve.py` (or the `hub-site` launch config) serves `site/` at `/ifhub/` and every game folder at `/<game>/` on one port, the same URL layout as GitHub Pages. Zero configuration, nothing to install.
 
