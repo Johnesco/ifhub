@@ -427,9 +427,133 @@ function highlightBasic(line) {
 }
 
 /* ==================================================================
+   CHORD SYNTAX HIGHLIGHTER (engine sharpee, <id>.story)
+   Chord keeps prose in the same indented blocks as its statements and its
+   lexer has no keyword kind, so token-only colouring (the Sharpee
+   playground's CodeMirror mode, Chord Writer's editor) paints words inside
+   prose too. This one decides per line whether it is code or prose from
+   its opening words and the lines around it, colours only code lines, and
+   leaves prose plain apart from {markers}. The word sets mirror the
+   playground mode (website/src/app/playground/chord-mode.ts) and Chord
+   Writer's SyntaxHighlighter.swift; kinds and adjectives are the closed
+   sets in packages/chord/src/catalog.ts.
+   ================================================================== */
+function chordSet(words) { var s = {}; words.split(' ').forEach(function (w) { s[w] = 1; }); return s; }
+var CHORD_KEYWORDS = chordSet('story grammar create define extend remove use end on after before once first second third time every turn each select when while if otherwise refuse must require change move award win lose emit set kill now play stop start restart reset interrupt announce phrase phrases channel channels verb text trait traits action actions condition pronouns phrasebook chain override message messages return mode replace append states state starts wears carries aka means directions containing gated blocked to toward through from with by and or not in at is are has have holds worth score scores rank ranks counter counters sequence machine topics topic timer chapters chapter goal mood feels knows thinks spreads resists protects honor never manner greetings exchange initiative conversation beat conclusion during import playable pattern verbatim randomly cycling stopping sticky first-time one-way');
+var CHORD_KINDS = chordSet('room door person container supporter region thing');
+var CHORD_ADJECTIVES = chordSet('scenery wearable readable openable lockable switchable edible pushable pullable light-source plural dark enterable climbable cuttable diggable drinkable concealed hiding-spot proper open closed locked unlocked on off worn lit');
+var CHORD_DIRECTIONS = chordSet('north south east west northeast northwest southeast southwest up down');
+/* Words that open an indented code line; anything else opens prose unless chordIsCode says otherwise. */
+var CHORD_OPENERS = chordSet('aka pronouns starts carries wears states state score scores rank ranks use on after before when while if otherwise refuse must emit change move remove award win lose set kill now play stop start restart reset interrupt announce phrase phrases means directions containing end counter channel topic topics goal mood feels knows thinks spreads resists protects honor never select each once import override message messages chain return mode replace append grammar playable pattern verbatim define extend create timer chapters exchange greetings manner initiative conversation beat conclusion');
+/* Code lines whose deeper-indented body is prose. */
+var CHORD_PROSE_HOSTS = chordSet('phrase first second third every select kill description prologue');
+/* Header fields whose value on the same line is prose, not code. */
+var CHORD_PROSE_VALUES = chordSet('title description prologue');
+var CHORD_HEADING_RE = /^(story|create|define|extend|grammar|before)\b/;
+var CHORD_WORD_RE = /^[A-Za-zÀ-ɏ][A-Za-z0-9À-ɏ'_-]*/;
+var CHORD_KEY_RE = /^[a-z][a-z0-9-]*:(\s|$)/;
+
+/* Per-render state: the indent of a prose host (its deeper lines are prose) and of a prose
+   paragraph in progress (its same-indent continuation lines are prose). */
+function chordContext() { return { host: -1, prose: -1 }; }
+
+function chordIsCode(trimmed, indent) {
+  if (indent === 0) return true;
+  var words = trimmed.split(/\s+/);
+  var w = words[0].toLowerCase().replace(/,$/, '');
+  var w2 = (words[1] || '').toLowerCase().replace(/[,:]$/, '');
+  if (CHORD_KEY_RE.test(trimmed)) return true;
+  if (w === 'a' || w === 'an') return !!(CHORD_KINDS[w2] || CHORD_ADJECTIVES[w2]);
+  if (CHORD_ADJECTIVES[w] || CHORD_KINDS[w]) return true;
+  if (CHORD_DIRECTIONS[w]) return w2 === 'to' || w2 === 'is' || w2 === 'through' || w2 === 'toward';
+  if (w === 'in') return /^in (the|a|an) [A-Z]/.test(trimmed);
+  if (w === 'the' || w === 'it') return / must /.test(trimmed) || /:\s*$/.test(trimmed);
+  if (w === 'first' || w === 'second' || w === 'third' || w === 'every') return w2 === 'time' || w2 === 'turn';
+  return !!CHORD_OPENERS[w];
+}
+
+/* Statement and setting openers strong enough to end a prose paragraph without a blank line
+   (`states:` straight after a description). Prose-like verbs stay out on purpose. */
+var CHORD_STRONG = chordSet('change move remove refuse award win lose emit kill restart reset interrupt announce otherwise phrase when while if once select end aka pronouns starts carries wears score rank use means containing');
+
+function chordStrong(trimmed) {
+  var words = trimmed.split(/\s+/);
+  var w = words[0].toLowerCase().replace(/,$/, '');
+  var w2 = (words[1] || '').toLowerCase().replace(/[,:]$/, '');
+  if (CHORD_KEY_RE.test(trimmed) || CHORD_STRONG[w]) return true;
+  if ((w === 'a' || w === 'an') && (CHORD_KINDS[w2] || CHORD_ADJECTIVES[w2])) return true;
+  if (CHORD_DIRECTIONS[w] && (w2 === 'to' || w2 === 'is' || w2 === 'through')) return true;
+  if (/^in (the|a|an) [A-Z]/.test(trimmed)) return true;
+  if ((w === 'first' || w === 'second' || w === 'third') && w2 === 'time') return true;
+  return trimmed.split(/\s*,\s*/).every(function (t) { var x = t.toLowerCase(); return !!(CHORD_ADJECTIVES[x] || CHORD_KINDS[x]); });
+}
+
+function chordMarkers(html) {
+  return html.replace(/\{[^}]*\}/g, '<span class="syn-sub">$&</span>');
+}
+
+function chordCode(trimmed, topLevel) {
+  var cm = topLevel ? /^(create)(\s+\S.*)$/i.exec(trimmed) : null;
+  if (cm) return '<span class="syn-kw">' + esc(cm[1]) + '</span><span class="syn-head">' + esc(cm[2]) + '</span>';
+  var out = '', i = 0, n = trimmed.length;
+  while (i < n) {
+    var ch = trimmed[i];
+    if (ch === '"') {
+      var j = trimmed.indexOf('"', i + 1); if (j < 0) j = n - 1;
+      out += '<span class="syn-str">' + esc(trimmed.slice(i, j + 1)) + '</span>'; i = j + 1; continue;
+    }
+    if (ch === '{') {
+      var k = trimmed.indexOf('}', i); if (k < 0) k = n - 1;
+      out += '<span class="syn-sub">' + esc(trimmed.slice(i, k + 1)) + '</span>'; i = k + 1; continue;
+    }
+    var rest = trimmed.slice(i);
+    var wm = CHORD_WORD_RE.exec(rest);
+    if (wm) {
+      var word = wm[0], lw = word.toLowerCase(), cls = '';
+      var fusedColon = trimmed[i + word.length] === ':';
+      if (fusedColon && !CHORD_KEYWORDS[lw]) { cls = 'syn-sub'; word += ':'; }
+      else if (CHORD_KEYWORDS[lw] || CHORD_DIRECTIONS[lw]) cls = 'syn-kw';
+      else if (CHORD_KINDS[lw]) cls = 'syn-tbl';
+      else if (CHORD_ADJECTIVES[lw]) cls = 'syn-rule';
+      else if (word.indexOf('-') > 0 && word === lw) cls = 'syn-sub';
+      out += cls ? '<span class="' + cls + '">' + esc(word) + '</span>' : esc(word);
+      i += word.length; continue;
+    }
+    var nm = /^[0-9]+(?:\.[0-9]+)*/.exec(rest);
+    if (nm) {
+      var num = nm[0];
+      var fused = /[A-Za-z0-9_-]/.test(trimmed[i + num.length] || '') || (i > 0 && /[A-Za-z0-9_-]/.test(trimmed[i - 1]));
+      out += fused ? esc(num) : '<span class="syn-num">' + esc(num) + '</span>';
+      i += num.length; continue;
+    }
+    out += esc(ch); i++;
+  }
+  return out;
+}
+
+function highlightChord(line, ctx) {
+  var trimmed = line.trimStart();
+  var indent = line.length - trimmed.length;
+  var pad = esc(line.slice(0, indent));
+  if (!trimmed.trim()) { ctx.prose = -1; return ''; }
+  trimmed = trimmed.trimEnd();
+  if (trimmed.indexOf('##') === 0) { ctx.prose = -1; return pad + '<span class="syn-cmt">' + esc(trimmed) + '</span>'; }
+  if (ctx.host >= 0 && indent <= ctx.host) ctx.host = -1;
+  var prose = (ctx.host >= 0 && indent > ctx.host) || (ctx.prose >= 0 && indent === ctx.prose && !chordStrong(trimmed)) || !chordIsCode(trimmed, indent);
+  if (prose) { ctx.prose = indent; return pad + chordMarkers(esc(trimmed)); }
+  ctx.prose = -1;
+  var w = trimmed.split(/\s+/)[0].toLowerCase().replace(/:$/, '');
+  if (CHORD_PROSE_HOSTS[w] || /^[a-z][a-z0-9-]*:\s*$/.test(trimmed)) ctx.host = indent;
+  var kv = /^([a-z][a-z0-9-]*:)(\s+)(\S.*)$/.exec(trimmed);
+  if (kv && CHORD_PROSE_VALUES[kv[1].slice(0, -1)]) return pad + '<span class="syn-sub">' + esc(kv[1]) + '</span>' + kv[2] + chordMarkers(esc(kv[3]));
+  return pad + chordCode(trimmed, indent === 0);
+}
+
+/* ==================================================================
    ENGINE-AWARE HIGHLIGHTER DISPATCH
    ================================================================== */
-function highlightLine(line, engine) {
+function highlightLine(line, engine, ctx) {
+  if (engine === 'sharpee') return highlightChord(line, ctx || chordContext());
   if (engine === 'rez') return highlightRez(line);
   if (engine === 'ink') return highlightInk(line);
   if (BASIC_ENGINES[engine]) return highlightBasic(line);
@@ -437,6 +561,7 @@ function highlightLine(line, engine) {
 }
 
 function isHeadingLine(line, engine) {
+  if (engine === 'sharpee') return CHORD_HEADING_RE.test(line);
   if (engine === 'rez') return REZ_ELEMENT_RE.test(line);
   if (engine === 'ink') return INK_KNOT_RE.test(line) || INK_STITCH_RE.test(line);
   if (BASIC_ENGINES[engine]) return BASIC_REM_RE.test(line);
@@ -448,10 +573,11 @@ function isHeadingLine(line, engine) {
    ================================================================== */
 function renderSource(lines, engine) {
   var rows = [];
+  var ctx = engine === 'sharpee' ? chordContext() : null;
   for (var i = 0; i < lines.length; i++) {
     var num = i + 1;
     var cls = isHeadingLine(lines[i], engine) ? ' class="heading-line"' : '';
-    rows.push('<tr id="L' + num + '"' + cls + '><td class="ln">' + num + '</td><td class="lc">' + highlightLine(lines[i], engine) + '</td></tr>');
+    rows.push('<tr id="L' + num + '"' + cls + '><td class="ln">' + num + '</td><td class="lc">' + highlightLine(lines[i], engine, ctx) + '</td></tr>');
   }
   document.getElementById('source-main').innerHTML = '<table class="code">' + rows.join('') + '</table>';
 }
@@ -474,6 +600,16 @@ function buildNav(lines, engine) {
       if (tag === 'game' || tag === 'scene') cls += ' nav-part';
       else cls += ' nav-chapter';
       items.push('<a class="' + cls + '" data-line="' + num + '">' + esc('@' + tag + ' ' + rest) + '</a>');
+    }
+  } else if (engine === 'sharpee') {
+    for (var i = 0; i < lines.length; i++) {
+      var cl = lines[i];
+      var bm = cl.match(/^##\s+([A-Z][A-Z0-9 ,&'-]{1,40})\s*$/);
+      if (bm) { items.push('<a class="nav-item nav-part" data-line="' + (i + 1) + '">' + esc(bm[1].trim()) + '</a>'); continue; }
+      if (/^story\b/.test(cl)) { items.push('<a class="nav-item nav-part" data-line="' + (i + 1) + '">story</a>'); continue; }
+      var crm = cl.match(/^create\s+(.+?)\s*$/);
+      if (crm) { items.push('<a class="nav-item nav-chapter" data-line="' + (i + 1) + '">' + esc(crm[1]) + '</a>'); continue; }
+      if (/^(define|extend|grammar|before)\b/.test(cl)) items.push('<a class="nav-item nav-section" data-line="' + (i + 1) + '">' + esc(cl.trim().slice(0, 60)) + '</a>');
     }
   } else if (engine === 'ink') {
     for (var i = 0; i < lines.length; i++) {

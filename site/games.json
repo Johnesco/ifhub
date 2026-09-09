@@ -144,8 +144,7 @@
     "walkthroughUrl": "/fever-dream-sharpee/walkthrough.txt",
     "testsUrl": "/fever-dream-sharpee/tests.html",
     "landingUrl": "/fever-dream-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/fever-dream-sharpee/source.html",
+    "sourceUrl": "/fever-dream-sharpee/fever-dream-sharpee.story",
     "engine": "sharpee",
     "tags": [
       "horror",
@@ -198,8 +197,7 @@
     "walkthroughUrl": "/guess-the-verb-sharpee/walkthrough.txt",
     "testsUrl": "/guess-the-verb-sharpee/tests.html",
     "landingUrl": "/guess-the-verb-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/guess-the-verb-sharpee/source.html",
+    "sourceUrl": "/guess-the-verb-sharpee/guess-the-verb-sharpee.story",
     "engine": "sharpee",
     "tags": [
       "parser-lab",
@@ -234,8 +232,7 @@
     "walkthroughUrl": "/hello-chord/walkthrough.txt",
     "testsUrl": "/hello-chord/tests.html",
     "landingUrl": "/hello-chord/",
-    "sourceBrowser": true,
-    "sourceUrl": "/hello-chord/source.html",
+    "sourceUrl": "/hello-chord/hello-chord.story",
     "engine": "sharpee",
     "tags": [
       "chord",
@@ -298,8 +295,7 @@
     "walkthroughUrl": "/no-signal-home-sharpee/walkthrough.txt",
     "testsUrl": "/no-signal-home-sharpee/tests.html",
     "landingUrl": "/no-signal-home-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/no-signal-home-sharpee/source.html",
+    "sourceUrl": "/no-signal-home-sharpee/no-signal-home-sharpee.story",
     "engine": "sharpee",
     "tags": [
       "sci-fi",
@@ -333,8 +329,7 @@
     "walkthroughUrl": "/sample-sharpee/walkthrough.txt",
     "testsUrl": "/sample-sharpee/tests.html",
     "landingUrl": "/sample-sharpee/",
-    "sourceBrowser": true,
-    "sourceUrl": "/sample-sharpee/source.html",
+    "sourceUrl": "/sample-sharpee/sample-sharpee.story",
     "engine": "sharpee",
     "tags": [
       "demo",

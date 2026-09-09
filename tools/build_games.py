@@ -94,6 +94,7 @@ ENGINE_SOURCE_EXT = {
     "qbjc": ".bas",
     "applesoft": ".bas",
     "zmachine": ".zil",
+    "sharpee": ".story",
 }
 
 

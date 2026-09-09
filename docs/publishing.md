@@ -10,7 +10,7 @@ Every game is a folder that is its own git repo and is published to `https://joh
 |---|---|---|
 | `ifhub.conf` | yes | flat `key = value` lines, see below |
 | `play.html` | yes | a self-contained web player. Everything it loads must be in the folder (`lib/parchment/`, `theme-listener.js`, the story data) or on a public CDN |
-| source file | no | the raw file named by `source =`. The hub highlights it in the source pane (Inform 7, Rez, Ink, BASIC). A game with a multi-file or custom source view ships its own `source.html` and sets `sourceBrowser = yes` |
+| source file | no | the raw file named by `source =`. The hub highlights it in the source pane (Inform 7, Rez, Ink, BASIC, Chord). A game with a multi-file or custom source view ships its own `source.html` and sets `sourceBrowser = yes` |
 | `walkthrough.txt` | no | one command per line, at the game root. Optional companions next to it: `walkthrough_output.txt` (transcript) and `walkthrough-guide.txt` (annotated guide). The hub renders them in its own walkthrough viewer |
 | `tests.html` | no | any self-contained test report page. When present the hub shows a Tests tab. Inform 7 games get one from ifPlayer |
 | `index.html` | generated | the game's landing page, the only file the hub writes into the folder. `tools/ship.py` writes it when missing; `--refresh-pages` rewrites it |
@@ -45,7 +45,7 @@ Each engine workspace under `C:/code/text-games/` has a `tools/build.py` that tu
 | Ink | `python C:/code/text-games/ink/tools/build.py <game>` | compiles the `.ink` with inklecate when Inky is installed, otherwise uses the committed `.json`; ink.js player with the story inlined; copies `theme-listener.js` |
 | Rez | `python C:/code/text-games/rez/tools/build.py <game>` | `rez compile` from the game root (compiler: `rez` on PATH or `rez/tools/bin/rez_windows.exe`), then `dist/index.html` → `play.html` with the theme listener. `--no-compile` reuses `dist/` |
 | BASIC (wwwbasic, applesoft, bwbasic, qbjc, jsdos) | `python C:/code/text-games/basic/tools/build.py <game>` | inlines the `.BAS` named by `source =` into the dialect's player template; `engine =` in ifhub.conf picks the dialect |
-| Sharpee (Chord) | `python C:/code/text-games/sharpee/tools/build.py <game>` | `sharpee compose --check` (the load gates), `sharpee build`, `sharpee test` on `<id>.tests.json`; then `play.html` from the built page with the theme listener, `game.js` + CSS at the root, themes under `lib/themes/`, `source.html` (`sourceBrowser = yes`), `tests.html`, `walkthrough.txt` + `walkthrough_output.txt`. `--force`, `--no-test`. Games still on the 0.9.x pipeline are re-laid from `browser/` |
+| Sharpee (Chord) | `python C:/code/text-games/sharpee/tools/build.py <game>` | `sharpee compose --check` (the load gates), `sharpee build`, `sharpee test` on `<id>.tests.json`; then `play.html` from the built page with the theme listener, `game.js` + CSS at the root, themes under `lib/themes/`, the `.story` highlighted by the hub, `tests.html`, `walkthrough.txt` + `walkthrough_output.txt`. `--force`, `--no-test`. Games still on the 0.9.x pipeline are re-laid from `browser/` |
 
 `--force` overwrites an existing `play.html`. Games with a hand-tuned player keep a `play-template.html` in their folder; the build scripts prefer it over the generic template, which makes `--force` safe.
 
@@ -82,7 +82,7 @@ Publish whenever the game is worth showing; `ship.py` is idempotent. To keep an 
 
 1. Make a workspace `C:/code/text-games/<engine>/` and add its root to `workspaces.json`.
 2. Give it `tools/build.py <game>` that produces the folder in section 1. Copy `theme-listener.js` from an existing workspace into the player so hub themes apply.
-3. Add a highlighter for the engine's source to `site/app.html` (Inform 7, Rez, Ink and BASIC exist), or have games ship their own `source.html` and set `sourceBrowser = yes`.
+3. Add a highlighter for the engine's source to `site/app.js` (Inform 7, Rez, Ink, BASIC and Chord exist; add the source extension to the Pages workflow in `tools/publish.py` and to `ENGINE_SOURCE_EXT`), or have games ship their own `source.html` and set `sourceBrowser = yes`.
 4. Add a `<engine>/CLAUDE.md` with the authoring rules, and a row to the table in section 2.
 
 The hub itself does not need to know the engine name; `build_games.py` copies whatever `engine =` says into `games.json`, and `hubs.json` can filter on it.
