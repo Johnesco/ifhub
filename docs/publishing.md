@@ -92,7 +92,7 @@ The hub itself does not need to know the engine name; `build_games.py` copies wh
 | Thing | Location |
 |---|---|
 | Engine workspaces and game repos | `C:/code/text-games/<engine>/<game>/` (each game its own repo). Workspaces: `i7` (Inform 7 + Z-machine), `ink`, `rez`, `basic` (all BASIC dialects), `sharpee` (Chord and TypeScript) |
-| Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, and for I7 `reference/`; the game folders inside it are ignored because each game is its own repo. Remotes: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace` |
+| Workspace tooling | `C:/code/text-games/<engine>/tools/` — each engine folder is a git repo (branch `main`) holding only `tools/`, `CLAUDE.md`, `README.md`, and for I7 and Sharpee `reference/`; the game folders inside it are ignored because each game is its own repo. Remotes: `Johnesco/inform7-workspace`, `ink-workspace`, `rez-workspace`, `basic-workspace`, `sharpee-workspace` |
 | Inform 7 language references, interpreters, test framework | `C:/code/text-games/i7/reference/`, `i7/tools/interpreters/`, `i7/tools/` |
 | ifPlayer (I7 test runner and report format) | `C:/code/text-games/ifPlayer/` — repo `Johnesco/ifplayer` |
 | Local preview server | `tools/serve.py` in the hub: `site/` at `/ifhub/`, every game folder at `/<game>/`, one port |
