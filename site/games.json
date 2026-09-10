@@ -452,6 +452,7 @@
     "playUrl": "/familyzoo-v14/play.html",
     "walkthroughUrl": "/familyzoo-v14/walkthrough.txt",
     "testsUrl": "/familyzoo-v14/tests.html",
+    "landingUrl": "/familyzoo-v14/",
     "sourceUrl": "/familyzoo-v14/familyzoo-v14.story",
     "engine": "sharpee",
     "tags": [
