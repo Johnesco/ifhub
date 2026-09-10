@@ -386,6 +386,7 @@
     "playUrl": "/familyzoo-v11/play.html",
     "walkthroughUrl": "/familyzoo-v11/walkthrough.txt",
     "testsUrl": "/familyzoo-v11/tests.html",
+    "landingUrl": "/familyzoo-v11/",
     "sourceUrl": "/familyzoo-v11/familyzoo-v11.story",
     "engine": "sharpee",
     "tags": [
