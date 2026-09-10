@@ -126,7 +126,7 @@
     "base": "familyzoo",
     "title": "Family Zoo (Current)",
     "meta": "John Googol",
-    "description": "A progressive tutorial for the Sharpee TypeScript engine: seventeen steps from a single room to a full multi-file story with NPCs, timed events and scoring.",
+    "description": "A sixteen-step tutorial for Chord, the Sharpee authoring language: one room in fifty lines, growing to a full zoo in eight hundred.",
     "primaryLabel": "Current",
     "playUrl": "/familyzoo/play.html",
     "landingUrl": "/familyzoo/",
@@ -137,61 +137,61 @@
       "learning",
       "familyzoo"
     ],
-    "sourceUrl": "/familyzoo/source.html",
+    "sourceUrl": "/familyzoo/familyzoo.story",
     "walkthroughUrl": "/familyzoo/walkthrough.txt",
     "testsUrl": "/familyzoo/tests.html",
     "versions": [
       {
         "id": "familyzoo-v16",
-        "label": "v16 — Scoring and Endgame",
+        "label": "v16 — After Hours & the TypeScript Hatch",
         "playUrl": "/familyzoo-v16/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v16",
-        "sourceUrl": "/familyzoo-v16/source.html",
+        "sourceUrl": "/familyzoo-v16/familyzoo-v16.story",
         "walkthroughUrl": "/familyzoo-v16/walkthrough.txt",
         "testsUrl": "/familyzoo-v16/tests.html"
       },
       {
         "id": "familyzoo-v15",
-        "label": "v15 — Timed Events (Daemons & Fuses)",
+        "label": "v15 — Scoring & Endgame",
         "playUrl": "/familyzoo-v15/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v15",
-        "sourceUrl": "/familyzoo-v15/source.html",
+        "sourceUrl": "/familyzoo-v15/familyzoo-v15.story",
         "walkthroughUrl": "/familyzoo-v15/walkthrough.txt",
         "testsUrl": "/familyzoo-v15/tests.html"
       },
       {
         "id": "familyzoo-v14",
-        "label": "v14 — Capability Dispatch",
+        "label": "v14 — Daemons & Sequences",
         "playUrl": "/familyzoo-v14/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v14",
-        "sourceUrl": "/familyzoo-v14/source.html",
+        "sourceUrl": "/familyzoo-v14/familyzoo-v14.story",
         "walkthroughUrl": "/familyzoo-v14/walkthrough.txt",
         "testsUrl": "/familyzoo-v14/tests.html"
       },
       {
         "id": "familyzoo-v13",
-        "label": "v13 — Custom Actions",
+        "label": "v13 — Custom Traits & Actions",
         "playUrl": "/familyzoo-v13/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v13",
-        "sourceUrl": "/familyzoo-v13/source.html",
+        "sourceUrl": "/familyzoo-v13/familyzoo-v13.story",
         "walkthroughUrl": "/familyzoo-v13/walkthrough.txt",
         "testsUrl": "/familyzoo-v13/tests.html"
       },
       {
         "id": "familyzoo-v12",
-        "label": "v12 — Event Handlers",
+        "label": "v12 — Event Clauses",
         "playUrl": "/familyzoo-v12/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v12",
-        "sourceUrl": "/familyzoo-v12/source.html",
+        "sourceUrl": "/familyzoo-v12/familyzoo-v12.story",
         "walkthroughUrl": "/familyzoo-v12/walkthrough.txt",
         "testsUrl": "/familyzoo-v12/tests.html"
       },
       {
         "id": "familyzoo-v11",
-        "label": "v11 — Non-Player Characters",
+        "label": "v11 — Characters",
         "playUrl": "/familyzoo-v11/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v11",
-        "sourceUrl": "/familyzoo-v11/source.html",
+        "sourceUrl": "/familyzoo-v11/familyzoo-v11.story",
         "walkthroughUrl": "/familyzoo-v11/walkthrough.txt",
         "testsUrl": "/familyzoo-v11/tests.html"
       },
@@ -200,7 +200,7 @@
         "label": "v10 — Switchable Devices",
         "playUrl": "/familyzoo-v10/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v10",
-        "sourceUrl": "/familyzoo-v10/source.html",
+        "sourceUrl": "/familyzoo-v10/familyzoo-v10.story",
         "walkthroughUrl": "/familyzoo-v10/walkthrough.txt",
         "testsUrl": "/familyzoo-v10/tests.html"
       },
@@ -209,7 +209,7 @@
         "label": "v09 — Readable Objects",
         "playUrl": "/familyzoo-v09/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v09",
-        "sourceUrl": "/familyzoo-v09/source.html",
+        "sourceUrl": "/familyzoo-v09/familyzoo-v09.story",
         "walkthroughUrl": "/familyzoo-v09/walkthrough.txt",
         "testsUrl": "/familyzoo-v09/tests.html"
       },
@@ -218,7 +218,7 @@
         "label": "v08 — Light & Dark",
         "playUrl": "/familyzoo-v08/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v08",
-        "sourceUrl": "/familyzoo-v08/source.html",
+        "sourceUrl": "/familyzoo-v08/familyzoo-v08.story",
         "walkthroughUrl": "/familyzoo-v08/walkthrough.txt",
         "testsUrl": "/familyzoo-v08/tests.html"
       },
@@ -227,7 +227,7 @@
         "label": "v07 — Locked Doors & Keys",
         "playUrl": "/familyzoo-v07/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v07",
-        "sourceUrl": "/familyzoo-v07/source.html",
+        "sourceUrl": "/familyzoo-v07/familyzoo-v07.story",
         "walkthroughUrl": "/familyzoo-v07/walkthrough.txt",
         "testsUrl": "/familyzoo-v07/tests.html"
       },
@@ -236,7 +236,7 @@
         "label": "v06 — Openable Things",
         "playUrl": "/familyzoo-v06/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v06",
-        "sourceUrl": "/familyzoo-v06/source.html",
+        "sourceUrl": "/familyzoo-v06/familyzoo-v06.story",
         "walkthroughUrl": "/familyzoo-v06/walkthrough.txt",
         "testsUrl": "/familyzoo-v06/tests.html"
       },
@@ -245,7 +245,7 @@
         "label": "v05 — Containers & Supporters",
         "playUrl": "/familyzoo-v05/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v05",
-        "sourceUrl": "/familyzoo-v05/source.html",
+        "sourceUrl": "/familyzoo-v05/familyzoo-v05.story",
         "walkthroughUrl": "/familyzoo-v05/walkthrough.txt",
         "testsUrl": "/familyzoo-v05/tests.html"
       },
@@ -254,7 +254,7 @@
         "label": "v04 — Portable Objects",
         "playUrl": "/familyzoo-v04/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v04",
-        "sourceUrl": "/familyzoo-v04/source.html",
+        "sourceUrl": "/familyzoo-v04/familyzoo-v04.story",
         "walkthroughUrl": "/familyzoo-v04/walkthrough.txt",
         "testsUrl": "/familyzoo-v04/tests.html"
       },
@@ -263,7 +263,7 @@
         "label": "v03 — Scenery",
         "playUrl": "/familyzoo-v03/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v03",
-        "sourceUrl": "/familyzoo-v03/source.html",
+        "sourceUrl": "/familyzoo-v03/familyzoo-v03.story",
         "walkthroughUrl": "/familyzoo-v03/walkthrough.txt",
         "testsUrl": "/familyzoo-v03/tests.html"
       },
@@ -272,7 +272,7 @@
         "label": "v02 — Multiple Rooms & Navigation",
         "playUrl": "/familyzoo-v02/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v02",
-        "sourceUrl": "/familyzoo-v02/source.html",
+        "sourceUrl": "/familyzoo-v02/familyzoo-v02.story",
         "walkthroughUrl": "/familyzoo-v02/walkthrough.txt",
         "testsUrl": "/familyzoo-v02/tests.html"
       },
@@ -281,7 +281,7 @@
         "label": "v01 — A Single Room",
         "playUrl": "/familyzoo-v01/play.html",
         "landingUrl": "/familyzoo/#familyzoo-v01",
-        "sourceUrl": "/familyzoo-v01/source.html",
+        "sourceUrl": "/familyzoo-v01/familyzoo-v01.story",
         "walkthroughUrl": "/familyzoo-v01/walkthrough.txt",
         "testsUrl": "/familyzoo-v01/tests.html"
       }
