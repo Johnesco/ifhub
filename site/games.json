@@ -254,6 +254,7 @@
     "playUrl": "/familyzoo-v05/play.html",
     "walkthroughUrl": "/familyzoo-v05/walkthrough.txt",
     "testsUrl": "/familyzoo-v05/tests.html",
+    "landingUrl": "/familyzoo-v05/",
     "sourceUrl": "/familyzoo-v05/familyzoo-v05.story",
     "engine": "sharpee",
     "tags": [
