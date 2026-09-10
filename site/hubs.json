@@ -9,5 +9,6 @@
   {"id": "sharpee", "title": "Sharpee Games", "description": "Parser games written in Chord for the Sharpee engine.", "filter": {"engine": "sharpee"}},
   {"id": "sound", "title": "Sound-Enabled", "description": "Games with embedded audio.", "filter": {"tag": "sound"}},
   {"id": "demo", "title": "Demos & Tutorials", "description": "Learning games, engine demos, and benchmarks.", "filter": {"tag": "demo"}},
+  {"id": "familyzoo", "title": "Family Zoo", "description": "A progressive Sharpee tutorial: seventeen steps from a single room to a full multi-file story.", "filter": {"tag": "familyzoo"}},
   {"id": "zork", "title": "Zork Series", "description": "All versions of Zork I.", "filter": {"tag": "zork"}}
 ]
