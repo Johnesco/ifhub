@@ -5,11 +5,10 @@
       "name": "hub-site",
       "runtimeExecutable": "python",
       "runtimeArgs": [
-        "tools/serve.py",
-        "--port",
-        "8892"
+        "tools/serve.py"
       ],
-      "port": 8892
+      "port": 8892,
+      "autoPort": true
     }
   ]
 }
