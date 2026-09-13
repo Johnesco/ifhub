@@ -3,6 +3,7 @@
 
 Usage:
     python tools/serve.py [--port 8892] [--bind 127.0.0.1]
+    PORT=<n> python tools/serve.py      (--port overrides; default 8892)
 
     /ifhub/...    -> site/                  (the hub)
     /<game>/...   -> that game's folder     (every ifhub.conf folder under the workspaces.json roots)
@@ -19,6 +20,7 @@ or Ctrl-C.
 
 import argparse
 import http.server
+import os
 import posixpath
 import sys
 import urllib.parse
@@ -77,7 +79,10 @@ class HubHandler(http.server.SimpleHTTPRequestHandler):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Serve the hub and every game folder on one port.")
-    parser.add_argument("--port", type=int, default=8892)
+    # PORT lets a launcher hand us a free port when 8892 is taken; an explicit
+    # --port still wins. http.server has no PORT support of its own, so a
+    # caller that drops the flag would otherwise land on the wrong port.
+    parser.add_argument("--port", type=int, default=int(os.environ.get("PORT") or 8892))
     parser.add_argument("--bind", default="127.0.0.1")
     args = parser.parse_args()
 
