@@ -966,6 +966,19 @@ function loadTestsForGame(gameId) {
    SOUND CONTROLS
    ================================================================== */
 var soundReady = false;
+// Set when the game in the frame announces it renders hub themes itself.
+// Declaring an overlay is a claim; this is the confirmation. See
+// themeGameIframe() for why the difference matters.
+var overlayReady = false;
+
+window.addEventListener('message', function (e) {
+  if (!e.data || e.data.type !== 'ifhub:overlayReady') return;
+  var gf = document.getElementById('game-frame');
+  if (!gf || e.source !== gf.contentWindow) return;  // ignore other frames
+  if (overlayReady) return;
+  overlayReady = true;
+  themeGameIframe();  // re-apply now that we know to step back
+});
 
 function initSoundControls() {
   var controls = document.getElementById('sound-controls');
@@ -1193,9 +1206,12 @@ function themeGameIframe() {
   var iframe = document.getElementById('game-frame');
   if (!iframe || !iframe.src || iframe.src === 'about:blank') return;
 
-  // Games with overlays use postMessage only — don't override
+  // Games with overlays render hub themes themselves, so injecting over them
+  // would fight their own CSS. Step back only once the game has actually said
+  // it can: a player that declares an overlay but predates theme-listener.js
+  // would otherwise get no theming at all, with nothing to show it failed.
   var g = currentGame ? gameMap[currentGame] : null;
-  if (g && g.overlayLabel) return;
+  if (g && g.overlayLabel && overlayReady) return;
 
   var sel = document.getElementById('style-select');
   var val = sel ? sel.value : getThemeId();
@@ -1249,6 +1265,7 @@ function switchGame(gameId) {
 
   // Hide sound controls until iframe reports ready
   soundReady = false;
+  overlayReady = false;
   document.getElementById('sound-controls').style.display = 'none';
 
   // Update dropdown
