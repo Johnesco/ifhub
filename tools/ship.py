@@ -24,9 +24,15 @@ Steps:
     1. verify the contract
     2. write the game's landing page (index.html) when missing
        (--refresh-pages rewrites it from the current template)
-    3. register: set `hub = yes` in ifhub.conf, rebuild site/games.json + site/cards.json
-    4. publish the folder to https://johnesco.github.io/<game>/       (skipped with --local)
-    5. commit and push the hub registry so the live hub lists it       (skipped with --local)
+    3. mark listed: set `hub = yes` in ifhub.conf, so it ships with the game
+    4. publish the folder to <org>.github.io/<game>/                   (skipped with --local)
+    5. register: rebuild site/games.json + site/cards.json
+    6. commit and push the hub registry so the live hub lists it       (skipped with --local)
+
+Publishing comes before registering on purpose. The registry is what puts a card on
+the live hub, so it is not written until the game is actually online; a failed publish
+leaves the hub untouched rather than advertising a URL that 404s (#101, #98).
+With --local the registry is rebuilt on disk at step 4 and nothing is published.
 
 --unlist sets `hub = no` instead, rebuilds the registry, and pushes the hub (unless --local).
 The game's own repo and Pages site are left alone; it just disappears from the hub.
@@ -137,11 +143,6 @@ def set_hub_flag(game_dir: Path, value: str) -> None:
         print(f"  ifhub.conf: set hub = {value}")
 
 
-def register(game_dir: Path) -> None:
-    set_hub_flag(game_dir, "yes")
-    build_games.main()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ship a built game folder to IF Hub.")
     parser.add_argument("game", help="Game folder name (under a workspaces.json root) or a path")
@@ -193,27 +194,36 @@ def main() -> None:
     try:
         print(output.bold("2. landing page"))
         generate_landing(game_dir, conf, args.refresh_pages)
-        print(output.bold("3. register"))
-        register(game_dir)
+        print(output.bold("3. mark listed"))
+        set_hub_flag(game_dir, "yes")
     except RuntimeError as e:
         print(output.red(f"=== ship failed: {e} ==="))
         sys.exit(1)
 
     if args.local:
+        print(output.bold("4. register"))
+        build_games.main()
         print()
         output.skip("--local: not publishing. The game is registered in the on-disk hub.")
         print(f"  Preview:  python tools/serve.py, then http://127.0.0.1:8892/ifhub/app.html?game={name}")
         return
 
+    # Publish before registering. The registry is what puts a card on the live hub, so
+    # it must not be written until the game is actually online — otherwise a failed
+    # publish leaves the hub advertising a 404 (#101, #98).
     print(output.bold("4. publish"))
     cmd = [sys.executable, paths.TOOLS_DIR / "publish.py", name]
     if args.message:
         cmd.append(args.message)
     if run(cmd):
         print(output.red("=== ship failed at publish ==="))
+        output.fail("the hub registry was not written, so nothing on the live hub points at this game")
         sys.exit(1)
 
-    print(output.bold("5. push hub"))
+    print(output.bold("5. register"))
+    build_games.main()
+
+    print(output.bold("6. push hub"))
     if run([sys.executable, paths.TOOLS_DIR / "push_hub.py", name]):
         print(output.red("=== ship failed at push hub ==="))
         sys.exit(1)

@@ -1,26 +1,34 @@
 #!/usr/bin/env python3
 """Scan every link in site/games.json and site/cards.json; report 404s.
 
-For each URL, resolves to a local file in the game's own repo via
-the workspaces.json scan and checks whether the file exists on disk.
+Two checks, answering two different questions:
+
+--deployed  asks the live site, over HTTP. This is the one that catches a registry
+            that has got ahead of what is actually published — the hub advertising a
+            game whose repo was never pushed (#98, #101). Slower: one request per URL.
+default     resolves each URL to a local file in the game's own repo via the
+            workspaces.json scan and checks the working copy. Fast, and the right
+            check while editing; it cannot see whether anything was published.
 
 By default only reports. With --fix, removes broken URLs from games.json
 and cards.json (only sourceUrl/walkthroughUrl/landingUrl — playUrl is never
 removed, since a missing play.html is always a build problem, not a data
-problem).
+problem). --fix applies to the on-disk check only.
 
 Usage:
     python tools/check_links.py
+    python tools/check_links.py --deployed
     python tools/check_links.py --fix
 """
 
 import argparse
 import json
 import sys
+import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.paths import SITE_DIR, HUB_ROOT
+from lib.paths import SITE_DIR, HUB_ROOT, GH_ORG
 import build_games
 
 
@@ -75,8 +83,26 @@ def resolve_local(url: str, seg_idx: dict[str, list[Path]]) -> tuple[Path | None
     return None, tried
 
 
+def resolve_deployed(url: str, _seg_idx: dict[str, list[Path]] | None = None):
+    """Ask the live site whether the URL resolves. Returns (url, tried) or (None, tried).
+
+    The on-disk resolver answers a different question — whether the file exists in the
+    working copy — and the registry getting ahead of what is actually published is the
+    failure this catches (#98, #101).
+    """
+    if not url or not url.startswith("/"):
+        return None, []
+    target = f"https://{GH_ORG.lower()}.github.io{url}"
+    req = urllib.request.Request(target, method="HEAD")
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return (target if r.status < 400 else None), [target]
+    except Exception:
+        return None, [target]
+
+
 def scan(data: list[dict], seg_idx: dict[str, list[Path]],
-         label: str) -> list[tuple[str, str, str]]:
+         label: str, resolve=resolve_local) -> list[tuple[str, str, str]]:
     """Return list of (game_id, field, url) for each broken link."""
     broken: list[tuple[str, str, str]] = []
     for entry in data:
@@ -85,7 +111,7 @@ def scan(data: list[dict], seg_idx: dict[str, list[Path]],
             url = entry.get(field)
             if not url:
                 continue
-            found, _ = resolve_local(url, seg_idx)
+            found, _ = resolve(url, seg_idx)
             if found is None:
                 broken.append((gid, field, url))
         for v in entry.get("versions", []) or []:
@@ -93,7 +119,7 @@ def scan(data: list[dict], seg_idx: dict[str, list[Path]],
             url = v.get("playUrl")
             if not url:
                 continue
-            found, _ = resolve_local(url, seg_idx)
+            found, _ = resolve(url, seg_idx)
             if found is None:
                 broken.append((f"{gid}/versions/{vid}", "playUrl", url))
     return broken
@@ -119,7 +145,18 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Scan IF Hub URLs for broken links.")
     parser.add_argument("--fix", action="store_true",
                         help="Remove broken sourceUrl/walkthroughUrl/landingUrl entries")
+    parser.add_argument("--deployed", action="store_true",
+                        help="Check the live site over HTTP instead of the working copy "
+                             "(slower; one request per URL). Catches a registry that is "
+                             "ahead of what is actually published.")
     args = parser.parse_args()
+
+    if args.deployed and args.fix:
+        print("ERROR: --fix works on the on-disk check only. A network blip is not a "
+              "reason to delete a URL from the registry.", file=sys.stderr)
+        sys.exit(2)
+
+    resolve = resolve_deployed if args.deployed else resolve_local
 
     games_path = SITE_DIR / "games.json"
     cards_path = SITE_DIR / "cards.json"
@@ -128,8 +165,8 @@ def main() -> None:
 
     seg_idx = build_segment_index()
 
-    broken_games = scan(games, seg_idx, "games.json")
-    broken_cards = scan(cards, seg_idx, "cards.json")
+    broken_games = scan(games, seg_idx, "games.json", resolve)
+    broken_cards = scan(cards, seg_idx, "cards.json", resolve)
 
     print(f"games.json: {len(broken_games)} broken link(s)")
     for gid, field, url in broken_games:

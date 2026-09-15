@@ -37,6 +37,7 @@ python tools/ship.py <game> --unlist          # hide a game from the hub (hub = 
 # Maintenance
 python tools/build_games.py              # regenerate site/games.json + site/cards.json from every ifhub.conf
 python tools/check_links.py [--fix]      # verify every URL in the registry resolves on disk
+python tools/check_links.py --deployed   # verify every URL resolves on the LIVE site (catches a registry ahead of what is published)
 python tools/build_landing.py --all      # regenerate landing pages for versioned groups (zork1)
 ```
 

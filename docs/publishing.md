@@ -68,11 +68,16 @@ Steps, in order:
 
 1. **Contract check** — `ifhub.conf` with `engine` and `title`, `play.html` present, `source =` (if given) exists.
 2. **Landing page** — `index.html` via `tools/web/generate_pages.py` when missing. Source and walkthrough views are not files in the game folder; the hub renders them from the raw source and the walkthrough txt files.
-3. **Register** — sets `hub = yes` in `ifhub.conf` and runs `tools/build_games.py`, which regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. Title, author (the card subtitle), description, tags, and version fields come from the conf; URL fields (`sourceUrl`, `walkthroughUrl`, `testsUrl`, `landingUrl`) are only emitted when the file exists.
-4. **Publish** — `tools/publish.py` commits everything in the game folder and pushes to `Johnesco/<game>`; on first use it creates the repo, adds the Pages workflow, and enables Pages.
-5. **Push hub** — `tools/push_hub.py` regenerates the registry once more, commits `site/games.json`, `cards.json`, `hubs.json`, and pushes. The hub redeploys from `master`.
+3. **Mark listed** — sets `hub = yes` in `ifhub.conf`, so the flag ships with the game in step 4.
+4. **Publish** — `tools/publish.py` commits everything in the game folder and pushes to `<org>/<game>`; on a first publish it creates the repo, adds the Pages workflow, and enables Pages. Every git and gh step is checked: if any fails the script exits non-zero and shipping stops here, with the hub registry untouched.
+5. **Register** — runs `tools/build_games.py`, which regenerates `site/games.json` and `site/cards.json` from every `ifhub.conf` under the `workspaces.json` roots. Title, author (the card subtitle), description, tags, and version fields come from the conf; URL fields (`sourceUrl`, `walkthroughUrl`, `testsUrl`, `landingUrl`) are only emitted when the file exists.
+6. **Push hub** — `tools/push_hub.py` regenerates the registry once more, commits `site/games.json`, `cards.json`, `hubs.json`, and pushes. The hub redeploys from `master`.
 
-`--local` stops after step 3. Steps 4 and 5 are the only ones that touch GitHub.
+**Publishing comes before registering on purpose.** The registry is what puts a card on the live hub, so it is not written until the game is actually online. A failed publish leaves the hub exactly as it was, rather than advertising a URL that 404s (#101, #98).
+
+A first publish is decided by whether the folder has a **remote**, not by whether it has a `.git` directory. Running `git init` to keep local history while building a game is ordinary and does not mean the game was ever published; a folder with history but no remote is adopted — its remote created and its existing commits pushed.
+
+`--local` rebuilds the registry on disk and stops before step 4. Steps 4 and 6 are the only ones that touch GitHub.
 
 ## 4. Snapshots and versions
 

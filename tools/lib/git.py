@@ -51,6 +51,20 @@ def has_upstream(cwd: Path | str | None = None) -> bool:
     return r.returncode == 0
 
 
+def has_remote(cwd: Path | str | None = None, name: str = "origin") -> bool:
+    """Return True if the repo has a remote of this name configured.
+
+    This, not the presence of a .git directory, is what says whether a folder has
+    ever been published: `git init` to keep local history while building a game is
+    ordinary, and says nothing about whether GitHub has it.
+    """
+    r = subprocess.run(
+        ["git", "remote", "get-url", name],
+        cwd=cwd, capture_output=True, text=True,
+    )
+    return r.returncode == 0
+
+
 def push(cwd: Path | str | None = None, set_upstream: str = "") -> int:
     """Push to remote. Auto-sets upstream if not configured."""
     if not set_upstream and not has_upstream(cwd):
@@ -66,6 +80,15 @@ def init(cwd: Path | str | None = None):
     """Initialize a git repo."""
     process.run(["git", "init"], cwd=cwd)
     process.run(["git", "branch", "-M", "main"], cwd=cwd)
+
+
+def remote_add(repo_name: str, cwd: Path | str | None = None, name: str = "origin") -> int:
+    """Point a local repo at an existing GitHub repo."""
+    r = process.run(
+        ["git", "remote", "add", name, f"https://github.com/{GH_ORG}/{repo_name}.git"],
+        cwd=cwd,
+    )
+    return r.returncode
 
 
 def gh_repo_create(name: str, description: str, cwd: Path | str | None = None) -> int:
@@ -99,3 +122,26 @@ def gh_ensure_pages(repo_name: str) -> bool:
     # Not enabled yet — enable it
     gh_enable_pages(repo_name)
     return True
+
+
+def gh_repo_exists(repo_name: str) -> bool:
+    """Return True if the GitHub repo exists."""
+    r = process.run(
+        ["gh", "repo", "view", f"{GH_ORG}/{repo_name}", "--json", "name"],
+        capture=True,
+    )
+    return r.returncode == 0
+
+
+def gh_workflow_dispatch(repo_name: str, workflow: str = "deploy-pages.yml") -> int:
+    """Trigger a workflow run by hand.
+
+    Needed the first time Pages is enabled: the push that creates the repo fires the
+    deploy workflow before `build_type: workflow` is set, so that first run fails.
+    The workflow declares `workflow_dispatch:`, so a fresh run can just be asked for.
+    """
+    r = process.run(
+        ["gh", "workflow", "run", workflow, "--repo", f"{GH_ORG}/{repo_name}"],
+        capture=True,
+    )
+    return r.returncode
