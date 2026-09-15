@@ -126,4 +126,4 @@ Games with embedded blorb audio play it through their own Parchment copy. Once a
 
 ## 8. Building and publishing
 
-The hub does not build or test games. Each engine workspace has a `tools/build.py`; the hub's `tools/ship.py` verifies the folder, writes the landing page, sets `hub = yes`, regenerates the data files, publishes the game repo and pushes the hub. See `docs/publishing.md`.
+The hub does not build or test games. Each engine workspace has a `tools/build.py`; the hub's `tools/ship.py` verifies the folder, writes the landing page, sets `hub = yes`, publishes the game repo, and only then regenerates the data files and pushes the hub — so a failed publish leaves the hub unchanged rather than listing a game that 404s. `tools/check_links.py --deployed` audits the registry against the live site. See `docs/publishing.md`.
