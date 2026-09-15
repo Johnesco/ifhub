@@ -40,6 +40,7 @@ python tools/check_links.py [--fix]      # verify every URL in the registry reso
 python tools/check_links.py --deployed   # verify every URL resolves on the LIVE site (catches a registry ahead of what is published)
 python tools/build_landing.py --all      # regenerate landing pages for versioned groups (zork1)
 python tools/check_drift.py [--fix]      # which games carry a stale Pages workflow or landing page; --fix re-publishes them (--force for landing pages)
+python tools/check_drift.py --deployed   # the same, read from each remote's default branch: what Pages actually runs, not what the folder has
 ```
 
 ## Layout
