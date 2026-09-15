@@ -1,5 +1,6 @@
 """Git and GitHub CLI operations."""
 
+import base64
 import subprocess
 from pathlib import Path
 
@@ -145,3 +146,37 @@ def gh_workflow_dispatch(repo_name: str, workflow: str = "deploy-pages.yml") -> 
         capture=True,
     )
     return r.returncode
+
+
+def ahead_count(cwd: Path | str | None = None) -> int:
+    """Commits on the current branch that its upstream does not have. 0 when no upstream."""
+    r = subprocess.run(
+        ["git", "rev-list", "--count", "@{u}..HEAD"],
+        cwd=cwd, capture_output=True, text=True,
+    )
+    out = r.stdout.strip()
+    return int(out) if r.returncode == 0 and out.isdigit() else 0
+
+
+def gh_default_branch(repo_name: str) -> str | None:
+    """The branch GitHub treats as the repo's default — the one Pages deploys from.
+
+    None when the repo does not exist. A checkout on any other branch can commit and
+    push cleanly and still deploy nothing (#108).
+    """
+    r = process.run(
+        ["gh", "api", f"repos/{GH_ORG}/{repo_name}", "--jq", ".default_branch"],
+        capture=True,
+    )
+    return (r.stdout.strip() or None) if r.returncode == 0 else None
+
+
+def gh_file_on_branch(repo_name: str, path: str, ref: str) -> str | None:
+    """A file's contents as committed on a branch of the GitHub repo. None if absent."""
+    r = process.run(
+        ["gh", "api", f"repos/{GH_ORG}/{repo_name}/contents/{path}?ref={ref}", "--jq", ".content"],
+        capture=True,
+    )
+    if r.returncode != 0 or not r.stdout.strip():
+        return None
+    return base64.b64decode(r.stdout.strip()).decode("utf-8")

@@ -120,6 +120,21 @@ def check(rc: int, what: str) -> None:
         fail(f"{what} failed (exit {rc}).")
 
 
+def require_deploying_branch(name: str, project_dir: Path) -> None:
+    """Refuse to publish from anything but the branch Pages deploys from.
+
+    A checkout left on a feature branch has a clean tree and a working remote, so
+    nothing else notices: the commit lands on that branch, the push succeeds, the
+    deploy workflow never fires, and the game is reported as published (#108).
+    """
+    default = git.gh_default_branch(name)
+    current = git.current_branch(cwd=project_dir)
+    if default and current != default:
+        fail(f"the checkout is on '{current}', but {paths.GH_ORG}/{name} deploys from "
+             f"'{default}'. Switch to '{default}' (merging your branch into it if that is "
+             "where the work is) and publish again.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Publish project to GitHub Pages.")
     parser.add_argument("game", help="Game name (project directory)")
@@ -155,6 +170,7 @@ def main():
         if git.gh_repo_exists(args.game):
             print(f"  {paths.GH_ORG}/{args.game} already exists on GitHub; wiring up origin...")
             check(git.remote_add(args.game, cwd=project_dir), "git remote add origin")
+            require_deploying_branch(args.game, project_dir)
         else:
             print("  Creating GitHub repo...")
             conf_path = project_dir / "ifhub.conf"
@@ -187,14 +203,20 @@ def main():
     else:
         # --- Subsequent publishes ---
         print(f"=== Publishing {args.game} ===")
+        require_deploying_branch(args.game, project_dir)
         ensure_workflow(project_dir)
         git.add_all(cwd=project_dir)
 
-        if not git.diff_cached_quiet(cwd=project_dir):
-            print("  No changes to publish.")
-            return
-
-        check(git.commit(f"{msg}{COAUTHOR}", cwd=project_dir), "git commit")
+        if git.diff_cached_quiet(cwd=project_dir):
+            check(git.commit(f"{msg}{COAUTHOR}", cwd=project_dir), "git commit")
+        else:
+            ahead = git.ahead_count(cwd=project_dir)
+            if not ahead:
+                print("  No changes to publish.")
+                return
+            # An earlier publish committed but its push failed (#101): nothing is staged,
+            # yet the game is not online. Finish the job rather than call it done.
+            print(f"  Nothing new to commit; {ahead} local commit(s) still unpushed.")
         check(git.push(cwd=project_dir), "git push")
 
         # Ensure Pages is enabled (catches repos created outside first-time flow)
