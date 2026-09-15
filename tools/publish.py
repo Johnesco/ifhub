@@ -135,6 +135,21 @@ def require_deploying_branch(name: str, project_dir: Path) -> None:
              "where the work is) and publish again.")
 
 
+def require_matching_remote(name: str, project_dir: Path) -> None:
+    """Refuse to publish to a remote that is not this game's repo.
+
+    has_remote() only says a remote called origin exists. sharpee-sound-test's origin
+    points at sharpee-workspace.git; publishing it would push a game folder into the
+    workspace repo and then print the game's Pages URL (#109). Checked before the
+    branch guard, which looks the repo up by name and so assumes the remote is it.
+    """
+    url = git.remote_url(cwd=project_dir)
+    if url and not git.remote_names_repo(url, name):
+        fail(f"origin is {url}, but this game publishes to "
+             f"https://github.com/{paths.GH_ORG}/{name}. Point origin at that repo, or "
+             "remove the remote so the first publish creates it.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Publish project to GitHub Pages.")
     parser.add_argument("game", help="Game name (project directory)")
@@ -203,6 +218,7 @@ def main():
     else:
         # --- Subsequent publishes ---
         print(f"=== Publishing {args.game} ===")
+        require_matching_remote(args.game, project_dir)
         require_deploying_branch(args.game, project_dir)
         ensure_workflow(project_dir)
         git.add_all(cwd=project_dir)
