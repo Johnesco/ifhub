@@ -48,6 +48,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import output, paths
 import build_games
+import check_drift
 
 
 def resolve_game(arg: str) -> Path:
@@ -89,11 +90,11 @@ def generate_landing(game_dir: Path, conf: dict, refresh: bool) -> None:
     if not refresh and (game_dir / "index.html").exists():
         print("  index.html: present")
         return
+    reps = check_drift.landing_replacements(game_dir.name, conf)
     cmd = [sys.executable, paths.WEB_DIR / "generate_pages.py",
-           "--title", conf["title"],
-           "--meta", conf.get("author", "An Interactive Fiction"),
-           "--description", conf.get("description", "An interactive fiction game."),
-           "--id", game_dir.name, "--out", game_dir]
+           "--title", reps["__TITLE__"], "--meta", reps["__META__"],
+           "--description", reps["__DESCRIPTION__"],
+           "--id", reps["__ID__"], "--out", game_dir]
     if refresh:
         cmd.append("--force")
     if run(cmd):
@@ -181,6 +182,9 @@ def main() -> None:
         print("\nSee the docstring of this script (or docs/publishing.md) for what a game folder needs.")
         sys.exit(1)
     output.ok(f"{conf['engine']} game '{conf['title']}' at {game_dir}")
+    # The workflow brings itself current on every publish; the landing page does not.
+    if check_drift.landing_state(game_dir, conf) == "stale":
+        output.warn("index.html is from an older landing template; --refresh-pages rewrites it")
     if not (game_dir / "walkthrough.txt").exists() and list(game_dir.glob("tests/*/walkthrough.txt")):
         output.warn("walkthrough.txt exists under tests/ but not at the game root; the hub only reads the root")
     stale = stale_wrappers(game_dir, conf)
