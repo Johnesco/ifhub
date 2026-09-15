@@ -93,5 +93,6 @@ Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo th
 3. **Docs are part of done** — update `docs/functional-spec.md` for behaviour or data-format changes, this file for structure changes, `README.md` for public-facing changes, `docs/publishing.md` when the contract or a build command changes.
 4. **Commits:** `#XX: description`. Branches: `[type]/[short-description]` (feature/, fix/, docs/, task/, spike/). `Fixes #XX` in the PR body.
 5. **Never do game work in this repo.** Compiling, testing, and scaffolding belong in the engine workspaces.
+6. **And never change the contract from a game folder.** A game owns how it plays; the hub owns how it ships. If a change forces more than one game repo to move, it is a hub decision and gets a ticket here. See "Who decides what" in `docs/sdlc.md`.
 
 Board: https://github.com/users/Johnesco/projects/3 (project 3, owner Johnesco).

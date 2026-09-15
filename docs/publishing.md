@@ -2,6 +2,8 @@
 
 IF Hub is a receive-only display. A game is written, built, and tested in its engine workspace; the hub receives a finished folder and puts it online. This page is the contract between the two.
 
+It is changed from the hub, not from a game folder: a change here forces every game to move. See "Who decides what" in `docs/sdlc.md` for which side a change belongs to.
+
 ## 1. The game folder
 
 Every game is a folder that is its own git repo and is published to `https://johnesco.github.io/<game>/`. The hub can receive it when it contains:
