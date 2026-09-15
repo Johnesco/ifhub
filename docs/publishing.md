@@ -15,7 +15,7 @@ Every game is a folder that is its own git repo and is published to `https://joh
 | source file | no | the raw file named by `source =`. The hub highlights it in the source pane (Inform 7, Rez, Ink, BASIC, Chord). A game with a multi-file or custom source view ships its own `source.html` and sets `sourceBrowser = yes` |
 | `walkthrough.txt` | no | one command per line, at the game root. Optional companions next to it: `walkthrough_output.txt` (transcript) and `walkthrough-guide.txt` (annotated guide). The hub renders them in its own walkthrough viewer |
 | `tests.html` | no | any self-contained test report page. When present the hub shows a Tests tab. Inform 7 games get one from ifPlayer |
-| `index.html` | generated | the game's landing page, the only file the hub writes into the folder. `tools/ship.py` writes it when missing; `--refresh-pages` rewrites it |
+| `index.html` | generated | the game's landing page. `tools/ship.py` writes it when missing and `--refresh-pages` rewrites it. The hub also writes and owns `.github/workflows/deploy-pages.yml`; `tools/check_drift.py` reports any game whose copy of either is from an older template |
 
 ### ifhub.conf
 
@@ -89,7 +89,7 @@ Publish whenever the game is worth showing; `ship.py` is idempotent. To keep an 
 
 1. Make a workspace `C:/code/text-games/<engine>/` and add its root to `workspaces.json`.
 2. Give it `tools/build.py <game>` that produces the folder in section 1. Copy `theme-listener.js` from an existing workspace into the player so hub themes apply.
-3. Add a highlighter for the engine's source to `site/app.js` (Inform 7, Rez, Ink, BASIC and Chord exist; add the source extension to the Pages workflow in `tools/publish.py` and to `ENGINE_SOURCE_EXT`), or have games ship their own `source.html` and set `sourceBrowser = yes`.
+3. Add a highlighter for the engine's source to `site/app.js` (Inform 7, Rez, Ink, BASIC and Chord exist; add the source extension to the Pages workflow in `tools/publish.py` and to `ENGINE_SOURCE_EXT`, then `python tools/check_drift.py --fix` to roll the changed workflow out — a game only picks it up when it is next published), or have games ship their own `source.html` and set `sourceBrowser = yes`.
 4. Add a `<engine>/CLAUDE.md` with the authoring rules, and a row to the table in section 2.
 
 The hub itself does not need to know the engine name; `build_games.py` copies whatever `engine =` says into `games.json`, and `hubs.json` can filter on it.

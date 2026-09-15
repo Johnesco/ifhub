@@ -39,6 +39,7 @@ python tools/build_games.py              # regenerate site/games.json + site/car
 python tools/check_links.py [--fix]      # verify every URL in the registry resolves on disk
 python tools/check_links.py --deployed   # verify every URL resolves on the LIVE site (catches a registry ahead of what is published)
 python tools/build_landing.py --all      # regenerate landing pages for versioned groups (zork1)
+python tools/check_drift.py [--fix]      # which games carry a stale Pages workflow or landing page; --fix re-publishes them (--force for landing pages)
 ```
 
 ## Layout
@@ -55,7 +56,7 @@ ifhub/
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
-│   ├── check_links.py, build_landing.py, serve.py (local preview: hub + games on one port)
+│   ├── check_links.py, check_drift.py, build_landing.py, serve.py (local preview: hub + games on one port)
 │   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (what the site does), sdlc.md (how work happens)
