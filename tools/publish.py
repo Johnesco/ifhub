@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 """Publish a game folder to its own GitHub Pages repo.
 
-First run:  creates the GitHub repo, enables Pages, pushes everything.
-Later runs: commits changes and pushes to trigger redeployment.
+First publish: creates the GitHub repo, pushes everything, enables Pages. A folder
+    that already has local history but no remote is adopted — the remote is created
+    and the existing history pushed — rather than treated as already published.
+Later runs:    commits changes and pushes to trigger redeployment.
+
+Every git and gh step is checked. If any of them fails the script exits non-zero and
+says the game was not published, so ship.py stops before writing the hub registry:
+a failed publish must never leave the hub advertising a URL that 404s (#101).
 
 Usage:
     python tools/publish.py <game-name>
     python tools/publish.py <game-name> "commit message"
 
-Publishes to: johnesco.github.io/<game-name>/
+Publishes to: <org>.github.io/<game-name>/ — the org is IFHUB_GH_ORG, default Johnesco.
 """
 
 import argparse
@@ -18,6 +24,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import git, paths
 import build_games
+
+COAUTHOR = "\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 
 WORKFLOW_CONTENT = """\
 name: Deploy to GitHub Pages
@@ -88,6 +96,23 @@ def ensure_workflow(project_dir: Path):
     return True
 
 
+def fail(message: str) -> None:
+    """Abort the publish.
+
+    ship.py keys the rest of its run off this exit code, so a failure here must never
+    be silent: a publish that did not happen has to stop the hub registry being written.
+    """
+    print(f"ERROR: {message}", file=sys.stderr)
+    print("  The game was NOT published; the hub registry has not been touched.", file=sys.stderr)
+    sys.exit(1)
+
+
+def check(rc: int, what: str) -> None:
+    """Abort unless a git/gh step succeeded."""
+    if rc != 0:
+        fail(f"{what} failed (exit {rc}).")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Publish project to GitHub Pages.")
     parser.add_argument("game", help="Game name (project directory)")
@@ -104,34 +129,48 @@ def main():
         print("ERROR: play.html not found. Run the build first.", file=sys.stderr)
         sys.exit(1)
 
-    git_dir = project_dir / ".git"
+    # Whether a folder has ever been published is a question about the remote, not about
+    # the .git directory: `git init` to keep local history while building a game is
+    # ordinary, and used to send this straight into the update branch, pushing to an
+    # origin that had never existed (#101).
+    has_git = (project_dir / ".git").is_dir()
+    published_before = has_git and git.has_remote(cwd=project_dir)
 
-    if not git_dir.is_dir():
-        # --- First-time setup ---
-        print("=== First-time setup ===")
-        print("  Initializing git repo...")
-        git.init(cwd=project_dir)
+    if not published_before:
+        # --- First publish: a fresh folder, or one that already has local history ---
+        if has_git:
+            print("=== First publish (adopting existing local history) ===")
+        else:
+            print("=== First-time setup ===")
+            print("  Initializing git repo...")
+            git.init(cwd=project_dir)
 
-        print("  Creating GitHub repo...")
-        conf_path = project_dir / "ifhub.conf"
-        conf = build_games.parse_conf(conf_path) if conf_path.exists() else {}
-        repo_desc = f"{conf.get('title', args.game)} -- {conf.get('engine', 'interactive fiction')} game"
-        git.gh_repo_create(args.game, repo_desc, cwd=project_dir)
+        if git.gh_repo_exists(args.game):
+            print(f"  {paths.GH_ORG}/{args.game} already exists on GitHub; wiring up origin...")
+            check(git.remote_add(args.game, cwd=project_dir), "git remote add origin")
+        else:
+            print("  Creating GitHub repo...")
+            conf_path = project_dir / "ifhub.conf"
+            conf = build_games.parse_conf(conf_path) if conf_path.exists() else {}
+            repo_desc = f"{conf.get('title', args.game)} -- {conf.get('engine', 'interactive fiction')} game"
+            check(git.gh_repo_create(args.game, repo_desc, cwd=project_dir), "gh repo create")
 
         ensure_workflow(project_dir)
 
         print("  Adding all files...")
         git.add_all(cwd=project_dir)
-        git.commit(
-            f"Initial commit: {args.game}\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>",
-            cwd=project_dir,
-        )
+        if git.diff_cached_quiet(cwd=project_dir):
+            check(git.commit(f"Initial commit: {args.game}{COAUTHOR}", cwd=project_dir), "git commit")
 
         print("  Pushing to GitHub...")
-        git.push(cwd=project_dir, set_upstream="main")
+        check(git.push(cwd=project_dir), "git push")
 
         print("  Enabling GitHub Pages (workflow deployment)...")
-        git.gh_ensure_pages(args.game)
+        if git.gh_ensure_pages(args.game):
+            # The push above fired the deploy workflow before build_type: workflow was
+            # set, so that first run failed. Ask for a fresh one now that it is set.
+            print("  Pages newly enabled; requesting a fresh deploy...")
+            git.gh_workflow_dispatch(args.game)
 
         print()
         print("=== Published ===")
@@ -148,19 +187,17 @@ def main():
             print("  No changes to publish.")
             return
 
-        git.commit(
-            f"{msg}\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>",
-            cwd=project_dir,
-        )
-        git.push(cwd=project_dir)
+        check(git.commit(f"{msg}{COAUTHOR}", cwd=project_dir), "git commit")
+        check(git.push(cwd=project_dir), "git push")
 
         # Ensure Pages is enabled (catches repos created outside first-time flow)
         if git.gh_ensure_pages(args.game):
             print("  Enabled GitHub Pages (was not configured)")
+            git.gh_workflow_dispatch(args.game)
 
         print()
         print("=== Pushed ===")
-        print(f"  Site:  https://johnesco.github.io/{args.game}/play.html")
+        print(f"  Site:  https://{paths.GH_ORG.lower()}.github.io/{args.game}/play.html")
         print("  (Pages will redeploy automatically)")
 
 
