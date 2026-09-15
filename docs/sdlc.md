@@ -2,6 +2,44 @@
 
 One person plus Claude, one static site, one rule that matters: **Claude cannot verify its own work.** Everything else below exists to make that rule cheap to follow.
 
+## Who decides what
+
+The loop below is for hub work. Before using it, check that the change is hub work at all — the line between the hub and a game is not where it first looks.
+
+A game **runs** on its own. `play.html` is self-contained, its engine workspace builds and tests it, and nothing about playing it involves the hub. But a game does not **publish** itself. The hub does that, and it reaches into the game's folder to do it:
+
+| What the hub writes into a game repo | Where |
+|---|---|
+| `index.html`, the landing page | `ship.py` `generate_landing()` |
+| the `hub = yes\|no` line in the game's own `ifhub.conf` | `ship.py` `set_hub_flag()` |
+| `.github/workflows/deploy-pages.yml`, overwritten wholesale | `publish.py` `ensure_workflow()` |
+| deletion of a `source.html` / `walkthrough.html` an older hub generated | `ship.py` `stale_wrappers()` |
+
+Then it commits and pushes that repo. So:
+
+> **A game owns how it plays. The hub owns how it ships.**
+
+That is deliberate, not an accident to be tidied away. One owner of the deploy mechanics is why every game deploys the same way instead of each drifting into its own; the cost is that anything about shipping is never about one game.
+
+### Which side is this change on?
+
+**If it forces more than one game repo to move, it is a hub decision.** Ticket it here and use the loop below.
+
+| That game's business | A hub decision — ticket it here |
+|---|---|
+| the story, its tests, its walkthrough | a new `ifhub.conf` key, or a new meaning for an existing one |
+| the engine version it pins, its own build | a new engine, or a source extension the hub highlights |
+| its own `CLAUDE.md`, `README.md`, design notes | what the hub renders in any pane |
+| bugs in the game | what `ship.py` or `publish.py` write into a game folder |
+
+The awkward cases are the ones that look like one game and are not. Adding Chord source highlighting (#92) read as "a Sharpee thing" and took coordinated commits in six repos. A one-line change to the Pages workflow meant re-publishing five games by hand. Both were hub decisions wearing a game's clothes; the test above catches them.
+
+### Working model
+
+Each game gets its own chat, working in its own folder. **IF Hub is always edited in the hub chat.** A game chat does not change the contract — if it needs the contract changed, that is a ticket here, and it waits. Otherwise two chats edit the same seam from opposite sides and neither knows what the other decided.
+
+The contract itself — what a game folder must contain for the hub to receive it — is `docs/publishing.md`. That file is the interface; this section is who may change it.
+
 ## The loop
 
 1. **Ticket first.** Every change starts as a GitHub issue, before any code.
