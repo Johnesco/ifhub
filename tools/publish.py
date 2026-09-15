@@ -15,9 +15,12 @@ Usage:
     python tools/publish.py <game-name> "commit message"
 
 Publishes to: <org>.github.io/<game-name>/ — the org is IFHUB_GH_ORG, default Johnesco.
+Commits it makes carry `Co-Authored-By: $IFHUB_COAUTHOR` when that is set, and no trailer
+when it is not — a person running ship.py by hand is not co-authored by anyone.
 """
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -25,7 +28,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import git, paths
 import build_games
 
-COAUTHOR = "\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
+# Commit trailer for the commits this script makes in a game repo. Set IFHUB_COAUTHOR to
+# "Name <email>" when Claude is driving; leave it unset when a person runs ship.py, and
+# no trailer is added. A model name hardcoded here goes stale at every switch.
+_coauthor = os.environ.get("IFHUB_COAUTHOR", "").strip()
+COAUTHOR = f"\n\nCo-Authored-By: {_coauthor}" if _coauthor else ""
 
 WORKFLOW_CONTENT = """\
 name: Deploy to GitHub Pages
