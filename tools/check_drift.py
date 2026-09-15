@@ -88,11 +88,15 @@ def landing_state(game_dir: Path, conf: dict) -> str:
 def deployed_states(name: str, game_dir: Path, conf: dict) -> tuple[str, str]:
     """(workflow, landing) as committed on the remote's default branch — what Pages runs.
 
-    'unpublished' when there is no remote or no repo. Otherwise the same vocabulary as the
-    on-disk checks, so the report reads the same either way.
+    'unpublished' when there is no remote or no repo; 'wrong-remote' when origin points at
+    a repo other than this game's (#109). Otherwise the same vocabulary as the on-disk
+    checks, so the report reads the same either way.
     """
     if not (game_dir / ".git").is_dir() or not git.has_remote(cwd=game_dir):
         return "unpublished", "unpublished"
+    url = git.remote_url(cwd=game_dir)
+    if url and not git.remote_names_repo(url, name):
+        return "wrong-remote", "wrong-remote"
     default = git.gh_default_branch(name)
     if not default:
         return "unpublished", "unpublished"

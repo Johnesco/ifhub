@@ -52,18 +52,50 @@ def has_upstream(cwd: Path | str | None = None) -> bool:
     return r.returncode == 0
 
 
-def has_remote(cwd: Path | str | None = None, name: str = "origin") -> bool:
-    """Return True if the repo has a remote of this name configured.
+def is_repo_root(cwd: Path | str | None = None) -> bool:
+    """True if cwd itself is a git repo (a .git directory or worktree file lives there)."""
+    return (Path(cwd or ".") / ".git").exists()
 
-    This, not the presence of a .git directory, is what says whether a folder has
-    ever been published: `git init` to keep local history while building a game is
-    ordinary, and says nothing about whether GitHub has it.
+
+def remote_url(cwd: Path | str | None = None, name: str = "origin") -> str | None:
+    """The URL a remote points at, or None if cwd is not a repo or has no such remote.
+
+    Confined to a repo rooted at cwd on purpose. Git otherwise walks up the tree to find
+    one, so a plain game folder inside a workspace repo reports the *workspace's* origin —
+    which is how sharpee-sound-test came to look like a game pointed at the wrong repo
+    when it is simply not a repo at all (#109).
     """
+    if not is_repo_root(cwd):
+        return None
     r = subprocess.run(
         ["git", "remote", "get-url", name],
         cwd=cwd, capture_output=True, text=True,
     )
-    return r.returncode == 0
+    return r.stdout.strip() if r.returncode == 0 else None
+
+
+def has_remote(cwd: Path | str | None = None, name: str = "origin") -> bool:
+    """Return True if the repo rooted at cwd has a remote of this name.
+
+    Together with the remote's URL naming this game (remote_names_repo), this is what
+    says whether a folder has been published. A .git directory alone does not: `git init`
+    to keep local history while building a game is ordinary and says nothing about
+    whether GitHub has it.
+    """
+    return remote_url(cwd, name) is not None
+
+
+def remote_names_repo(url: str, repo_name: str) -> bool:
+    """True if a remote URL points at GH_ORG/repo_name.
+
+    Accepts https and ssh forms, with or without .git. has_remote() only says that a
+    remote called origin exists; this says whether it is the right one (#109).
+    """
+    tail = url.strip().rstrip("/")
+    if tail.endswith(".git"):
+        tail = tail[:-4]
+    tail = tail.replace(":", "/")  # git@github.com:Org/name -> git@github.com/Org/name
+    return tail.lower().endswith(f"/{GH_ORG}/{repo_name}".lower())
 
 
 def push(cwd: Path | str | None = None, set_upstream: str = "") -> int:
