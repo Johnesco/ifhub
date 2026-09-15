@@ -728,6 +728,25 @@
     ]
   },
   {
+    "id": "wumpus-sharpee",
+    "title": "Hunt the Wumpus",
+    "author": "John Googol",
+    "description": "Twenty-five dark rooms, one wumpus, one bottomless pit, and one arrow.",
+    "sourceLabel": "wumpus-sharpee.story",
+    "playUrl": "/wumpus-sharpee/play.html",
+    "walkthroughUrl": "/wumpus-sharpee/walkthrough.txt",
+    "testsUrl": "/wumpus-sharpee/tests.html",
+    "landingUrl": "/wumpus-sharpee/",
+    "sourceUrl": "/wumpus-sharpee/wumpus-sharpee.story",
+    "engine": "sharpee",
+    "tags": [
+      "chord",
+      "puzzle",
+      "deduction",
+      "classic"
+    ]
+  },
+  {
     "id": "zork1",
     "title": "Zork I (Current)",
     "author": "Infocom (translated to Inform 7)",

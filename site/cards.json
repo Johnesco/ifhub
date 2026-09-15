@@ -505,6 +505,25 @@
     "walkthroughUrl": "/seasons/walkthrough.txt"
   },
   {
+    "id": "wumpus-sharpee",
+    "base": "wumpus-sharpee",
+    "title": "Hunt the Wumpus",
+    "meta": "John Googol",
+    "description": "Twenty-five dark rooms, one wumpus, one bottomless pit, and one arrow.",
+    "playUrl": "/wumpus-sharpee/play.html",
+    "landingUrl": "/wumpus-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "chord",
+      "puzzle",
+      "deduction",
+      "classic"
+    ],
+    "sourceUrl": "/wumpus-sharpee/wumpus-sharpee.story",
+    "walkthroughUrl": "/wumpus-sharpee/walkthrough.txt",
+    "testsUrl": "/wumpus-sharpee/tests.html"
+  },
+  {
     "id": "zork1",
     "base": "zork1",
     "title": "Zork I (Current)",
