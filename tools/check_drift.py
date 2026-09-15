@@ -9,8 +9,15 @@ when shipped with --refresh-pages — so after either template changes, every ga
 is not re-published keeps the old copy, and nothing says which ones (#99).
 
     python tools/check_drift.py            report every game: workflow and landing page
+    python tools/check_drift.py --deployed the same, read from each remote's default branch
     python tools/check_drift.py --fix      rewrite stale workflows and publish those games
     python tools/check_drift.py --fix --force   ... and stale landing pages too
+
+The default check reads the working copy and answers "is this folder current". --deployed
+reads what is committed on the branch Pages deploys from and answers "is the live copy
+current" — a different question. After a publish that landed on the wrong branch, or
+committed but never pushed, the folder is current and the deployed copy is not, and only
+--deployed sees it (#108). Slower: a few requests per game.
 
 --fix only touches games that are listed (hub = yes), published (have a remote), and
 have a clean working tree — publish.py commits everything in the folder, and a drift
@@ -78,21 +85,51 @@ def landing_state(game_dir: Path, conf: dict) -> str:
     return "current" if text == expected_landing(game_dir.name, conf) else "stale"
 
 
-def survey() -> list[tuple[str, Path, dict, str, str]]:
-    """(name, dir, conf, workflow_state, landing_state) for every discovered game."""
+def deployed_states(name: str, game_dir: Path, conf: dict) -> tuple[str, str]:
+    """(workflow, landing) as committed on the remote's default branch — what Pages runs.
+
+    'unpublished' when there is no remote or no repo. Otherwise the same vocabulary as the
+    on-disk checks, so the report reads the same either way.
+    """
+    if not (game_dir / ".git").is_dir() or not git.has_remote(cwd=game_dir):
+        return "unpublished", "unpublished"
+    default = git.gh_default_branch(name)
+    if not default:
+        return "unpublished", "unpublished"
+    wf = git.gh_file_on_branch(name, WORKFLOW_REL.as_posix(), default)
+    wf_state = "missing" if wf is None else ("current" if wf == publish.WORKFLOW_CONTENT else "stale")
+    idx = git.gh_file_on_branch(name, "index.html", default)
+    if idx is None:
+        lp_state = "missing"
+    elif idx.startswith(build_landing.MARKER):
+        lp_state = "versioned"
+    else:
+        lp_state = "current" if idx == expected_landing(name, conf) else "stale"
+    return wf_state, lp_state
+
+
+def survey(deployed: bool = False) -> list[tuple[str, Path, dict, str, str]]:
+    """(name, dir, conf, workflow_state, landing_state) for every discovered game.
+
+    deployed=True reads both files from the remote default branch instead of the folder.
+    """
     rows = []
     for name, game_dir in sorted(build_games.discover_game_dirs().items()):
         conf = build_games.parse_conf(game_dir / "ifhub.conf")
-        rows.append((name, game_dir, conf, workflow_state(game_dir), landing_state(game_dir, conf)))
+        if deployed:
+            wf, lp = deployed_states(name, game_dir, conf)
+        else:
+            wf, lp = workflow_state(game_dir), landing_state(game_dir, conf)
+        rows.append((name, game_dir, conf, wf, lp))
     return rows
 
 
-def report(rows) -> tuple[list[str], list[str]]:
+def report(rows, where: str = "on disk") -> tuple[list[str], list[str]]:
     """Print the survey; return (names with stale workflow, names with stale landing)."""
     stale_wf = [r[0] for r in rows if r[3] == "stale"]
     stale_lp = [r[0] for r in rows if r[4] == "stale"]
     width = max(len(r[0]) for r in rows) if rows else 10
-    print(f"{'game':<{width}}  workflow  landing")
+    print(f"{'game':<{width}}  workflow  landing   [{where}]")
     for name, _, conf, wf, lp in rows:
         listed = "" if build_games.as_bool(conf.get("hub")) else "   (not listed)"
         flag = " <-" if wf == "stale" or lp == "stale" else ""
@@ -134,8 +171,13 @@ def fix(rows, stale_wf: list[str], stale_lp: list[str], force: bool) -> int:
 
         changed = []
         if wf == "stale":
-            publish.ensure_workflow(game_dir)
-            changed.append("deploy-pages.yml")
+            if publish.ensure_workflow(game_dir):
+                changed.append("deploy-pages.yml")
+            else:
+                # Current in the folder, stale where it is deployed (--deployed found it):
+                # nothing to rewrite, publish.py just has to get the existing commit online.
+                print("  deploy-pages.yml already current in the folder; publishing it")
+                changed.append("deploy-pages.yml")
         if force and lp == "stale":
             (game_dir / "index.html").write_text(expected_landing(name, conf), encoding="utf-8")
             print("  Rewriting index.html from the current template...")
@@ -144,7 +186,8 @@ def fix(rows, stale_wf: list[str], stale_lp: list[str], force: bool) -> int:
         msg = "Bring hub-owned files current: " + ", ".join(changed)
         rc = subprocess.run([sys.executable, str(paths.TOOLS_DIR / "publish.py"), name, msg]).returncode
         if rc:
-            output.fail(f"publish failed (exit {rc}); the rewrite is left in the working tree")
+            output.fail(f"publish failed (exit {rc}); the rewrite is in the game folder, staged or "
+                        "committed, but not pushed — fix the cause and run --fix again")
             failed.append(name)
         else:
             done.append(name)
@@ -165,14 +208,17 @@ def main() -> None:
                         help="Rewrite stale workflows and publish those games")
     parser.add_argument("--force", action="store_true",
                         help="With --fix: also rewrite stale landing pages (may overwrite hand edits)")
+    parser.add_argument("--deployed", action="store_true",
+                        help="Read each file from the remote's default branch — what Pages "
+                             "actually runs — instead of the working copy (slower)")
     args = parser.parse_args()
 
     if args.force and not args.fix:
         print("ERROR: --force only means something with --fix.", file=sys.stderr)
         sys.exit(2)
 
-    rows = survey()
-    stale_wf, stale_lp = report(rows)
+    rows = survey(args.deployed)
+    stale_wf, stale_lp = report(rows, "deployed" if args.deployed else "on disk")
 
     if args.fix:
         print()
