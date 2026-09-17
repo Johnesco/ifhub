@@ -138,7 +138,7 @@
     "id": "dungeo-sharpee",
     "title": "Dungeon",
     "author": "Tim Anderson, Marc Blank, Bruce Daniels, and Dave Lebling",
-    "description": "The 1981 mainframe Zork, translated into Chord. Work in progress: the white house, the forest, the cellar and the troll.",
+    "description": "The 1981 mainframe Zork, translated into Chord. Work in progress: the house, the forest, and the underground from the cellar to the Round Room.",
     "sourceLabel": "dungeo-sharpee.story",
     "playUrl": "/dungeo-sharpee/play.html",
     "walkthroughUrl": "/dungeo-sharpee/walkthrough.txt",
