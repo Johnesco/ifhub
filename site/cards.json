@@ -122,6 +122,25 @@
     ]
   },
   {
+    "id": "dungeo-sharpee",
+    "base": "dungeo-sharpee",
+    "title": "Dungeon",
+    "meta": "Tim Anderson, Marc Blank, Bruce Daniels, and Dave Lebling",
+    "description": "The 1981 mainframe Zork, translated into Chord. Work in progress: the white house, the forest, the cellar and the troll.",
+    "playUrl": "/dungeo-sharpee/play.html",
+    "landingUrl": "/dungeo-sharpee/",
+    "engine": "sharpee",
+    "tags": [
+      "zork",
+      "classic",
+      "mainframe",
+      "puzzle"
+    ],
+    "sourceUrl": "/dungeo-sharpee/dungeo-sharpee.story",
+    "walkthroughUrl": "/dungeo-sharpee/walkthrough.txt",
+    "testsUrl": "/dungeo-sharpee/tests.html"
+  },
+  {
     "id": "familyzoo",
     "base": "familyzoo",
     "title": "Family Zoo (Current)",
