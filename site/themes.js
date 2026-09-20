@@ -1,20 +1,33 @@
 // IF Hub Theme System
 // Themes modeled after platforms Infocom shipped Z-machine games on
 
-// Canonical retro font URL (shared by all theme callers)
-var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Pixelify+Sans&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
+// Canonical retro font URL (shared by all theme callers).
+// Google Fonts carries the hub chrome faces and the two home-computer faces
+// that are genuinely derived from their machine: Sixtyfour (C64) and
+// Workbench (Amiga).
+var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
+
+// The machines' own character sets, self-hosted — Google Fonts carries none of
+// them. Absolute so it resolves the same from the hub and from a game iframe.
+var HUB_FONTS_URL = '/ifhub/fonts.css';
 
 // Load retro platform fonts into a document (defaults to current document)
 function ensureRetroFonts(doc) {
     doc = doc || document;
     try {
         if (doc.getElementById('retro-platform-fonts')) return;
-        var link = doc.createElement('link');
-        link.id = 'retro-platform-fonts';
-        link.rel = 'stylesheet';
-        link.href = RETRO_FONTS_URL;
-        doc.head.appendChild(link);
+        addFontLink(doc, 'retro-platform-fonts', RETRO_FONTS_URL);
+        addFontLink(doc, 'hub-platform-fonts', HUB_FONTS_URL);
     } catch(e) {}
+}
+
+function addFontLink(doc, id, href) {
+    if (doc.getElementById(id)) return;
+    var link = doc.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = href;
+    doc.head.appendChild(link);
 }
 
 // Load fonts eagerly for current page
@@ -71,10 +84,11 @@ var THEMES = [
             bodyBg: '#000', bufferBg: '#000', bufferFg: '#aaa',
             gridBg: '#aaa', gridFg: '#000',
             inputFg: '#ffffff', emphFg: '#ffff55', headerFg: '#ffffff',
-            bufferSize: '20px', bufferLineHeight: '1.25',
+            // IBM VGA 8x16 is an 8x16 bitmap: 16px is its native size.
+            bufferSize: '16px', bufferLineHeight: '1.25',
             gridSize: '20px', gridLineHeight: '24px',
-            monoFamily: '"VT323", "Consolas", "Courier New", monospace',
-            propFamily: '"VT323", "Consolas", "Courier New", monospace'
+            monoFamily: '"IBM VGA 8x16", "VT323", "Consolas", "Courier New", monospace',
+            propFamily: '"IBM VGA 8x16", "VT323", "Consolas", "Courier New", monospace'
         },
         // CGA on Norton blue
         syntax: {
@@ -104,8 +118,8 @@ var THEMES = [
             inputFg: '#66ff33', emphFg: '#66ff33', headerFg: '#88ff66',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"DotGothic16", "Courier New", monospace',
-            propFamily: '"DotGothic16", "Courier New", monospace'
+            monoFamily: '"Print Char 21", "DotGothic16", "Courier New", monospace',
+            propFamily: '"Print Char 21", "DotGothic16", "Courier New", monospace'
         },
         // green phosphor: brightness, not hue
         syntax: {
@@ -227,10 +241,11 @@ var THEMES = [
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
             gridBg: '#008800', gridFg: '#fff',
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
-            bufferSize: '15px', bufferLineHeight: '1.35',
+            // Project Jason Tall is 8x16: 16px is native.
+            bufferSize: '16px', bufferLineHeight: '1.35',
             gridSize: '15px', gridLineHeight: '19px',
-            monoFamily: '"Silkscreen", "Courier New", Consolas, monospace',
-            propFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
+            monoFamily: '"Project Jason Tall", "Silkscreen", "Courier New", Consolas, monospace',
+            propFamily: '"Project Jason Tall", "Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
         // black on white with the ST’s green
         syntax: {
@@ -291,8 +306,8 @@ var THEMES = [
             inputFg: '#e0ecff', emphFg: '#ffffff', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.6',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Press Start 2P", "Courier New", monospace',
-            propFamily: '"Press Start 2P", "Courier New", monospace'
+            monoFamily: '"Candy Antics", "Press Start 2P", "Courier New", monospace',
+            propFamily: '"Candy Antics", "Press Start 2P", "Courier New", monospace'
         },
         // GRAPHICS 0 blue
         syntax: {
@@ -320,10 +335,11 @@ var THEMES = [
             bodyBg: '#000000', bufferBg: '#000000', bufferFg: '#d8d8d8',
             gridBg: '#d8d8d8', gridFg: '#000000',
             inputFg: '#ffffff', emphFg: '#ffffff', headerFg: '#ffffff',
-            bufferSize: '20px', bufferLineHeight: '1.4',
+            // The Model III cell is 8 wide x 24 tall: 24px is native.
+            bufferSize: '24px', bufferLineHeight: '1.1',
             gridSize: '20px', gridLineHeight: '24px',
-            monoFamily: '"Tiny5", "Courier New", monospace',
-            propFamily: '"Tiny5", "Courier New", monospace'
+            monoFamily: '"Another Mans Treasure MIII 64C", "Tiny5", "Courier New", monospace',
+            propFamily: '"Another Mans Treasure MIII 64C", "Tiny5", "Courier New", monospace'
         },
         // Model III white phosphor: brightness, not hue
         syntax: {
