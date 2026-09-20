@@ -53,6 +53,8 @@ ifhub/
 │                              walkthrough.html (walkthrough viewer), themes.js (themes), hub.js (data loading,
 │                              collections), search.js + search.css (the one text search, used by both the
 │                              source pane and the walkthrough viewer), games.json, cards.json, hubs.json
+│   └── fonts.css + fonts/   ← the machines' own character sets, self-hosted (Google Fonts carries none of them);
+│                              redistributed under their licenses — read site/fonts/README.md before touching them
 ├── tools/
 │   ├── ship.py              ← intake: contract check → landing page → register → publish → push hub
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
