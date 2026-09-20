@@ -416,9 +416,17 @@ var THEMES = [
     }
 ];
 
+/* The stored choice, or null when the reader has never made one. getThemeId() folds that
+   null into 'classic', which is right for rendering but loses the distinction the player
+   needs: a game with an overlay defaults to its overlay, so "never chose" and "chose
+   classic" have to be told apart (#120). */
+function storedThemeId() {
+    try { return localStorage.getItem('ifhub-theme'); }
+    catch (e) { return null; }
+}
+
 function getThemeId() {
-    try { return localStorage.getItem('ifhub-theme') || 'classic'; }
-    catch (e) { return 'classic'; }
+    return storedThemeId() || 'classic';
 }
 
 function setThemeId(id) {
@@ -463,13 +471,32 @@ function initTheme(context) {
 // Shared style for theme select elements (used by createThemeDropdown and app.html buildStyleDropdown)
 var THEME_SELECT_STYLE = 'background:var(--input-bg);border:1px solid var(--border);color:var(--accent);border-radius:4px;padding:3px 8px;font-family:inherit;font-size:0.85em;cursor:pointer;';
 
+/* The one id that is not a theme. "Native" means: inject nothing into pages the hub did
+   not write — a game's own player, a workspace's tests report — so they can be seen as
+   their author built them. Hub surfaces still need colours and fall back to classic,
+   which getTheme() already does for any unknown id.
+
+   Only the player offers it; the landing page has no foreign pages to leave alone. */
+var NATIVE_ID = 'native';
+var NATIVE_NAME = 'Native (game’s own look)';
+
 // Populate a <select> with theme options, returning the element
-function populateThemeOptions(select) {
+function populateThemeOptions(select, includeNative) {
     for (var i = 0; i < THEMES.length; i++) {
         var opt = document.createElement('option');
         opt.value = THEMES[i].id;
         opt.textContent = THEMES[i].name;
         select.appendChild(opt);
+    }
+    if (includeNative) {
+        var sep = document.createElement('option');
+        sep.disabled = true;
+        sep.textContent = '────────';
+        select.appendChild(sep);
+        var nat = document.createElement('option');
+        nat.value = NATIVE_ID;
+        nat.textContent = NATIVE_NAME;
+        select.appendChild(nat);
     }
     return select;
 }
@@ -484,6 +511,9 @@ function populateThemeOptions(select) {
 function wireThemeSelect(select) {
     populateThemeOptions(select);
     select.value = getThemeId();
+    // The stored id may not be offered here — Native is player-only — and an unmatched
+    // value would leave the select blank. Classic is what those ids fall back to anyway.
+    if (!select.value) select.value = 'classic';
     select.addEventListener('change', function() {
         setThemeId(this.value);
         applyChrome(getTheme(this.value));
