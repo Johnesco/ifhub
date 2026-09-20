@@ -207,7 +207,7 @@ function bindUI() {
       var sel = document.getElementById('style-select');
       var themeId = (sel && sel.value !== 'overlay') ? sel.value : '';
       var url = g.playUrl;
-      if (themeId && themeId !== 'classic') {
+      if (themeId && themeId !== 'classic' && themeId !== NATIVE_ID) {
         url += (url.indexOf('?') === -1 ? '?' : '&') + 'theme=' + themeId;
       }
       window.location.href = url;
@@ -225,9 +225,13 @@ var urlTheme = '';
 function shareableTheme() {
   var sel = document.getElementById('style-select');
   var val = sel ? sel.value : '';
+  if (!val) return '';
   if (val === 'overlay') return urlTheme;
-  if (!val || val === 'classic') return '';
   urlTheme = val;   // remember it for the next overlay game, wherever it came from
+  /* Classic is the hub default and stays out of the URL — but on a game whose default is
+     its own overlay, choosing classic is an explicit override, so the link has to say so. */
+  var g = currentGame ? gameMap[currentGame] : null;
+  if (val === 'classic' && !(g && g.overlayLabel)) return '';
   return val;
 }
 
@@ -732,7 +736,7 @@ function loadSourceForGame(gameId) {
   if (g.sourceBrowser) {
     setSourcePaneMode('browser');
     browserFrame.src = g.sourceUrl;
-    browserFrame.onload = function() { themeIframe(browserFrame); };
+    browserFrame.onload = function() { themeIframe(browserFrame, true); };   // the game's own source.html
     document.getElementById('line-count').textContent = '';
     return;
   }
@@ -1011,21 +1015,18 @@ function buildStyleDropdown(gameId) {
     select.appendChild(sep);
   }
 
-  // Platform themes
-  populateThemeOptions(select);
+  // Platform themes, then Native
+  populateThemeOptions(select, true);
 
-  // Determine current selection:
-  // Overlay games always default to their own overlay — URL theme is ignored for them
-  // but kept in URL so switching to a non-overlay game applies it.
-  var stored = getStylePref();
-  if (hasOverlay) {
-    // Overlay games: always use overlay unless user explicitly picked a theme for this game
-    select.value = 'overlay';
-  } else if (stored) {
-    select.value = stored;
-  } else {
-    select.value = getThemeId();
-  }
+  /* An overlay is the default for a game that has one, but only the default: an explicit
+     choice wins and keeps winning. This used to force 'overlay' on every rebuild, so a
+     theme picked here was silently dropped the moment you switched away and back — while
+     localStorage and the URL both still held it (#120). */
+  var chosen = getStylePref() || storedThemeId();
+  select.value = chosen || '';
+  /* Empty means either no choice yet, or one this game cannot offer — 'overlay' stored
+     from another game, say. Either way fall back to what this game defaults to. */
+  if (!select.value) select.value = hasOverlay ? 'overlay' : 'classic';
 
   select.addEventListener('change', function() {
     var val = this.value;
@@ -1034,10 +1035,11 @@ function buildStyleDropdown(gameId) {
     var gEntry = gameId ? gameMap[gameId] : null;
     var hasOverlay = gEntry && gEntry.overlayLabel;
 
-    if (val === 'overlay' || val === 'classic') {
-      // Classic = game's native look; overlay = game's native overlay
-      var classic = getTheme('classic');
-      applyChrome(classic);
+    if (val === 'overlay' || val === NATIVE_ID) {
+      // Native = the author's own look; overlay = the game's own overlay. Hub chrome
+      // still needs colours either way, and falls back to classic.
+      applyChrome(getTheme(val));
+      setThemeId(val);
       if (hasOverlay) {
         sendGameMessage({ type: 'ifhub:restoreOverlay' });
       } else {
@@ -1072,10 +1074,9 @@ function applyCurrentStyle(gameId, val) {
   var gEntry = gameId ? gameMap[gameId] : null;
   var hasOverlay = gEntry && gEntry.overlayLabel;
 
-  if (val === 'overlay' || val === 'classic') {
-    // Classic = game's native look (no override); overlay = game's native overlay
-    var classic = getTheme('classic');
-    applyChrome(classic);
+  if (val === 'overlay' || val === NATIVE_ID) {
+    // Native = the author's own look (no override); overlay = the game's own overlay
+    applyChrome(getTheme(val));
     if (hasOverlay) {
       setTimeout(function() { sendGameMessage({ type: 'ifhub:restoreOverlay' }); }, CONFIG.IFRAME_THEME_DELAY_MS);
     } else {
@@ -1105,6 +1106,16 @@ function applyCurrentStyle(gameId, val) {
    THEME IFRAMES (source browser, walkthrough, game)
    ================================================================== */
 
+/* Which theme is selected, for every surface. The walkthrough and tests frames used to
+   read getThemeId() (localStorage) while the chrome and game read the dropdown, so a
+   shared ?theme= link rendered two themes at once: chrome and game as the sender left
+   them, walkthrough and tests as the reader had stored (#120). */
+function currentThemeId() {
+  var sel = document.getElementById('style-select');
+  if (sel && sel.value && sel.value !== 'overlay') return sel.value;
+  return getThemeId();
+}
+
 function injectThemeCSS(iframe, css) {
   try {
     var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
@@ -1129,21 +1140,29 @@ function removeThemeCSS(iframe) {
   } catch(e) {}
 }
 
-// Theme a document-style iframe (source, walkthrough)
-function themeIframe(iframe) {
+/* Theme a document-style iframe.
+
+   `foreign` marks a page the hub did not write — a game's own source.html, shipped with
+   sourceBrowser = yes. Those are what Native leaves alone. The walkthrough viewer is ours,
+   so it follows the selected theme like the chrome does, falling back to classic under
+   Native rather than relying on its own CSS happening to match (#120). */
+function themeIframe(iframe, foreign) {
   if (!iframe || !iframe.src || iframe.src === 'about:blank') return;
-  var themeId = getThemeId();
-  if (themeId === 'classic') { removeThemeCSS(iframe); return; }
+  var themeId = currentThemeId();
+  if (foreign && themeId === NATIVE_ID) { removeThemeCSS(iframe); return; }
   var theme = getTheme(themeId);
   injectThemeCSS(iframe, buildChromeCSS(theme.chrome, theme.scrollbar));
 }
 
-// Theme the tests iframe (ifplayer report) — always injects because
-// ifplayer defaults to a light theme while IF Hub is dark
+/* Theme the tests iframe (an ifPlayer report). It is a foreign page, so Native leaves it
+   alone — which means it reverts to ifPlayer's own light theme inside a dark hub. That is
+   what Native asks for. Every other theme is injected, including classic. */
 function themeTestsIframe() {
   var iframe = document.getElementById('tests-frame');
   if (!iframe || !iframe.src || iframe.src === 'about:blank') return;
-  var theme = getTheme(getThemeId());
+  var themeId = currentThemeId();
+  if (themeId === NATIVE_ID) { removeThemeCSS(iframe); return; }
+  var theme = getTheme(themeId);
   injectThemeCSS(iframe, buildTestReportCSS(theme.chrome, theme.scrollbar));
 }
 
@@ -1161,7 +1180,7 @@ function themeGameIframe() {
 
   var sel = document.getElementById('style-select');
   var val = sel ? sel.value : getThemeId();
-  if (val === 'overlay' || val === 'classic') {
+  if (val === 'overlay' || val === NATIVE_ID) {
     removeThemeCSS(iframe);
     sendGameMessage({ type: 'ifhub:restoreOverlay' });
     return;
@@ -1189,10 +1208,10 @@ function themeGameIframe() {
 }
 
 function themeAllIframes() {
-  ['source-browser-frame', 'walkthrough-frame'].forEach(function(id) {
-    var iframe = document.getElementById(id);
-    if (iframe) themeIframe(iframe);
-  });
+  var frame = document.getElementById('source-browser-frame');
+  if (frame) themeIframe(frame, true);        // the game's own source.html
+  frame = document.getElementById('walkthrough-frame');
+  if (frame) themeIframe(frame);              // the hub's own viewer
   themeTestsIframe();
   themeGameIframe();
 }
@@ -1243,7 +1262,7 @@ function switchGame(gameId) {
   // Re-apply style after iframe loads
   iframe.onload = function() {
     var sel = document.getElementById('style-select');
-    if (sel && sel.value !== 'overlay' && sel.value !== 'classic') {
+    if (sel && sel.value !== 'overlay' && sel.value !== NATIVE_ID) {
       if (g && g.overlayLabel) {
         var theme = getTheme(sel.value);
         sendGameMessage({
