@@ -1,0 +1,20 @@
+/* IF Hub — how a search hit looks, for every page that uses search.js.
+
+   These lived in app.css and inline in walkthrough.html, and drifted apart: two
+   background values, two foregrounds, chosen by nobody (#114). No theme in themes.js
+   restyles them, so these are what a reader actually sees under all 15 themes.
+
+   Values are app.css's. Both states clear WCAG AA against the hit text: 8.63:1 on a
+   hit, 6.32:1 on the current one. The walkthrough's old pair put the current hit at
+   4.20:1, below the 4.5:1 line. */
+
+.search-hit {
+  background: #4a3a10;
+  color: #ffe0a0;
+  border-radius: 2px;
+}
+
+.search-current {
+  background: #6a4a10;
+  outline: 1px solid #aa8030;
+}
