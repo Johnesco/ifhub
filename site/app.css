@@ -251,14 +251,16 @@ tr:target td, tr.highlight td { background: var(--surface-bg, #1a1008); }
 tr:target td.ln, tr.highlight td.ln { color: var(--muted, #806050); }
 
 /* --- Inform 7 syntax colors --- */
-.syn-str  { color: #8bab6e; }
-.syn-cmt  { color: #605840; font-style: italic; }
-.syn-sub  { color: #7ea8b0; }
-.syn-kw   { color: #c08050; }
-.syn-head { color: #e0c8a0; font-weight: bold; }
-.syn-rule { color: #b89860; }
-.syn-num  { color: #b08a70; }
-.syn-tbl  { color: #9090b0; }
+/* Set per theme by applyChrome (themes.js). The fallbacks are classic's, for the moment
+   before a theme is applied. */
+.syn-str  { color: var(--syn-str,  #8bab6e); }
+.syn-cmt  { color: var(--syn-cmt,  #6d6248); font-style: italic; }
+.syn-sub  { color: var(--syn-sub,  #7ea8b0); }
+.syn-kw   { color: var(--syn-kw,   #c08050); }
+.syn-head { color: var(--syn-head, #e0c8a0); font-weight: bold; }
+.syn-rule { color: var(--syn-rule, #b89860); }
+.syn-num  { color: var(--syn-num,  #b08a70); }
+.syn-tbl  { color: var(--syn-tbl,  #9090b0); }
 
 /* --- Search highlights --- */
 /* view-tabs replaced by #view-select dropdown */

@@ -45,6 +45,11 @@ var THEMES = [
             monoFamily: '"SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace',
             propFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif'
         },
+        // the hub’s own source colours, which this background was built for
+        syntax: {
+            kw: '#c08050', str: '#8bab6e', cmt: '#6d6248', sub: '#7ea8b0',
+            head: '#e0c8a0', rule: '#b89860', num: '#b08a70', tbl: '#9090b0'
+        },
         scrollbar: { thumb: '#3a3020', track: '#111', thumbHover: '#5a4a30' }
     },
     {
@@ -70,6 +75,11 @@ var THEMES = [
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"VT323", "Consolas", "Courier New", monospace',
             propFamily: '"VT323", "Consolas", "Courier New", monospace'
+        },
+        // CGA on Norton blue
+        syntax: {
+            kw: '#ffff55', str: '#55ff55', cmt: '#8c8cd0', sub: '#ff55ff',
+            head: '#ffffff', rule: '#ff9a9a', num: '#55ffff', tbl: '#c8c8c8'
         },
         scrollbar: { thumb: '#555555', track: '#000000', thumbHover: '#aaaaaa' }
     },
@@ -97,6 +107,11 @@ var THEMES = [
             monoFamily: '"DotGothic16", "Courier New", monospace',
             propFamily: '"DotGothic16", "Courier New", monospace'
         },
+        // green phosphor: brightness, not hue
+        syntax: {
+            kw: '#66ff33', str: '#33ff00', cmt: '#1e7a00', sub: '#8cff66',
+            head: '#ccffbb', rule: '#2bcc00', num: '#55e02b', tbl: '#3fa82b'
+        },
         scrollbar: { thumb: '#1a5500', track: '#000', thumbHover: '#2a7700' }
     },
     {
@@ -122,6 +137,11 @@ var THEMES = [
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Sixtyfour", "Courier New", monospace',
             propFamily: '"Sixtyfour", "Courier New", monospace'
+        },
+        // the C64 palette
+        syntax: {
+            kw: '#ffff88', str: '#aaffee', cmt: '#8a7fd0', sub: '#ff88cc',
+            head: '#ffffff', rule: '#cceeaa', num: '#88ccff', tbl: '#c0b8f0'
         },
         scrollbar: { thumb: '#7869c4', track: '#40318d', thumbHover: '#aaffee' }
     },
@@ -149,6 +169,11 @@ var THEMES = [
             monoFamily: '"Workbench", "Courier New", monospace',
             propFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
         },
+        // Workbench 1.3 white, orange and blue
+        syntax: {
+            kw: '#ffaa00', str: '#9ae6a0', cmt: '#7fa6cc', sub: '#ff9ad0',
+            head: '#ffffff', rule: '#ffd08a', num: '#8ad6ff', tbl: '#cce0f4'
+        },
         scrollbar: { thumb: '#3377bb', track: '#0055aa', thumbHover: '#4488cc' }
     },
     {
@@ -174,6 +199,11 @@ var THEMES = [
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: 'Monaco, "Courier New", monospace',
             propFamily: '"Geneva", "Lucida Grande", Helvetica, sans-serif'
+        },
+        // black on white: brightness, not hue
+        syntax: {
+            kw: '#000000', str: '#3a3a3a', cmt: '#7a7a7a', sub: '#4a4a4a',
+            head: '#000000', rule: '#5a5a5a', num: '#2a2a2a', tbl: '#636363'
         },
         scrollbar: { thumb: '#999', track: '#e8e8e8', thumbHover: '#777' }
     },
@@ -201,6 +231,11 @@ var THEMES = [
             monoFamily: '"Silkscreen", "Courier New", Consolas, monospace',
             propFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
+        // black on white with the ST’s green
+        syntax: {
+            kw: '#006600', str: '#3a3a3a', cmt: '#7a7a7a', sub: '#004d00',
+            head: '#000000', rule: '#5a5a5a', num: '#2a2a2a', tbl: '#636363'
+        },
         scrollbar: { thumb: '#999', track: '#e8e8e8', thumbHover: '#777' }
     },
     {
@@ -226,6 +261,11 @@ var THEMES = [
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"VT323", "Courier New", monospace',
             propFamily: '"VT323", "Courier New", monospace'
+        },
+        // Kaypro green phosphor: brightness, not hue
+        syntax: {
+            kw: '#8affb0', str: '#5cff8f', cmt: '#2d7a49', sub: '#a8ffc6',
+            head: '#d6ffe4', rule: '#43c46e', num: '#6ee89c', tbl: '#4fae72'
         },
         scrollbar: { thumb: '#1e4a2c', track: '#000000', thumbHover: '#3fbf68' }
     },
@@ -253,6 +293,11 @@ var THEMES = [
             monoFamily: '"Press Start 2P", "Courier New", monospace',
             propFamily: '"Press Start 2P", "Courier New", monospace'
         },
+        // GRAPHICS 0 blue
+        syntax: {
+            kw: '#e0ecff', str: '#a8ffd8', cmt: '#7f96d8', sub: '#ffc8e8',
+            head: '#ffffff', rule: '#ffd8a8', num: '#a8c8ff', tbl: '#d8c0ff'
+        },
         scrollbar: { thumb: '#3a5090', track: '#2a3c86', thumbHover: '#4a60a0' }
     },
     {
@@ -278,6 +323,11 @@ var THEMES = [
             gridSize: '20px', gridLineHeight: '24px',
             monoFamily: '"Tiny5", "Courier New", monospace',
             propFamily: '"Tiny5", "Courier New", monospace'
+        },
+        // Model III white phosphor: brightness, not hue
+        syntax: {
+            kw: '#ffffff', str: '#d8d8d8', cmt: '#7a7a7a', sub: '#e8e8e8',
+            head: '#ffffff', rule: '#b0b0b0', num: '#c4c4c4', tbl: '#989898'
         },
         scrollbar: { thumb: '#555555', track: '#000000', thumbHover: '#888888' }
     },
@@ -308,6 +358,11 @@ var THEMES = [
             monoFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif',
             propFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif'
         },
+        // ink on a warm page
+        syntax: {
+            kw: '#8b3e1e', str: '#4a6b2e', cmt: '#7f7058', sub: '#2f6b72',
+            head: '#3e2c1c', rule: '#6b4426', num: '#7a3f5a', tbl: '#4a4a7a'
+        },
         scrollbar: { thumb: '#c4a878', track: '#ede0c8', thumbHover: '#b09060' }
     },
     {
@@ -333,6 +388,10 @@ var THEMES = [
             gridSize: '15px', gridLineHeight: '20px',
             monoFamily: '"SF Mono", "Fira Code", Consolas, "Courier New", monospace',
             propFamily: 'Georgia, "Times New Roman", serif'
+        },
+        syntax: {
+            kw: '#e0a050', str: '#7fc99a', cmt: '#5b7186', sub: '#7fcfe8',
+            head: '#e2ecf5', rule: '#d0b070', num: '#c89ad8', tbl: '#9aa8c0'
         },
         scrollbar: { thumb: '#1e3a52', track: '#0d1b2a', thumbHover: '#2a5070' }
     },
@@ -360,6 +419,10 @@ var THEMES = [
             monoFamily: '"SF Mono", "Fira Code", Consolas, "Courier New", monospace',
             propFamily: 'Georgia, "Times New Roman", serif'
         },
+        syntax: {
+            kw: '#d4a050', str: '#9ac47a', cmt: '#5f7458', sub: '#8fbfa8',
+            head: '#d0e0c0', rule: '#c0a868', num: '#c89a7a', tbl: '#8aa8a0'
+        },
         scrollbar: { thumb: '#1e3422', track: '#0f1a12', thumbHover: '#2e4a32' }
     },
     {
@@ -386,6 +449,10 @@ var THEMES = [
             monoFamily: '"SF Mono", "Fira Code", Consolas, "Courier New", monospace',
             propFamily: 'Georgia, "Times New Roman", serif'
         },
+        syntax: {
+            kw: '#c898d0', str: '#9ad0b0', cmt: '#6f6390', sub: '#8fb8e0',
+            head: '#e4daf4', rule: '#d8b0a0', num: '#e0c080', tbl: '#a0a0d8'
+        },
         scrollbar: { thumb: '#2e2644', track: '#1a1625', thumbHover: '#443860' }
     },
     {
@@ -399,7 +466,7 @@ var THEMES = [
             inputBg: '#073642', inputFg: '#93a1a1',
             activeTabBg: '#b58900', activeTabFg: '#002b36',
             badgeBg: '#073642', badgeFg: '#93a1a1',
-            codeBg: '#073642', codeFg: '#93a1a1',
+            codeBg: '#002b36', codeFg: '#93a1a1',
             footerFg: '#839496', linkFg: '#2aa198',
             fontFamily: '"Menlo", "SF Mono", "Fira Code", Consolas, monospace'
         },
@@ -411,6 +478,11 @@ var THEMES = [
             gridSize: '15px', gridLineHeight: '20px',
             monoFamily: '"Menlo", "SF Mono", "Fira Code", Consolas, "Courier New", monospace',
             propFamily: '"Menlo", "SF Mono", "Fira Code", Consolas, "Courier New", monospace'
+        },
+        // the Solarized accent ring
+        syntax: {
+            kw: '#b58900', str: '#2aa198', cmt: '#586e75', sub: '#6c71c4',
+            head: '#93a1a1', rule: '#859900', num: '#268bd2', tbl: '#d33682'
         },
         scrollbar: { thumb: '#094555', track: '#002b36', thumbHover: '#0b5a6e' }
     }
@@ -454,10 +526,35 @@ var CHROME_VAR_MAP = {
     footerFg: '--footer-fg', linkFg: '--link-fg', fontFamily: '--font-family'
 };
 
+/* The source pane's own colours. Each theme carries its own eight, because deriving them
+   from the chrome collapses on the narrow palettes: a phosphor terminal or a black-on-white
+   Mac has no eight hues to give, and a naive mapping puts several classes on one value and
+   stops distinguishing anything (#121). */
+var SYNTAX_VAR_MAP = {
+    kw: '--syn-kw', str: '--syn-str', cmt: '--syn-cmt', sub: '--syn-sub',
+    head: '--syn-head', rule: '--syn-rule', num: '--syn-num', tbl: '--syn-tbl'
+};
+
+/* The variables a page needs for code and for search hits, as `--name: value;` text.
+   Returned as a string so the same set can be set on this document or injected into an
+   iframe the hub themes (the walkthrough viewer highlights search hits too). */
+function syntaxVarText(theme) {
+    var out = '--code-bg: ' + theme.chrome.codeBg + ';';
+    var syn = theme.syntax || {};
+    for (var k in SYNTAX_VAR_MAP) {
+        if (syn[k]) out += SYNTAX_VAR_MAP[k] + ': ' + syn[k] + ';';
+    }
+    return out;
+}
+
 function applyChrome(theme) {
     var s = document.documentElement.style;
     var c = theme.chrome;
     for (var k in CHROME_VAR_MAP) s.setProperty(CHROME_VAR_MAP[k], c[k]);
+    var syn = theme.syntax || {};
+    for (var j in SYNTAX_VAR_MAP) {
+        if (syn[j]) s.setProperty(SYNTAX_VAR_MAP[j], syn[j]);
+    }
     s.setProperty('--scroll-thumb', theme.scrollbar.thumb);
     s.setProperty('--scroll-track', theme.scrollbar.track);
     s.setProperty('--scroll-thumb-hover', theme.scrollbar.thumbHover);
@@ -551,8 +648,9 @@ function buildScrollbarCSS(sb) {
     '::-webkit-scrollbar-thumb:hover { background: ' + sb.thumbHover + ' !important; }\n';
 }
 
-function buildChromeCSS(c, sb) {
-  return 'html, body { background: ' + c.pageBg + ' !important; color: ' + c.pageFg + ' !important; }\n' +
+function buildChromeCSS(c, sb, varText) {
+  return (varText ? ':root {' + varText + '}\n' : '') +
+    'html, body { background: ' + c.pageBg + ' !important; color: ' + c.pageFg + ' !important; }\n' +
     'h1, h2, h3, h4, strong { color: ' + c.headingFg + ' !important; }\n' +
     'a { color: ' + c.accentFg + ' !important; }\n' +
     'a:hover { color: ' + c.btnHoverBg + ' !important; }\n' +

@@ -1151,7 +1151,8 @@ function themeIframe(iframe, foreign) {
   var themeId = currentThemeId();
   if (foreign && themeId === NATIVE_ID) { removeThemeCSS(iframe); return; }
   var theme = getTheme(themeId);
-  injectThemeCSS(iframe, buildChromeCSS(theme.chrome, theme.scrollbar));
+  // carry the code and syntax variables in too: the walkthrough viewer marks search hits
+  injectThemeCSS(iframe, buildChromeCSS(theme.chrome, theme.scrollbar, syntaxVarText(theme)));
 }
 
 /* Theme the tests iframe (an ifPlayer report). It is a foreign page, so Native leaves it
