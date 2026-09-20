@@ -261,17 +261,6 @@ tr:target td.ln, tr.highlight td.ln { color: var(--muted, #806050); }
 .syn-tbl  { color: #9090b0; }
 
 /* --- Search highlights --- */
-.search-hit {
-  background: #4a3a10;
-  color: #ffe0a0;
-  border-radius: 2px;
-}
-
-.search-current {
-  background: #6a4a10;
-  outline: 1px solid #aa8030;
-}
-
 /* view-tabs replaced by #view-select dropdown */
 
 /* --- Walkthrough status in sidebar --- */
