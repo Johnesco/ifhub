@@ -652,88 +652,23 @@ function buildNav(lines, engine) {
 /* ==================================================================
    SEARCH
    ================================================================== */
+/* The source pane's search. Created once, in bindUI: the container element outlives
+   every re-render, and createSearch resolves it per search, so switching games needs
+   no rebinding. It used to be re-created on every displaySource, which stacked a fresh
+   pair of listeners each time — by the fourth game switch one keystroke ran four full
+   document scans (#114). */
+var sourceSearch = null;
+
 function initSearch() {
-  var input = document.getElementById('search-source');
-  var wrap = document.getElementById('source-main');
-  var hits = [], cur = -1, debounce;
-
-  function clearHits() {
-    wrap.querySelectorAll('.search-hit').forEach(function(el) { el.outerHTML = el.textContent; });
-    hits = []; cur = -1;
-  }
-
-  function doSearch(q) {
-    clearHits();
-    if (!q || q.length < CONFIG.SEARCH_MIN_LENGTH) return;
-    var lower = q.toLowerCase();
-    wrap.querySelectorAll('td.lc').forEach(function(td) {
-      if (td.textContent.toLowerCase().includes(lower)) markMatches(td, q);
-    });
-    hits = Array.from(wrap.querySelectorAll('.search-hit'));
-    if (hits.length) {
-      cur = 0;
-      hits[0].classList.add('search-current');
-      hits[0].scrollIntoView({ block: 'center' });
-    }
-  }
-
-  /* Mark every occurrence in each text node, not just the first. Walking forward
-     through one node and replacing it once is why: splitting at the first match and
-     re-inserting the remainder left that remainder unscanned, because the TreeWalker
-     had already collected its node list (#112). */
-  function markMatches(el, q) {
-    if (!q) return;
-    var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-    var nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    var lower = q.toLowerCase();
-    nodes.forEach(function(node) {
-      var text = node.textContent;
-      if (text.toLowerCase().indexOf(lower) === -1) return;
-      var frag = document.createDocumentFragment();
-      var pos = 0;
-      for (;;) {
-        var idx = text.toLowerCase().indexOf(lower, pos);
-        if (idx === -1) break;
-        if (idx > pos) frag.appendChild(document.createTextNode(text.slice(pos, idx)));
-        var span = document.createElement('span');
-        span.className = 'search-hit';
-        // slice from text, not q, so the hit keeps the source's own casing
-        span.textContent = text.slice(idx, idx + q.length);
-        frag.appendChild(span);
-        pos = idx + q.length;
-      }
-      if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
-      node.parentNode.replaceChild(frag, node);
-    });
-  }
-
-  function next() {
-    if (!hits.length) return;
-    hits[cur].classList.remove('search-current');
-    cur = (cur + 1) % hits.length;
-    hits[cur].classList.add('search-current');
-    hits[cur].scrollIntoView({ block: 'center' });
-  }
-
-  function prev() {
-    if (!hits.length) return;
-    hits[cur].classList.remove('search-current');
-    cur = (cur - 1 + hits.length) % hits.length;
-    hits[cur].classList.add('search-current');
-    hits[cur].scrollIntoView({ block: 'center' });
-  }
-
-  input.addEventListener('input', function() {
-    clearTimeout(debounce);
-    var self = this;
-    debounce = setTimeout(function() { doSearch(self.value); }, CONFIG.SEARCH_DEBOUNCE_MS);
+  if (sourceSearch) return sourceSearch;
+  sourceSearch = createSearch({
+    input: document.getElementById('search-source'),
+    container: function() { return document.getElementById('source-main'); },
+    selector: 'td.lc',
+    minLength: CONFIG.SEARCH_MIN_LENGTH,
+    debounceMs: CONFIG.SEARCH_DEBOUNCE_MS
   });
-
-  input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); e.shiftKey ? prev() : next(); }
-    if (e.key === 'Escape') { clearHits(); this.value = ''; this.blur(); }
-  });
+  return sourceSearch;
 }
 
 /* ==================================================================
@@ -743,7 +678,7 @@ function displaySource(text, engine) {
   var lines = text.replace(/\r\n?/g, '\n').replace(/^\n/, '').replace(/\n$/, '').split('\n');
   renderSource(lines, engine);
   buildNav(lines, engine);
-  initSearch();
+  initSearch().clear();
   document.getElementById('line-count').textContent = lines.length + ' lines';
   document.getElementById('search-source').value = '';
   updateSidebarToggle();
