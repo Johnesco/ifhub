@@ -18,7 +18,7 @@ IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interact
 | Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
 | Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
-Shared scripts: `themes.js` (themes, §5) and `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page). The player's code is in `app.js` and `app.css`.
+Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page), and `search.js` with `search.css` (the text search, §4, used by the player and the walkthrough viewer). The player's code is in `app.js` and `app.css`.
 
 ### 2.1 Landing page
 
@@ -90,7 +90,7 @@ The list of collections: `id`, `title`, `description`, and `filter`, which is `{
 - Fetches `sourceUrl` (cached per game), normalises line endings, and renders a numbered table with syntax highlighting.
 - Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments), Chord for sharpee (`##` comments, header fields and phrase keys, `create` headings, structural keywords, kinds, traits and states, strings, numbers; a line is coloured only when its opening words read as code, so prose paragraphs stay plain apart from `{markers}`).
 - Navigation sidebar (220px, hidden below 1024px): Inform 7 Volume/Book/Part/Chapter/Section headings, Rez elements, Ink knots and stitches, BASIC REM lines. Clicking scrolls to the line and marks it active.
-- Search: Ctrl+F, at least two characters, 200ms debounce, highlighted hits with a current-hit marker; Enter and Shift+Enter step through, Escape clears. It walks text nodes, so highlighting is preserved, and marks every occurrence in a line rather than the first alone.
+- Search: Ctrl+F, at least two characters, 200ms debounce, highlighted hits with a current-hit marker; Enter and Shift+Enter step through, Escape clears. It walks text nodes, so highlighting is preserved, and marks every occurrence in a line rather than the first alone. The source pane and the walkthrough viewer share one implementation, `site/search.js`, styled by `site/search.css`; each supplies its own container and element selector.
 - Browser mode: when `sourceBrowser` is true the pane iframes the game's own `source.html` instead. Used by zork1-v0 (multi-file ZIL browser) and dracula-v0 (annotated BASIC).
 
 ## 5. Themes
