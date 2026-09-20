@@ -1,20 +1,30 @@
 /* IF Hub — how a search hit looks, for every page that uses search.js.
 
    These lived in app.css and inline in walkthrough.html, and drifted apart: two
-   background values, two foregrounds, chosen by nobody (#114). No theme in themes.js
-   restyles them, so these are what a reader actually sees under all 15 themes.
+   background values, two foregrounds, chosen by nobody (#114).
 
-   Values are app.css's. Both states clear WCAG AA against the hit text: 8.63:1 on a
-   hit, 6.32:1 on the current one. The walkthrough's old pair put the current hit at
-   4.20:1, below the 4.5:1 line. */
+   They follow the theme now (#121), as inverse video drawn from the theme's own syntax
+   palette: a hit takes the colour headings are drawn in, a current hit the colour
+   keywords are drawn in, both over the code background. That costs no new values and
+   cannot be illegible — those colours are already checked against this very background,
+   and swapping foreground for background keeps the same contrast ratio.
+
+   The underline is what separates the current hit on the monochrome themes — Apple II,
+   CP/M, TRS-80, Mac, Atari ST — where a phosphor or black-on-white palette has no second
+   hue to spare and the two backgrounds come out the same.
+
+   Fallbacks are classic's, for a page that has not applied a theme yet. */
 
 .search-hit {
-  background: #4a3a10;
-  color: #ffe0a0;
+  background: var(--syn-head, #e0c8a0);
+  color: var(--code-bg, #1a1410);
   border-radius: 2px;
 }
 
 .search-current {
-  background: #6a4a10;
-  outline: 1px solid #aa8030;
+  background: var(--syn-kw, #c08050);
+  color: var(--code-bg, #1a1410);
+  outline: 1px solid var(--syn-head, #e0c8a0);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
