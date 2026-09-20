@@ -76,7 +76,7 @@ Bugs: something that crashes, loses data or blocks play is high priority; wrong 
 ## Definition of done
 
 - Works as the acceptance criteria say, without breaking what already worked
-- Matches existing patterns; no behaviour change unless the ticket asked for one
+- Matches existing patterns; no behavior change unless the ticket asked for one
 - Documentation updated as in step 4; links and file references still resolve
 - Commits reference the ticket; the PR says `Fixes #XX`
 - Card in Verify, waiting for a human

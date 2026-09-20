@@ -4,9 +4,9 @@
    background values, two foregrounds, chosen by nobody (#114).
 
    They follow the theme now (#121), as inverse video drawn from the theme's own syntax
-   palette: a hit takes the colour headings are drawn in, a current hit the colour
+   palette: a hit takes the color headings are drawn in, a current hit the color
    keywords are drawn in, both over the code background. That costs no new values and
-   cannot be illegible — those colours are already checked against this very background,
+   cannot be illegible — those colors are already checked against this very background,
    and swapping foreground for background keeps the same contrast ratio.
 
    The underline is what separates the current hit on the monochrome themes — Apple II,
