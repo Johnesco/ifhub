@@ -45,7 +45,7 @@ var THEMES = [
             monoFamily: '"SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace',
             propFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif'
         },
-        // the hub’s own source colours, which this background was built for
+        // the hub’s own source colors, which this background was built for
         syntax: {
             kw: '#c08050', str: '#8bab6e', cmt: '#6d6248', sub: '#7ea8b0',
             head: '#e0c8a0', rule: '#b89860', num: '#b08a70', tbl: '#9090b0'
@@ -117,64 +117,65 @@ var THEMES = [
     {
         id: 'c64', name: 'Commodore 64',
         chrome: {
-            pageBg: '#40318d', pageFg: '#bbbbbb', headingFg: '#ffffff',
-            accentFg: '#aaffee', mutedFg: '#b6aeee', dimFg: '#b6aeee',
-            cardBg: '#352879', cardBorder: '#7869c4', toolbarBg: '#352879',
-            border: '#7869c4', borderHover: '#aaffee', surfaceBg: '#352879',
-            btnBg: '#aaffee', btnFg: '#40318d', btnHoverBg: '#ffffff',
-            inputBg: '#352879', inputFg: '#bbbbbb',
-            activeTabBg: '#aaffee', activeTabFg: '#40318d',
-            badgeBg: '#352879', badgeFg: '#b6aeee',
-            codeBg: '#352879', codeFg: '#aaffee',
-            footerFg: '#b6aeee', linkFg: '#aaffee',
+            pageBg: '#000000', pageFg: '#ffffff', headingFg: '#ffffff',
+            accentFg: '#b8c76f', mutedFg: '#9ad284', dimFg: '#959595',
+            cardBg: '#352879', cardBorder: '#6c5eb5', toolbarBg: '#352879',
+            border: '#6c5eb5', borderHover: '#9ad284', surfaceBg: '#352879',
+            btnBg: '#9ad284', btnFg: '#000000', btnHoverBg: '#b8c76f',
+            inputBg: '#000000', inputFg: '#ffffff',
+            activeTabBg: '#9ad284', activeTabFg: '#000000',
+            badgeBg: '#352879', badgeFg: '#ffffff',
+            codeBg: '#000000', codeFg: '#70a4b2',
+            footerFg: '#959595', linkFg: '#9ad284',
             fontFamily: '"Sixtyfour", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#40318d', bufferBg: '#40318d', bufferFg: '#bbbbbb',
-            gridBg: '#7869c4', gridFg: '#000000',
-            inputFg: '#aaffee', emphFg: '#eeee77', headerFg: '#ffffff',
+            bodyBg: '#352879', bufferBg: '#352879', bufferFg: '#ffffff',
+            gridBg: '#6c5eb5', gridFg: '#ffffff',
+            inputFg: '#9ad284', emphFg: '#b8c76f', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Sixtyfour", "Courier New", monospace',
             propFamily: '"Sixtyfour", "Courier New", monospace'
         },
-        // the C64 palette
+        // every value is an exact Pepto-palette C64 color
         syntax: {
-            kw: '#ffff88', str: '#aaffee', cmt: '#8a7fd0', sub: '#ff88cc',
-            head: '#ffffff', rule: '#cceeaa', num: '#88ccff', tbl: '#c0b8f0'
+            kw: '#b8c76f', str: '#9ad284', cmt: '#6c6c6c', sub: '#70a4b2',
+            head: '#ffffff', rule: '#959595', num: '#70a4b2', tbl: '#9ad284'
         },
-        scrollbar: { thumb: '#7869c4', track: '#40318d', thumbHover: '#aaffee' }
+        scrollbar: { thumb: '#6c5eb5', track: '#000000', thumbHover: '#9ad284' }
     },
     {
         id: 'amiga', name: 'Amiga',
         chrome: {
-            pageBg: '#0055aa', pageFg: '#fff', headingFg: '#fff',
-            accentFg: '#ffffff', mutedFg: '#cce0f4', dimFg: '#b4d2ee',
-            cardBg: '#004488', cardBorder: '#3377bb', toolbarBg: '#003d7a',
-            border: '#3377bb', borderHover: '#4488cc', surfaceBg: '#004488',
-            btnBg: '#ff8800', btnFg: '#000', btnHoverBg: '#ffaa33',
-            inputBg: '#004488', inputFg: '#fff',
-            activeTabBg: '#ff8800', activeTabFg: '#000',
-            badgeBg: '#004488', badgeFg: '#cce0f4',
-            codeBg: '#004488', codeFg: '#ffaa00',
-            footerFg: '#b4d2ee', linkFg: '#ffffff',
+            pageBg: '#000000', pageFg: '#ffffff', headingFg: '#ffffff',
+            accentFg: '#ffcc88', mutedFg: '#cce0f4', dimFg: '#aaccee',
+            cardBg: '#0055aa', cardBorder: '#77aadd', toolbarBg: '#0055aa',
+            border: '#77aadd', borderHover: '#ffcc88', surfaceBg: '#0055aa',
+            btnBg: '#ff8800', btnFg: '#000000', btnHoverBg: '#ffcc88',
+            inputBg: '#000000', inputFg: '#ffffff',
+            activeTabBg: '#ff8800', activeTabFg: '#000000',
+            badgeBg: '#0055aa', badgeFg: '#ffffff',
+            codeBg: '#000000', codeFg: '#ff8800',
+            footerFg: '#cce0f4', linkFg: '#ffcc88',
             fontFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
         },
         game: {
-            bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#fff',
-            gridBg: '#ff8800', gridFg: '#000',
-            inputFg: '#fff', emphFg: '#ffcc88', headerFg: '#fff',
+            bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#ffffff',
+            gridBg: '#ff8800', gridFg: '#000000',
+            inputFg: '#ffffff', emphFg: '#ffcc88', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Workbench", "Courier New", monospace',
             propFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
         },
-        // Workbench 1.3 white, orange and blue
+        // Workbench 1.3 had four colors — blue, white, black, orange. Four cannot
+        // furnish eight classes, so the rest are tints of those hues, never a new one.
         syntax: {
-            kw: '#ffaa00', str: '#9ae6a0', cmt: '#7fa6cc', sub: '#ff9ad0',
-            head: '#ffffff', rule: '#ffd08a', num: '#8ad6ff', tbl: '#cce0f4'
+            kw: '#ff8800', str: '#ffcc88', cmt: '#5588bb', sub: '#ffddaa',
+            head: '#ffffff', rule: '#aaccee', num: '#77aadd', tbl: '#88bbdd'
         },
-        scrollbar: { thumb: '#3377bb', track: '#0055aa', thumbHover: '#4488cc' }
+        scrollbar: { thumb: '#0055aa', track: '#000000', thumbHover: '#ff8800' }
     },
     {
         id: 'mac', name: 'Macintosh',
@@ -526,7 +527,7 @@ var CHROME_VAR_MAP = {
     footerFg: '--footer-fg', linkFg: '--link-fg', fontFamily: '--font-family'
 };
 
-/* The source pane's own colours. Each theme carries its own eight, because deriving them
+/* The source pane's own colors. Each theme carries its own eight, because deriving them
    from the chrome collapses on the narrow palettes: a phosphor terminal or a black-on-white
    Mac has no eight hues to give, and a naive mapping puts several classes on one value and
    stops distinguishing anything (#121). */
@@ -570,7 +571,7 @@ var THEME_SELECT_STYLE = 'background:var(--input-bg);border:1px solid var(--bord
 
 /* The one id that is not a theme. "Native" means: inject nothing into pages the hub did
    not write — a game's own player, a workspace's tests report — so they can be seen as
-   their author built them. Hub surfaces still need colours and fall back to classic,
+   their author built them. Hub surfaces still need colors and fall back to classic,
    which getTheme() already does for any unknown id.
 
    Only the player offers it; the landing page has no foreign pages to leave alone. */

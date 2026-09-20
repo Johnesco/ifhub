@@ -433,10 +433,10 @@ function highlightBasic(line) {
 /* ==================================================================
    CHORD SYNTAX HIGHLIGHTER (engine sharpee, <id>.story)
    Chord keeps prose in the same indented blocks as its statements and its
-   lexer has no keyword kind, so token-only colouring (the Sharpee
+   lexer has no keyword kind, so token-only coloring (the Sharpee
    playground's CodeMirror mode, Chord Writer's editor) paints words inside
    prose too. This one decides per line whether it is code or prose from
-   its opening words and the lines around it, colours only code lines, and
+   its opening words and the lines around it, colors only code lines, and
    leaves prose plain apart from {markers}. The word sets mirror the
    playground mode (website/src/app/playground/chord-mode.ts) and Chord
    Writer's SyntaxHighlighter.swift; kinds and adjectives are the closed
@@ -1037,7 +1037,7 @@ function buildStyleDropdown(gameId) {
 
     if (val === 'overlay' || val === NATIVE_ID) {
       // Native = the author's own look; overlay = the game's own overlay. Hub chrome
-      // still needs colours either way, and falls back to classic.
+      // still needs colors either way, and falls back to classic.
       applyChrome(getTheme(val));
       setThemeId(val);
       if (hasOverlay) {

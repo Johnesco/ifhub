@@ -3,7 +3,7 @@
 
    These two had the same search implemented twice. The copies drifted: app.js marked
    only the first match in each text node while walkthrough.html marked them all (#112),
-   and the highlight colours diverged. One implementation, parameterised by the three
+   and the highlight colors diverged. One implementation, parameterized by the three
    things that genuinely differ between the pages — where to look, what to look in, and
    how short a query is allowed (#114).
 
