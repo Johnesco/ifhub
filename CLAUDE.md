@@ -68,7 +68,7 @@ ifhub/
 
 **Game discovery:** `build_games.py` scans each root in `workspaces.json` for subfolders containing an `ifhub.conf`. A game is listed when its conf says `hub = yes`; `ship.py <game> --unlist` sets it back to `no`. Card text (title, subtitle from `author`, description) comes from the same conf, so nothing in `games.json` or `cards.json` is hand-maintained.
 
-## Hub behaviour worth knowing
+## Hub behavior worth knowing
 
 - `site/app.html` is the split-pane player: game, source, walkthrough, and tests panes. Source is fetched raw and highlighted in the hub (Inform 7, Rez, Ink, BASIC, Chord; games with `sourceBrowser = yes` are iframed instead); walkthroughs render in `site/walkthrough.html?game=<id>` from the game's txt files; 15 platform themes from `themes.js`; collections from `hubs.json` (filter by engine or tag, switched client-side). Theming reaches into game pages through `theme-listener.js` (each workspace ships a copy) and `ifhub:applyTheme` messages. See `reference/css-overlay.md`.
 - Versioned games (zork1 v0..v3, dracula): `versionOf` / `versionPrimary` in `ifhub.conf` collapse a group into one card. See `reference/multi-version-guide.md`.
@@ -94,9 +94,10 @@ Each workspace has its own `CLAUDE.md` with authoring rules and is a git repo th
 
 1. **Ticket first** — create a GitHub Issue before code, then `gh project item-add 3 --owner Johnesco --url [ISSUE_URL]`
 2. **Read before editing.** Follow existing patterns. Keep it simple.
-3. **Docs are part of done** — update `docs/functional-spec.md` for behaviour or data-format changes, this file for structure changes, `README.md` for public-facing changes, `docs/publishing.md` when the contract or a build command changes.
+3. **Docs are part of done** — update `docs/functional-spec.md` for behavior or data-format changes, this file for structure changes, `README.md` for public-facing changes, `docs/publishing.md` when the contract or a build command changes.
 4. **Commits:** `#XX: description`. Branches: `[type]/[short-description]` (feature/, fix/, docs/, task/, spike/). `Fixes #XX` in the PR body.
 5. **Never do game work in this repo.** Compiling, testing, and scaffolding belong in the engine workspaces.
 6. **And never change the contract from a game folder.** A game owns how it plays; the hub owns how it ships. If a change forces more than one game repo to move, it is a hub decision and gets a ticket here. See "Who decides what" in `docs/sdlc.md`.
+7. **American spelling, everywhere.** Prose, code comments, docs, commit messages, issues and PR bodies: color not colour, gray not grey, behavior not behaviour, -ize not -ise (normalize, parameterize, recognize), center, license, catalog, analyze.
 
 Board: https://github.com/users/Johnesco/projects/3 (project 3, owner Johnesco).

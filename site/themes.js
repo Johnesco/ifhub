@@ -45,7 +45,7 @@ var THEMES = [
             monoFamily: '"SF Mono", "Fira Code", "Cascadia Code", Consolas, "Courier New", monospace',
             propFamily: '"Iowan Old Style", Palatino, Georgia, "Times New Roman", serif'
         },
-        // the hub’s own source colours, which this background was built for
+        // the hub’s own source colors, which this background was built for
         syntax: {
             kw: '#c08050', str: '#8bab6e', cmt: '#6d6248', sub: '#7ea8b0',
             head: '#e0c8a0', rule: '#b89860', num: '#b08a70', tbl: '#9090b0'
@@ -526,7 +526,7 @@ var CHROME_VAR_MAP = {
     footerFg: '--footer-fg', linkFg: '--link-fg', fontFamily: '--font-family'
 };
 
-/* The source pane's own colours. Each theme carries its own eight, because deriving them
+/* The source pane's own colors. Each theme carries its own eight, because deriving them
    from the chrome collapses on the narrow palettes: a phosphor terminal or a black-on-white
    Mac has no eight hues to give, and a naive mapping puts several classes on one value and
    stops distinguishing anything (#121). */
@@ -570,7 +570,7 @@ var THEME_SELECT_STYLE = 'background:var(--input-bg);border:1px solid var(--bord
 
 /* The one id that is not a theme. "Native" means: inject nothing into pages the hub did
    not write — a game's own player, a workspace's tests report — so they can be seen as
-   their author built them. Hub surfaces still need colours and fall back to classic,
+   their author built them. Hub surfaces still need colors and fall back to classic,
    which getTheme() already does for any unknown id.
 
    Only the player offers it; the landing page has no foreign pages to leave alone. */
