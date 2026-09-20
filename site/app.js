@@ -677,23 +677,34 @@ function initSearch() {
     }
   }
 
+  /* Mark every occurrence in each text node, not just the first. Walking forward
+     through one node and replacing it once is why: splitting at the first match and
+     re-inserting the remainder left that remainder unscanned, because the TreeWalker
+     had already collected its node list (#112). */
   function markMatches(el, q) {
+    if (!q) return;
     var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     var nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
     var lower = q.toLowerCase();
     nodes.forEach(function(node) {
-      var text = node.textContent, idx = text.toLowerCase().indexOf(lower);
-      if (idx === -1) return;
-      var span = document.createElement('span');
-      span.className = 'search-hit';
-      span.textContent = text.slice(idx, idx + q.length);
-      var parent = node.parentNode;
-      if (idx > 0) parent.insertBefore(document.createTextNode(text.slice(0, idx)), node);
-      parent.insertBefore(span, node);
-      var after = text.slice(idx + q.length);
-      if (after) parent.insertBefore(document.createTextNode(after), node);
-      parent.removeChild(node);
+      var text = node.textContent;
+      if (text.toLowerCase().indexOf(lower) === -1) return;
+      var frag = document.createDocumentFragment();
+      var pos = 0;
+      for (;;) {
+        var idx = text.toLowerCase().indexOf(lower, pos);
+        if (idx === -1) break;
+        if (idx > pos) frag.appendChild(document.createTextNode(text.slice(pos, idx)));
+        var span = document.createElement('span');
+        span.className = 'search-hit';
+        // slice from text, not q, so the hit keeps the source's own casing
+        span.textContent = text.slice(idx, idx + q.length);
+        frag.appendChild(span);
+        pos = idx + q.length;
+      }
+      if (pos < text.length) frag.appendChild(document.createTextNode(text.slice(pos)));
+      node.parentNode.replaceChild(frag, node);
     });
   }
 
