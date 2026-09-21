@@ -15,6 +15,7 @@
  *   Project Jason Tall  © Rebecca G. Bettencourt, Kreative Software — Free Use License
  *   Another Mans Treasure MIII 64C
  *                       © Rebecca G. Bettencourt, Kreative Software — Free Use License
+ *   Pet Me 64           © Rebecca G. Bettencourt, Kreative Software — Free Use License
  *
  * The Kreative Software Free Use License forbids derivative works, so these
  * faces ship as the TTFs they were distributed as — not subset, not converted
@@ -62,6 +63,16 @@
 @font-face {
     font-family: 'Another Mans Treasure MIII 64C';
     src: url('fonts/AnotherMansTreasureMIII64C.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Commodore 64 — the C64 character ROM, 8x8 at 40 columns. Native at 8px,
+   crisp at 16px. Plain: no CRT axes carved into the glyphs. */
+@font-face {
+    font-family: 'Pet Me 64';
+    src: url('fonts/PetMe64.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;

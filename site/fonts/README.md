@@ -18,17 +18,25 @@ costs one font, not seven.
 | `CandyAntics.ttf` | Atari 800 | ATASCII | 8×8 | [Kreative Software Retro Computing Fonts](https://www.kreativekorp.com/software/fonts/retro/) © Rebecca G. Bettencourt — Free Use License |
 | `ProjectJasonTall.ttf` | Atari ST | TOS system font | 8×16 | [Kreative Software Retro Computing Fonts](https://www.kreativekorp.com/software/fonts/retro/) © Rebecca G. Bettencourt — Free Use License |
 | `AnotherMansTreasureMIII64C.ttf` | TRS-80 | Model III character ROM, 64-column | 8×24 | [Kreative Software TRS-80 Fonts](https://www.kreativekorp.com/software/fonts/trs80/) © Rebecca G. Bettencourt — Free Use License |
+| `PetMe64.ttf` | Commodore 64 | C64 character ROM, 40-column | 8×8 | [Kreative Software Retro Computing Fonts](https://www.kreativekorp.com/software/fonts/retro/) © Rebecca G. Bettencourt — Free Use License |
 
 License texts, verbatim as distributed: `int10h-LICENSE.txt`,
 `KreativeSoftware-FreeLicense.txt` (Free Use License version 1.2f, retrieved
 2026-09-20).
 
-Two themes keep a Google-hosted face because theirs is already derived from the
-right machine: the C64 uses **Sixtyfour** and the Amiga uses **Workbench**, both
-by Jens Kutílek, both from
-[homecomputer-fonts](https://github.com/jenskutilek/homecomputer-fonts) under
-the SIL Open Font License 1.1. CP/M keeps VT323 — Kaypro terminals emulated the
-ADM-3A and H19, so a DEC-family face is defensible there.
+CP/M keeps the Google-hosted VT323 — Kaypro terminals emulated the ADM-3A and
+H19, so a DEC-family face is defensible there.
+
+The C64 used to use **Sixtyfour**, and the Amiga still uses **Workbench**, both
+by Jens Kutílek from
+[homecomputer-fonts](https://github.com/jenskutilek/homecomputer-fonts). They
+are the right machines' faces under a good license, but they are variable fonts
+whose `SCAN` and `BLED` axes carve CRT scanline gaps into the glyph outlines.
+That detail is sub-glyph, so it only resolves at whole multiples of the font's
+design grid and turns to fuzz or lumpy edges anywhere else. An effect that
+distorts belongs on the screen, where it can be tuned and switched off, not in
+a typeface — so the C64 moved to Pet Me 64, and the Amiga follows to Topaz in
+#135.
 
 ## Rules for changing anything in this folder
 
@@ -53,7 +61,7 @@ size and at whole multiples of it, and soft anywhere else. That is why the
 themes set `bufferSize` to the sizes they do:
 
 - IBM VGA 8×16 and Project Jason Tall are 16 pixels tall — native at `16px`.
-- Print Char 21 and Candy Antics are 8 pixels tall — `16px` is 2×.
+- Print Char 21, Candy Antics and Pet Me 64 are 8 pixels tall — `16px` is 2×.
 - Another Mans Treasure MIII 64C is 24 pixels tall — native at `24px`.
 
 Changing a `bufferSize` off one of those values is what makes a theme look

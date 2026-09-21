@@ -2,10 +2,9 @@
 // Themes modeled after platforms Infocom shipped Z-machine games on
 
 // Canonical retro font URL (shared by all theme callers).
-// Google Fonts carries the hub chrome faces and the two home-computer faces
-// that are genuinely derived from their machine: Sixtyfour (C64) and
-// Workbench (Amiga).
-var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
+// Google Fonts carries the hub chrome faces, plus Workbench until the Amiga
+// moves to Topaz (#135).
+var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Tiny5&family=VT323&family=Workbench&display=swap';
 
 // The machines' own character sets, self-hosted — Google Fonts carries none of
 // them. Absolute so it resolves the same from the hub and from a game iframe.
@@ -141,7 +140,7 @@ var THEMES = [
             badgeBg: '#352879', badgeFg: '#ffffff',
             codeBg: '#000000', codeFg: '#70a4b2',
             footerFg: '#959595', linkFg: '#9ad284',
-            fontFamily: '"Sixtyfour", "Courier New", monospace'
+            fontFamily: '"Pet Me 64", "Courier New", monospace'
         },
         game: {
             bodyBg: '#352879', bufferBg: '#352879', bufferFg: '#ffffff',
@@ -149,8 +148,8 @@ var THEMES = [
             inputFg: '#9ad284', emphFg: '#b8c76f', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Sixtyfour", "Courier New", monospace',
-            propFamily: '"Sixtyfour", "Courier New", monospace'
+            monoFamily: '"Pet Me 64", "Courier New", monospace',
+            propFamily: '"Pet Me 64", "Courier New", monospace'
         },
         // every value is an exact Pepto-palette C64 color
         syntax: {
