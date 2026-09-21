@@ -2,9 +2,8 @@
 // Themes modeled after platforms Infocom shipped Z-machine games on
 
 // Canonical retro font URL (shared by all theme callers).
-// Google Fonts carries the hub chrome faces, plus Workbench until the Amiga
-// moves to Topaz (#135).
-var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Tiny5&family=VT323&family=Workbench&display=swap';
+// Google Fonts carries only the hub chrome faces now.
+var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Tiny5&family=VT323&display=swap';
 
 // The machines' own character sets, self-hosted — Google Fonts carries none of
 // them. Absolute so it resolves the same from the hub and from a game iframe.
@@ -171,7 +170,7 @@ var THEMES = [
             badgeBg: '#0055aa', badgeFg: '#ffffff',
             codeBg: '#000000', codeFg: '#ff8800',
             footerFg: '#cce0f4', linkFg: '#ffcc88',
-            fontFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
+            fontFamily: '"Topaz Double Serif", "Trebuchet MS", Tahoma, sans-serif'
         },
         game: {
             bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#ffffff',
@@ -179,11 +178,11 @@ var THEMES = [
             // pens: white bar, blue text. Orange stays in the chrome.
             gridBg: '#ffffff', gridFg: '#0055aa',
             inputFg: '#ffffff', emphFg: '#ffcc88', headerFg: '#ffffff',
-            // Workbench draws CRT scanline detail that is sub-pixel below ~20px.
-            bufferSize: '24px', bufferLineHeight: '1.25',
+            // Topaz Double is 8x16: 16px is its native size.
+            bufferSize: '16px', bufferLineHeight: '1.25',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Workbench", "Courier New", monospace',
-            propFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
+            monoFamily: '"Topaz Double Serif", "Courier New", monospace',
+            propFamily: '"Topaz Double Serif", "Courier New", monospace'
         },
         // Workbench 1.3 had four colors — blue, white, black, orange. Four cannot
         // furnish eight classes, so the rest are tints of those hues, never a new one.

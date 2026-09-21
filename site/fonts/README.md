@@ -19,28 +19,38 @@ costs one font, not seven.
 | `ProjectJasonTall.ttf` | Atari ST | TOS system font | 8×16 | [Kreative Software Retro Computing Fonts](https://www.kreativekorp.com/software/fonts/retro/) © Rebecca G. Bettencourt — Free Use License |
 | `AnotherMansTreasureMIII64C.ttf` | TRS-80 | Model III character ROM, 64-column | 8×24 | [Kreative Software TRS-80 Fonts](https://www.kreativekorp.com/software/fonts/trs80/) © Rebecca G. Bettencourt — Free Use License |
 | `PetMe64.ttf` | Commodore 64 | C64 character ROM, 40-column | 8×8 | [Kreative Software Retro Computing Fonts](https://www.kreativekorp.com/software/fonts/retro/) © Rebecca G. Bettencourt — Free Use License |
+| `TopazDoubleSerif.ttf` | Amiga | AmigaOS 1.2/1.3 Topaz, doubled in height | 8×16 | Built by `tools/build_topaz.py` from [amigavision/TopazDouble](https://github.com/amigavision/TopazDouble) © 2024 Alex Limi — MIT; Topaz 1.x design by Bob Burns |
 
 License texts, verbatim as distributed: `int10h-LICENSE.txt`,
 `KreativeSoftware-FreeLicense.txt` (Free Use License version 1.2f, retrieved
-2026-09-20).
+2026-09-20), `TopazDouble-LICENSE.txt` (MIT).
 
 CP/M keeps the Google-hosted VT323 — Kaypro terminals emulated the ADM-3A and
 H19, so a DEC-family face is defensible there.
 
-The C64 used to use **Sixtyfour**, and the Amiga still uses **Workbench**, both
-by Jens Kutílek from
-[homecomputer-fonts](https://github.com/jenskutilek/homecomputer-fonts). They
-are the right machines' faces under a good license, but they are variable fonts
-whose `SCAN` and `BLED` axes carve CRT scanline gaps into the glyph outlines.
-That detail is sub-glyph, so it only resolves at whole multiples of the font's
-design grid and turns to fuzz or lumpy edges anywhere else. An effect that
-distorts belongs on the screen, where it can be tuned and switched off, not in
-a typeface — so the C64 moved to Pet Me 64, and the Amiga follows to Topaz in
-#135.
+No face here carries a CRT effect. The C64 and Amiga used to use Jens Kutílek's
+**Sixtyfour** and **Workbench** — the right machines' faces, under a good
+license, but variable fonts whose `SCAN` and `BLED` axes carve scanline gaps
+into the glyph outlines. That detail is smaller than a glyph, so it only lands
+on whole pixels at multiples of the design grid and goes to fuzz or lumpy edges
+everywhere else. An effect that distorts belongs on the screen, where it can be
+tuned and switched off, not in a typeface (#135).
+
+## Topaz is built, not downloaded
+
+`TopazDoubleSerif.ttf` is the one file here nobody distributed as a font a
+browser can read. Upstream ships an AmigaOS disk font; `tools/build_topaz.py`
+parses it and traces each pixel into TrueType outlines. Regenerate it with:
+
+    python tools/build_topaz.py
+
+The source bitmap and its provenance live in `tools/fonts/TopazDouble/`. MIT
+permits the conversion; it asks only that the notice travel with the result,
+which is what `TopazDouble-LICENSE.txt` is.
 
 ## Rules for changing anything in this folder
 
-**Do not modify these files.** The Kreative Software Free Use License forbids
+**Do not modify these files by hand.** The Kreative Software Free Use License forbids
 derivative works, which rules out subsetting them or converting them to WOFF —
 they ship as the TTFs they were distributed as. Redistribution is permitted on
 the conditions that the license travels with them verbatim and that Kreative
@@ -62,6 +72,7 @@ themes set `bufferSize` to the sizes they do:
 
 - IBM VGA 8×16 and Project Jason Tall are 16 pixels tall — native at `16px`.
 - Print Char 21, Candy Antics and Pet Me 64 are 8 pixels tall — `16px` is 2×.
+- Topaz Double Serif is 16 pixels tall — native at `16px`.
 - Another Mans Treasure MIII 64C is 24 pixels tall — native at `24px`.
 
 Changing a `bufferSize` off one of those values is what makes a theme look
