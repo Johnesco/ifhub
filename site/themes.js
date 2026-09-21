@@ -176,7 +176,9 @@ var THEMES = [
         },
         game: {
             bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#ffffff',
-            gridBg: '#ff8800', gridFg: '#000000',
+            // Infocom reverse-videoed the status line, swapping the window's
+            // pens: white bar, blue text. Orange stays in the chrome.
+            gridBg: '#ffffff', gridFg: '#0055aa',
             inputFg: '#ffffff', emphFg: '#ffcc88', headerFg: '#ffffff',
             // Workbench draws CRT scanline detail that is sub-pixel below ~20px.
             bufferSize: '24px', bufferLineHeight: '1.25',
@@ -814,7 +816,7 @@ function buildInkCSS(g, sb) {
   return 'body { background: ' + g.bodyBg + ' !important; color: ' + g.bufferFg + ' !important; font-family: ' + g.propFamily + ' !important; }\n' +
     'h1 { color: ' + g.headerFg + ' !important; border-bottom-color: ' + g.gridBg + ' !important; }\n' +
     '#story p { color: ' + g.bufferFg + ' !important; }\n' +
-    '.choice-echo { color: ' + g.gridFg + ' !important; }\n' +
+    '.choice-echo { color: ' + g.inputFg + ' !important; }\n' +
     '#choices { border-top-color: ' + g.gridBg + ' !important; }\n' +
     '.choice { color: ' + g.inputFg + ' !important; font-family: ' + g.propFamily + ' !important; }\n' +
     '.choice:hover { color: ' + g.headerFg + ' !important; }\n' +
