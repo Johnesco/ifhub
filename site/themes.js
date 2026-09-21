@@ -303,9 +303,13 @@ var THEMES = [
             fontFamily: '"Press Start 2P", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#2a3c86', bufferBg: '#2a3c86', bufferFg: '#a8c8ff',
-            gridBg: '#a8c8ff', gridFg: '#1a2860',
-            inputFg: '#e0ecff', emphFg: '#ffffff', headerFg: '#ffffff',
+            // GRAPHICS 0 takes its text hue from COLOR2 and only its luminance
+            // from COLOR1, so text and background are always one hue. Stock is
+            // $9A on $94 (3.74:1); one luminance step up, $9C, clears AA. Every
+            // value is an NTSC GTIA palette entry (MAME, GTIA C014805, 26.2°).
+            bodyBg: '#11519b', bufferBg: '#11519b', bufferFg: '#99d9ff',   // $94, $94, $9C
+            gridBg: '#99d9ff', gridFg: '#11519b',                          // reverse video
+            inputFg: '#bbfbff', emphFg: '#eeeeee', headerFg: '#eeeeee',    // $9E, $0E, $0E
             bufferSize: '16px', bufferLineHeight: '1.6',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Candy Antics", "Press Start 2P", "Courier New", monospace',
