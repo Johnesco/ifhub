@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <title>IF Hub &mdash; Interactive Fiction Player</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- shared first, so this page's own styles below can override it -->
+<link rel="stylesheet" href="crt.css">
 <style>
 /* Colors and the typeface come from the platform theme tokens set by themes.js on <html>;
    the fallbacks are the Classic theme. */
@@ -268,6 +270,10 @@ a:focus-visible, button:focus-visible, select:focus-visible {
   .game-card { padding: 16px; }
   .launch .btn { flex: 1 1 auto; text-align: center; }
 }
+/* CRT over the whole page: fixed to the viewport, above everything, taking no
+   pointer input. crt.css draws the lines; themes.js sizes them. */
+#crt-overlay { position: fixed; z-index: 1000; }
+
 @media (prefers-reduced-motion: reduce) {
   .chip { transition: none; }
 }
@@ -277,6 +283,7 @@ a:focus-visible, button:focus-visible, select:focus-visible {
 <script>initTheme('library');</script>
 </head>
 <body>
+<div id="crt-overlay" aria-hidden="true"></div>
 <div class="page">
 
 <header class="masthead">
@@ -336,7 +343,14 @@ loadHubData('cards.json').then(function(data) {
 
   window.addEventListener('popstate', render);
   wireThemeSelect(document.getElementById('theme-select'));
-  wireCrtToggle(document.getElementById('crt-toggle'));
+  // CRT ON draws scanlines over this page too, not only in the player (#137).
+  function applyCrt() {
+    document.body.classList.toggle('crt-on', getCrt());
+    if (getCrt()) alignCrtOverlay(document.getElementById('crt-overlay'));
+  }
+  wireCrtToggle(document.getElementById('crt-toggle'), applyCrt);
+  window.addEventListener('resize', applyCrt);   // zoom changes the pixel ratio
+  applyCrt();
 
   function versionOptions(card) {
     var opts = [{ id: card.id, label: card.primaryLabel || 'Current', playUrl: card.playUrl,

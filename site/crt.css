@@ -1,0 +1,20 @@
+/* CRT: scanlines laid over a screen -- the player's game pane, or the whole
+   landing page -- never carved into a font (#135). Shared by both pages.
+
+   The overlay covers its container and takes no pointer input. themes.js
+   (alignCrtOverlay) sets the period, gap and phase in whole device pixels:
+   sized in CSS pixels, the lines would land between device pixels on a scaled
+   display and go lumpy -- the fault that ruled out fonts with scanline axes. */
+#crt-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(to bottom,
+    transparent 0,
+    transparent var(--crt-gap, 1px),
+    rgba(0, 0, 0, 0.22) var(--crt-gap, 1px),
+    rgba(0, 0, 0, 0.22) var(--crt-period, 2px));
+  background-position: 0 var(--crt-phase, 0px);
+}
+body.crt-on #crt-overlay { display: block; }

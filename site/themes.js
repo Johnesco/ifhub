@@ -547,6 +547,23 @@ function setCrt(on) {
     } catch (e) { /* localStorage unavailable */ }
 }
 
+/* Size an overlay's scanlines in whole device pixels (crt.css draws them). In CSS
+   pixels a 2px period is 2.5 device pixels at 125% scaling, and the lines go
+   lumpy. The overlay can also start partway through a device pixel, so the
+   pattern is shifted to begin on the next whole one; the epsilon keeps float
+   noise (79.000001) from shifting it a needless pixel. Call again on resize and
+   zoom, which change the ratio, and whenever the overlay moves. */
+function alignCrtOverlay(overlay) {
+    if (!overlay) return;
+    var dpr = window.devicePixelRatio || 1;
+    var line = Math.max(1, Math.floor(dpr));                 // dark line, device px
+    var period = Math.max(line + 1, Math.round(2.4 * dpr));  // line + gap, device px
+    var top = overlay.getBoundingClientRect().top * dpr - 1e-3;
+    overlay.style.setProperty('--crt-period', (period / dpr) + 'px');
+    overlay.style.setProperty('--crt-gap', ((period - line) / dpr) + 'px');
+    overlay.style.setProperty('--crt-phase', ((Math.ceil(top) - top - 1e-3) / dpr) + 'px');
+}
+
 /* Tie a checkbox to the CRT setting. onChange runs after the setting is saved. */
 function wireCrtToggle(checkbox, onChange) {
     if (!checkbox) return checkbox;

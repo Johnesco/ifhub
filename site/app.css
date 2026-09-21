@@ -343,23 +343,6 @@ body.resizing iframe {
   background: var(--page-bg, #0a0a0a);
 }
 
-/* CRT: scanlines laid over the game pane, never carved into a font (#135).
-   app.js sets the period, gap and phase in whole device pixels. Sized in CSS
-   pixels they would land between device pixels on a scaled display and go
-   lumpy -- the fault that ruled out the fonts with scanline axes. */
-#crt-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: repeating-linear-gradient(to bottom,
-    transparent 0,
-    transparent var(--crt-gap, 1px),
-    rgba(0, 0, 0, 0.22) var(--crt-gap, 1px),
-    rgba(0, 0, 0, 0.22) var(--crt-period, 2px));
-  background-position: 0 var(--crt-phase, 0px);
-}
-body.crt-on #crt-overlay { display: block; }
 
 .game-toolbar {
   grid-column: 1 / -1;
@@ -403,6 +386,8 @@ body.crt-on #crt-overlay { display: block; }
   cursor: pointer;
   user-select: none;
 }
+/* An author display value beats the hidden attribute, so restate it (#136). */
+.crt-toggle[hidden] { display: none; }
 .crt-toggle input {
   margin: 0;
   accent-color: var(--accent, #e8d090);
