@@ -18,7 +18,7 @@ IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interact
 | Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
 | Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
-Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page), and `search.js` with `search.css` (the text search, §4, used by the player and the walkthrough viewer). The player's code is in `app.js` and `app.css`.
+Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page), `search.js` with `search.css` (the text search, §4, used by the player and the walkthrough viewer), and `crt.css` (the CRT scanlines, §5.4, used by the landing page and the player). The player's code is in `app.js` and `app.css`.
 
 ### 2.1 Landing page
 
@@ -117,11 +117,11 @@ An overlay is a game's default, not a lock: any theme, Classic and Native includ
 
 ### 5.4 CRT
 
-CRT ON lays horizontal scanlines over the game pane, and only the game pane: source, walkthrough and tests stay plain. It is off by default, one setting for the whole hub rather than one per theme, saved in `localStorage` under `ifhub-crt`, and offered beside the theme picker on both the landing page and the player. A `?crt=1` link turns it on for that view without changing the reader's own saved setting, the way a `?theme=` link does. Under **Native**, which asks the hub to inject nothing into the game, the checkbox is hidden and no scanlines are drawn, whatever the setting says; the setting itself is kept, so the next platform theme brings CRT back as it was, and `?crt=1` leaves the URL until then.
+CRT ON lays horizontal scanlines over the screen: in the player over the game pane only, so source, walkthrough and tests stay plain; on the landing page over the whole page, fixed to the viewport so it stays in place as the page scrolls. It is off by default, one setting for the whole hub rather than one per theme, saved in `localStorage` under `ifhub-crt`, and offered beside the theme picker on both the landing page and the player. A `?crt=1` link turns it on for that view without changing the reader's own saved setting, the way a `?theme=` link does. Under **Native**, which asks the hub to inject nothing into the game, the checkbox is hidden and no scanlines are drawn, whatever the setting says; the setting itself is kept, so the next platform theme brings CRT back as it was, and `?crt=1` leaves the URL until then.
 
-The lines are drawn on the screen, never carved into a typeface: fonts whose outlines carry a scanline effect only resolve at a few sizes and go lumpy at the rest, which is why none is used (§5.1). Because the overlay sits in the hub above the game's iframe, it works over every engine, BASIC's canvas included, and takes no pointer input.
+The lines are drawn on the screen, never carved into a typeface: fonts whose outlines carry a scanline effect only resolve at a few sizes and go lumpy at the rest, which is why none is used (§5.1). Because the overlay sits in the hub above the game's iframe, it works over every engine, BASIC's canvas included; on either page it takes no pointer input, so everything under it stays clickable.
 
-The pattern is sized in whole device pixels, not CSS pixels. On a display scaled to 125% a 2px period would be 2.5 device pixels and the lines would go uneven, so `app.js` picks a period of about 2.4 CSS pixels rounded to whole device pixels, with a one-device-pixel dark line, and shifts the pattern so its first line lands on a pixel boundary even when the pane itself starts partway through one. It re-aligns on resize and zoom, which change the ratio, and when the pane moves.
+The pattern is sized in whole device pixels, not CSS pixels. On a display scaled to 125% a 2px period would be 2.5 device pixels and the lines would go uneven, so `alignCrtOverlay()` in `themes.js` — one implementation, called by both pages, drawing the pattern `crt.css` defines — picks a period of about 2.4 CSS pixels rounded to whole device pixels, with a one-device-pixel dark line, and shifts the pattern so its first line lands on a pixel boundary even when the pane itself starts partway through one. It re-aligns on resize and zoom, which change the ratio, and when the pane moves.
 
 ### 5.3 Message protocol
 

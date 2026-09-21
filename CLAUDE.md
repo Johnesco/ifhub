@@ -52,7 +52,8 @@ ifhub/
 ├── site/                    ← the static hub: index.html (cards), app.html + app.css + app.js (split-pane player),
 │                              walkthrough.html (walkthrough viewer), themes.js (themes), hub.js (data loading,
 │                              collections), search.js + search.css (the one text search, used by both the
-│                              source pane and the walkthrough viewer), games.json, cards.json, hubs.json
+│                              source pane and the walkthrough viewer), crt.css (the CRT scanlines, used by the
+│                              landing page and the player), games.json, cards.json, hubs.json
 │   └── fonts.css + fonts/   ← the machines' own character sets, self-hosted (Google Fonts carries none of them);
 │                              redistributed under their licenses — read site/fonts/README.md before touching them
 ├── tools/
