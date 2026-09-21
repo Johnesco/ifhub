@@ -21,8 +21,10 @@ Inform 7 and Z-machine (Parchment), Ink (ink.js), Rez, wwwBASIC and Applesoft BA
 ## Layout
 
 ```
-site/        the hub: index.html (cards), app.html (split-pane player), themes.js, games.json, cards.json, hubs.json
-tools/       ship.py (intake), build_games.py (registry), publish.py, push_hub.py, check_links.py, build_landing.py
+site/        the hub: index.html (cards), app.html (split-pane player), themes.js, crt.css, games.json, cards.json, hubs.json
+             fonts.css + fonts/: each platform theme's own character set, self-hosted with its license
+tools/       ship.py (intake), build_games.py (registry), publish.py, push_hub.py, check_links.py, build_landing.py,
+             build_topaz.py (builds the Amiga theme's Topaz from its Amiga disk font)
 docs/        publishing.md (the contract), functional-spec.md, sdlc/
 reference/   css-overlay.md (theming), multi-version-guide.md (versioned games such as Zork I v0..v3)
 ```
@@ -30,3 +32,5 @@ reference/   css-overlay.md (theming), multi-version-guide.md (versioned games s
 ## Built with
 
 [Parchment](https://github.com/curiousdannii/parchment), [Inform 7](http://inform7.com/), [Ink](https://www.inklestudios.com/ink/), [Rez](https://rez-lang.com/), [ZILF](https://foss.heptapod.net/zilf/zilf), and [Claude](https://claude.ai/).
+
+The platform themes draw game text in each machine's own character set: IBM VGA 8×16 by VileR ([The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/), CC BY-SA 4.0); the Apple II, Atari 800, Atari ST, TRS-80 and Commodore 64 faces by Rebecca G. Bettencourt of [Kreative Software](https://www.kreativekorp.com/software/fonts/); and Topaz from [TopazDouble](https://github.com/amigavision/TopazDouble) by Alex Limi (MIT). Licenses and full credits: [site/fonts/README.md](site/fonts/README.md).
