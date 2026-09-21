@@ -290,16 +290,19 @@ var THEMES = [
     {
         id: 'atari8', name: 'Atari 800',
         chrome: {
-            pageBg: '#2a3c86', pageFg: '#a8c8ff', headingFg: '#e0ecff',
-            accentFg: '#a8c8ff', mutedFg: '#94b4ec', dimFg: '#92b2ee',
-            cardBg: '#233270', cardBorder: '#3a5090', toolbarBg: '#26377a',
-            border: '#3a5090', borderHover: '#4a60a0', surfaceBg: '#26377a',
-            btnBg: '#a8c8ff', btnFg: '#1a2860', btnHoverBg: '#e0ecff',
-            inputBg: '#233270', inputFg: '#a8c8ff',
-            activeTabBg: '#a8c8ff', activeTabFg: '#1a2860',
-            badgeBg: '#233270', badgeFg: '#94b4ec',
-            codeBg: '#233270', codeFg: '#a8c8ff',
-            footerFg: '#92b2ee', linkFg: '#e0ecff',
+            // Every value an NTSC GTIA entry from hue 9, the GRAPHICS 0 blue, or
+            // the grays. The page sits a step below the $94 screen so the screen
+            // reads as the lit thing in its frame; recessed surfaces go to $90.
+            pageBg: '#002f74', pageFg: '#99d9ff', headingFg: '#eeeeee',        // $92 $9C $0E
+            accentFg: '#99d9ff', mutedFg: '#77b7ff', dimFg: '#77b7ff',         // $9C $9A $9A
+            cardBg: '#000d48', cardBorder: '#3373bd', toolbarBg: '#000d48',    // $90 $96 $90
+            border: '#3373bd', borderHover: '#5595df', surfaceBg: '#000d48',   // $96 $98 $90
+            btnBg: '#99d9ff', btnFg: '#000d48', btnHoverBg: '#bbfbff',         // $9C $90 $9E
+            inputBg: '#000d48', inputFg: '#99d9ff',                            // $90 $9C
+            activeTabBg: '#99d9ff', activeTabFg: '#000d48',                    // $9C $90
+            badgeBg: '#000d48', badgeFg: '#77b7ff',                            // $90 $9A
+            codeBg: '#000d48', codeFg: '#99d9ff',                              // $90 $9C
+            footerFg: '#77b7ff', linkFg: '#bbfbff',                            // $9A $9E
             fontFamily: '"Press Start 2P", "Courier New", monospace'
         },
         game: {
@@ -320,7 +323,7 @@ var THEMES = [
             kw: '#e0ecff', str: '#a8ffd8', cmt: '#7f96d8', sub: '#ffc8e8',
             head: '#ffffff', rule: '#ffd8a8', num: '#a8c8ff', tbl: '#d8c0ff'
         },
-        scrollbar: { thumb: '#3a5090', track: '#2a3c86', thumbHover: '#4a60a0' }
+        scrollbar: { thumb: '#5595df', track: '#002f74', thumbHover: '#77b7ff' }  // $98 $92 $9A
     },
     {
         id: 'trs80', name: 'TRS-80',
