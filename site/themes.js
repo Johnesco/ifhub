@@ -240,7 +240,8 @@ var THEMES = [
         },
         game: {
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
-            gridBg: '#008800', gridFg: '#fff',
+            // Infocom drew the status line in reverse video, not in the ST desktop green.
+            gridBg: '#000000', gridFg: '#ffffff',
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
             // Project Jason Tall is 8x16: 16px is native.
             bufferSize: '16px', bufferLineHeight: '1.35',
