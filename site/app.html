@@ -27,8 +27,11 @@
       <button class="view-toggle" data-pane="walkthrough" title="Toggle walkthrough pane">&#9776;<span class="vt-label"> Walk</span></button>
       <button class="view-toggle" data-pane="tests" title="Toggle tests pane" style="display:none">&#10003;<span class="vt-label"> Tests</span></button>
     </div>
-    <label class="toolbar-label" id="theme-label">Theme</label>
-    <div id="theme-picker"></div>
+    <span class="look-group">
+      <label class="toolbar-label" id="theme-label">Theme</label>
+      <div id="theme-picker"></div>
+      <label class="crt-toggle" title="Scanlines over the game pane"><input type="checkbox" id="crt-toggle"> CRT ON</label>
+    </span>
   </div>
   <span id="sound-controls" style="display:none;">
     <button id="mute-btn" title="Toggle sound">
@@ -59,6 +62,7 @@
 <!-- ===== GAME PANE ===== -->
 <div id="game-pane">
   <iframe id="game-frame" src="about:blank" title="Interactive Fiction"></iframe>
+  <div id="crt-overlay" aria-hidden="true"></div>
 </div>
 
 <!-- ===== RESIZE HANDLE ===== -->

@@ -532,6 +532,32 @@ function setThemeId(id) {
     catch (e) { /* localStorage unavailable */ }
 }
 
+/* CRT: scanlines laid over the game pane. Off unless the reader turns it on, and
+   one setting for the whole hub rather than one per theme. It is drawn on the
+   screen, never carved into a typeface (#135). */
+function getCrt() {
+    try { return localStorage.getItem('ifhub-crt') === '1'; }
+    catch (e) { return false; }
+}
+
+function setCrt(on) {
+    try {
+        if (on) localStorage.setItem('ifhub-crt', '1');
+        else localStorage.removeItem('ifhub-crt');
+    } catch (e) { /* localStorage unavailable */ }
+}
+
+/* Tie a checkbox to the CRT setting. onChange runs after the setting is saved. */
+function wireCrtToggle(checkbox, onChange) {
+    if (!checkbox) return checkbox;
+    checkbox.checked = getCrt();
+    checkbox.addEventListener('change', function() {
+        setCrt(this.checked);
+        if (onChange) onChange(this.checked);
+    });
+    return checkbox;
+}
+
 function getTheme(id) {
     for (var i = 0; i < THEMES.length; i++) {
         if (THEMES[i].id === id) return THEMES[i];

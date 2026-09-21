@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     updateLibraryLink(activeHub);
 
+    initCrt();
     buildStyleDropdown(null);
 
     var params = new URLSearchParams(window.location.search);
@@ -235,8 +236,8 @@ function shareableTheme() {
   return val;
 }
 
-// Rewrite ?game, ?view, ?theme and ?hub from the current state. Defaults stay
-// out of the URL: game-only view, the Classic theme, all games.
+// Rewrite ?game, ?view, ?theme, ?hub and ?crt from the current state. Defaults
+// stay out of the URL: game-only view, the Classic theme, all games, CRT off.
 // replaceState, not pushState: the player iframe (Parchment) injects its own
 // session-history entries, so top-level pushState back/forward is unreliable;
 // replaceState keeps the URL shareable and Back returns to the prior page.
@@ -249,8 +250,61 @@ function syncUrl() {
   if (theme) params.set('theme', theme);
   var hubSel = document.getElementById('hub-select');
   if (hubSel && hubSel.value && hubSel.value !== 'all') params.set('hub', hubSel.value);
+  if (crtOn) params.set('crt', '1');
   var q = params.toString().replace(/%2B/g, '+');
   history.replaceState(null, '', window.location.pathname + (q ? '?' + q : ''));
+}
+
+/* ==================================================================
+   CRT OVERLAY
+   ================================================================== */
+// Scanlines laid over the game pane, off unless the reader ticks CRT ON (#135).
+// A ?crt=1 link shows the sender's view without changing the reader's own saved
+// setting, the same way a ?theme= link does.
+var crtOn = false;
+
+function initCrt() {
+  var params = new URLSearchParams(window.location.search);
+  crtOn = params.has('crt') ? params.get('crt') === '1' : getCrt();
+  var box = document.getElementById('crt-toggle');
+  if (box) {
+    box.checked = crtOn;
+    box.addEventListener('change', function() {
+      crtOn = this.checked;
+      setCrt(crtOn);
+      applyCrt();
+      syncUrl();
+    });
+  }
+  // Zooming changes devicePixelRatio and fires resize; the pane moves when the
+  // toolbar wraps or the split is dragged. Either way the lines must re-align.
+  window.addEventListener('resize', alignCrt);
+  var pane = document.getElementById('game-pane');
+  if (pane && window.ResizeObserver) new ResizeObserver(alignCrt).observe(pane);
+  applyCrt();
+}
+
+function applyCrt() {
+  document.body.classList.toggle('crt-on', crtOn);
+  alignCrt();
+}
+
+// Work the scanlines out in whole device pixels. In CSS pixels a 2px period is
+// 2.5 device pixels at 125% scaling, and the lines go lumpy. The pane can also
+// start partway through a device pixel, so the pattern is shifted to begin on
+// the next whole one.
+function alignCrt() {
+  if (!crtOn) return;
+  var overlay = document.getElementById('crt-overlay');
+  if (!overlay) return;
+  var dpr = window.devicePixelRatio || 1;
+  var line = Math.max(1, Math.floor(dpr));                 // dark line, device px
+  var period = Math.max(line + 1, Math.round(2.4 * dpr));  // line + gap, device px
+  // The epsilon keeps float noise (79.000001) from shifting the lines a pixel.
+  var top = overlay.getBoundingClientRect().top * dpr - 1e-3;
+  overlay.style.setProperty('--crt-period', (period / dpr) + 'px');
+  overlay.style.setProperty('--crt-gap', ((period - line) / dpr) + 'px');
+  overlay.style.setProperty('--crt-phase', ((Math.ceil(top) - top - 1e-3) / dpr) + 'px');
 }
 
 /* ==================================================================

@@ -29,10 +29,9 @@ a:focus-visible, button:focus-visible, select:focus-visible {
 /* ---------- masthead ---------- */
 .masthead {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
   margin-bottom: 22px;
 }
 .masthead h1 {
@@ -57,6 +56,23 @@ a:focus-visible, button:focus-visible, select:focus-visible {
   text-transform: uppercase;
   color: var(--dim, #887755);
   white-space: nowrap;
+}
+/* Look and CRT share one line under the tagline, for every theme. Beside the
+   title in a wrapping row, Look moved with the chrome font: top right for a
+   narrow one like VT323, down to the left for a wide one. */
+.look-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+.look.crt { cursor: pointer; }
+.look.crt input {
+  margin: 0;
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent, #e8d090);
+  cursor: pointer;
 }
 .look select {
   font: inherit;
@@ -268,7 +284,10 @@ a:focus-visible, button:focus-visible, select:focus-visible {
     <h1 id="hub-title">IF Hub</h1>
     <p class="thesis">Text adventures in the browser, with their source and walkthroughs beside them.</p>
   </div>
-  <label class="look">Look <select id="theme-select" aria-label="Visual theme"></select></label>
+  <div class="look-row">
+    <label class="look">Look <select id="theme-select" aria-label="Visual theme"></select></label>
+    <label class="look crt" title="Scanlines over the game pane"><input type="checkbox" id="crt-toggle"> CRT ON</label>
+  </div>
 </header>
 
 <nav class="rail" id="rail" aria-label="Collections"></nav>
@@ -317,6 +336,7 @@ loadHubData('cards.json').then(function(data) {
 
   window.addEventListener('popstate', render);
   wireThemeSelect(document.getElementById('theme-select'));
+  wireCrtToggle(document.getElementById('crt-toggle'));
 
   function versionOptions(card) {
     var opts = [{ id: card.id, label: card.primaryLabel || 'Current', playUrl: card.playUrl,
