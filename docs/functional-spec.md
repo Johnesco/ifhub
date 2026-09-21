@@ -22,7 +22,7 @@ Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards
 
 ### 2.1 Landing page
 
-- Fetches `cards.json` and `hubs.json`. The masthead holds the title, a one-line description and the "Look" theme picker (§5.1, persisted in `localStorage` under `ifhub-theme`).
+- Fetches `cards.json` and `hubs.json`. The masthead holds the title, a one-line description and, on its own line beneath them, the "Look" theme picker (§5.1, persisted in `localStorage` under `ifhub-theme`) with the CRT ON checkbox (§5.4) beside it. That line sits in the same place for every theme; beside the title in a wrapping row, it used to move with the chrome font.
 - Collections are the primary navigation: a rail of chips built from `hubs.json`, one per collection, each showing how many games it holds. The active collection's description appears under the rail and the page title becomes "<collection> — IF Hub". The active collection is in the URL as `?hub=<id>` (bare path for "all"); switching uses `history.pushState` and re-renders in place, and back and forward restore it.
 - Cards fill a responsive grid (columns of at least 320px), sorted by title. A card shows the title (linking to the game's landing page), badges for the engine and, when any version has them, sound and tests, the author line, the description, and for versioned groups a row of version chips.
 - Launch controls follow the selected version: **Play** opens the game's own `playUrl` fullscreen; **Open in Hub** opens the player on `game+source`; Source, Walkthrough and Tests links open the player on that view and appear only when the version has the file. Player links carry `&hub=<id>` so the player's game selector stays within the collection.
@@ -30,11 +30,11 @@ Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards
 
 ### 2.2 Player (`app.html`)
 
-URL parameters: `?game=<id>` (default: first game), `?hub=<id>` (restrict the game selector to a collection), `?view=<panes>` (for example `game+source`, `walkthrough`), `?theme=<id>`.
+URL parameters: `?game=<id>` (default: first game), `?hub=<id>` (restrict the game selector to a collection), `?view=<panes>` (for example `game+source`, `walkthrough`), `?theme=<id>`, `?crt=1` (scanlines over the game pane, §5.4).
 
-The address bar is always a shareable link to what is on screen: every game, view, style or collection change rewrites those four parameters with `history.replaceState` (not `pushState`, because the game iframe adds its own history entries). Defaults stay out of the URL: the game-only view, the Classic theme, and the "all" collection. An overlay game shows its own overlay but keeps the `theme` it arrived with, so switching to a non-overlay game applies it.
+The address bar is always a shareable link to what is on screen: every game, view, style, collection or CRT change rewrites those parameters with `history.replaceState` (not `pushState`, because the game iframe adds its own history entries). Defaults stay out of the URL: the game-only view, the Classic theme, the "all" collection, and CRT off. An overlay game shows its own overlay but keeps the `theme` it arrived with, so switching to a non-overlay game applies it.
 
-Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2), sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests.
+Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2) with the CRT ON checkbox beside it — the two wrap as one unit, so they stay on one line — sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests.
 
 View switching: Game toggles independently. Source, Walk and Tests are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl`.
 
@@ -114,6 +114,14 @@ In the player the Style dropdown lists the platform themes, then a separator, th
 Native is the one entry that is not a theme: it injects nothing into pages the hub did not write — the game's own player, its own `source.html` when it ships one, and the workspace's tests report — so they can be seen as their author built them. Surfaces the hub does write (chrome, the source pane, the walkthrough viewer) still need colors and fall back to classic. Under Native the ifPlayer tests report therefore shows its own light theme inside a dark hub, which is what Native asks for.
 
 An overlay is a game's default, not a lock: any theme, Classic and Native included, overrides it, and that choice is remembered across games. The selection lives in the URL as `?theme=` (omitted when it is the game's own default) and in `localStorage` under `ifhub-theme`. Choosing a platform theme injects a style block into the same-origin game, source-browser, walkthrough and tests iframes, using engine-specific CSS builders chosen by the game's `engine` (Parchment for Inform 7 and Z-machine, Ink, BASIC for every BASIC dialect, Rez, Sharpee, and the test report; Sharpee pages are themed through their `--theme-*` variables plus explicit rules for the menu bar, dropdowns, status bar, input line and dialogs), and posts `ifhub:applyTheme` to the game. Choosing the overlay posts `ifhub:restoreOverlay`.
+
+### 5.4 CRT
+
+CRT ON lays horizontal scanlines over the game pane, and only the game pane: source, walkthrough and tests stay plain. It is off by default, one setting for the whole hub rather than one per theme, saved in `localStorage` under `ifhub-crt`, and offered beside the theme picker on both the landing page and the player. A `?crt=1` link turns it on for that view without changing the reader's own saved setting, the way a `?theme=` link does.
+
+The lines are drawn on the screen, never carved into a typeface: fonts whose outlines carry a scanline effect only resolve at a few sizes and go lumpy at the rest, which is why none is used (§5.1). Because the overlay sits in the hub above the game's iframe, it works over every engine, BASIC's canvas included, and takes no pointer input.
+
+The pattern is sized in whole device pixels, not CSS pixels. On a display scaled to 125% a 2px period would be 2.5 device pixels and the lines would go uneven, so `app.js` picks a period of about 2.4 CSS pixels rounded to whole device pixels, with a one-device-pixel dark line, and shifts the pattern so its first line lands on a pixel boundary even when the pane itself starts partway through one. It re-aligns on resize and zoom, which change the ratio, and when the pane moves.
 
 ### 5.3 Message protocol
 
