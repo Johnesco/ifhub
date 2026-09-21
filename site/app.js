@@ -303,22 +303,8 @@ function applyCrt() {
   alignCrt();
 }
 
-// Work the scanlines out in whole device pixels. In CSS pixels a 2px period is
-// 2.5 device pixels at 125% scaling, and the lines go lumpy. The pane can also
-// start partway through a device pixel, so the pattern is shifted to begin on
-// the next whole one.
 function alignCrt() {
-  if (!crtActive()) return;
-  var overlay = document.getElementById('crt-overlay');
-  if (!overlay) return;
-  var dpr = window.devicePixelRatio || 1;
-  var line = Math.max(1, Math.floor(dpr));                 // dark line, device px
-  var period = Math.max(line + 1, Math.round(2.4 * dpr));  // line + gap, device px
-  // The epsilon keeps float noise (79.000001) from shifting the lines a pixel.
-  var top = overlay.getBoundingClientRect().top * dpr - 1e-3;
-  overlay.style.setProperty('--crt-period', (period / dpr) + 'px');
-  overlay.style.setProperty('--crt-gap', ((period - line) / dpr) + 'px');
-  overlay.style.setProperty('--crt-phase', ((Math.ceil(top) - top - 1e-3) / dpr) + 'px');
+  if (crtActive()) alignCrtOverlay(document.getElementById('crt-overlay'));
 }
 
 /* ==================================================================
