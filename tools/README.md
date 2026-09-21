@@ -11,6 +11,9 @@ These scripts run on the receive side only. They never compile, run, or test a g
 | `serve.py [--port 8892]` | Local preview: serves `site/` at `/ifhub/` and every game folder at `/<game>/` on one port, the GitHub Pages layout. The `hub-site` launch config runs it |
 | `check_links.py [--fix]` | Verifies every URL in the registry resolves to a file on disk; `--fix` drops broken optional URLs |
 | `build_landing.py --all` or `<base>` | Regenerates the landing page of a versioned group (zork1, dracula) from the group data in `games.json` and the primary folder's `landing.json` |
+| `build_topaz.py [--preview]` | Rebuilds `site/fonts/TopazDoubleSerif.ttf`, the Amiga theme's Topaz, by parsing the AmigaOS disk font vendored in `fonts/TopazDouble/` and tracing each pixel into TrueType outlines. Needs `pip install fonttools`; nothing else in the hub does. `--preview` prints sample glyphs as text |
 | `web/generate_pages.py` | Writes a game's landing page (index.html) from `web/landing-template.html`; used by ship. The only file the hub writes into a game folder |
 
 `lib/`: `paths` (hub root, site dir, workspace discovery), `git` (git and gh helpers), `output`, `process`, `web` (template substitution).
+
+`fonts/`: vendored source for fonts the hub builds rather than downloads. Each folder carries a `SOURCE.md` with the upstream commit and blob hash.

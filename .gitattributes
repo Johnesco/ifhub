@@ -4,3 +4,6 @@
 site/fonts/** -text
 site/fonts/*.ttf binary
 site/fonts/*.woff binary
+
+# Vendored font sources: byte for byte, so SOURCE.md's blob hashes stay checkable.
+tools/fonts/** -text

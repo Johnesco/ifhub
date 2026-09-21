@@ -61,6 +61,8 @@ ifhub/
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
 │   ├── check_links.py, check_drift.py, build_landing.py, serve.py (local preview: hub + games on one port)
+│   ├── build_topaz.py       ← Amiga disk font → site/fonts/TopazDoubleSerif.ttf (needs fonttools)
+│   ├── fonts/               ← vendored font sources the hub builds from, each with a SOURCE.md
 │   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (what the site does), sdlc.md (how work happens)
