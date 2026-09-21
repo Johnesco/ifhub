@@ -250,7 +250,7 @@ function syncUrl() {
   if (theme) params.set('theme', theme);
   var hubSel = document.getElementById('hub-select');
   if (hubSel && hubSel.value && hubSel.value !== 'all') params.set('hub', hubSel.value);
-  if (crtOn) params.set('crt', '1');
+  if (crtActive()) params.set('crt', '1');
   var q = params.toString().replace(/%2B/g, '+');
   history.replaceState(null, '', window.location.pathname + (q ? '?' + q : ''));
 }
@@ -284,8 +284,22 @@ function initCrt() {
   applyCrt();
 }
 
+// Native asks the hub to inject nothing into the game, and CRT is a hub effect, so
+// under Native the checkbox is not offered and no scanlines are drawn (#136). The
+// saved setting is left alone: the next platform theme brings CRT back as it was.
+function crtAllowed() {
+  var sel = document.getElementById('style-select');
+  return !(sel && sel.value === NATIVE_ID);
+}
+
+function crtActive() {
+  return crtOn && crtAllowed();
+}
+
 function applyCrt() {
-  document.body.classList.toggle('crt-on', crtOn);
+  var label = document.querySelector('.crt-toggle');
+  if (label) label.hidden = !crtAllowed();
+  document.body.classList.toggle('crt-on', crtActive());
   alignCrt();
 }
 
@@ -294,7 +308,7 @@ function applyCrt() {
 // start partway through a device pixel, so the pattern is shifted to begin on
 // the next whole one.
 function alignCrt() {
-  if (!crtOn) return;
+  if (!crtActive()) return;
   var overlay = document.getElementById('crt-overlay');
   if (!overlay) return;
   var dpr = window.devicePixelRatio || 1;
@@ -1116,12 +1130,14 @@ function buildStyleDropdown(gameId) {
       // themeAllIframes handles direct injection for non-overlay games
     }
     themeAllIframes();
+    applyCrt();
   });
 
   container.appendChild(select);
 
   // Apply current selection
   if (gameId) applyCurrentStyle(gameId, select.value);
+  applyCrt();
 }
 
 function applyCurrentStyle(gameId, val) {

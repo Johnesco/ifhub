@@ -117,7 +117,7 @@ An overlay is a game's default, not a lock: any theme, Classic and Native includ
 
 ### 5.4 CRT
 
-CRT ON lays horizontal scanlines over the game pane, and only the game pane: source, walkthrough and tests stay plain. It is off by default, one setting for the whole hub rather than one per theme, saved in `localStorage` under `ifhub-crt`, and offered beside the theme picker on both the landing page and the player. A `?crt=1` link turns it on for that view without changing the reader's own saved setting, the way a `?theme=` link does.
+CRT ON lays horizontal scanlines over the game pane, and only the game pane: source, walkthrough and tests stay plain. It is off by default, one setting for the whole hub rather than one per theme, saved in `localStorage` under `ifhub-crt`, and offered beside the theme picker on both the landing page and the player. A `?crt=1` link turns it on for that view without changing the reader's own saved setting, the way a `?theme=` link does. Under **Native**, which asks the hub to inject nothing into the game, the checkbox is hidden and no scanlines are drawn, whatever the setting says; the setting itself is kept, so the next platform theme brings CRT back as it was, and `?crt=1` leaves the URL until then.
 
 The lines are drawn on the screen, never carved into a typeface: fonts whose outlines carry a scanline effect only resolve at a few sizes and go lumpy at the rest, which is why none is used (§5.1). Because the overlay sits in the hub above the game's iframe, it works over every engine, BASIC's canvas included, and takes no pointer input.
 

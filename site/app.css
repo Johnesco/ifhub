@@ -403,6 +403,8 @@ body.crt-on #crt-overlay { display: block; }
   cursor: pointer;
   user-select: none;
 }
+/* An author display value beats the hidden attribute, so restate it (#136). */
+.crt-toggle[hidden] { display: none; }
 .crt-toggle input {
   margin: 0;
   accent-color: var(--accent, #e8d090);
