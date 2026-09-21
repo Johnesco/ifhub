@@ -1,20 +1,31 @@
 // IF Hub Theme System
 // Themes modeled after platforms Infocom shipped Z-machine games on
 
-// Canonical retro font URL (shared by all theme callers)
-var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Pixelify+Sans&family=Press+Start+2P&family=Silkscreen&family=Sixtyfour&family=Tiny5&family=VT323&family=Workbench&display=swap';
+// Canonical retro font URL (shared by all theme callers).
+// Google Fonts carries only the hub chrome faces now.
+var RETRO_FONTS_URL = 'https://fonts.googleapis.com/css2?family=DotGothic16&family=Press+Start+2P&family=Silkscreen&family=Tiny5&family=VT323&display=swap';
+
+// The machines' own character sets, self-hosted — Google Fonts carries none of
+// them. Absolute so it resolves the same from the hub and from a game iframe.
+var HUB_FONTS_URL = '/ifhub/fonts.css';
 
 // Load retro platform fonts into a document (defaults to current document)
 function ensureRetroFonts(doc) {
     doc = doc || document;
     try {
         if (doc.getElementById('retro-platform-fonts')) return;
-        var link = doc.createElement('link');
-        link.id = 'retro-platform-fonts';
-        link.rel = 'stylesheet';
-        link.href = RETRO_FONTS_URL;
-        doc.head.appendChild(link);
+        addFontLink(doc, 'retro-platform-fonts', RETRO_FONTS_URL);
+        addFontLink(doc, 'hub-platform-fonts', HUB_FONTS_URL);
     } catch(e) {}
+}
+
+function addFontLink(doc, id, href) {
+    if (doc.getElementById(id)) return;
+    var link = doc.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = href;
+    doc.head.appendChild(link);
 }
 
 // Load fonts eagerly for current page
@@ -71,10 +82,11 @@ var THEMES = [
             bodyBg: '#000', bufferBg: '#000', bufferFg: '#aaa',
             gridBg: '#aaa', gridFg: '#000',
             inputFg: '#ffffff', emphFg: '#ffff55', headerFg: '#ffffff',
-            bufferSize: '20px', bufferLineHeight: '1.25',
+            // IBM VGA 8x16 is an 8x16 bitmap: 16px is its native size.
+            bufferSize: '16px', bufferLineHeight: '1.25',
             gridSize: '20px', gridLineHeight: '24px',
-            monoFamily: '"VT323", "Consolas", "Courier New", monospace',
-            propFamily: '"VT323", "Consolas", "Courier New", monospace'
+            monoFamily: '"IBM VGA 8x16", "VT323", "Consolas", "Courier New", monospace',
+            propFamily: '"IBM VGA 8x16", "VT323", "Consolas", "Courier New", monospace'
         },
         // CGA on Norton blue
         syntax: {
@@ -104,8 +116,8 @@ var THEMES = [
             inputFg: '#66ff33', emphFg: '#66ff33', headerFg: '#88ff66',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"DotGothic16", "Courier New", monospace',
-            propFamily: '"DotGothic16", "Courier New", monospace'
+            monoFamily: '"Print Char 21", "DotGothic16", "Courier New", monospace',
+            propFamily: '"Print Char 21", "DotGothic16", "Courier New", monospace'
         },
         // green phosphor: brightness, not hue
         syntax: {
@@ -127,7 +139,7 @@ var THEMES = [
             badgeBg: '#352879', badgeFg: '#ffffff',
             codeBg: '#000000', codeFg: '#70a4b2',
             footerFg: '#959595', linkFg: '#9ad284',
-            fontFamily: '"Sixtyfour", "Courier New", monospace'
+            fontFamily: '"Pet Me 64", "Courier New", monospace'
         },
         game: {
             bodyBg: '#352879', bufferBg: '#352879', bufferFg: '#ffffff',
@@ -135,8 +147,8 @@ var THEMES = [
             inputFg: '#9ad284', emphFg: '#b8c76f', headerFg: '#ffffff',
             bufferSize: '16px', bufferLineHeight: '1.4',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Sixtyfour", "Courier New", monospace',
-            propFamily: '"Sixtyfour", "Courier New", monospace'
+            monoFamily: '"Pet Me 64", "Courier New", monospace',
+            propFamily: '"Pet Me 64", "Courier New", monospace'
         },
         // every value is an exact Pepto-palette C64 color
         syntax: {
@@ -158,16 +170,19 @@ var THEMES = [
             badgeBg: '#0055aa', badgeFg: '#ffffff',
             codeBg: '#000000', codeFg: '#ff8800',
             footerFg: '#cce0f4', linkFg: '#ffcc88',
-            fontFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
+            fontFamily: '"Topaz Double Serif", "Trebuchet MS", Tahoma, sans-serif'
         },
         game: {
             bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#ffffff',
-            gridBg: '#ff8800', gridFg: '#000000',
+            // Infocom reverse-videoed the status line, swapping the window's
+            // pens: white bar, blue text. Orange stays in the chrome.
+            gridBg: '#ffffff', gridFg: '#0055aa',
             inputFg: '#ffffff', emphFg: '#ffcc88', headerFg: '#ffffff',
-            bufferSize: '16px', bufferLineHeight: '1.4',
+            // Topaz Double is 8x16: 16px is its native size.
+            bufferSize: '16px', bufferLineHeight: '1.25',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Workbench", "Courier New", monospace',
-            propFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
+            monoFamily: '"Topaz Double Serif", "Courier New", monospace',
+            propFamily: '"Topaz Double Serif", "Courier New", monospace'
         },
         // Workbench 1.3 had four colors — blue, white, black, orange. Four cannot
         // furnish eight classes, so the rest are tints of those hues, never a new one.
@@ -225,12 +240,14 @@ var THEMES = [
         },
         game: {
             bodyBg: '#fff', bufferBg: '#fff', bufferFg: '#000',
-            gridBg: '#008800', gridFg: '#fff',
+            // Infocom drew the status line in reverse video, not in the ST desktop green.
+            gridBg: '#000000', gridFg: '#ffffff',
             inputFg: '#000', emphFg: '#333', headerFg: '#000',
-            bufferSize: '15px', bufferLineHeight: '1.35',
+            // Project Jason Tall is 8x16: 16px is native.
+            bufferSize: '16px', bufferLineHeight: '1.35',
             gridSize: '15px', gridLineHeight: '19px',
-            monoFamily: '"Silkscreen", "Courier New", Consolas, monospace',
-            propFamily: '"Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
+            monoFamily: '"Project Jason Tall", "Silkscreen", "Courier New", Consolas, monospace',
+            propFamily: '"Project Jason Tall", "Silkscreen", Tahoma, Helvetica, Arial, sans-serif'
         },
         // black on white with the ST’s green
         syntax: {
@@ -273,33 +290,40 @@ var THEMES = [
     {
         id: 'atari8', name: 'Atari 800',
         chrome: {
-            pageBg: '#2a3c86', pageFg: '#a8c8ff', headingFg: '#e0ecff',
-            accentFg: '#a8c8ff', mutedFg: '#94b4ec', dimFg: '#92b2ee',
-            cardBg: '#233270', cardBorder: '#3a5090', toolbarBg: '#26377a',
-            border: '#3a5090', borderHover: '#4a60a0', surfaceBg: '#26377a',
-            btnBg: '#a8c8ff', btnFg: '#1a2860', btnHoverBg: '#e0ecff',
-            inputBg: '#233270', inputFg: '#a8c8ff',
-            activeTabBg: '#a8c8ff', activeTabFg: '#1a2860',
-            badgeBg: '#233270', badgeFg: '#94b4ec',
-            codeBg: '#233270', codeFg: '#a8c8ff',
-            footerFg: '#92b2ee', linkFg: '#e0ecff',
+            // Every value an NTSC GTIA entry from hue 9, the GRAPHICS 0 blue, or
+            // the grays. The page sits a step below the $94 screen so the screen
+            // reads as the lit thing in its frame; recessed surfaces go to $90.
+            pageBg: '#002f74', pageFg: '#99d9ff', headingFg: '#eeeeee',        // $92 $9C $0E
+            accentFg: '#99d9ff', mutedFg: '#77b7ff', dimFg: '#77b7ff',         // $9C $9A $9A
+            cardBg: '#000d48', cardBorder: '#3373bd', toolbarBg: '#000d48',    // $90 $96 $90
+            border: '#3373bd', borderHover: '#5595df', surfaceBg: '#000d48',   // $96 $98 $90
+            btnBg: '#99d9ff', btnFg: '#000d48', btnHoverBg: '#bbfbff',         // $9C $90 $9E
+            inputBg: '#000d48', inputFg: '#99d9ff',                            // $90 $9C
+            activeTabBg: '#99d9ff', activeTabFg: '#000d48',                    // $9C $90
+            badgeBg: '#000d48', badgeFg: '#77b7ff',                            // $90 $9A
+            codeBg: '#000d48', codeFg: '#99d9ff',                              // $90 $9C
+            footerFg: '#77b7ff', linkFg: '#bbfbff',                            // $9A $9E
             fontFamily: '"Press Start 2P", "Courier New", monospace'
         },
         game: {
-            bodyBg: '#2a3c86', bufferBg: '#2a3c86', bufferFg: '#a8c8ff',
-            gridBg: '#a8c8ff', gridFg: '#1a2860',
-            inputFg: '#e0ecff', emphFg: '#ffffff', headerFg: '#ffffff',
+            // GRAPHICS 0 takes its text hue from COLOR2 and only its luminance
+            // from COLOR1, so text and background are always one hue. Stock is
+            // $9A on $94 (3.74:1); one luminance step up, $9C, clears AA. Every
+            // value is an NTSC GTIA palette entry (MAME, GTIA C014805, 26.2°).
+            bodyBg: '#11519b', bufferBg: '#11519b', bufferFg: '#99d9ff',   // $94, $94, $9C
+            gridBg: '#99d9ff', gridFg: '#11519b',                          // reverse video
+            inputFg: '#bbfbff', emphFg: '#eeeeee', headerFg: '#eeeeee',    // $9E, $0E, $0E
             bufferSize: '16px', bufferLineHeight: '1.6',
             gridSize: '16px', gridLineHeight: '22px',
-            monoFamily: '"Press Start 2P", "Courier New", monospace',
-            propFamily: '"Press Start 2P", "Courier New", monospace'
+            monoFamily: '"Candy Antics", "Press Start 2P", "Courier New", monospace',
+            propFamily: '"Candy Antics", "Press Start 2P", "Courier New", monospace'
         },
         // GRAPHICS 0 blue
         syntax: {
             kw: '#e0ecff', str: '#a8ffd8', cmt: '#7f96d8', sub: '#ffc8e8',
             head: '#ffffff', rule: '#ffd8a8', num: '#a8c8ff', tbl: '#d8c0ff'
         },
-        scrollbar: { thumb: '#3a5090', track: '#2a3c86', thumbHover: '#4a60a0' }
+        scrollbar: { thumb: '#5595df', track: '#002f74', thumbHover: '#77b7ff' }  // $98 $92 $9A
     },
     {
         id: 'trs80', name: 'TRS-80',
@@ -320,10 +344,11 @@ var THEMES = [
             bodyBg: '#000000', bufferBg: '#000000', bufferFg: '#d8d8d8',
             gridBg: '#d8d8d8', gridFg: '#000000',
             inputFg: '#ffffff', emphFg: '#ffffff', headerFg: '#ffffff',
-            bufferSize: '20px', bufferLineHeight: '1.4',
+            // The Model III cell is 8 wide x 24 tall: 24px is native.
+            bufferSize: '24px', bufferLineHeight: '1.1',
             gridSize: '20px', gridLineHeight: '24px',
-            monoFamily: '"Tiny5", "Courier New", monospace',
-            propFamily: '"Tiny5", "Courier New", monospace'
+            monoFamily: '"Another Mans Treasure MIII 64C", "Tiny5", "Courier New", monospace',
+            propFamily: '"Another Mans Treasure MIII 64C", "Tiny5", "Courier New", monospace'
         },
         // Model III white phosphor: brightness, not hue
         syntax: {
@@ -505,6 +530,32 @@ function getThemeId() {
 function setThemeId(id) {
     try { localStorage.setItem('ifhub-theme', id); }
     catch (e) { /* localStorage unavailable */ }
+}
+
+/* CRT: scanlines laid over the game pane. Off unless the reader turns it on, and
+   one setting for the whole hub rather than one per theme. It is drawn on the
+   screen, never carved into a typeface (#135). */
+function getCrt() {
+    try { return localStorage.getItem('ifhub-crt') === '1'; }
+    catch (e) { return false; }
+}
+
+function setCrt(on) {
+    try {
+        if (on) localStorage.setItem('ifhub-crt', '1');
+        else localStorage.removeItem('ifhub-crt');
+    } catch (e) { /* localStorage unavailable */ }
+}
+
+/* Tie a checkbox to the CRT setting. onChange runs after the setting is saved. */
+function wireCrtToggle(checkbox, onChange) {
+    if (!checkbox) return checkbox;
+    checkbox.checked = getCrt();
+    checkbox.addEventListener('change', function() {
+        setCrt(this.checked);
+        if (onChange) onChange(this.checked);
+    });
+    return checkbox;
 }
 
 function getTheme(id) {
@@ -796,7 +847,7 @@ function buildInkCSS(g, sb) {
   return 'body { background: ' + g.bodyBg + ' !important; color: ' + g.bufferFg + ' !important; font-family: ' + g.propFamily + ' !important; }\n' +
     'h1 { color: ' + g.headerFg + ' !important; border-bottom-color: ' + g.gridBg + ' !important; }\n' +
     '#story p { color: ' + g.bufferFg + ' !important; }\n' +
-    '.choice-echo { color: ' + g.gridFg + ' !important; }\n' +
+    '.choice-echo { color: ' + g.inputFg + ' !important; }\n' +
     '#choices { border-top-color: ' + g.gridBg + ' !important; }\n' +
     '.choice { color: ' + g.inputFg + ' !important; font-family: ' + g.propFamily + ' !important; }\n' +
     '.choice:hover { color: ' + g.headerFg + ' !important; }\n' +

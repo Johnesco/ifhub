@@ -53,12 +53,16 @@ ifhub/
 │                              walkthrough.html (walkthrough viewer), themes.js (themes), hub.js (data loading,
 │                              collections), search.js + search.css (the one text search, used by both the
 │                              source pane and the walkthrough viewer), games.json, cards.json, hubs.json
+│   └── fonts.css + fonts/   ← the machines' own character sets, self-hosted (Google Fonts carries none of them);
+│                              redistributed under their licenses — read site/fonts/README.md before touching them
 ├── tools/
 │   ├── ship.py              ← intake: contract check → landing page → register → publish → push hub
 │   ├── build_games.py       ← every ifhub.conf → games.json + cards.json (idempotent)
 │   ├── publish.py           ← push a game folder to Johnesco/<game> and enable Pages
 │   ├── push_hub.py          ← commit + push site/games.json, cards.json, hubs.json
 │   ├── check_links.py, check_drift.py, build_landing.py, serve.py (local preview: hub + games on one port)
+│   ├── build_topaz.py       ← Amiga disk font → site/fonts/TopazDoubleSerif.ttf (needs fonttools)
+│   ├── fonts/               ← vendored font sources the hub builds from, each with a SOURCE.md
 │   ├── web/                 ← landing-page generator + templates (single game, versioned group)
 │   └── lib/                 ← paths, git, output, process, web (template substitution)
 ├── docs/                    ← publishing.md (the contract), functional-spec.md (what the site does), sdlc.md (how work happens)

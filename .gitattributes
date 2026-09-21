@@ -1,0 +1,9 @@
+# The fonts in site/fonts/ are redistributed under licenses that require the
+# license texts to travel with them verbatim, and forbid modifying the fonts.
+# Store everything in that folder byte for byte -- no line-ending conversion.
+site/fonts/** -text
+site/fonts/*.ttf binary
+site/fonts/*.woff binary
+
+# Vendored font sources: byte for byte, so SOURCE.md's blob hashes stay checkable.
+tools/fonts/** -text
