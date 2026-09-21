@@ -4,7 +4,7 @@ Canonical reference for projects that ship multiple playable versions (e.g. zork
 
 ## Concept
 
-Some projects keep **multiple playable versions** as a portfolio trail — each version a milestone showing design choices, testing methodology, and the evolution from a faithful port toward something new. Versions appear on the IF Hub landing page newest-first, with the original (v0) at the bottom.
+Some projects keep **multiple playable versions** as a portfolio trail — each version a milestone showing design choices, testing methodology, and the evolution from a faithful port toward something new. Versions appear in their card's Version pulldown on the IF Hub landing page, newest first, with the original (v0) at the bottom.
 
 A multi-version project has:
 - **Current** — the active working copy. Lives in the main repo (e.g. `Johnesco/zork1`). Always in progress; gets frozen into the next numbered version when ready.
