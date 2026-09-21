@@ -178,7 +178,8 @@ var THEMES = [
             bodyBg: '#0055aa', bufferBg: '#0055aa', bufferFg: '#ffffff',
             gridBg: '#ff8800', gridFg: '#000000',
             inputFg: '#ffffff', emphFg: '#ffcc88', headerFg: '#ffffff',
-            bufferSize: '16px', bufferLineHeight: '1.4',
+            // Workbench draws CRT scanline detail that is sub-pixel below ~20px.
+            bufferSize: '24px', bufferLineHeight: '1.25',
             gridSize: '16px', gridLineHeight: '22px',
             monoFamily: '"Workbench", "Courier New", monospace',
             propFamily: '"Workbench", "Trebuchet MS", Tahoma, sans-serif'
