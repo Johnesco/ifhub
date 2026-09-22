@@ -538,6 +538,7 @@
     "testsUrl": "/fever-dream-sharpee/tests.html",
     "landingUrl": "/fever-dream-sharpee/",
     "sourceUrl": "/fever-dream-sharpee/fever-dream-sharpee.story",
+    "styleUrl": "/fever-dream-sharpee/fever-dream-sharpee.css",
     "engine": "sharpee",
     "tags": [
       "horror",
