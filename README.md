@@ -8,7 +8,7 @@ A small static site that shows interactive fiction games online, each with its s
 
 IF Hub is receive-only. Games are written, built, and tested in their own engine workspaces; the hub only publishes and displays the result.
 
-1. **Build in the workspace** — `python C:/code/text-games/<engine>/tools/build.py <game>` compiles the game, runs its tests, and lays out a folder with `ifhub.conf`, `play.html`, and (optionally) source, walkthrough, and a `tests.html` report.
+1. **Build in the workspace** — `python C:/code/text-games/<engine>/tools/build.py <game>` compiles the game, runs its tests, and lays out a folder with `ifhub.conf`, `play.html`, and (optionally) source, walkthrough, a stylesheet, and a `tests.html` report.
 2. **Ship to the hub** — `python tools/ship.py <game>` checks that folder, adds the hub's wrapper pages, registers the game in `site/games.json`, publishes the folder to its own GitHub Pages repo (`johnesco.github.io/<game>/`), and pushes the hub.
 3. **Play** — the hub iframes the game from its own URL. Nothing is copied into the hub.
 
