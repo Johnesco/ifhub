@@ -18,8 +18,12 @@ var CONFIG = {
 var games = [];       // populated from games.json
 var gameMap = {};     // id → game entry
 var currentGame = '';
-var currentView = 'source';
-var sourceCache = {};
+var currentView = 'source';   // 'source' | 'walkthrough' | 'tests' | 'css'
+var sourceCache = {};         // game id → source text
+var styleCache = {};          // game id → stylesheet text (the file named by `style =`, #141)
+// What the inline code table holds, loading or loaded. The last loadInlineDoc call owns
+// it, so a fetch that finishes after the reader has moved on does not overwrite the pane.
+var inlineDoc = { game: '', kind: '' };
 
 /* ==================================================================
    INIT
@@ -608,9 +612,84 @@ function highlightChord(line, ctx) {
 }
 
 /* ==================================================================
+   CSS HIGHLIGHTER (the stylesheet named by `style =`, shown in the CSS pane, #141)
+   A small scanner whose state carries across lines: whether a comment is open,
+   what each open block holds (rules or declarations), whether a value is in
+   progress. Selectors are headings, property names rules, custom properties
+   substitutions, at-rules and !important keywords, numbers and colors numbers.
+   ================================================================== */
+/* At-rules whose block holds rules (selectors and nested blocks) rather than declarations. */
+var CSS_RULE_AT = /^@(media|supports|layer|container|keyframes|document|scope|starting-style|font-feature-values)$/i;
+/* A one-line comment at column 0: the banners authors divide a stylesheet with. */
+var CSS_BANNER_RE = /^\/\*\s*(.*?)\s*\*\/\s*$/;
+
+function cssContext() { return { comment: false, blocks: [], value: false, paren: 0, atRule: '' }; }
+
+function highlightCss(line, ctx) {
+  var out = '', i = 0, n = line.length, m;
+  function put(cls, text) {
+    out += cls ? '<span class="' + cls + '">' + esc(text) + '</span>' : esc(text);
+    i += text.length;
+  }
+  while (i < n) {
+    var rest = line.slice(i);
+    if (ctx.comment) {
+      var end = rest.indexOf('*/');
+      if (end < 0) { put('syn-cmt', rest); break; }
+      put('syn-cmt', rest.slice(0, end + 2)); ctx.comment = false; continue;
+    }
+    if (rest.indexOf('/*') === 0) { ctx.comment = true; put('syn-cmt', '/*'); continue; }
+    if ((m = /^\s+/.exec(rest))) { put('', m[0]); continue; }
+    var ch = rest[0];
+    if (ch === '"' || ch === "'") {
+      m = new RegExp('^' + ch + '(?:\\\\.|[^\\\\' + ch + '])*' + ch + '?').exec(rest);
+      put('syn-str', m[0]); continue;
+    }
+    if (ch === '{') {
+      ctx.blocks.push(CSS_RULE_AT.test(ctx.atRule) ? 'rules' : 'decls');
+      ctx.atRule = ''; ctx.value = false; ctx.paren = 0; put('', ch); continue;
+    }
+    if (ch === '}') { ctx.blocks.pop(); ctx.atRule = ''; ctx.value = false; ctx.paren = 0; put('', ch); continue; }
+    if (ch === ';') {
+      if (ctx.value && ctx.paren > 0) { put('', ch); continue; }   // inside url(data:...;base64,...)
+      ctx.atRule = ''; ctx.value = false; put('', ch); continue;
+    }
+    var inDecls = ctx.blocks.length > 0 && ctx.blocks[ctx.blocks.length - 1] === 'decls';
+    if (inDecls && ctx.value) {
+      if ((m = /^!\s*important\b/i.exec(rest))) { put('syn-kw', m[0]); continue; }
+      if ((m = /^#[0-9a-fA-F]{3,8}\b/.exec(rest))) { put('syn-num', m[0]); continue; }
+      if ((m = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?(?:%|[a-zA-Z]+)?/.exec(rest))) { put('syn-num', m[0]); continue; }
+      if ((m = /^--[\w-]+/.exec(rest))) { put('syn-sub', m[0]); continue; }
+      if ((m = /^[\w-]+/.exec(rest))) { put('', m[0]); continue; }
+      if (ch === '(') ctx.paren++;
+      else if (ch === ')') ctx.paren = Math.max(0, ctx.paren - 1);
+      put('', ch); continue;
+    }
+    if (inDecls) {
+      if ((m = /^(--[\w-]+|[a-zA-Z-][\w-]*)(?=\s*:)/.exec(rest))) { put(m[0].indexOf('--') === 0 ? 'syn-sub' : 'syn-rule', m[0]); continue; }
+      if (ch === ':') { ctx.value = true; ctx.paren = 0; put('', ch); continue; }
+      // not a declaration: a nested selector, or something the scanner does not know
+      if ((m = /^[^{};\/'"]+/.exec(rest))) { put('syn-head', m[0]); continue; }
+      put('', ch); continue;
+    }
+    // between rules: an at-rule and its prelude, or a selector
+    if (ch === '@' && (m = /^@[\w-]+/.exec(rest))) { ctx.atRule = m[0]; put('syn-kw', m[0]); continue; }
+    if (ctx.atRule) {
+      if ((m = /^--[\w-]+/.exec(rest))) { put('syn-sub', m[0]); continue; }
+      if ((m = /^[^{};\/'"]+/.exec(rest))) { put('', m[0]); continue; }
+      put('', ch); continue;
+    }
+    if ((m = /^[^{};\/'"]+/.exec(rest))) { put('syn-head', m[0]); continue; }
+    put('', ch);
+  }
+  return out;
+}
+
+/* ==================================================================
    ENGINE-AWARE HIGHLIGHTER DISPATCH
    ================================================================== */
 function highlightLine(line, engine, ctx) {
+  if (engine === 'css') return highlightCss(line, ctx || cssContext());
   if (engine === 'sharpee') return highlightChord(line, ctx || chordContext());
   if (engine === 'rez') return highlightRez(line);
   if (engine === 'ink') return highlightInk(line);
@@ -619,6 +698,7 @@ function highlightLine(line, engine, ctx) {
 }
 
 function isHeadingLine(line, engine) {
+  if (engine === 'css') return CSS_BANNER_RE.test(line);
   if (engine === 'sharpee') return CHORD_HEADING_RE.test(line);
   if (engine === 'rez') return REZ_ELEMENT_RE.test(line);
   if (engine === 'ink') return INK_KNOT_RE.test(line) || INK_STITCH_RE.test(line);
@@ -631,7 +711,7 @@ function isHeadingLine(line, engine) {
    ================================================================== */
 function renderSource(lines, engine) {
   var rows = [];
-  var ctx = engine === 'sharpee' ? chordContext() : null;
+  var ctx = engine === 'sharpee' ? chordContext() : engine === 'css' ? cssContext() : null;
   for (var i = 0; i < lines.length; i++) {
     var num = i + 1;
     var cls = isHeadingLine(lines[i], engine) ? ' class="heading-line"' : '';
@@ -680,6 +760,18 @@ function buildNav(lines, engine) {
     for (var i = 0; i < lines.length; i++) {
       var bm = lines[i].match(/^\s*\d*\s*(?:REM\b|')\s*(.*)$/i);
       if (bm && bm[1].trim()) items.push('<a class="nav-item nav-section" data-line="' + (i + 1) + '">' + esc(bm[1].trim().slice(0, 60)) + '</a>');
+    }
+  } else if (engine === 'css') {
+    // A stylesheet's outline: its comment banners, and the at-rules that name something
+    for (var i = 0; i < lines.length; i++) {
+      var cbm = lines[i].match(CSS_BANNER_RE);
+      if (cbm) {
+        var label = cbm[1].replace(/^[\s─-╿=*-]+|[\s─-╿=*-]+$/g, '');
+        if (label) items.push('<a class="nav-item nav-part" data-line="' + (i + 1) + '">' + esc(label.slice(0, 60)) + '</a>');
+        continue;
+      }
+      var atm = lines[i].match(/^\s*(@(?:keyframes|media|supports|font-face|layer|container)\b[^{]*)/);
+      if (atm) items.push('<a class="nav-item nav-section" data-line="' + (i + 1) + '">' + esc(atm[1].trim().slice(0, 60)) + '</a>');
     }
   } else {
     for (var i = 0; i < lines.length; i++) {
@@ -732,8 +824,12 @@ function initSearch() {
 /* ==================================================================
    DISPLAY SOURCE — render + nav + search + line count
    ================================================================== */
+function splitLines(text) {
+  return text.replace(/\r\n?/g, '\n').replace(/^\n/, '').replace(/\n$/, '').split('\n');
+}
+
 function displaySource(text, engine) {
-  var lines = text.replace(/\r\n?/g, '\n').replace(/^\n/, '').replace(/\n$/, '').split('\n');
+  var lines = splitLines(text);
   renderSource(lines, engine);
   buildNav(lines, engine);
   initSearch().clear();
@@ -778,17 +874,18 @@ function setSourcePaneMode(mode) {
 }
 
 /* ==================================================================
-   LOAD SOURCE FOR GAME — fetch with cache
+   LOAD SOURCE FOR GAME — point the source pane at a new game
    ================================================================== */
 function loadSourceForGame(gameId) {
   var g = gameMap[gameId];
   if (!g) return;
 
   var browserFrame = document.getElementById('source-browser-frame');
-  document.getElementById('source-filepath').textContent = g.sourceLabel || (g.sourceUrl || '').split('/').pop() || g.id;
+  inlineDoc = { game: '', kind: '' };   // the table holds the previous game's document
 
   if (g.sourceBrowser) {
     setSourcePaneMode('browser');
+    document.getElementById('source-filepath').textContent = sourceLabel(g);
     browserFrame.src = g.sourceUrl;
     browserFrame.onload = function() { themeIframe(browserFrame, true); };   // the game's own source.html
     document.getElementById('line-count').textContent = '';
@@ -797,28 +894,78 @@ function loadSourceForGame(gameId) {
 
   setSourcePaneMode('inline');
   browserFrame.src = 'about:blank';
+  // Fetch the source now so it is ready when the pane opens, unless the reader is on
+  // the CSS pane: applyView loads the stylesheet into the table instead (#141).
+  if (currentView !== 'css') loadInlineDoc(gameId, 'source');
+}
 
-  if (sourceCache[gameId]) {
-    displaySource(sourceCache[gameId], g.engine);
+function sourceLabel(g) {
+  return g.sourceLabel || (g.sourceUrl || '').split('/').pop() || g.id;
+}
+
+/* ==================================================================
+   LOAD INLINE DOC — fetch with cache into the code table
+   kind is 'source' (the file named by `source =`) or 'css' (by `style =`, #141).
+   Both render through the same table, so line numbers, search and the theme's
+   syntax colors come free. The last call owns the table: a fetch that finishes
+   after the reader has moved on is cached but not shown.
+   ================================================================== */
+function loadInlineDoc(gameId, kind) {
+  var g = gameMap[gameId];
+  if (!g) return;
+  var isCss = kind === 'css';
+  var url = isCss ? g.styleUrl : g.sourceUrl;
+  var engine = isCss ? 'css' : g.engine;
+  var cache = isCss ? styleCache : sourceCache;
+
+  document.getElementById('source-filepath').textContent = isCss ? (url || '').split('/').pop() : sourceLabel(g);
+  if (inlineDoc.game === gameId && inlineDoc.kind === kind) {
+    // Already showing (or loading). Only the toolbar needs refreshing: browser mode blanks the count.
+    if (cache[gameId]) document.getElementById('line-count').textContent = splitLines(cache[gameId]).length + ' lines';
+    return;
+  }
+  inlineDoc = { game: gameId, kind: kind };
+  function owns() { return inlineDoc.game === gameId && inlineDoc.kind === kind; }
+
+  if (cache[gameId]) {
+    displaySource(cache[gameId], engine);
     return;
   }
 
-  document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#605840;font-style:italic;">Loading source\u2026</div>';
+  document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#605840;font-style:italic;">Loading ' + (isCss ? 'stylesheet' : 'source') + '…</div>';
   document.getElementById('line-count').textContent = '';
-  fetch(g.sourceUrl)
+  fetch(url)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.text();
     })
     .then(function(text) {
-      sourceCache[gameId] = text;
-      if (currentGame === gameId) displaySource(text, g.engine);
+      cache[gameId] = text;
+      if (owns()) displaySource(text, engine);
     })
     .catch(function() {
-      if (currentGame === gameId) {
-        document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#806050;">Source unavailable.</div>';
+      if (owns()) {
+        document.getElementById('source-main').innerHTML = '<div style="padding:20px;color:#806050;">' + (isCss ? 'Stylesheet' : 'Source') + ' unavailable.</div>';
       }
     });
+}
+
+/* ==================================================================
+   LOAD STYLE FOR GAME — offer the CSS toggle only when the game names a stylesheet
+   ================================================================== */
+function loadStyleForGame(gameId) {
+  var g = gameMap[gameId];
+  var cssBtn = document.querySelector('.view-toggle[data-pane="css"]');
+  if (g && g.styleUrl) {
+    if (cssBtn) cssBtn.style.display = '';
+  } else {
+    if (cssBtn) cssBtn.style.display = 'none';
+    // If CSS was the active side pane, fall back to source
+    if (isToggleActive('css')) {
+      setToggleActive('css', false);
+      setToggleActive('source', true);
+    }
+  }
 }
 
 /* ==================================================================
@@ -837,7 +984,7 @@ function setToggleActive(pane, on) {
 }
 
 function getActiveSidePane() {
-  var sides = ['source', 'walkthrough', 'tests'];
+  var sides = ['source', 'walkthrough', 'tests', 'css'];
   for (var i = 0; i < sides.length; i++) {
     if (isToggleActive(sides[i])) return sides[i];
   }
@@ -868,7 +1015,7 @@ function handleToggleClick(pane) {
       if (!isToggleActive('game')) return; // can't leave everything off
       setToggleActive(pane, false);
     } else {
-      ['source', 'walkthrough', 'tests'].forEach(function(p) {
+      ['source', 'walkthrough', 'tests', 'css'].forEach(function(p) {
         setToggleActive(p, p === pane);
       });
     }
@@ -878,35 +1025,50 @@ function handleToggleClick(pane) {
 }
 
 function applyView(mode) {
-  // mode: "game+source", "game+walkthrough", "game+tests", "game",
-  //       "source", "walkthrough", "tests"
+  // mode: "game+source", "game+walkthrough", "game+tests", "game+css", "game",
+  //       "source", "walkthrough", "tests", "css"
   // Normalize: URLSearchParams decodes + as space; treat both as delimiter
   mode = mode.replace(/\s+/g, '+');
   var parts = mode.split('+');
   var showGame = parts.indexOf('game') !== -1;
   var sidePane = null;
+  if (parts.indexOf('css') !== -1) sidePane = 'css';
   if (parts.indexOf('tests') !== -1) sidePane = 'tests';
   if (parts.indexOf('walkthrough') !== -1) sidePane = 'walkthrough';
   if (parts.indexOf('source') !== -1) sidePane = 'source';
+
+  // A CSS view of a game that names no stylesheet opens Source, as the toggle does
+  var g = gameMap[currentGame];
+  if (sidePane === 'css' && g && !g.styleUrl) sidePane = 'source';
 
   // Sync toggle states to match the mode string
   setToggleActive('game', showGame);
   setToggleActive('source', sidePane === 'source');
   setToggleActive('walkthrough', sidePane === 'walkthrough');
   setToggleActive('tests', sidePane === 'tests');
+  setToggleActive('css', sidePane === 'css');
 
   // Apply CSS
   document.body.classList.toggle('source-collapsed', !sidePane);
   document.body.classList.toggle('game-collapsed', !showGame);
 
-  // Set source pane content mode
+  // Set source pane content mode, and what the code table holds
   if (sidePane === 'walkthrough') {
     setSourcePaneMode('walkthrough');
   } else if (sidePane === 'tests') {
     setSourcePaneMode('tests');
-  } else if (sidePane) {
-    var g = gameMap[currentGame];
-    setSourcePaneMode(g && g.sourceBrowser ? 'browser' : 'inline');
+  } else if (sidePane === 'css') {
+    setSourcePaneMode('inline');
+    loadInlineDoc(currentGame, 'css');
+  } else if (sidePane === 'source') {
+    if (g && g.sourceBrowser) {
+      setSourcePaneMode('browser');
+      document.getElementById('source-filepath').textContent = sourceLabel(g);
+      document.getElementById('line-count').textContent = '';
+    } else {
+      setSourcePaneMode('inline');
+      loadInlineDoc(currentGame, 'source');
+    }
   }
 
   currentView = sidePane || 'source';
@@ -1333,11 +1495,12 @@ function switchGame(gameId) {
     }
   };
 
-  // Load source, walkthrough, and tests, then re-apply the current view.
-  // loadTestsForGame may hide the tests toggle and fall back to source,
-  // so read the view mode AFTER it runs to pick up any corrections.
+  // Load source, walkthrough, tests and stylesheet, then re-apply the current view.
+  // loadTestsForGame and loadStyleForGame may hide their toggle and fall back to
+  // source, so read the view mode AFTER they run to pick up any corrections.
   loadSourceForGame(gameId);
   loadWalkthroughForGame(gameId);
   loadTestsForGame(gameId);
+  loadStyleForGame(gameId);
   applyView(getViewMode());
 }

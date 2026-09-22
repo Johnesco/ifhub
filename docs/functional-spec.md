@@ -15,7 +15,7 @@ IF Hub is a static site at https://johnesco.github.io/ifhub/ that shows interact
 | Page | File | Purpose |
 |---|---|---|
 | Landing page | `index.html` | collection rail, game cards with explicit launch modes, theme picker |
-| Player | `app.html` | game, source, walkthrough and tests in a resizable split view |
+| Player | `app.html` | game, source, walkthrough, tests and stylesheet in a resizable split view |
 | Walkthrough viewer | `walkthrough.html?game=<id>` | renders a game's walkthrough files; used by the player pane and standalone |
 
 Shared scripts: `themes.js` (themes, §5), `hub.js` (loading `games.json`/`cards.json` plus `hubs.json`, resolving `?hub=`, filtering; a failed load shows a message instead of an empty page), `search.js` with `search.css` (the text search, §4, used by the player and the walkthrough viewer), and `crt.css` (the CRT scanlines, §5.4, used by the landing page and the player). The player's code is in `app.js` and `app.css`.
@@ -34,11 +34,11 @@ URL parameters: `?game=<id>` (default: first game), `?hub=<id>` (restrict the ga
 
 The address bar is always a shareable link to what is on screen: every game, view, style, collection or CRT change rewrites those parameters with `history.replaceState` (not `pushState`, because the game iframe adds its own history entries). Defaults stay out of the URL: the game-only view, the Classic theme, the "all" collection, and CRT off. An overlay game shows its own overlay but keeps the `theme` it arrived with, so switching to a non-overlay game applies it.
 
-Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2) with the CRT ON checkbox beside it — the two wrap as one unit, so they stay on one line — sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests.
+Toolbar: Library link (keeps the collection filter), Collection selector (re-filters the game selector in place with `history.replaceState`), Game selector, Style dropdown (§5.2) with the CRT ON checkbox beside it — the two wrap as one unit, so they stay on one line — sound controls (§6, shown only when the game reports sound), and the view toggles Game, Source, Walk, Tests, CSS.
 
-View switching: Game toggles independently. Source, Walk and Tests are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl`.
+View switching: Game toggles independently. Source, Walk, Tests and CSS are mutually exclusive, and clicking the active one collapses the side pane. The combination is written to `?view=`. Tests appears only for games with `testsUrl` and CSS only for games with `styleUrl`; a `?view=css` link to a game without one opens Source.
 
-Layout: CSS grid with the game pane, a 5px resize handle (mouse and touch) and the side pane; each pane at least 200px. Below 1024px the source sidebar is hidden; below 800px the layout is a single column with the game above the side pane. At any width a lone pane (the game alone, or Source, Walkthrough or Tests alone) fills the whole area below the toolbar.
+Layout: CSS grid with the game pane, a 5px resize handle (mouse and touch) and the side pane; each pane at least 200px. Below 1024px the source sidebar is hidden; below 800px the layout is a single column with the game above the side pane. At any width a lone pane (the game alone, or Source, Walkthrough, Tests or CSS alone) fills the whole area below the toolbar.
 
 Panes:
 
@@ -46,8 +46,9 @@ Panes:
 - Source: §4.
 - Walkthrough: iframe of `walkthrough.html?game=<id>` when the game has `walkthroughUrl`, otherwise "Not available".
 - Tests: iframe of `testsUrl`, whatever report page the workspace produced (Inform 7 games ship an ifPlayer report).
+- CSS: the stylesheet at `styleUrl`, rendered through the source viewer's code table (§4) with the CSS highlighter, so line numbers, search and the theme's syntax colors come free; the toolbar's file label shows the stylesheet's name. The hub shows the file the game names and reads nothing out of `play.html`.
 
-Ctrl+F or Cmd+F focuses the source search while the source pane is visible.
+Ctrl+F or Cmd+F focuses the source search while the Source or CSS pane is visible.
 
 ### 2.3 Walkthrough viewer (`walkthrough.html`)
 
@@ -55,7 +56,7 @@ Looks `?game=<id>` up in `games.json`, takes the game folder from `walkthroughUr
 
 ### 2.4 Per-game pages (served in place)
 
-A game repo publishes `play.html` (its own player), `index.html` (a landing page the hub writes once, linking Play plus the hub's Source and Walkthrough views), its raw source file, and its walkthrough text files. Player pages include `theme-listener.js` so hub themes apply (§5.3). The full contract is in `docs/publishing.md`.
+A game repo publishes `play.html` (its own player), `index.html` (a landing page the hub writes once, linking Play plus the hub's Source and Walkthrough views), its raw source file, its walkthrough text files, and optionally the stylesheet named by `style =`. Player pages include `theme-listener.js` so hub themes apply (§5.3). The full contract is in `docs/publishing.md`.
 
 ## 3. Data
 
@@ -72,6 +73,7 @@ One entry per game, generated from its `ifhub.conf`. URL fields are emitted only
 | `sourceUrl`, `sourceLabel`, `sourceBrowser` | the raw source file, or the game's own `source.html` when `sourceBrowser` is true (only when the conf says `sourceBrowser = yes`); the label shows in the pane toolbar |
 | `walkthroughUrl` | `/<game>/walkthrough.txt`, or `walkthrough-guide.txt` when only the guide exists; its folder is where the viewer reads from |
 | `testsUrl` | `/<game>/tests.html` when the file exists |
+| `styleUrl` | the stylesheet named by `style =`, when the file exists; shown in the CSS pane |
 | `landingUrl` | `/<game>/` when the game has an `index.html` |
 | `sound` | `blorb` for games with embedded audio |
 | `overlayLabel` | the name of the game's own CSS overlay (§5.2) |
@@ -87,9 +89,9 @@ The list of collections: `id`, `title`, `description`, and `filter`, which is `{
 
 ## 4. Source viewer
 
-- Fetches `sourceUrl` (cached per game), normalizes line endings, and renders a numbered table with syntax highlighting. The eight highlight classes follow the selected theme, from its `syntax` block (§5.1); search hits follow it too, drawn as inverse video from the same palette.
-- Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments), Chord for sharpee (`##` comments, header fields and phrase keys, `create` headings, structural keywords, kinds, traits and states, strings, numbers; a line is colored only when its opening words read as code, so prose paragraphs stay plain apart from `{markers}`).
-- Navigation sidebar (220px, hidden below 1024px): Inform 7 Volume/Book/Part/Chapter/Section headings, Rez elements, Ink knots and stitches, BASIC REM lines. Clicking scrolls to the line and marks it active.
+- Fetches `sourceUrl`, or `styleUrl` while the CSS pane is showing (each cached per game), normalizes line endings, and renders a numbered table with syntax highlighting. The eight highlight classes follow the selected theme, from its `syntax` block (§5.1); search hits follow it too, drawn as inverse video from the same palette.
+- Highlighters by engine: Inform 7 (the default: headings, strings, text substitutions, comments, keywords, tables), Rez (`@element` blocks, comments, strings), Ink (knots and stitches, choices, diverts, tags, logic lines), BASIC for wwwbasic, applesoft, bwbasic and qbjc (line numbers, keywords, strings, REM comments), Chord for sharpee (`##` comments, header fields and phrase keys, `create` headings, structural keywords, kinds, traits and states, strings, numbers; a line is colored only when its opening words read as code, so prose paragraphs stay plain apart from `{markers}`), and CSS for the stylesheet pane (comments, at-rules, selectors, property names, custom properties, strings, numbers and colors, `!important`; the scanner carries its state across lines, so multi-line comments, values and nested blocks color correctly, and a one-line comment at column 0 is a heading row).
+- Navigation sidebar (220px, hidden below 1024px): Inform 7 Volume/Book/Part/Chapter/Section headings, Rez elements, Ink knots and stitches, BASIC REM lines, and for a stylesheet its comment banners plus its keyframes, media queries, font faces and layers. Clicking scrolls to the line and marks it active.
 - Search: Ctrl+F, at least two characters, 200ms debounce, highlighted hits with a current-hit marker; Enter and Shift+Enter step through, Escape clears. It walks text nodes, so highlighting is preserved, and marks every occurrence in a line rather than the first alone. The source pane and the walkthrough viewer share one implementation, `site/search.js`, styled by `site/search.css`; each supplies its own container and element selector.
 - Browser mode: when `sourceBrowser` is true the pane iframes the game's own `source.html` instead. Used by zork1-v0 (multi-file ZIL browser) and dracula-v0 (annotated BASIC).
 

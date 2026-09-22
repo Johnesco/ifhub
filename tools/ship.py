@@ -19,6 +19,8 @@ Optional, picked up when present (the hub renders these itself):
                     or set sourceBrowser = yes and ship your own source.html)
     walkthrough.txt, walkthrough_output.txt, walkthrough-guide.txt   at the game root
     tests.html      a test report page; the hub shows a Tests tab when it exists
+    <style>         the stylesheet named by `style =` in ifhub.conf (a mood overlay, an author
+                    stylesheet); the hub shows it in a CSS tab, highlighted like source
 
 Steps:
     1. verify the contract
@@ -78,6 +80,9 @@ def verify_contract(game_dir: Path) -> tuple[dict, list[str]]:
     src = conf.get("source")
     if src and not (game_dir / src).exists():
         problems.append(f"ifhub.conf names `source = {src}` but that file does not exist")
+    sty = conf.get("style")
+    if sty and not (game_dir / sty).exists():
+        problems.append(f"ifhub.conf names `style = {sty}` but that file does not exist")
     return conf, problems
 
 

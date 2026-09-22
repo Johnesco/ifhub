@@ -32,7 +32,7 @@ from lib.paths import SITE_DIR, HUB_ROOT, GH_ORG
 import build_games
 
 
-FIELDS = ("playUrl", "landingUrl", "sourceUrl", "walkthroughUrl")
+FIELDS = ("playUrl", "landingUrl", "sourceUrl", "walkthroughUrl", "testsUrl", "styleUrl")
 
 
 def resolve_path(raw: str) -> Path:

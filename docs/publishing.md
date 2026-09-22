@@ -15,6 +15,7 @@ Every game is a folder that is its own git repo and is published to `https://joh
 | source file | no | the raw file named by `source =`. The hub highlights it in the source pane (Inform 7, Rez, Ink, BASIC, Chord). A game with a multi-file or custom source view ships its own `source.html` and sets `sourceBrowser = yes` |
 | `walkthrough.txt` | no | one command per line, at the game root. Optional companions next to it: `walkthrough_output.txt` (transcript) and `walkthrough-guide.txt` (annotated guide). The hub renders them in its own walkthrough viewer |
 | `tests.html` | no | any self-contained test report page. When present the hub shows a Tests tab. Inform 7 games get one from ifPlayer |
+| stylesheet | no | the file named by `style =`: a mood overlay or an author stylesheet the game wants readable, not only visible. The hub shows it in the player's CSS tab, highlighted like source. Name one only when there is something to read; a Sharpee game's three-line stub does not earn the tab |
 | `index.html` | generated | the game's landing page. `tools/ship.py` writes it when missing and `--refresh-pages` rewrites it. The hub also writes and owns `.github/workflows/deploy-pages.yml`; `tools/check_drift.py` reports any game whose copy of either is from an older template |
 
 ### ifhub.conf
@@ -27,6 +28,7 @@ description = One or two sentences for the card.
 tags = classic, puzzle           # hubs.json filters on these
 source = story.ni                # shown in the source pane
 sourceLabel = babel.ni           # optional label for the source toolbar
+style = overlay.css              # optional: a stylesheet to show in the CSS tab
 walkthrough = walkthrough.txt    # optional
 sound = blorb                    # optional: game has embedded audio
 hub = yes                        # ship.py sets this; the game is listed only when it is yes
