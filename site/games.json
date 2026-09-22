@@ -558,6 +558,7 @@
     "walkthroughUrl": "/feverdream/walkthrough.txt",
     "landingUrl": "/feverdream/",
     "sourceUrl": "/feverdream/story.ni",
+    "styleUrl": "/feverdream/mood.css",
     "engine": "inform7",
     "tags": [
       "sound",
@@ -742,6 +743,7 @@
     "walkthroughUrl": "/seasons/walkthrough.txt",
     "landingUrl": "/seasons/",
     "sourceUrl": "/seasons/story.ni",
+    "styleUrl": "/seasons/mood.css",
     "engine": "inform7",
     "tags": [
       "demo"
@@ -781,6 +783,7 @@
     "testsUrl": "/zork1/tests.html",
     "landingUrl": "/zork1/",
     "sourceUrl": "/zork1/story.ni",
+    "styleUrl": "/zork1/mood.css",
     "engine": "inform7",
     "tags": [
       "sound",
