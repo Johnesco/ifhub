@@ -272,15 +272,16 @@ container.appendChild(flake);
 
 ### Creating a mood project from scratch
 
-1. Copy `C:/code/text-games/i7/tools/web/templates/play-mood.html` → `<game>/play-template.html`
-2. Adjust initial colors in `@property` declarations and `:root` to match your first zone
-3. Add game-specific CSS (particle `@keyframes`, body class toggles, etc.)
+1. Copy `C:/code/text-games/i7/tools/web/templates/play-mood.html` → `<game>/play-template.html` and `templates/mood.css` → `<game>/mood.css` (`setup_web.py --mood` seeds `mood.css` if the game has none)
+2. In `mood.css`, adjust initial colors in the `@property` declarations and `:root` to match your first zone
+3. Add game-specific CSS (particle `@keyframes`, body class toggles, etc.) to `mood.css`; the template links it after the Parchment stylesheets, so it wins the cascade, and `setup_web.py` cache-busts the link
 4. Add a `<script>` block before `</body>` that calls `MoodEngine.init({...})`
-5. Build: `python C:/code/text-games/i7/tools/build.py <game> --force`
+5. Add `style = mood.css` to `ifhub.conf` so the hub shows the overlay in the player's CSS tab
+6. Build: `python C:/code/text-games/i7/tools/build.py <game> --force`
 
 ### How templates survive rebuilds
 
-The overlay lives in `play-template.html` (input). The workspace's `compile.py` (run by `build.py`) detects it and passes `--template` to `setup_web.py`, which generates `play.html` (output) with placeholders substituted. The template is never overwritten by builds.
+The overlay lives in `mood.css`, linked from `play-template.html` (both inputs). The workspace's `compile.py` (run by `build.py`) detects it and passes `--template` to `setup_web.py`, which generates `play.html` (output) with placeholders substituted. The template is never overwritten by builds.
 
 If the template references `mood-engine.js`, `compile.py` auto-detects it and passes `--mood` to copy the library alongside the Parchment files.
 
