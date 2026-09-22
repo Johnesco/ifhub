@@ -7,8 +7,8 @@ script walks every game folder under the workspaces.json roots, parses each
 description, tags, URLs). It then collapses versioned groups into cards.json
 for the landing page. Nothing in either file is hand-maintained.
 
-URLs (playUrl, landingUrl, sourceUrl, walkthroughUrl, testsUrl) are computed
-from the deploy directory name. Each URL is probed on
+URLs (playUrl, landingUrl, sourceUrl, walkthroughUrl, testsUrl, styleUrl) are
+computed from the deploy directory name. Each URL is probed on
 disk and only emitted if the target file exists — same logic check_links.py
 uses in reverse. `playUrl` is always emitted (a missing play.html is a build
 bug, not a data bug).
@@ -170,6 +170,14 @@ def build_entry(game_id: str, conf: dict, deploy_dir: Path,
         src_rel = conf["source"].replace("\\", "/").strip("/")
         if (probe_root / src_rel).is_file():
             entry["sourceUrl"] = f"{url_prefix}/{src_rel}"
+
+    # An optional stylesheet the game names with `style =` (a mood overlay, an
+    # author stylesheet). The hub shows it in the player's CSS pane, highlighted
+    # like source (#141). The file is the trigger: nothing is read out of play.html.
+    if conf.get("style"):
+        style_rel = conf["style"].replace("\\", "/").strip("/")
+        if (probe_root / style_rel).is_file():
+            entry["styleUrl"] = f"{url_prefix}/{style_rel}"
 
     engine = conf.get("engine", "")
     if engine:
